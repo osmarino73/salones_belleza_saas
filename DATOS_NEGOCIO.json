@@ -1,0 +1,190 @@
+{
+  "nombre_agencia": "BeautyFlow AI",
+  "slogan": "La plataforma inteligente 360° para Salones de Belleza, Spas y Barberías",
+  "propuesta_valor": "Te regalamos el diseño completo de la Página Web de tu Salón y activamos tu Agente de WhatsApp IA con Agendamiento 24/7, Recordatorios Anti-Plantones y CRM Especializado.",
+  "contacto": {
+    "telefono": "+57 300 900 8000",
+    "whatsapp": "+57 300 900 8000",
+    "email": "hola@beautyflow.ai",
+    "direccion": "Agencia Digital & Software SaaS para Salones de Belleza",
+    "horario_atencion": "Atención automatizada por IA las 24 Horas"
+  },
+  "oferta_caballo_troya": {
+    "titulo": "¡Tu Página Web Profesional 100% GRATIS!",
+    "descripcion": "Diseñamos e instalamos el sitio web de tu salón sin costo alguno. Solo activas el motor de agendamiento y el bot de WhatsApp con una prueba gratuita de 14 días sin tarjeta de crédito.",
+    "incluye_gratis": [
+      "Diseño web moderno 100% responsivo para móviles",
+      "Optimización para Google Maps y SEO Local",
+      "Catálogo interactivo de servicios con fotos",
+      "Integración de botón flotante de WhatsApp",
+      "Dominio y certificado de seguridad SSL"
+    ]
+  },
+  "modulos_sistema": [
+    {
+      "id": "whatsapp_ai",
+      "titulo": "Agente IA en WhatsApp 24/7",
+      "descripcion": "Responde mensajes a cualquier hora, aclara precios, servicios y agenda citas de forma totalmente conversacional en tiempo real."
+    },
+    {
+      "id": "agendamiento",
+      "titulo": "Agendamiento Inteligente",
+      "descripcion": "Calendario por estilista y servicio. Previene choques de agenda y permite a tus clientes reservar en 3 clics."
+    },
+    {
+      "id": "anti_noshow",
+      "titulo": "Recordatorios Anti-Plantones",
+      "descripcion": "Recordatorios automáticos por WhatsApp y Email 24h y 2h antes de la cita. Reduce las inasistencias en un 80%."
+    },
+    {
+      "id": "crm_belleza",
+      "titulo": "CRM Ficha Técnica de Tinte",
+      "descripcion": "Guarda fórmulas de color, historial de decoloración, preferencias del cliente y fotos de Antes/Después."
+    },
+    {
+      "id": "pos_comisiones",
+      "titulo": "POS & Comisiones de Estilistas",
+      "descripcion": "Facturación en recepción, venta de productos fisicos y liquidación automática de comisiones para tu equipo."
+    },
+    {
+      "id": "marketing_retencion",
+      "titulo": "Re-atracción de Clientes",
+      "descripcion": "Mensajes automáticos cuando un cliente cumple 30 días sin retocar su cabello y solicitudes de reseñas en Google Maps."
+    }
+  ],
+  "planes_suscripcion": [
+    {
+      "nombre": "Plan Básico",
+      "precio_mensual": "$39 USD",
+      "periodo": "/mes",
+      "destacado": false,
+      "publico": "1 a 2 Estilistas o Barberos",
+      "caracteristicas": [
+        "Web Profesional de Regalo",
+        "Agendamiento Web en Línea",
+        "Confirmaciones por Email",
+        "CRM Ficha de Clientes",
+        "Hasta 2 Agendas de Estilistas",
+        "Soporte por Email"
+      ]
+    },
+    {
+      "nombre": "Plan PRO IA",
+      "precio_mensual": "$89 USD",
+      "periodo": "/mes",
+      "destacado": true,
+      "etiqueta_destacado": "MÁS POPULAR",
+      "publico": "Salones Medianos (3 a 6 Estilistas)",
+      "caracteristicas": [
+        "Todo lo del Plan Básico",
+        "Agente IA en WhatsApp 24/7",
+        "Recordatorios WhatsApp Anti-Plantón",
+        "Ficha Técnica de Tintes & Fórmulas",
+        "Cobro Opcional de Señas/Anticipos",
+        "Encuesta de Satisfacción + Google Maps",
+        "Hasta 6 Agendas de Estilistas"
+      ]
+    },
+    {
+      "nombre": "Plan VIP 360°",
+      "precio_mensual": "$149 USD",
+      "periodo": "/mes",
+      "destacado": false,
+      "publico": "Salones Grandes, Spas & Multi-Sede",
+      "caracteristicas": [
+        "Todo lo del Plan PRO IA",
+        "Estilistas e Agendas Ilimitadas",
+        "Módulo POS de Recepción & Inventario",
+        "Liquidación de Comisiones de Estilistas",
+        "Portal Móvil para cada Estilista",
+        "Campañas Automáticas de Re-atracción",
+        "Soporte Prioritario VIP"
+      ]
+    }
+  ],
+  "testimonios": [
+    {
+      "nombre": "Camila Restrepo",
+      "salon": "Studio Glamour Spa",
+      "ciudad": "Medellín",
+      "comentario": "Pensé que regalar la web era un truco, pero nos entregaron la página en 48 horas. El bot de WhatsApp agendó 14 citas en su primer fin de semana mientras el salón estaba cerrado.",
+      "estrellas": 5
+    },
+    {
+      "nombre": "Roberto Vargas",
+      "salon": "Vargas Barber & Hair",
+      "ciudad": "Bogotá",
+      "comentario": "Los recordatorios por WhatsApp redujeron nuestras inasistencias casi a cero. Ahora los estilistas cobran sus comisiones exactas sin discusiones los sábados.",
+      "estrellas": 5
+    },
+    {
+      "nombre": "Valeria Gómez",
+      "salon": "Valeria Color Expert",
+      "ciudad": "Cali",
+      "comentario": "La ficha técnica con la fórmula de tintes nos cambió la vida. Si una clienta regresa 2 meses después, sabemos exactamente qué tono le aplicamos.",
+      "estrellas": 5
+    }
+  ],
+  "preguntas_frecuentes": [
+    {
+      "pregunta": "¿Por qué regalan la página web profesional?",
+      "respuesta": "Queremos que pruebes la calidad de nuestro trabajo sin riesgo. Nos encargamos del diseño web completo para que compruebes el poder del agendamiento online y el agente de WhatsApp."
+    },
+    {
+      "pregunta": "¿Tengo que cambiar mi número de WhatsApp actual?",
+      "respuesta": "No. Conectamos nuestro sistema directamente a tu número actual de WhatsApp Business sin interrumpir tu servicio."
+    },
+    {
+      "pregunta": "¿Hay contrato de permanencia?",
+      "respuesta": "Ninguno. La suscripción es mes a mes y puedes cancelar o pausar el servicio en cualquier momento."
+    },
+    {
+      "pregunta": "¿Cómo funciona la prueba gratuita de 14 días?",
+      "respuesta": "Te entregamos la web con el sistema activado por 14 días completos. No requerimos tarjeta de crédito para comenzar."
+    }
+  ],
+  "comparativa_mercado": [
+    {
+      "caracteristica": "Página Web Profesional de Regalo",
+      "beautyflow": "✓ Incluida GRATIS",
+      "agenda_papel": "✗ No tiene",
+      "fresha_treatwell": "✗ Solo perfil en su directorio",
+      "whatsapp_manual": "✗ No tiene"
+    },
+    {
+      "caracteristica": "Agente WhatsApp IA 24/7",
+      "beautyflow": "✓ Conversacional inteligente",
+      "agenda_papel": "✗ Inexistente",
+      "fresha_treatwell": "✗ Solo SMS de pago",
+      "whatsapp_manual": "⚠️ Solo si estás despierto"
+    },
+    {
+      "caracteristica": "Ficha Técnica de Tintes & Colorimetría",
+      "beautyflow": "✓ Fórmulas exactas + Fotos",
+      "agenda_papel": "⚠️ Cuaderno que se pierde",
+      "fresha_treatwell": "⚠️ Notas básicas de texto",
+      "whatsapp_manual": "✗ No estructurado"
+    },
+    {
+      "caracteristica": "Comisión por Cada Cita",
+      "beautyflow": "✓ 0% Comisión por cita",
+      "agenda_papel": "✓ 0%",
+      "fresha_treatwell": "❌ Hasta 20% + IVA por nuevo cliente",
+      "whatsapp_manual": "✓ 0%"
+    },
+    {
+      "caracteristica": "Liquidación Automática de Estilistas",
+      "beautyflow": "✓ 1 Clic (Servicios + Retail)",
+      "agenda_papel": "❌ Horas calculando a mano",
+      "fresha_treatwell": "✓ Incluido",
+      "whatsapp_manual": "❌ A mano en Excel"
+    },
+    {
+      "caracteristica": "Recordatorios Anti-Plantón WhatsApp",
+      "beautyflow": "✓ Automático 24h y 2h antes",
+      "agenda_papel": "❌ Manual 1 por 1",
+      "fresha_treatwell": "⚠️ Costo extra por SMS",
+      "whatsapp_manual": "❌ Manual"
+    }
+  ]
+}

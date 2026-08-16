@@ -1,0 +1,179 @@
+{
+  "name": "BeautyFlow AI - Recordatorios 2h Antes & Emails Transaccionales",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "node-cron-schedule",
+      "name": "Cron Cada 15 Minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://ascskenpfcnyejaamjlb.supabase.co/rest/v1/appointments?select=id,start_time,status,client_name,client_phone,client_email,service_name,stylist_name&status=eq.confirmed&start_time=gte.{{ $now.toISO() }}&start_time=lte.{{ $now.plus({ hours: 2, minutes: 15 }).toISO() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.VITE_SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.VITE_SUPABASE_ANON_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-query-supabase",
+      "name": "Consultar Citas Próximas (2h)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalizar citas para iteración\nconst appointments = $input.first().json;\n\nif (!Array.isArray(appointments) || appointments.length === 0) {\n  return [];\n}\n\nreturn appointments.map(app => ({\n  json: {\n    appointmentId: app.id,\n    clientName: app.client_name || 'Estimada clienta',\n    clientPhone: app.client_phone,\n    clientEmail: app.client_email,\n    serviceName: app.service_name || 'Servicio de Belleza',\n    stylistName: app.stylist_name || 'Tu estilista',\n    startTime: app.start_time,\n    formattedTime: new Date(app.start_time).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),\n    formattedDate: new Date(app.start_time).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })\n  }\n}));"
+      },
+      "id": "node-format-appointments",
+      "name": "Formatear Datos Citas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zernio.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $json.clientPhone }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text",
+              "value": "=✨ ¡Hola {{ $json.clientName }}! Te recordamos tu cita de belleza hoy a las {{ $json.formattedTime }} con {{ $json.stylistName }} para tu {{ $json.serviceName }}.\n\n📍 Te esperamos con todo listo.\n👉 Responde '1' para confirmar tu asistencia o '2' si necesitas reagendar."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-send-reminder-whatsapp",
+      "name": "Enviar WhatsApp Recordatorio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "BeautyFlow AI <citas@beautyflow.app>"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.clientEmail }}"
+            },
+            {
+              "name": "subject",
+              "value": "=✨ Recordatorio de tu Cita: {{ $json.serviceName }} hoy a las {{ $json.formattedTime }}"
+            },
+            {
+              "name": "html",
+              "value": "=<div style=\"background-color:#0b0f17; color:#ffffff; font-family:sans-serif; padding:30px; border-radius:12px; max-width:600px; margin:auto;\"><h1 style=\"color:#e2a0a8; margin-top:0;\">✨ Recordatorio de Cita</h1><p>Hola <strong>{{ $json.clientName }}</strong>,</p><p>Te recordamos que tienes una cita programada para hoy:</p><div style=\"background:#151c28; border:1px solid #233045; border-radius:8px; padding:20px; margin:20px 0;\"><p style=\"margin:8px 0;\">💇‍♀️ <strong>Servicio:</strong> {{ $json.serviceName }}</p><p style=\"margin:8px 0;\">👤 <strong>Profesional:</strong> {{ $json.stylistName }}</p><p style=\"margin:8px 0;\">⏰ <strong>Hora:</strong> {{ $json.formattedTime }}</p></div><p style=\"color:#94a3b8; font-size:14px;\">Si necesitas hacer algún cambio o tienes dudas, puedes responder directamente a nuestro WhatsApp.</p><p style=\"margin-top:30px; border-top:1px solid #233045; padding-top:15px; font-size:12px; color:#64748b;\">BeautyFlow AI © 2026 - Gestión Inteligente para Salones</p></div>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-send-email-resend",
+      "name": "Enviar Email HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Cron Cada 15 Minutos": {
+      "main": [
+        [
+          {
+            "node": "Consultar Citas Próximas (2h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Citas Próximas (2h)": {
+      "main": [
+        [
+          {
+            "node": "Formatear Datos Citas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Datos Citas": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp Recordatorio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

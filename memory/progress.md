@@ -1,0 +1,76 @@
+# Progress & Health Status - BeautyFlow AI
+
+## ✅ Completado y Funcionando (100%)
+- [x] **Flujo Completo de Autenticación & Registro de Salones en Supabase**:
+  - **Supabase Auth Integration**: `api.auth.signUp()` y `api.auth.signIn()` conectados con JWT y persistencia de sesión.
+  - **Registro de Negocio Multi-Tenant (`api.registerBusiness`)**:
+    - Crea la cuenta de la dueña en `auth.users`.
+    - Inserta el nuevo salón en `tenants` (con moneda COP, slug único y horario semanal en JSON).
+    - Inserta la plantilla de servicios elegida en `services`.
+    - Inserta a la dueña como Master Stylist en `stylists`.
+    - Inserta la configuración del Agente IA en `tenant_ai_settings` (nombre, prompt, tono, horario semanal y política de cancelación).
+    - Sincronización transparente con `localStorage` como fallback resiliente.
+  - **Página de Login (`/login`)**: Conectada a Supabase Auth con selector rápido de roles demo y login directo para dueñas y estilistas.
+- [x] **Esquema de Base de Datos PostgreSQL / Supabase**: 9 tablas en `schema.sql`, triggers de auditoría, cálculo de comisiones e índices de rendimiento.
+- [x] **Migraciones ejecutadas en Supabase**: Tablas y estructuras creadas en el proyecto remoto.
+- [x] **Configuración de Variables de Entorno**: Archivo `.env` creado y vinculado con URL y Anon Key.
+- [x] **Sanitización del Cliente Supabase**: `src/lib/supabase.ts` adaptado para conexiones limpias.
+- [x] **Landing Page B2B (`/`)**: Hero, propuesta de valor, calculadora interactiva de ROI, planes de precios y testimonios.
+- [x] **Dashboard SaaS (`/dashboard`)**:
+  - Métricas en vivo (Facturación, Ocupación, Citas del día).
+  - Agenda y calendario interactivo por estilista.
+  - Módulo de Liquidación de Comisiones con exportación.
+  - CRM de Clientes con historial y tags IA.
+  - Inventario con alertas de stock crítico.
+  - Caja POS (Registro de pagos y métodos).
+  - Simulador de Agente WhatsApp interactivo.
+- [x] **Portal Público de Reservas (`/reservar`)**: Flujo completo de autoservicio para clientes.
+- [x] **Página de Login (`/login`)**.
+- [x] **Compilador Standalone HTML**: `build_standalone.js` actualizado a ESM.
+- [x] **Banco de Memoria Engram**: Creado en `memory/` y registrado en `.agents/skills/engram-memory`.
+- [x] **Tabla `tenant_ai_settings` en Supabase**: Creada y migrada exitosamente para personalización multi-tenant de la IA.
+- [x] **Pestaña de Configuración IA en el Dashboard (`/dashboard`)**:
+  - Personalización de Identidad, Nombre y Tono (`elegante_calido`, `profesional_formal`, `cercano_juvenil`).
+  - Editor de Prompt Maestro del Salón, Bio y Políticas de Cancelación.
+  - Gestión interactiva de Preguntas Frecuentes (FAQs).
+  - Configuración de Abonos / Anticipos para Citas.
+  - Conexión Zernio & WhatsApp con Modo Intervención Humana.
+  - Configuración de Recordatorios y Enlace de Reseñas de Google Maps.
+  - Persistencia bidireccional en Supabase + LocalStorage.
+- [x] **Optimización y Simplificación del Menú del Dashboard**:
+  - Menú superior ultralimpio con 3 pilares principales: `Overview`, `CRM Colorimetría`, `Simulador Chat`.
+  - Submenú desplegable en el avatar de perfil (`Sofía Restrepo`):
+    - ✂️ **Equipo, Servicios & Stock** (abre panel de administración integral).
+    - 🤖 **Configuración Agente IA** (abre el panel del bot).
+    - 🏢 **Configuración del Negocio** (abre modal para editar nombre comercial, teléfono, dirección y moneda).
+    - ✨ **Portal Público de Citas** (enlace a `/reservas`).
+    - 🚪 **Cerrar Sesión (Logout)** (enlace a `/login`).
+- [x] **Asistente de Onboarding con 8 Plantillas Especializadas & Configurador de Horario Semanal (`/registro`)**:
+  - **8 Categorías de Negocio con Selección Múltiple**: Cabello/Color, Alisados/Keratinas, Nails Bar, Cejas/Pestañas, Barbería, Spa/Masajes, Moldeo Corporal y Maquillaje/Novias.
+  - **Ajustador de Nivel de Precios COP en 1 Clic** (🟢 Express 0.75x, 🟡 Estudio Pro 1.0x, 🟣 Boutique Lujo 1.45x).
+  - **Configurador Interactivo de Horario Semanal (Día a Día)** en el Paso 3:
+    - Control independiente para cada uno de los 7 días de la semana con toggle Abierto/Cerrado y selectores de hora `Abre - Cierra`.
+    - **Presets Rápidos en 1 Clic**: ⚡ *Lun-Sáb (8am-8pm)*, 💈 *Mar-Dom (Lunes descanso)*, 🌟 *Lun-Dom Completo*.
+    - Resumen dinámico en vivo sincronizado con el prompt del Asistente IA de WhatsApp.
+  - **Mensaje Destacado de Autonomía**: Aclara a la dueña que todo el catálogo es 100% editable, eliminable y ampliable desde el panel de administración.
+- [x] **Flujo Directo de Autenticación & Contraseñas para Colaboradores**:
+  - **Asignación por la Dueña**: Al crear o editar un profesional en el Dashboard, la dueña asigna su **Email de Acceso** y una **Contraseña Provisoria** (por defecto `Glamour2026*` o personalizada).
+  - **Autonomía del Colaborador**: En el Portal (`/colaborador`), el estilista tiene el botón **"🔑 Cambiar Clave"** para actualizar su contraseña por una privada en cualquier momento.
+  - Validación de coincidencia y longitud mínima de seguridad (6+ caracteres).
+  - Botón **`+ Agendar`** en Card 1 navega a la Agenda.
+  - Botón **`Cobrar POS`** en Card 1 navega a la Terminal POS.
+  - Botones de retorno rápido "← Volver" en Agenda y POS.
+- [x] **Flujos de n8n para WhatsApp & Emails**:
+  - `n8n_workflows/workflow_1_agente_whatsapp_zernio.json` (Agente conversacional IA).
+  - `n8n_workflows/workflow_2_recordatorios_y_emails.json` (Cron recordatorio 2h + Resend Email).
+  - `n8n_workflows/INSTRUCCIONES_CONFIGURACION_N8N.md` (Guía de importación).
+
+## 🟡 En Progreso / Próximo a Construir
+- [ ] **Seed Data en Supabase**: Inserción de registros iniciales de demostración en las tablas remotas.
+- [ ] **Prueba End-to-End**: Enviar un mensaje de prueba al webhook de n8n.
+- [ ] **Integración de Pasarela de Pagos**: Stripe / Wompi para suscripciones y anticipos de citas.
+
+## 🩺 Métricas de Salud del Proyecto
+- **Build Status**: ✅ Pasó (`npm run build` generado en 4.44s sin errores).
+- **Standalone Build**: ✅ Pasó (`node build_standalone.js` generado correctamente).
+- **TypeScript**: ✅ 0 errores de tipado.

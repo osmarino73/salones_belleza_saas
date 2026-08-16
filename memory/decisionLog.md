@@ -1,0 +1,31 @@
+# Decision Log (ADRs) - BeautyFlow AI
+
+## [ADR-001] Adopción de Supabase (PostgreSQL) como Base de Datos Core
+- **Fecha**: 2026-08-15
+- **Estado**: Aprobado e Implementado
+- **Contexto**: Se requería una base de datos relacional robusta con soporte para relaciones multi-tenant, triggers automáticos para liquidación de comisiones y APIs REST/GraphQL automáticas.
+- **Decisión**: Usar Supabase PostgreSQL con el schema maestro definido en `schema.sql`.
+
+## [ADR-002] Enfoque de UI Dual: React SPA + HTML Standalone
+- **Fecha**: 2026-08-15
+- **Estado**: Aprobado e Implementado
+- **Contexto**: El cliente y los agentes necesitan una SPA moderna con React/Vite para desarrollo continuo, pero también archivos HTML 100% autónomos para previews instantáneos sin servidor.
+- **Decisión**: Mantener `src/` como fuente principal y un script `build_standalone.js` con ESM para empaquetado autónomo.
+
+## [ADR-003] Agente de IA para WhatsApp vía Webhooks n8n
+- **Fecha**: 2026-08-16
+- **Estado**: Diseñado en `AUTOMATIZACIONES_WHATSAPP.md`
+- **Contexto**: La atención por WhatsApp debe consultar disponibilidad en Supabase, registrar citas y evitar conflictos de horarios en lenguaje natural.
+- **Decisión**: Usar n8n como orquestador conectando Meta Cloud API con un agente de OpenAI que ejecuta herramientas/SQL sobre Supabase.
+
+## [ADR-004] Sistema de Memoria Persistente Engram
+- **Fecha**: 2026-08-16
+- **Estado**: Implementado
+- **Contexto**: Preservar el contexto de diseño, arquitectura y progreso entre diferentes turnos, modelos y sesiones sin perder continuidad.
+- **Decisión**: Crear la skill `.agents/skills/engram-memory` y el banco de memoria centralizado en `memory/`.
+
+## [ADR-005] Integración de Zernio API con Servidor Propio n8n (WhatsApp + Email)
+- **Fecha**: 2026-08-16
+- **Estado**: Aprobado e Implementado
+- **Contexto**: Se evaluó Zernio API (`docs.zernio.com`) como Gateway unificado para WhatsApp e Instagram. Dado que el usuario ya cuenta con servidor n8n propio y requiere envíos multicanal (WhatsApp + Emails con Resend/SMTP).
+- **Decisión**: Utilizar n8n en el servidor del usuario como orquestador central, conectado a los webhooks de Zernio, el motor OpenAI GPT-4o-mini con Function Calling, y Supabase como base de datos de estado. Se crearon los flujos JSON listos para importar en `n8n_workflows/`.

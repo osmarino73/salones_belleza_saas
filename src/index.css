@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-dark: #090B10;
+    --bg-surface: #0E121B;
+    --bg-card: #141926;
+    --accent-orange: #FF5E14;
+    --accent-coral: #FF5A36;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+.glow-orange {
+  box-shadow: 0 0 35px rgba(255, 94, 20, 0.25);
+}
+
+.text-gradient-orange {
+  background: linear-gradient(135deg, #FF7A3D 0%, #FF5E14 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

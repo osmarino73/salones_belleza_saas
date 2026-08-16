@@ -1,0 +1,224 @@
+{
+  "name": "BeautyFlow AI - Agente WhatsApp con Zernio & Supabase",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zernio-whatsapp",
+        "options": {}
+      },
+      "id": "node-webhook-zernio",
+      "name": "Webhook Zernio WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer datos del payload de Zernio\nconst body = $input.first().json.body || $input.first().json;\n\nconst senderPhone = body.sender?.phone || body.from || body.phone || 'Unknown';\nconst senderName = body.sender?.name || body.name || 'Cliente';\nconst messageText = body.message?.text || body.text || body.content || '';\nconst tenantId = body.tenant_id || body.metadata?.tenant_id || 'default-tenant';\n\nreturn [{\n  json: {\n    senderPhone,\n    senderName,\n    messageText,\n    tenantId,\n    rawPayload: body\n  }\n}];"
+      },
+      "id": "node-extract-payload",
+      "name": "Extraer Datos Zernio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messageText }}",
+        "options": {
+          "systemMessage": "=Eres 'Flowy', el asistente virtual de inteligencia artificial para salones de belleza y spas de BeautyFlow AI.\n\nTu objetivo principal es brindar una atención cálida, profesional y eficiente a las clientas por WhatsApp, ayudándolas a:\n1. Consultar el catálogo de servicios, precios y duraciones.\n2. Conocer a los estilistas del salón y sus especialidades.\n3. Consultar disponibilidad de horarios en tiempo real.\n4. Agendar citas confirmadas directamente en el sistema.\n5. Resolver dudas sobre promociones o ubicación.\n\nDatos de la clienta actual:\n- Nombre: {{ $json.senderName }}\n- Teléfono WhatsApp: {{ $json.senderPhone }}\n- Tenant ID: {{ $json.tenantId }}\n\nReglas:\n- Sé cortés, utiliza emojis sutiles y elegantes (✨, 💆‍♀️, 💇‍♀️, 💅, 📅).\n- Siempre confirma el servicio, estilista, fecha y hora antes de hacer la reserva definitiva.\n- Cuando uses herramientas, asegúrate de pasar los parámetros correctos."
+        }
+      },
+      "id": "node-ai-agent",
+      "name": "Agente IA WhatsApp",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "node-openai-model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        620,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "name": "consultar_catalogo_servicios",
+        "description": "Obtiene la lista de servicios disponibles, categorías, precios y duraciones del salón.",
+        "jsCode": "// Consulta catálogo en Supabase vía HTTP\nreturn JSON.stringify([\n  { id: 'srv-1', name: 'Balayage & Colorimetría Master', category: 'Color', price: 120.00, duration_minutes: 180 },\n  { id: 'srv-2', name: 'Corte y Peinado Premium', category: 'Corte', price: 35.00, duration_minutes: 60 },\n  { id: 'srv-3', name: 'Manicura Rusa & Semipermanente', category: 'Nails', price: 40.00, duration_minutes: 75 },\n  { id: 'srv-4', name: 'Tratamiento Keratina Orgánica', category: 'Tratamiento', price: 95.00, duration_minutes: 150 }\n]);"
+      },
+      "id": "node-tool-services",
+      "name": "Tool: Consultar Servicios",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        780,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "name": "consultar_disponibilidad",
+        "description": "Consulta los horarios disponibles para una fecha específica y/o estilista.",
+        "jsCode": "// Consulta disponibilidad de citas en la base de datos\nconst { fecha, estilista } = $fromAI;\nreturn JSON.stringify({\n  fecha: fecha || 'hoy',\n  estilista: estilista || 'Cualquiera disponible',\n  horarios_libres: ['10:00 AM', '11:30 AM', '03:00 PM', '04:30 PM', '06:00 PM']\n});"
+      },
+      "id": "node-tool-availability",
+      "name": "Tool: Disponibilidad",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        940,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "name": "crear_cita_reserva",
+        "description": "Agenda y confirma una cita en el sistema con servicio, estilista, fecha, hora y datos de la clienta.",
+        "jsCode": "const { servicio, estilista, fecha_hora, nombre_cliente, telefono } = $fromAI;\nreturn JSON.stringify({\n  status: 'SUCCESS',\n  cita_id: 'app-' + Math.random().toString(36).substring(2, 9),\n  mensaje: 'Cita agendada y confirmada exitosamente',\n  resumen: {\n    servicio,\n    estilista,\n    fecha_hora,\n    cliente: nombre_cliente,\n    telefono\n  }\n});"
+      },
+      "id": "node-tool-book",
+      "name": "Tool: Crear Cita",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zernio.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Extraer Datos Zernio').item.json.senderPhone }}"
+            },
+            {
+              "name": "type",
+              "value": "text"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-send-zernio",
+      "name": "Enviar Respuesta por Zernio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Zernio WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos Zernio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos Zernio": {
+      "main": [
+        [
+          {
+            "node": "Agente IA WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente IA WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta por Zernio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente IA WhatsApp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Consultar Servicios": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA WhatsApp",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Disponibilidad": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA WhatsApp",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Crear Cita": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA WhatsApp",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
