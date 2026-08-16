@@ -288,13 +288,14 @@ export const api = {
         .select('*')
         .eq('tenant_id', tid)
         .order('date', { ascending: false });
-      if (!error && data && data.length > 0) return data as Appointment[];
+      if (!error && data) return data as Appointment[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
     if (saved) {
       const list: Appointment[] = JSON.parse(saved);
       const filtered = list.filter(a => a.tenant_id === tid);
       if (filtered.length > 0) return filtered;
+      if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
 
     // Si es el tenant demo
@@ -303,63 +304,7 @@ export const api = {
       return initialAppointments;
     }
 
-    // Para nuevo negocio: generar 2 citas de bienvenida con sus servicios y estilista reales
-    const rawServices = localStorage.getItem(STORAGE_KEYS.SERVICES);
-    const rawStylists = localStorage.getItem(STORAGE_KEYS.STYLISTS);
-    const servicesList: Service[] = rawServices ? JSON.parse(rawServices) : [];
-    const stylistsList: Stylist[] = rawStylists ? JSON.parse(rawStylists) : [];
-
-    const mainService = servicesList[0]?.name || 'Cuidado Capilar & Estilo';
-    const mainPrice = servicesList[0]?.price_usd || 140000;
-    const secondService = servicesList[1]?.name || 'Manicura & Diseño';
-    const secondPrice = servicesList[1]?.price_usd || 65000;
-    const mainStylist = stylistsList[0]?.name || 'Directora del Salón';
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const newTenantAppointments: Appointment[] = [
-      {
-        id: `apt-${Date.now()}-1`,
-        tenant_id: tid,
-        client_id: `cli-${Date.now()}-1`,
-        client_name: 'Camila Montoya',
-        client_phone: '+57 312 456 7890',
-        stylist_id: stylistsList[0]?.id || `sty-${Date.now()}`,
-        stylist_name: mainStylist,
-        service_id: servicesList[0]?.id || `srv-${Date.now()}-1`,
-        service_name: mainService,
-        date: todayStr,
-        time: '02:00 PM',
-        duration_minutes: 60,
-        price_usd: mainPrice,
-        status: 'en_atencion',
-        wa_reminder_24h_sent: true,
-        wa_reminder_2h_sent: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: `apt-${Date.now()}-2`,
-        tenant_id: tid,
-        client_id: `cli-${Date.now()}-2`,
-        client_name: 'Valentina Gómez',
-        client_phone: '+57 310 889 4433',
-        stylist_id: stylistsList[0]?.id || `sty-${Date.now()}`,
-        stylist_name: mainStylist,
-        service_id: servicesList[1]?.id || `srv-${Date.now()}-2`,
-        service_name: secondService,
-        date: todayStr,
-        time: '04:30 PM',
-        duration_minutes: 45,
-        price_usd: secondPrice,
-        status: 'confirmada_wa',
-        wa_reminder_24h_sent: true,
-        wa_reminder_2h_sent: false,
-        created_at: new Date().toISOString()
-      }
-    ];
-
-    const currentSaved = saved ? JSON.parse(saved) : [];
-    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify([...newTenantAppointments, ...currentSaved]));
-    return newTenantAppointments;
+    return [];
   },
 
   async createAppointment(apt: Appointment): Promise<Appointment> {
@@ -393,50 +338,21 @@ export const api = {
         .select('*, formulas:color_formulas(*)')
         .eq('tenant_id', tid)
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) return data as Client[];
+      if (!error && data) return data as Client[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.CLIENTS);
     if (saved) {
       const list: Client[] = JSON.parse(saved);
       const filtered = list.filter(c => c.tenant_id === tid);
       if (filtered.length > 0) return filtered;
+      if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
     if (tid === '00000000-0000-0000-0000-000000000001') {
       localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(initialClients));
       return initialClients;
     }
 
-    // Clientes de bienvenida adaptados al negocio
-    const newClients: Client[] = [
-      {
-        id: `cli-${Date.now()}-1`,
-        tenant_id: tid,
-        full_name: 'Camila Montoya',
-        phone_whatsapp: '+57 312 456 7890',
-        email: 'camila@ejemplo.com',
-        status: 'vip',
-        total_spent_usd: 280000,
-        visits_count: 3,
-        allergies: 'Ninguna reportada',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: `cli-${Date.now()}-2`,
-        tenant_id: tid,
-        full_name: 'Valentina Gómez',
-        phone_whatsapp: '+57 310 889 4433',
-        email: 'valentina@ejemplo.com',
-        status: 'frecuente',
-        total_spent_usd: 140000,
-        visits_count: 2,
-        allergies: 'Piel sensible',
-        created_at: new Date().toISOString()
-      }
-    ];
-
-    const currentSaved = saved ? JSON.parse(saved) : [];
-    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify([...newClients, ...currentSaved]));
-    return newClients;
+    return [];
   },
 
   async createClient(client: Client): Promise<Client> {

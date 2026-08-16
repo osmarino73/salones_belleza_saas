@@ -895,13 +895,15 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center text-xs text-slate-400 mb-2">
                     <span className="font-semibold">Facturación Mensual Total</span>
-                    <span className="text-[11px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold">USD $</span>
+                    <span className="text-[11px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold">COP $</span>
                   </div>
-                  <div className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1">
-                    $14,890.00
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">
+                    {appointments.filter(a => a.status === 'cobrada').reduce((acc, a) => acc + a.price_usd, 0) > 0
+                      ? `$ ${appointments.filter(a => a.status === 'cobrada').reduce((acc, a) => acc + a.price_usd, 0).toLocaleString('es-CO')} COP`
+                      : '$ 0 COP'}
                   </div>
                   <div className="text-xs font-bold text-emerald-500 flex items-center gap-1 mb-5">
-                    <TrendingUp className="w-3.5 h-3.5" /> +24% vs mes anterior (+$4,120 IA)
+                    <TrendingUp className="w-3.5 h-3.5" /> {appointments.length > 0 ? `${appointments.length} citas registradas` : 'Listo para recibir reservas'}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-6">
@@ -926,12 +928,17 @@ export const DashboardPage: React.FC = () => {
 
                 {/* Sub-Stylists mini wallet strip */}
                 <div className="pt-4 border-t border-black/5 dark:border-white/10 grid grid-cols-3 gap-2 text-center text-xs">
-                  {stylists.map(s => (
-                    <div key={s.id} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                      <span className="font-bold block truncate text-[11px]">{s.name.split(' ')[0]}</span>
-                      <strong className="text-[#FF5A36] text-xs font-extrabold">$420</strong>
-                    </div>
-                  ))}
+                  {stylists.map(s => {
+                    const earned = appointments
+                      .filter(a => a.stylist_name === s.name && a.status === 'cobrada')
+                      .reduce((sum, a) => sum + (a.price_usd * ((s.commission_service_pct || 45) / 100)), 0);
+                    return (
+                      <div key={s.id} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                        <span className="font-bold block truncate text-[11px]">{s.name.split(' ')[0]}</span>
+                        <strong className="text-[#FF5A36] text-xs font-extrabold">{earned > 0 ? `$ ${earned.toLocaleString('es-CO')}` : '$ 0'}</strong>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -945,8 +952,12 @@ export const DashboardPage: React.FC = () => {
                     <Calendar className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-3xl font-extrabold tracking-tight my-1">18 Citas</div>
-                    <div className="text-[11px] opacity-90 font-medium">83% Confirmadas por WhatsApp</div>
+                    <div className="text-3xl font-extrabold tracking-tight my-1">
+                      {appointments.length} {appointments.length === 1 ? 'Cita' : 'Citas'}
+                    </div>
+                    <div className="text-[11px] opacity-90 font-medium">
+                      {appointments.length > 0 ? 'Recordatorios automáticos activos' : 'Enlace web 24/7 listo'}
+                    </div>
                   </div>
                 </div>
 
@@ -971,26 +982,30 @@ export const DashboardPage: React.FC = () => {
                   theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
                   <div className="flex justify-between items-center text-xs text-slate-400 font-semibold">
-                    <span>Comisión Semanal</span>
+                    <span>Comisión de Equipo</span>
                     <DollarSign className="w-4 h-4 text-amber-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold tracking-tight my-1">$2,450 <span className="text-xs text-slate-400 font-normal">USD</span></div>
-                    <div className="text-[11px] text-slate-400">Liquidación en 1 clic</div>
+                    <div className="text-xl font-extrabold tracking-tight my-1">
+                      {appointments.filter(a => a.status === 'cobrada').reduce((acc, a) => acc + (a.price_usd * 0.45), 0) > 0
+                        ? `$ ${appointments.filter(a => a.status === 'cobrada').reduce((acc, a) => acc + (a.price_usd * 0.45), 0).toLocaleString('es-CO')} COP`
+                        : '$ 0 COP'}
+                    </div>
+                    <div className="text-[11px] text-slate-400">Liquidación automática</div>
                   </div>
                 </div>
 
-                {/* 4. Mini Metric (Retención) */}
+                {/* 4. Mini Metric (Clientas en CRM) */}
                 <div className={`rounded-2xl p-5 border flex flex-col justify-between ${
                   theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
                   <div className="flex justify-between items-center text-xs text-slate-400 font-semibold">
-                    <span>Fidelización Color</span>
+                    <span>Clientas en CRM</span>
                     <Users className="w-4 h-4 text-[#FF5A36]" />
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold tracking-tight my-1">94%</div>
-                    <div className="text-[11px] text-slate-400">Con Ficha Técnica 360°</div>
+                    <div className="text-2xl font-extrabold tracking-tight my-1">{clients.length}</div>
+                    <div className="text-[11px] text-slate-400">Base de datos activa</div>
                   </div>
                 </div>
 
@@ -1062,56 +1077,77 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs min-w-[550px]">
-                      <thead className="border-b border-black/5 dark:border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
-                        <tr>
-                          <th className="py-3">Hora</th>
-                          <th className="py-3">Clienta</th>
-                          <th className="py-3">Servicio</th>
-                          <th className="py-3">Especialista</th>
-                          <th className="py-3">Estado</th>
-                          <th className="py-3 text-right">Fórmula / CRM</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                        {appointments.map((apt) => (
-                          <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                            <td className="py-3.5 font-mono font-bold text-[#FF5A36]">{apt.time}</td>
-                            <td className="py-3.5">
-                              <strong className="block">{apt.client_name}</strong>
-                              <span className="text-[11px] text-slate-400">{apt.client_phone}</span>
-                            </td>
-                            <td className="py-3.5">{apt.service_name}</td>
-                            <td className="py-3.5">{apt.stylist_name}</td>
-                            <td className="py-3.5">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                apt.status === 'en_atencion'
-                                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                  : apt.status === 'cobrada'
-                                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                              }`}>
-                                {apt.status === 'en_atencion' ? 'En Atención' : apt.status === 'cobrada' ? 'Cobrada' : 'Confirmada WA'}
-                              </span>
-                            </td>
-                            <td className="py-3.5 text-right">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
-                                  setSelectedClientForFormula(cl);
-                                }}
-                                className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
-                                  theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
-                                }`}
-                              >
-                                <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
-                              </button>
-                            </td>
+                    {appointments.length === 0 ? (
+                      <div className="text-center py-10 space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center mx-auto">
+                          <Calendar className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-sm font-bold">¡Tu Agenda está lista para recibir citas!</h3>
+                        <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                          Comparte tu enlace público de reservas con tus clientas o recibe citas automáticas por WhatsApp para que aparezcan aquí.
+                        </p>
+                        <div className="pt-2 flex justify-center gap-2">
+                          <Link
+                            to="/reservas"
+                            target="_blank"
+                            className="bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white font-bold px-4 py-2 rounded-full text-xs flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" /> Probar Enlace de Citas
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left text-xs min-w-[550px]">
+                        <thead className="border-b border-black/5 dark:border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
+                          <tr>
+                            <th className="py-3">Hora</th>
+                            <th className="py-3">Clienta</th>
+                            <th className="py-3">Servicio</th>
+                            <th className="py-3">Especialista</th>
+                            <th className="py-3">Estado</th>
+                            <th className="py-3 text-right">Fórmula / CRM</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                          {appointments.map((apt) => (
+                            <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3.5 font-mono font-bold text-[#FF5A36]">{apt.time}</td>
+                              <td className="py-3.5">
+                                <strong className="block">{apt.client_name}</strong>
+                                <span className="text-[11px] text-slate-400">{apt.client_phone}</span>
+                              </td>
+                              <td className="py-3.5">{apt.service_name}</td>
+                              <td className="py-3.5">{apt.stylist_name}</td>
+                              <td className="py-3.5">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  apt.status === 'en_atencion'
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                    : apt.status === 'cobrada'
+                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                }`}>
+                                  {apt.status === 'en_atencion' ? 'En Atención' : apt.status === 'cobrada' ? 'Cobrada' : 'Confirmada WA'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
+                                    if (cl) setSelectedClientForFormula(cl);
+                                  }}
+                                  className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
+                                    theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                                  }`}
+                                >
+                                  <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
 
