@@ -266,29 +266,113 @@ export const initialAppointments: Appointment[] = [
   }
 ];
 
+export function getActiveTenantId(): string {
+  try {
+    const raw = localStorage.getItem('bf_tenant_active');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.id) return parsed.id;
+    }
+  } catch (e) {}
+  return '00000000-0000-0000-0000-000000000001';
+}
+
 // Data API Helper functions (Supabase Live or Local fallback)
 export const api = {
   // APPOINTMENTS
-  async getAppointments(): Promise<Appointment[]> {
+  async getAppointments(tenantId?: string): Promise<Appointment[]> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('appointments').select('*').order('date', { ascending: false });
-      if (!error && data) return data as Appointment[];
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('tenant_id', tid)
+        .order('date', { ascending: false });
+      if (!error && data && data.length > 0) return data as Appointment[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(initialAppointments));
-    return initialAppointments;
+    if (saved) {
+      const list: Appointment[] = JSON.parse(saved);
+      const filtered = list.filter(a => a.tenant_id === tid);
+      if (filtered.length > 0) return filtered;
+    }
+
+    // Si es el tenant demo
+    if (tid === '00000000-0000-0000-0000-000000000001') {
+      localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(initialAppointments));
+      return initialAppointments;
+    }
+
+    // Para nuevo negocio: generar 2 citas de bienvenida con sus servicios y estilista reales
+    const rawServices = localStorage.getItem(STORAGE_KEYS.SERVICES);
+    const rawStylists = localStorage.getItem(STORAGE_KEYS.STYLISTS);
+    const servicesList: Service[] = rawServices ? JSON.parse(rawServices) : [];
+    const stylistsList: Stylist[] = rawStylists ? JSON.parse(rawStylists) : [];
+
+    const mainService = servicesList[0]?.name || 'Cuidado Capilar & Estilo';
+    const mainPrice = servicesList[0]?.price_usd || 140000;
+    const secondService = servicesList[1]?.name || 'Manicura & Diseño';
+    const secondPrice = servicesList[1]?.price_usd || 65000;
+    const mainStylist = stylistsList[0]?.name || 'Directora del Salón';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newTenantAppointments: Appointment[] = [
+      {
+        id: `apt-${Date.now()}-1`,
+        tenant_id: tid,
+        client_id: `cli-${Date.now()}-1`,
+        client_name: 'Camila Montoya',
+        client_phone: '+57 312 456 7890',
+        stylist_id: stylistsList[0]?.id || `sty-${Date.now()}`,
+        stylist_name: mainStylist,
+        service_id: servicesList[0]?.id || `srv-${Date.now()}-1`,
+        service_name: mainService,
+        date: todayStr,
+        time: '02:00 PM',
+        duration_minutes: 60,
+        price_usd: mainPrice,
+        status: 'en_atencion',
+        wa_reminder_24h_sent: true,
+        wa_reminder_2h_sent: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: `apt-${Date.now()}-2`,
+        tenant_id: tid,
+        client_id: `cli-${Date.now()}-2`,
+        client_name: 'Valentina Gómez',
+        client_phone: '+57 310 889 4433',
+        stylist_id: stylistsList[0]?.id || `sty-${Date.now()}`,
+        stylist_name: mainStylist,
+        service_id: servicesList[1]?.id || `srv-${Date.now()}-2`,
+        service_name: secondService,
+        date: todayStr,
+        time: '04:30 PM',
+        duration_minutes: 45,
+        price_usd: secondPrice,
+        status: 'confirmada_wa',
+        wa_reminder_24h_sent: true,
+        wa_reminder_2h_sent: false,
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    const currentSaved = saved ? JSON.parse(saved) : [];
+    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify([...newTenantAppointments, ...currentSaved]));
+    return newTenantAppointments;
   },
 
   async createAppointment(apt: Appointment): Promise<Appointment> {
+    const tid = apt.tenant_id || getActiveTenantId();
+    const aptWithTenant = { ...apt, tenant_id: tid };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('appointments').insert([apt]).select().single();
+      const { data, error } = await supabase.from('appointments').insert([aptWithTenant]).select().single();
       if (!error && data) return data as Appointment;
     }
-    const current = await this.getAppointments();
-    const updated = [apt, ...current];
+    const current = await this.getAppointments(tid);
+    const updated = [aptWithTenant, ...current];
     localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updated));
-    return apt;
+    return aptWithTenant;
   },
 
   async updateAppointmentStatus(id: string, status: Appointment['status']): Promise<void> {
@@ -301,26 +385,71 @@ export const api = {
   },
 
   // CLIENTS & COLOR FORMULAS
-  async getClients(): Promise<Client[]> {
+  async getClients(tenantId?: string): Promise<Client[]> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('clients').select('*, formulas:color_formulas(*)').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*, formulas:color_formulas(*)')
+        .eq('tenant_id', tid)
+        .order('created_at', { ascending: false });
       if (!error && data && data.length > 0) return data as Client[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.CLIENTS);
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(initialClients));
-    return initialClients;
+    if (saved) {
+      const list: Client[] = JSON.parse(saved);
+      const filtered = list.filter(c => c.tenant_id === tid);
+      if (filtered.length > 0) return filtered;
+    }
+    if (tid === '00000000-0000-0000-0000-000000000001') {
+      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(initialClients));
+      return initialClients;
+    }
+
+    // Clientes de bienvenida adaptados al negocio
+    const newClients: Client[] = [
+      {
+        id: `cli-${Date.now()}-1`,
+        tenant_id: tid,
+        full_name: 'Camila Montoya',
+        phone_whatsapp: '+57 312 456 7890',
+        email: 'camila@ejemplo.com',
+        status: 'vip',
+        total_spent_usd: 280000,
+        visits_count: 3,
+        allergies: 'Ninguna reportada',
+        created_at: new Date().toISOString()
+      },
+      {
+        id: `cli-${Date.now()}-2`,
+        tenant_id: tid,
+        full_name: 'Valentina Gómez',
+        phone_whatsapp: '+57 310 889 4433',
+        email: 'valentina@ejemplo.com',
+        status: 'frecuente',
+        total_spent_usd: 140000,
+        visits_count: 2,
+        allergies: 'Piel sensible',
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    const currentSaved = saved ? JSON.parse(saved) : [];
+    localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify([...newClients, ...currentSaved]));
+    return newClients;
   },
 
   async createClient(client: Client): Promise<Client> {
+    const tid = client.tenant_id || getActiveTenantId();
+    const clientWithTenant = { ...client, tenant_id: tid };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('clients').insert([client]).select('*, formulas:color_formulas(*)').single();
+      const { data, error } = await supabase.from('clients').insert([clientWithTenant]).select('*, formulas:color_formulas(*)').single();
       if (!error && data) return data as Client;
     }
-    const current = await this.getClients();
-    const updated = [client, ...current];
+    const current = await this.getClients(tid);
+    const updated = [clientWithTenant, ...current];
     localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
-    return client;
+    return clientWithTenant;
   },
 
   async updateClient(client: Client): Promise<Client> {
@@ -359,26 +488,36 @@ export const api = {
   },
 
   // STYLISTS
-  async getStylists(): Promise<Stylist[]> {
+  async getStylists(tenantId?: string): Promise<Stylist[]> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('stylists').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('stylists')
+        .select('*')
+        .eq('tenant_id', tid)
+        .order('created_at', { ascending: false });
       if (!error && data && data.length > 0) return data as Stylist[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.STYLISTS);
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(initialStylists));
-    return initialStylists;
+    if (saved) {
+      const list: Stylist[] = JSON.parse(saved);
+      const filtered = list.filter(s => s.tenant_id === tid || !s.tenant_id);
+      if (filtered.length > 0) return filtered;
+    }
+    return tid === '00000000-0000-0000-0000-000000000001' ? initialStylists : [];
   },
 
   async createStylist(stylist: Stylist): Promise<Stylist> {
+    const tid = stylist.tenant_id || getActiveTenantId();
+    const stylistWithTenant = { ...stylist, tenant_id: tid };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('stylists').insert([stylist]).select().single();
+      const { data, error } = await supabase.from('stylists').insert([stylistWithTenant]).select().single();
       if (!error && data) return data as Stylist;
     }
-    const current = await this.getStylists();
-    const updated = [stylist, ...current];
+    const current = await this.getStylists(tid);
+    const updated = [stylistWithTenant, ...current];
     localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
-    return stylist;
+    return stylistWithTenant;
   },
 
   async updateStylist(stylist: Stylist): Promise<Stylist> {
@@ -402,26 +541,36 @@ export const api = {
   },
 
   // SERVICES
-  async getServices(): Promise<Service[]> {
+  async getServices(tenantId?: string): Promise<Service[]> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').select('*').order('name', { ascending: true });
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('tenant_id', tid)
+        .order('name', { ascending: true });
       if (!error && data && data.length > 0) return data as Service[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.SERVICES);
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(initialServices));
-    return initialServices;
+    if (saved) {
+      const list: Service[] = JSON.parse(saved);
+      const filtered = list.filter(s => s.tenant_id === tid || !s.tenant_id);
+      if (filtered.length > 0) return filtered;
+    }
+    return tid === '00000000-0000-0000-0000-000000000001' ? initialServices : [];
   },
 
   async createService(service: Service): Promise<Service> {
+    const tid = service.tenant_id || getActiveTenantId();
+    const serviceWithTenant = { ...service, tenant_id: tid };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').insert([service]).select().single();
+      const { data, error } = await supabase.from('services').insert([serviceWithTenant]).select().single();
       if (!error && data) return data as Service;
     }
-    const current = await this.getServices();
-    const updated = [service, ...current];
+    const current = await this.getServices(tid);
+    const updated = [serviceWithTenant, ...current];
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
-    return service;
+    return serviceWithTenant;
   },
 
   async updateService(service: Service): Promise<Service> {
@@ -445,26 +594,36 @@ export const api = {
   },
 
   // PRODUCTS
-  async getProducts(): Promise<Product[]> {
+  async getProducts(tenantId?: string): Promise<Product[]> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true });
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tid)
+        .order('name', { ascending: true });
       if (!error && data && data.length > 0) return data as Product[];
     }
     const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(initialProducts));
-    return initialProducts;
+    if (saved) {
+      const list: Product[] = JSON.parse(saved);
+      const filtered = list.filter(p => p.tenant_id === tid);
+      if (filtered.length > 0) return filtered;
+    }
+    return tid === '00000000-0000-0000-0000-000000000001' ? initialProducts : [];
   },
 
   async createProduct(product: Product): Promise<Product> {
+    const tid = product.tenant_id || getActiveTenantId();
+    const prodWithTenant = { ...product, tenant_id: tid };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('products').insert([product]).select().single();
+      const { data, error } = await supabase.from('products').insert([prodWithTenant]).select().single();
       if (!error && data) return data as Product;
     }
-    const current = await this.getProducts();
-    const updated = [product, ...current];
+    const current = await this.getProducts(tid);
+    const updated = [prodWithTenant, ...current];
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
-    return product;
+    return prodWithTenant;
   },
 
   async updateProduct(product: Product): Promise<Product> {
@@ -489,30 +648,39 @@ export const api = {
 
   // TENANT AI SETTINGS
   async getTenantAISettings(tenantId?: string): Promise<TenantAISettings> {
-    if (supabase && isSupabaseConfigured) {
-      const query = tenantId 
-        ? supabase.from('tenant_ai_settings').select('*').eq('tenant_id', tenantId).single()
-        : supabase.from('tenant_ai_settings').select('*').limit(1).single();
-      const { data, error } = await query;
-      if (!error && data) return data as TenantAISettings;
-    }
-    const saved = localStorage.getItem('bf_tenant_ai_settings_v1');
-    if (saved) return JSON.parse(saved);
-    localStorage.setItem('bf_tenant_ai_settings_v1', JSON.stringify(initialTenantAISettings));
-    return initialTenantAISettings;
-  },
-
-  async updateTenantAISettings(settings: Partial<TenantAISettings>): Promise<TenantAISettings> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase
         .from('tenant_ai_settings')
-        .upsert([{ ...settings, updated_at: new Date().toISOString() }])
+        .select('*')
+        .eq('tenant_id', tid)
+        .single();
+      if (!error && data) return data as TenantAISettings;
+    }
+    const saved = localStorage.getItem('bf_tenant_ai_settings_v1');
+    if (saved) {
+      const s = JSON.parse(saved);
+      if (s.tenant_id === tid || !s.tenant_id) return s;
+    }
+    return {
+      ...initialTenantAISettings,
+      tenant_id: tid
+    };
+  },
+
+  async updateTenantAISettings(settings: Partial<TenantAISettings>): Promise<TenantAISettings> {
+    const tid = settings.tenant_id || getActiveTenantId();
+    const payload = { ...settings, tenant_id: tid, updated_at: new Date().toISOString() };
+    if (supabase && isSupabaseConfigured) {
+      const { data, error } = await supabase
+        .from('tenant_ai_settings')
+        .upsert([payload])
         .select()
         .single();
       if (!error && data) return data as TenantAISettings;
     }
-    const current = await this.getTenantAISettings();
-    const updated = { ...current, ...settings, updated_at: new Date().toISOString() };
+    const current = await this.getTenantAISettings(tid);
+    const updated = { ...current, ...payload };
     localStorage.setItem('bf_tenant_ai_settings_v1', JSON.stringify(updated));
     return updated as TenantAISettings;
   },

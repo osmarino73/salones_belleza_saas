@@ -225,6 +225,24 @@ export const DashboardPage: React.FC = () => {
       setServices(srvs);
       setProducts(prods);
       setAiSettings(settings);
+
+      // Cargar datos reales en el simulador de WhatsApp y POS
+      if (srvs && srvs.length > 0) {
+        const topSrv = srvs[0];
+        const masterStylist = (stys && stys[0]?.name) || 'Directora';
+        const currentSalonName = activeTenantRaw ? JSON.parse(activeTenantRaw).name : 'Nuestro Salón';
+
+        setCartItems([
+          { name: topSrv.name, price: topSrv.price_usd, type: 'service' }
+        ]);
+
+        setChatMessages([
+          { sender: 'client', text: `¡Hola! Quiero saber si tienen espacio para ${topSrv.name} hoy con ${masterStylist}?`, time: '10:14 AM' },
+          { sender: 'bot', text: `¡Hola! 💖 Con gusto te ayudamos en ${currentSalonName}. ${masterStylist} tiene espacio disponible hoy a las 02:00 PM y a las 04:30 PM. ¿Cuál horario te queda más cómodo?`, time: '10:14 AM' },
+          { sender: 'client', text: 'Perfecto, a las 02:00 PM me queda genial!', time: '10:15 AM' },
+          { sender: 'bot', text: `🎉 ¡Listo! Tu cita para ${topSrv.name} con ${masterStylist} quedó confirmada para hoy a las 02:00 PM. Te enviaremos un recordatorio por WhatsApp.`, time: '10:15 AM' }
+        ]);
+      }
     }
     loadData();
   }, []);
