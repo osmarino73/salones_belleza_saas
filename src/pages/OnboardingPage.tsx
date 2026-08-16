@@ -276,8 +276,8 @@ export const OnboardingPage: React.FC = () => {
           slug: businessSlug,
           phone: businessPhone,
           whatsapp_number: businessPhone,
-          currency: 'COP',
-          address: `${address}, ${city}`,
+          currency: currency || 'COP',
+          address: address.trim() ? (city ? `${address.trim()}, ${city}` : address.trim()) : (city || ''),
           city,
           country,
           business_hours: {

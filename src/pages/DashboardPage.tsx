@@ -124,6 +124,7 @@ export const DashboardPage: React.FC = () => {
   const [ownerEmail, setOwnerEmail] = useState('sofia@studioglamour.co');
   const [salonName, setSalonName] = useState('Studio Glamour Spa');
   const [salonPhone, setSalonPhone] = useState('+57 300 123 4567');
+  const [salonCurrency, setSalonCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
   const [salonAddress, setSalonAddress] = useState('Calle 10 # 43E-22, El Poblado');
   const [salonHours, setSalonHours] = useState('Lun - Sáb: 08:00 AM - 08:00 PM');
 
@@ -204,7 +205,8 @@ export const DashboardPage: React.FC = () => {
           const activeTenant = JSON.parse(activeTenantRaw);
           if (activeTenant.name) setSalonName(activeTenant.name);
           if (activeTenant.phone) setSalonPhone(activeTenant.phone);
-          if (activeTenant.address) setSalonAddress(activeTenant.address);
+          if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
+          if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
           if (activeTenant.business_hours?.summary) setSalonHours(activeTenant.business_hours.summary);
         } catch (e) {
           console.warn('Error parsing active tenant:', e);
@@ -2910,6 +2912,24 @@ export const DashboardPage: React.FC = () => {
 
             <form onSubmit={(e) => {
               e.preventDefault();
+              try {
+                const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+                if (activeTenantRaw) {
+                  const activeTenant = JSON.parse(activeTenantRaw);
+                  const updated = {
+                    ...activeTenant,
+                    name: salonName,
+                    phone: salonPhone,
+                    address: salonAddress,
+                    currency: salonCurrency,
+                    business_hours: {
+                      ...activeTenant.business_hours,
+                      summary: salonHours
+                    }
+                  };
+                  localStorage.setItem('bf_tenant_active', JSON.stringify(updated));
+                }
+              } catch (err) {}
               setIsBusinessSettingsModalOpen(false);
             }} className="space-y-4 text-xs">
               <div>
@@ -2941,12 +2961,14 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <label className="block text-slate-400 mb-1 font-semibold">Moneda Principal</label>
                   <select
+                    value={salonCurrency}
+                    onChange={(e) => setSalonCurrency(e.target.value as any)}
                     className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
                       theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                     }`}
                   >
-                    <option value="USD">Dólar Estadounidense ($ USD)</option>
                     <option value="COP">Peso Colombiano ($ COP)</option>
+                    <option value="USD">Dólar Estadounidense ($ USD)</option>
                     <option value="MXN">Peso Mexicano ($ MXN)</option>
                     <option value="EUR">Euro (€ EUR)</option>
                   </select>
@@ -2959,6 +2981,7 @@ export const DashboardPage: React.FC = () => {
                   type="text"
                   value={salonAddress}
                   onChange={(e) => setSalonAddress(e.target.value)}
+                  placeholder="Ej. Calle 10 # 43E-22, El Poblado"
                   className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
                     theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                   }`}
