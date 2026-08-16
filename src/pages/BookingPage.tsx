@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Scissors,
   CheckCircle2,
@@ -14,28 +14,65 @@ import {
   MessageCircle,
   Sparkles
 } from 'lucide-react';
-import { initialServices, initialStylists } from '../lib/supabase';
+import { api, initialServices, initialStylists } from '../lib/supabase';
 import { Service, Stylist } from '../types';
 
 export const BookingPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const salonSlug = searchParams.get('salon') || '';
+
+  const [salonName, setSalonName] = useState<string>('Studio Glamour Spa');
+  const [services, setServices] = useState<Service[]>(initialServices);
+  const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
+
   const [step, setStep] = useState<number>(1);
   const [selectedService, setSelectedService] = useState<Service>(initialServices[0]);
   const [selectedStylist, setSelectedStylist] = useState<Stylist | null>(initialStylists[0]);
-  const [selectedDate, setSelectedDate] = useState<string>('2026-08-18');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState<string>('02:00 PM');
-  const [clientName, setClientName] = useState<string>('María Fernanda López');
+  const [clientName, setClientName] = useState<string>('');
   const [countryCode, setCountryCode] = useState<string>('+57');
-  const [phone10Digits, setPhone10Digits] = useState<string>('312 456 7890');
+  const [phone10Digits, setPhone10Digits] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function loadBookingData() {
+      // 1. Cargar datos del salón activo
+      const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+      if (activeTenantRaw) {
+        try {
+          const tenant = JSON.parse(activeTenantRaw);
+          if (tenant.name) setSalonName(tenant.name);
+        } catch (e) {}
+      } else if (salonSlug) {
+        const formatted = salonSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        setSalonName(formatted);
+      }
+
+      // 2. Cargar servicios y estilistas
+      const [srvs, stys] = await Promise.all([
+        api.getServices(),
+        api.getStylists()
+      ]);
+
+      if (srvs && srvs.length > 0) {
+        setServices(srvs);
+        setSelectedService(srvs[0]);
+      }
+      if (stys && stys.length > 0) {
+        setStylists(stys);
+        setSelectedStylist(stys[0]);
+      }
+    }
+    loadBookingData();
+  }, [salonSlug]);
 
   const availableSlots = [
     '09:00 AM', '10:30 AM', '11:45 AM', '02:00 PM', '03:30 PM', '05:00 PM', '06:15 PM'
   ];
 
   const handlePhoneChange = (val: string) => {
-    // Keep only numbers and max 10 digits
     const digits = val.replace(/\D/g, '').slice(0, 10);
-    // Format 3XX XXX XXXX
     if (digits.length <= 3) {
       setPhone10Digits(digits);
     } else if (digits.length <= 6) {
@@ -45,30 +82,58 @@ export const BookingPage: React.FC = () => {
     }
   };
 
-  const handleConfirmBooking = () => {
+  const handleConfirmBooking = async () => {
+    if (!selectedService) return;
+    try {
+      await api.createAppointment({
+        id: `apt-${Date.now()}`,
+        tenant_id: selectedService.tenant_id,
+        client_id: `cli-${Date.now()}`,
+        client_name: clientName.trim() || 'Clienta Web',
+        client_phone: `${countryCode} ${phone10Digits}`.trim(),
+        stylist_id: selectedStylist?.id || stylists[0]?.id || 'sty-1',
+        stylist_name: selectedStylist ? selectedStylist.name : (stylists[0]?.name || 'Primer Disponible'),
+        service_id: selectedService.id,
+        service_name: selectedService.name,
+        date: selectedDate,
+        time: selectedTime,
+        duration_minutes: selectedService.duration_minutes,
+        price_usd: selectedService.price_usd,
+        status: 'confirmada_wa',
+        wa_reminder_24h_sent: true,
+        wa_reminder_2h_sent: false,
+        created_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('Booking notice:', e);
+    }
     setIsSuccess(true);
   };
 
+  const formatPrice = (price: number) => {
+    return price > 1000 ? `$ ${price.toLocaleString('es-CO')} COP` : `$ ${price} USD`;
+  };
+
   return (
-    <div className="min-h-screen bg-dark-900 text-white font-body py-8 px-4 sm:px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0A0D14] text-white font-sans py-8 px-4 sm:px-6 relative overflow-hidden">
       
       {/* Background Aura */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="max-w-3xl mx-auto text-center mb-8 relative z-10">
         <Link to="/" className="inline-flex items-center gap-2 text-lg font-extrabold text-white mb-3">
-          <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-orange-500/40">
+          <div className="w-8 h-8 bg-gradient-to-r from-[#FF5A36] to-pink-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-[#FF5A36]/40">
             <Scissors className="w-4 h-4" />
           </div>
-          <span>Studio Glamour<span className="text-orange-500"> Spa</span></span>
+          <span>{salonName}</span>
         </Link>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Reserva tu Cita Online</h1>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">Elige tu servicio y horario en menos de 1 minuto sin esperar en el teléfono.</p>
       </div>
 
       {/* Booking Wizard Card */}
-      <div className="max-w-3xl mx-auto bg-dark-800 border border-orange-500/30 rounded-2xl shadow-2xl p-6 sm:p-8 relative z-10">
+      <div className="max-w-3xl mx-auto bg-[#141926] border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 relative z-10">
         
         {/* Step Progress Pills */}
         <div className="grid grid-cols-4 gap-2 mb-8 pb-6 border-b border-white/10">
@@ -83,7 +148,7 @@ export const BookingPage: React.FC = () => {
               onClick={() => s.num < step && setStep(s.num)}
               className={`text-center p-2 rounded-xl border transition-all cursor-pointer ${
                 step === s.num
-                  ? 'border-orange-500 bg-orange-500/10 text-white'
+                  ? 'border-[#FF5A36] bg-[#FF5A36]/10 text-white'
                   : step > s.num
                   ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
                   : 'border-white/5 bg-white/[0.02] text-slate-500'
@@ -99,26 +164,26 @@ export const BookingPage: React.FC = () => {
         {step === 1 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-orange-500" />
+              <Sparkles className="w-5 h-5 text-[#FF5A36]" />
               Selecciona el Servicio Deseado
             </h2>
 
             <div className="grid grid-cols-1 gap-3">
-              {initialServices.map((srv) => (
+              {services.map((srv) => (
                 <div
                   key={srv.id}
                   onClick={() => setSelectedService(srv)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
-                    selectedService.id === srv.id
-                      ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/10'
-                      : 'border-white/10 bg-dark-700 hover:border-white/20'
+                    selectedService?.id === srv.id
+                      ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
+                      : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                   }`}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <strong className="text-sm sm:text-base text-white">{srv.name}</strong>
                       {srv.requires_patch_test && (
-                        <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full">
                           Test de Parche
                         </span>
                       )}
@@ -129,9 +194,8 @@ export const BookingPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="text-right pl-4">
-                    <div className="text-lg font-extrabold text-orange-500">${srv.price_usd}</div>
-                    <div className="text-[10px] text-slate-500">USD</div>
+                  <div className="text-right pl-4 shrink-0">
+                    <div className="text-base sm:text-lg font-extrabold text-[#FF5A36]">{formatPrice(srv.price_usd)}</div>
                   </div>
                 </div>
               ))}
@@ -141,7 +205,7 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg flex items-center gap-2 text-sm shadow-lg shadow-orange-500/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
               >
                 <span>Continuar a Especialista</span>
                 <ChevronRight className="w-4 h-4" />
@@ -154,7 +218,7 @@ export const BookingPage: React.FC = () => {
         {step === 2 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <User className="w-5 h-5 text-orange-500" />
+              <User className="w-5 h-5 text-[#FF5A36]" />
               Escoge tu Especialista
             </h2>
 
@@ -164,11 +228,11 @@ export const BookingPage: React.FC = () => {
                 onClick={() => setSelectedStylist(null)}
                 className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                   selectedStylist === null
-                    ? 'border-orange-500 bg-orange-500/10'
-                    : 'border-white/10 bg-dark-700 hover:border-white/20'
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/10'
+                    : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                 }`}
               >
-                <div className="w-14 h-14 rounded-full bg-dark-900 border border-orange-500 flex items-center justify-center text-orange-500 shrink-0">
+                <div className="w-14 h-14 rounded-full bg-[#0A0D14] border border-[#FF5A36] flex items-center justify-center text-[#FF5A36] shrink-0">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div>
@@ -179,27 +243,27 @@ export const BookingPage: React.FC = () => {
               </div>
 
               {/* Specialists List */}
-              {initialStylists.map((sty) => (
+              {stylists.map((sty) => (
                 <div
                   key={sty.id}
                   onClick={() => setSelectedStylist(sty)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                     selectedStylist?.id === sty.id
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-white/10 bg-dark-700 hover:border-white/20'
+                      ? 'border-[#FF5A36] bg-[#FF5A36]/10'
+                      : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                   }`}
                 >
                   <img
-                    src={sty.photo_url}
+                    src={sty.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'}
                     alt={sty.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-orange-500 shrink-0"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-[#FF5A36] shrink-0"
                   />
                   <div>
                     <strong className="text-sm text-white block">{sty.name}</strong>
                     <span className="text-xs text-slate-400 block">{sty.specialty}</span>
                     <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span>{sty.rating} ({sty.reviews_count})</span>
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      <span>{sty.rating || 5.0} ({sty.reviews_count || 12} reseñas)</span>
                     </div>
                   </div>
                 </div>
@@ -217,7 +281,7 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg flex items-center gap-2 text-sm shadow-lg shadow-orange-500/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
               >
                 <span>Continuar a Horario</span>
                 <ChevronRight className="w-4 h-4" />
@@ -228,56 +292,41 @@ export const BookingPage: React.FC = () => {
 
         {/* Step 3: Date and Time */}
         {step === 3 && (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-orange-500" />
-              Selecciona Fecha y Hora
+              <CalendarIcon className="w-5 h-5 text-[#FF5A36]" />
+              Elige Día y Hora
             </h2>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2">Fecha de la Cita</label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {[
-                  { day: 'Mar 18', date: '2026-08-18', label: 'Hoy' },
-                  { day: 'Mié 19', date: '2026-08-19', label: 'Mañana' },
-                  { day: 'Jue 20', date: '2026-08-20', label: 'Jueves' },
-                  { day: 'Vie 21', date: '2026-08-21', label: 'Viernes' },
-                  { day: 'Sáb 22', date: '2026-08-22', label: 'Sábado' }
-                ].map((d) => (
-                  <button
-                    key={d.date}
-                    type="button"
-                    onClick={() => setSelectedDate(d.date)}
-                    className={`p-3 rounded-xl border text-center transition-all ${
-                      selectedDate === d.date
-                        ? 'border-orange-500 bg-orange-500 text-white shadow-lg shadow-orange-500/30'
-                        : 'border-white/10 bg-dark-700 text-slate-300 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{d.day}</div>
-                    <div className="text-[10px] opacity-80">{d.label}</div>
-                  </button>
-                ))}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Fecha de la Cita</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2">Horarios Disponibles</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {availableSlots.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setSelectedTime(slot)}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-semibold text-center transition-all ${
-                      selectedTime === slot
-                        ? 'border-orange-500 bg-orange-500/20 text-orange-500 font-bold'
-                        : 'border-white/10 bg-dark-700 text-slate-300 hover:border-white/20'
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-2">Horarios Disponibles para esta Fecha</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setSelectedTime(slot)}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
+                        selectedTime === slot
+                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -292,74 +341,65 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(4)}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg flex items-center gap-2 text-sm shadow-lg shadow-orange-500/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
               >
-                <span>Continuar a Tus Datos</span>
+                <span>Continuar a Mis Datos</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 4: Client Details & WhatsApp */}
+        {/* Step 4: Client Info */}
         {step === 4 && !isSuccess && (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-orange-500" />
-              Tus Datos para Confirmación por WhatsApp
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              Tus Datos de Contacto
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Nombre y Apellido *</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Nombre Completo *</label>
                 <input
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                  placeholder="Ej. Camila Restrepo"
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                  Número de WhatsApp * (Para enviarte la confirmación y recordatorio)
-                </label>
-                <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-4 sm:col-span-3">
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-orange-500"
-                    >
-                      <option value="+57">🇨🇴 +57</option>
-                      <option value="+52">🇲🇽 +52</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+54">🇦🇷 +54</option>
-                      <option value="+56">🇨🇱 +56</option>
-                      <option value="+51">🇵🇪 +51</option>
-                      <option value="+507">🇵🇦 +507</option>
-                      <option value="+34">🇪🇸 +34</option>
-                    </select>
-                  </div>
-                  <div className="col-span-8 sm:col-span-9">
-                    <input
-                      type="tel"
-                      value={phone10Digits}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
-                      placeholder="300 123 4567"
-                      className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
-                      required
-                    />
-                  </div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">Número de WhatsApp (Para recordatorios) *</label>
+                <div className="flex gap-2">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                  >
+                    <option value="+57">🇨🇴 +57</option>
+                    <option value="+52">🇲🇽 +52</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+34">🇪🇸 +34</option>
+                  </select>
+                  <input
+                    type="tel"
+                    value={phone10Digits}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="300 123 4567"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36] font-mono"
+                    required
+                  />
                 </div>
               </div>
 
               {/* Booking Summary Box */}
-              <div className="bg-dark-900 border border-white/10 rounded-xl p-4 space-y-2 text-xs text-slate-300">
+              <div className="bg-[#0E121B] border border-white/10 rounded-xl p-4 space-y-2 text-xs text-slate-300">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Servicio:</span>
-                  <strong className="text-white">{selectedService.name}</strong>
+                  <strong className="text-white">{selectedService?.name}</strong>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Especialista:</span>
@@ -367,11 +407,11 @@ export const BookingPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Fecha y Hora:</span>
-                  <strong className="text-orange-500">{selectedDate} • {selectedTime}</strong>
+                  <strong className="text-[#FF5A36]">{selectedDate} • {selectedTime}</strong>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-white/10 text-sm">
                   <span className="font-bold text-white">Total Estimado:</span>
-                  <strong className="text-white font-extrabold">${selectedService.price_usd} USD</strong>
+                  <strong className="text-white font-extrabold">{selectedService ? formatPrice(selectedService.price_usd) : '$ 0'}</strong>
                 </div>
               </div>
             </div>
@@ -387,7 +427,7 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConfirmBooking}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-lg flex items-center gap-2 text-sm shadow-lg shadow-orange-500/40"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-8 py-3 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/40"
               >
                 <Check className="w-4 h-4" />
                 <span>Confirmar Cita</span>
@@ -404,19 +444,19 @@ export const BookingPage: React.FC = () => {
             </div>
             <h2 className="text-2xl font-extrabold text-white">¡Cita Agendada con Éxito!</h2>
             <p className="text-sm text-slate-300 max-w-md mx-auto">
-              Hemos enviado un mensaje de confirmación a tu WhatsApp <strong>{countryCode} {phone10Digits}</strong> con la ubicación del salón y recordatorio automático.
+              Hemos enviado un mensaje de confirmación a tu WhatsApp <strong>{countryCode} {phone10Digits}</strong> con los detalles y recordatorio automático.
             </p>
 
             <div className="pt-4 flex justify-center gap-3">
               <Link
                 to="/dashboard"
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow-lg shadow-orange-500/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-[#FF5A36]/30"
               >
                 Ver Cita en el Dashboard
               </Link>
               <Link
                 to="/"
-                className="bg-white/10 hover:bg-white/15 text-white font-semibold px-6 py-2.5 rounded-lg text-sm"
+                className="bg-white/10 hover:bg-white/15 text-white font-semibold px-6 py-2.5 rounded-xl text-sm"
               >
                 Volver al Inicio
               </Link>

@@ -250,7 +250,8 @@ export const OnboardingPage: React.FC = () => {
   const [ownerPhone, setOwnerPhone] = useState('');
 
   const businessSlug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'mi-salon';
-  const publicBookingUrl = `https://beautyflow.ai/reservas?salon=${businessSlug}`;
+  const siteOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://belleza2027.netlify.app';
+  const publicBookingUrl = `${siteOrigin}/reservas?salon=${businessSlug}`;
 
   // SUBMIT & CREATE TENANT EN SUPABASE CON AUTENTICACIÓN
   const handleFinalSubmit = async (e: React.FormEvent) => {
