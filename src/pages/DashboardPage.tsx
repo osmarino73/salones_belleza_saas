@@ -120,6 +120,8 @@ export const DashboardPage: React.FC = () => {
   // Profile Submenu & Business Modal States
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isBusinessSettingsModalOpen, setIsBusinessSettingsModalOpen] = useState(false);
+  const [ownerName, setOwnerName] = useState('Sofía Restrepo');
+  const [ownerEmail, setOwnerEmail] = useState('sofia@studioglamour.co');
   const [salonName, setSalonName] = useState('Studio Glamour Spa');
   const [salonPhone, setSalonPhone] = useState('+57 300 123 4567');
   const [salonAddress, setSalonAddress] = useState('Calle 10 # 43E-22, El Poblado');
@@ -185,7 +187,17 @@ export const DashboardPage: React.FC = () => {
     async function loadData() {
       setLoading(false);
 
-      // Cargar información del negocio activo registrado
+      // 1. Cargar usuario autenticado / dueña
+      const authUserRaw = localStorage.getItem('bf_auth_user');
+      if (authUserRaw) {
+        try {
+          const authUser = JSON.parse(authUserRaw);
+          if (authUser.user_metadata?.name) setOwnerName(authUser.user_metadata.name);
+          if (authUser.email) setOwnerEmail(authUser.email);
+        } catch (e) {}
+      }
+
+      // 2. Cargar información del negocio activo registrado
       const activeTenantRaw = localStorage.getItem('bf_tenant_active');
       if (activeTenantRaw) {
         try {
@@ -702,14 +714,12 @@ export const DashboardPage: React.FC = () => {
                   : theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 hover:border-black/20 bg-white shadow-sm'
               }`}
             >
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&q=80"
-                alt="Sofía Restrepo"
-                className="w-7 h-7 rounded-full border border-[#FF5A36] object-cover"
-              />
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white font-bold text-xs flex items-center justify-center border border-[#FF5A36] shadow-sm">
+                {ownerName ? ownerName.charAt(0).toUpperCase() : 'U'}
+              </div>
               <div className="hidden md:block text-left text-xs leading-tight">
-                <strong className="block font-bold leading-none">Sofía Restrepo</strong>
-                <span className="text-[10px] text-slate-400">Studio Glamour</span>
+                <strong className="block font-bold leading-none">{ownerName}</strong>
+                <span className="text-[10px] text-slate-400">{salonName}</span>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180 text-[#FF5A36]' : ''}`} />
             </button>
@@ -727,12 +737,12 @@ export const DashboardPage: React.FC = () => {
                   {/* User info header */}
                   <div className="px-3 py-2.5 border-b border-black/5 dark:border-white/10">
                     <div className="flex items-center justify-between">
-                      <strong className="text-xs font-bold block">Sofía Restrepo</strong>
+                      <strong className="text-xs font-bold block">{ownerName}</strong>
                       <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20 uppercase">
                         Plan Pro IA
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400 block truncate">sofia@studioglamour.com</span>
+                    <span className="text-[11px] text-slate-400 block truncate">{ownerEmail}</span>
                   </div>
 
                   {/* Menu Items */}
@@ -829,10 +839,10 @@ export const DashboardPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              ¡Hola de nuevo, <span className="text-[#FF5A36]">Sofía Restrepo</span>! 👋
+              ¡Hola de nuevo, <span className="text-[#FF5A36]">{ownerName}</span>! 👋
             </h1>
             <p className="text-xs sm:text-sm text-slate-400">
-              Studio Glamour Spa (Sede Principal) • Estado del sistema: <span className="text-emerald-500 font-bold">● Operativo en Vivo</span>
+              {salonName} (Sede Principal) • Estado del sistema: <span className="text-emerald-500 font-bold">● Operativo en Vivo</span>
             </p>
           </div>
 
