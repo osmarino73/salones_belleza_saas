@@ -57,6 +57,7 @@ import {
 import { api, initialStylists, initialServices, initialProducts } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
+import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -2281,7 +2282,16 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 6. Recordatorios & Reseñas Google */}
+                {/* 6. Plantillas de WhatsApp Oficiales (Meta HSM / Zernio) */}
+                <WhatsAppTemplatesCard
+                  theme={theme}
+                  salonName={salonName}
+                  salonPhone={salonPhone}
+                  aiSettings={aiSettings}
+                  onUpdateSettings={setAiSettings}
+                />
+
+                {/* 7. Recordatorios & Reseñas Google */}
                 <div className={`p-6 rounded-2xl border space-y-4 ${
                   theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
