@@ -626,6 +626,21 @@ export const api = {
       }
       return [{ _id: '69d3dea44a8b852e6db5b42f', name: 'Default' }];
     },
+    async getAccounts(): Promise<any[]> {
+      const apiKey = this.getApiKey();
+      try {
+        const res = await fetch('https://zernio.com/api/v1/accounts', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.accounts || [];
+        }
+      } catch (e) {
+        console.warn('Zernio getAccounts error:', e);
+      }
+      return [];
+    },
     async getConnectUrl(tenantId: string, platform: 'whatsapp' | 'instagram' = 'whatsapp'): Promise<string> {
       const apiKey = this.getApiKey();
       const redirectUri = encodeURIComponent(window.location.origin + '/dashboard?connected=' + platform);

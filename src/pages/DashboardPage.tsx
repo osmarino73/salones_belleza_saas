@@ -2102,21 +2102,21 @@ export const DashboardPage: React.FC = () => {
 
                   <div className="space-y-3">
                     {/* Canal 1: WhatsApp */}
-                    <div className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    <div className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden ${
                       aiSettings.zernio_connected
                         ? 'border-emerald-500/40 bg-emerald-500/5'
                         : 'border-white/10 bg-[#0E121B]'
                     }`}>
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                         <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
                           aiSettings.zernio_connected
                             ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
                             : 'bg-white/5 text-slate-400 border-white/10'
                         }`}>
-                          <MessageCircle className="w-5 h-5" />
+                          <MessageCircle className="w-5 h-5 shrink-0" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <strong className="text-sm font-bold text-white">WhatsApp Business</strong>
                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                               aiSettings.zernio_connected
@@ -2126,7 +2126,7 @@ export const DashboardPage: React.FC = () => {
                               Coexistencia
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-xs text-slate-400 mt-0.5 break-words">
                             {aiSettings.zernio_connected ? (
                               <span className="text-emerald-400 font-semibold flex items-center gap-1">
                                 ● Conectado ({aiSettings.whatsapp_phone_number || 'Canal Activo'})
@@ -2138,7 +2138,7 @@ export const DashboardPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 w-full sm:w-auto">
                         {aiSettings.zernio_connected ? (
                           <>
                             <button
@@ -2150,10 +2150,10 @@ export const DashboardPage: React.FC = () => {
                                 const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
                                 window.open(connectUrl, 'zernio_connect', 'width=560,height=760,top=100,left=100,scrollbars=yes,status=1');
                               }}
-                              className="text-xs font-bold px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center gap-1.5 transition-all"
+                              className="text-xs font-bold px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center justify-center gap-1.5 transition-all flex-1 sm:flex-initial"
                             >
-                              <Zap className="w-3.5 h-3.5 fill-current" />
-                              <span>Reconectar en Zernio</span>
+                              <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
+                              <span>Reconectar</span>
                             </button>
                             <button
                               type="button"
@@ -2168,7 +2168,7 @@ export const DashboardPage: React.FC = () => {
                                   await api.updateTenantAISettings(updated);
                                 } catch (e) {}
                               }}
-                              className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all"
+                              className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all flex-1 sm:flex-initial text-center"
                             >
                               Desconectar
                             </button>
@@ -2185,39 +2185,43 @@ export const DashboardPage: React.FC = () => {
                               const left = window.screen.width / 2 - width / 2;
                               const top = window.screen.height / 2 - height / 2;
 
-                              // 1. Llamada a API de Zernio para obtener URL oficial de conexión
                               const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
-                              
-                              // 2. Abrir la ventana emergente oficial de Zernio
                               const popup = window.open(
                                 connectUrl,
                                 'zernio_whatsapp_connect',
                                 `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1,resizable=yes`
                               );
 
-                              // 3. Monitorear cuando finalice en Zernio
+                              // Monitorear cuando se cierre el popup
                               const checkInterval = setInterval(async () => {
                                 if (popup && popup.closed) {
                                   clearInterval(checkInterval);
-                                  if (aiSettings) {
-                                    const updated: TenantAISettings = {
-                                      ...aiSettings,
-                                      whatsapp_phone_number: salonPhone || '+57 311 419 5123',
-                                      zernio_connected: true,
-                                      zernio_status: 'connected',
-                                      zernio_connection_mode: 'coexistence'
-                                    };
-                                    setAiSettings(updated);
-                                    try {
-                                      await api.updateTenantAISettings(updated);
-                                    } catch (e) {}
+                                  try {
+                                    // Verificar con Zernio API si realmente se conectó una cuenta
+                                    const accounts = await api.zernio.getAccounts();
+                                    const waAccount = accounts.find((a: any) => a.platform === 'whatsapp' || a.provider === 'whatsapp') || accounts[0];
+                                    if (waAccount) {
+                                      if (aiSettings) {
+                                        const updated: TenantAISettings = {
+                                          ...aiSettings,
+                                          whatsapp_phone_number: waAccount.username || waAccount.phoneNumber || salonPhone || '+57 311 419 5123',
+                                          zernio_connected: true,
+                                          zernio_status: 'connected',
+                                          zernio_connection_mode: 'coexistence'
+                                        };
+                                        setAiSettings(updated);
+                                        await api.updateTenantAISettings(updated);
+                                      }
+                                    }
+                                  } catch (e) {
+                                    console.warn('Account verification notice:', e);
                                   }
                                 }
-                              }, 1000);
+                              }, 1200);
                             }}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer w-full sm:w-auto"
                           >
-                            <Zap className="w-3.5 h-3.5 fill-current" />
+                            <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
                             <span>Conectar</span>
                           </button>
                         )}
