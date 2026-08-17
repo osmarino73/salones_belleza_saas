@@ -4,12 +4,14 @@
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
 
-## 🎯 Foco para la Próxima Sesión
+## 🎯 Foco para la Próxima Sesión & Roadmap Futuro
 1. **Flujo de Webhooks n8n & Supabase**:
    - Conectar los webhooks en n8n para consultar las reglas de `tenant_dispatch_rules` y despachar WhatsApp HSM / Emails automáticos.
-2. **Caja POS & Cobros**:
+2. **Bandeja Omnicanal 360° (Meta Suite)**:
+   - Integrar mensajes directos de **Instagram Direct (DM)** y **Facebook Messenger** en el mismo Tablero de Mensajes para que Flowy IA atienda todos los canales desde una única bandeja centralizada.
+3. **Caja POS & Cobros**:
    - Emisión de recibos digitales por WhatsApp y cálculo automático de abonos.
-3. **Módulo de Fidelización & Campañas IA**:
+4. **Módulo de Fidelización & Campañas IA**:
    - Mensajes automáticos a clientas inactivas (+35 días sin visita).
 
 ## 📌 Decisiones & Ajustes Recientes
