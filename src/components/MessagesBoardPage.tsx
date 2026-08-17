@@ -108,8 +108,13 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
   const [filterType, setFilterType] = useState<'all' | 'ai' | 'human' | 'unread' | 'with_appointment'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Pre-configured Realistic Conversations Data
-  const [threads, setThreads] = useState<ConversationThread[]>([
+  // Identificar si la cuenta activa es ESTRICTAMENTE la cuenta de prueba oficial (sofia@studioglamour.co)
+  const isTestAccount = Boolean(
+    salonEmail?.toLowerCase().trim() === 'sofia@studioglamour.co'
+  );
+
+  // Pre-configured Realistic Conversations Data (Solo para sofia@studioglamour.co en pruebas)
+  const defaultTestThreads: ConversationThread[] = [
     {
       id: 'thread-1',
       clientId: 'cli-1',
@@ -302,11 +307,67 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
         }
       ]
     }
-  ]);
+  ];
+
+  // Estado de Conversaciones: Solo inicializa con demo si es estrictamente sofia@studioglamour.co
+  const [threads, setThreads] = useState<ConversationThread[]>(() => {
+    if (isTestAccount) {
+      const saved = localStorage.getItem('bf_test_threads_v1');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) {}
+      }
+      return defaultTestThreads;
+    }
+
+    // Para salones nuevos reales (ej. tulio paez / ommsoluciones@gmail.com): Inicia vacío []
+    const tenantKey = `bf_real_threads_${aiSettings?.tenant_id || salonEmail || 'default'}`;
+    const saved = localStorage.getItem(tenantKey);
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [];
+  });
+
+  // Re-evaluar conversaciones cuando cambia la cuenta activa (salonEmail)
+  useEffect(() => {
+    if (isTestAccount) {
+      const saved = localStorage.getItem('bf_test_threads_v1');
+      if (saved) {
+        try { 
+          setThreads(JSON.parse(saved));
+          return;
+        } catch (e) {}
+      }
+      setThreads(defaultTestThreads);
+    } else {
+      const tenantKey = `bf_real_threads_${aiSettings?.tenant_id || salonEmail || 'default'}`;
+      const saved = localStorage.getItem(tenantKey);
+      if (saved) {
+        try { 
+          setThreads(JSON.parse(saved));
+          return;
+        } catch (e) {}
+      }
+      setThreads([]);
+    }
+  }, [salonEmail, isTestAccount, aiSettings?.tenant_id]);
 
   // Selected Active Thread
-  const [activeThreadId, setActiveThreadId] = useState<string>('thread-1');
-  const activeThread = threads.find(t => t.id === activeThreadId) || threads[0];
+  const [activeThreadId, setActiveThreadId] = useState<string>(() => {
+    return threads[0]?.id || '';
+  });
+
+  useEffect(() => {
+    if (threads.length > 0) {
+      if (!threads.some(t => t.id === activeThreadId)) {
+        setActiveThreadId(threads[0].id);
+      }
+    } else {
+      setActiveThreadId('');
+    }
+  }, [threads]);
+
+  const activeThread = threads.find(t => t.id === activeThreadId) || threads[0] || null;
 
   // Message Input & Quick Replies Modal
   const [inputText, setInputText] = useState('');
@@ -443,7 +504,7 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
     setShowQuickTemplates(false);
   };
 
-  // Send Sandbox Message
+  // Send Sandbox Message con Motor Dinámico de IA Contextual
   const handleSendSandbox = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!sandboxInput.trim()) return;
@@ -461,35 +522,115 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
     setSandboxInput('');
     setIsSandboxThinking(true);
 
-    // Simulate AI response with salon context
+    // Motor de simulación inteligente de Flowy IA
     setTimeout(() => {
-      let aiReply = `¡Hola! Gracias por escribirnos a ${salonName}. `;
-      const lower = userText.toLowerCase();
+      try {
+        const lower = userText.toLowerCase();
+        const agentName = aiSettings?.agent_name || 'Flowy';
+        let aiReply = '';
 
-      if (lower.includes('precio') || lower.includes('costo') || lower.includes('tarifa') || lower.includes('cuanto')) {
-        aiReply += `Nuestros servicios más solicitados son: Balayage Rubio Cenizo ($110 USD), Keratina Orgánica ($75 USD), Corte Bob ($45 USD) y Uñas Poligel ($55 USD). ¿Te gustaría agendar alguno?`;
-      } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('parqueadero')) {
-        aiReply += `Estamos ubicados en ${aiSettings?.address_instructions || 'Carrera 43A # 1-50, El Poblado'}. Contamos con parqueadero gratuito para clientes.`;
-      } else if (lower.includes('cita') || lower.includes('agendar') || lower.includes('reservar') || lower.includes('hora') || lower.includes('cupo')) {
-        aiReply += `¡Con gusto! Para agendar tu cita, dime por favor qué servicio deseas realizarte y si tienes algún estilista preferido (Sofía, Carlos o Laura).`;
-      } else if (lower.includes('mascota') || lower.includes('pet')) {
-        aiReply += `¡Por supuesto! Somos un salón 100% Pet Friendly con agua fresca y snacks para tu mascota. 🐾`;
-      } else {
-        aiReply += `Estoy aquí para ayudarte con agendamientos, preguntas sobre servicios de colorimetría, corte, estética capilar y horarios de atención. ¿En qué te puedo asesorar hoy?`;
+        // 1. Detección de Búsqueda de Servicios o Precios Específicos
+        const safeServices = Array.isArray(services) ? services : [];
+        const safeStylists = Array.isArray(stylists) ? stylists : [];
+
+        const matchedService = safeServices.find(s => 
+          (s.name && lower.includes(s.name.toLowerCase())) || 
+          (s.category && lower.includes(s.category.toLowerCase())) ||
+          (s.name && s.name.toLowerCase().includes('balayage') && lower.includes('balayage')) ||
+          (s.name && s.name.toLowerCase().includes('keratina') && lower.includes('keratina')) ||
+          (s.name && s.name.toLowerCase().includes('corte') && lower.includes('corte')) ||
+          (s.name && s.name.toLowerCase().includes('uña') && (lower.includes('uña') || lower.includes('manicure') || lower.includes('poligel')))
+        );
+
+        // Top 3 servicios para sugerir
+        const topServicesList = safeServices.slice(0, 3).map(s => `• ${s.name}: $${(s.price_usd || 0).toLocaleString()} (${s.duration_minutes || 45} min)`).join('\n');
+        const activeStylistsList = safeStylists.slice(0, 3).map(s => s.name).join(', ') || 'nuestro equipo de especialistas';
+
+        if (matchedService) {
+          aiReply = `¡Hola! ✨ Con mucho gusto te cuento sobre nuestro servicio de *${matchedService.name}*:\n\n` +
+            `💵 *Valor:* $${(matchedService.price_usd || 0).toLocaleString()}\n` +
+            `⏱️ *Duración estimada:* ${matchedService.duration_minutes || 60} minutos\n` +
+            (matchedService.description ? `📝 *Incluye:* ${matchedService.description}\n\n` : '\n') +
+            `¿Te gustaría agendar una cita para este servicio? Dime qué día y horario te queda mejor y te reservo con ${activeStylistsList}.`;
+        } else if (lower.includes('precio') || lower.includes('costo') || lower.includes('tarifa') || lower.includes('cuanto vale') || lower.includes('menu') || lower.includes('catalogo')) {
+          aiReply = `¡Hola! Con gusto te comparto nuestras tarifas principales en *${salonName}*:\n\n` +
+            (topServicesList ? `${topServicesList}\n\n` : `• Balayage + Tratamiento: $180.000\n• Corte de Dama / Caballero: $45.000\n• Uñas Semipermanentes: $50.000\n\n`) +
+            `También puedes ver el catálogo completo y agendar en línea aquí:\n🔗 https://belleza2027.netlify.app/reservas\n\n¿Deseas agendar alguno de estos servicios?`;
+        } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llegar') || lower.includes('queda')) {
+          aiReply = `📍 Estamos ubicados en *${salonName}*:\n` +
+            `${aiSettings?.address_instructions || 'Carrera 43A # 1-50, El Poblado'}.\n\n` +
+            `🚗 Contamos con parqueadero y fácil acceso para clientes.\n\n` +
+            `¿Vienes en vehículo particular o transporte público? ¡Será un gusto recibirte!`;
+        } else if (lower.includes('parqueadero') || lower.includes('estacionamiento') || lower.includes('carro') || lower.includes('moto')) {
+          aiReply = `🚗 *Información de Parqueadero en ${salonName}:*\n` +
+            `Contamos con bahía de parqueadero vigilado y gratuito justo al frente de nuestras instalaciones para comodidad de todas nuestras clientas.\n\n` +
+            `¿Deseas programar tu visita?`;
+        } else if (lower.includes('mascota') || lower.includes('perro') || lower.includes('gato') || lower.includes('pet friendly') || lower.includes('animal')) {
+          aiReply = `🐾 *¡Somos 100% Pet Friendly!* En ${salonName} amamos a los animales. Puedes venir acompañada de tu mascota; disponemos de zona fresca y agua limpia para ellos. 🐕💖\n\n` +
+          `¿Para qué fecha te gustaría visitarnos?`;
+        } else if (lower.includes('pago') || lower.includes('tarjeta') || lower.includes('nequi') || lower.includes('daviplata') || lower.includes('transferencia') || lower.includes('anticipo') || lower.includes('seña') || lower.includes('adelanto') || lower.includes('abono')) {
+          const depositVal = aiSettings?.deposit_value || 30;
+          const depositText = aiSettings?.requires_deposit
+            ? `🔒 *Garantía de Reserva (Adelanto):*\nPara confirmar tu cita y asegurar el horario exclusivo con tu especialista, solicitamos un anticipo del *${aiSettings?.deposit_type === 'percentage' ? `${depositVal}%` : `$${depositVal.toLocaleString()}`}* del valor del servicio. El saldo restante lo cancelas el día de tu visita en el salón.`
+            : `🔒 *Garantía de Reserva:* Para la mayoría de servicios no exigimos anticipo previo, pero para citas de alta duración (como colorimetría, balayage o alisados) se puede solicitar un abono previo para asegurar el espacio.`;
+
+          const paymentInstructionsText = aiSettings?.payment_instructions 
+            ? `📲 *Datos de Pago / Transferencia:*\n${aiSettings.payment_instructions}`
+            : `💳 *Medios de Pago Aceptados en ${salonName}:*\n• Transferencias bancarias, Nequi y Daviplata\n• Tarjetas Débito y Crédito (Visa, Mastercard)\n• Efectivo en recepción`;
+
+          aiReply = `✨ *Información de Pagos y Reservas en ${salonName}:*\n\n` +
+            `${paymentInstructionsText}\n\n` +
+            `${depositText}\n\n` +
+            `¿Deseas agendar tu cita y te enviamos los datos para confirmar tu espacio?`;
+        } else if (lower.includes('cita') || lower.includes('agendar') || lower.includes('reservar') || lower.includes('turno') || lower.includes('hora') || lower.includes('hoy') || lower.includes('mañana') || lower.includes('sabado') || lower.includes('domingo')) {
+          aiReply = `🗓️ ¡Claro que sí! Con mucho gusto te ayudo a agendar en *${salonName}*.\n\n` +
+            `Nuestros especialistas disponibles son: *${activeStylistsList}*.\n\n` +
+            `Por favor indícame:\n` +
+            `1️⃣ ¿Qué servicio deseas realizarte?\n` +
+            `2️⃣ ¿En qué horario te gustaría venir (Mañana / Tarde)?\n\n` +
+            `¡Y te confirmo la disponibilidad de inmediato! ✨`;
+        } else if (lower.includes('cancelar') || lower.includes('reprogramar') || lower.includes('politica')) {
+          aiReply = `⏰ *Políticas de Cancelación y Reprogramación:*\n` +
+            `${aiSettings?.cancellation_policy || 'Entendemos que pueden surgir imprevistos. Agradecemos avisarnos con al menos 4 horas de anticipación para reagendar tu cita sin costo y liberar el espacio para otra clienta.'}\n\n` +
+            `¿Deseas reagendar una cita existente?`;
+        } else if (lower.includes('hola') || lower.includes('buenas') || lower.includes('buenos dias') || lower.includes('buenas tardes')) {
+          aiReply = `¡Hola! 🌸 Bienvenida a *${salonName}*. Mi nombre es *${agentName}*, tu asistente virtual inteligente.\n\n` +
+            `Puedo ayudarte a:\n` +
+            `• 📅 Agendar y confirmar citas\n` +
+            `• 💄 Conocer precios y catálogo de servicios\n` +
+            `• 📍 Darte la dirección y parqueadero\n\n` +
+            `¿En qué te puedo colaborar el día de hoy?`;
+        } else {
+          aiReply = `¡Gracias por escribirnos a *${salonName}*! ✨\n\n` +
+            `Comprendo tu consulta. En nuestro salón contamos con especialistas expertos en colorimetría, cortes de tendencia, alisados orgánicos, estética capilar y uñas.\n\n` +
+            `¿Te gustaría que te brinde información de precios de algún tratamiento o prefieres agendar una cita directamente?`;
+        }
+
+        const aiMsg: ChatMessage = {
+          id: `sb-a-${Date.now()}`,
+          sender: 'ai',
+          senderName: agentName,
+          text: aiReply,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: 'read'
+        };
+
+        setSandboxMessages(prev => [...prev, aiMsg]);
+      } catch (error) {
+        console.error('Error in Sandbox AI generation:', error);
+        const fallbackMsg: ChatMessage = {
+          id: `sb-a-${Date.now()}`,
+          sender: 'ai',
+          senderName: aiSettings?.agent_name || 'Flowy',
+          text: `¡Hola! Con gusto te informamos que en ${salonName} recibimos transferencias, Nequi, Daviplata, tarjetas y efectivo. ¿Deseas agendar tu cita?`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          status: 'read'
+        };
+        setSandboxMessages(prev => [...prev, fallbackMsg]);
+      } finally {
+        setIsSandboxThinking(false);
       }
-
-      const aiMsg: ChatMessage = {
-        id: `sb-a-${Date.now()}`,
-        sender: 'ai',
-        senderName: aiSettings?.agent_name || 'Flowy',
-        text: aiReply,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        status: 'read'
-      };
-
-      setSandboxMessages(prev => [...prev, aiMsg]);
-      setIsSandboxThinking(false);
-    }, 1100);
+    }, 600);
   };
 
   // Predefined Quick Answers for Salon Reception
@@ -513,26 +654,27 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
   ];
 
   // Predefined HSM Templates List
+  const clientFirstName = activeThread?.clientName ? activeThread.clientName.split(' ')[0] : 'Clienta';
   const quickHsmTemplatesList = [
     {
       title: '✅ Confirmación Inmediata de Reserva',
       key: 'confirmacion_reserva_v2',
-      text: `✨ ¡Hola ${activeThread.clientName.split(' ')[0]}! Tu cita en ${salonName} para ${activeThread.appointmentDetails?.serviceName || 'Servicio de Belleza'} está confirmada para ${activeThread.appointmentDetails?.date || 'Hoy'} a las ${activeThread.appointmentDetails?.time || '02:00 PM'} con ${activeThread.appointmentDetails?.stylistName || 'tu especialista'}. ¡Te esperamos!`
+      text: `✨ ¡Hola ${clientFirstName}! Tu cita en ${salonName} para ${activeThread?.appointmentDetails?.serviceName || 'Servicio de Belleza'} está confirmada para ${activeThread?.appointmentDetails?.date || 'Hoy'} a las ${activeThread?.appointmentDetails?.time || '02:00 PM'} con ${activeThread?.appointmentDetails?.stylistName || 'tu especialista'}. ¡Te esperamos!`
     },
     {
       title: '⏰ Recordatorio 24 Horas Antes',
       key: 'recordatorio_24h_v2',
-      text: `🌸 Hola ${activeThread.clientName.split(' ')[0]}, te recordamos tu cita de mañana a las ${activeThread.appointmentDetails?.time || '02:00 PM'} con ${activeThread.appointmentDetails?.stylistName || 'tu estilista'}. ¿Confirmas tu asistencia? Responde SI para confirmar o REPROGRAMAR.`
+      text: `🌸 Hola ${clientFirstName}, te recordamos tu cita de mañana a las ${activeThread?.appointmentDetails?.time || '02:00 PM'} con ${activeThread?.appointmentDetails?.stylistName || 'tu estilista'}. ¿Confirmas tu asistencia? Responde SI para confirmar o REPROGRAMAR.`
     },
     {
       title: '🚗 Alerta 2 Horas Antes ("En Camino")',
       key: 'recordatorio_2h_v2',
-      text: `⏳ ¡Hola ${activeThread.clientName.split(' ')[0]}! Tu especialista te espera en 2 horas en ${salonName}. Dirección: Carrera 43A # 1-50, El Poblado. ¡Buen viaje!`
+      text: `⏳ ¡Hola ${clientFirstName}! Tu especialista te espera en 2 horas en ${salonName}. Dirección: Carrera 43A # 1-50, El Poblado. ¡Buen viaje!`
     },
     {
       title: '⭐ Solicitud de Reseña en Google Maps',
       key: 'encuesta_satisfaccion_v2',
-      text: `💖 ¡Hola ${activeThread.clientName.split(' ')[0]}! Esperamos que hayas amado tu experiencia en ${salonName}. Si nos regalas 5 estrellas en Google Maps, recibirás un 15% de descuento en tu próxima visita.`
+      text: `💖 ¡Hola ${clientFirstName}! Esperamos que hayas amado tu experiencia en ${salonName}. Si nos regalas 5 estrellas en Google Maps, recibirás un 15% de descuento en tu próxima visita.`
     }
   ];
 
@@ -697,13 +839,25 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
 
               {/* Conversations List */}
               <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-                {filteredThreads.length === 0 ? (
+                {threads.length === 0 ? (
+                  <div className="py-12 px-3 text-center space-y-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+                      <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <strong className={`text-xs font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      Sin conversaciones aún
+                    </strong>
+                    <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto leading-relaxed">
+                      Cuando tus clientas te escriban a tu WhatsApp ({salonPhone}), aparecerán aquí en vivo.
+                    </p>
+                  </div>
+                ) : filteredThreads.length === 0 ? (
                   <div className="py-8 text-center text-xs text-slate-400">
                     No se encontraron conversaciones con ese filtro.
                   </div>
                 ) : (
                   filteredThreads.map((thr) => {
-                    const isSelected = thr.id === activeThread.id;
+                    const isSelected = thr.id === activeThread?.id;
 
                     return (
                       <div
@@ -806,409 +960,451 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
           {/* COLUMNA 2: CHAT ACTIVO & OPERACIONES EN VIVO (5 COLS) */}
           {/* ======================================================================= */}
           <div className="lg:col-span-5 space-y-4">
-            <div className={`p-5 rounded-3xl border flex flex-col h-[680px] shadow-xl ${
-              isDark ? 'bg-[#121622] border-white/10' : 'bg-white border-slate-200'
-            }`}>
-              
-              {/* Active Chat Header */}
-              <div className={`flex items-center justify-between pb-3.5 border-b shrink-0 ${
-                isDark ? 'border-white/10' : 'border-slate-100'
+            {activeThread ? (
+              <div className={`p-5 rounded-3xl border flex flex-col h-[680px] shadow-xl ${
+                isDark ? 'bg-[#121622] border-white/10' : 'bg-white border-slate-200'
               }`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-black font-bold flex items-center justify-center shadow-md shadow-emerald-500/20">
-                    <MessageCircle className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <strong className={`text-xs sm:text-sm font-bold ${
-                        isDark ? 'text-white' : 'text-slate-900'
-                      }`}>
-                        {activeThread.clientName}
-                      </strong>
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {activeThread.clientPhone}
+                
+                {/* Active Chat Header */}
+                <div className={`flex items-center justify-between pb-3.5 border-b shrink-0 ${
+                  isDark ? 'border-white/10' : 'border-slate-100'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-black font-bold flex items-center justify-center shadow-md shadow-emerald-500/20">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <strong className={`text-xs sm:text-sm font-bold ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}>
+                          {activeThread.clientName}
+                        </strong>
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {activeThread.clientPhone}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Canal WhatsApp Oficial • En Línea
                       </span>
                     </div>
-                    <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Canal WhatsApp Oficial • En Línea
-                    </span>
                   </div>
+
+                  {/* Human Takeover Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleTakeover(activeThread.id)}
+                    className={`text-xs font-extrabold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                      activeThread.humanTakeoverActive
+                        ? 'bg-amber-500 text-black border-amber-400 shadow-amber-500/20'
+                        : isDark
+                          ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                    }`}
+                    title={activeThread.humanTakeoverActive ? 'Reanudar Agente IA Flowy' : 'Pausar IA y tomar control manual'}
+                  >
+                    {activeThread.humanTakeoverActive ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-current" />
+                        <span>Modo Humano</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="w-3.5 h-3.5" />
+                        <span>Flowy IA</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
-                {/* Human Takeover Toggle Button */}
-                <button
-                  type="button"
-                  onClick={() => handleToggleTakeover(activeThread.id)}
-                  className={`text-xs font-extrabold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
-                    activeThread.humanTakeoverActive
-                      ? 'bg-amber-500 text-black border-amber-400 shadow-amber-500/20'
-                      : isDark
-                        ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
-                  }`}
-                  title={activeThread.humanTakeoverActive ? 'Reanudar Agente IA Flowy' : 'Pausar IA y tomar control manual'}
-                >
-                  {activeThread.humanTakeoverActive ? (
-                    <>
-                      <Pause className="w-3.5 h-3.5 fill-current" />
-                      <span>Modo Humano</span>
-                    </>
-                  ) : (
-                    <>
-                      <Bot className="w-3.5 h-3.5" />
-                      <span>Flowy IA</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                {/* Chat Messages Body */}
+                <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-3.5 pr-2 my-2">
+                  {activeThread.messages.map((msg) => {
+                    const isClient = msg.sender === 'client';
+                    const isHuman = msg.sender === 'human_agent';
 
-              {/* Chat Messages Body */}
-              <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-3.5 pr-2 my-2">
-                {activeThread.messages.map((msg) => {
-                  const isClient = msg.sender === 'client';
-                  const isHuman = msg.sender === 'human_agent';
-
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${isClient ? 'items-start' : 'items-end'}`}
-                    >
+                    return (
                       <div
-                        className={`max-w-[85%] sm:max-w-[80%] rounded-2xl p-3.5 text-xs leading-relaxed shadow-sm relative ${
-                          isClient
-                            ? isDark 
-                              ? 'bg-[#1A2030] text-slate-100 border border-white/5 rounded-tl-sm' 
-                              : 'bg-slate-100 text-slate-900 border border-slate-200 rounded-tl-sm'
-                            : isHuman
-                              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-tr-sm'
-                              : 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-tr-sm'
-                        }`}
+                        key={msg.id}
+                        className={`flex flex-col ${isClient ? 'items-start' : 'items-end'}`}
                       >
-                        {/* Sender Label & Badge */}
-                        {!isClient && (
-                          <div className="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/15">
-                            <span className="text-[10px] font-extrabold flex items-center gap-1 opacity-90">
-                              {isHuman ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
-                              <span>{msg.senderName || (isHuman ? 'Operador Humano' : 'Flowy IA')}</span>
-                            </span>
-                            {msg.isHsmTemplate && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/20 text-emerald-200 uppercase">
-                                Plantilla HSM
+                        <div
+                          className={`max-w-[85%] sm:max-w-[80%] rounded-2xl p-3.5 text-xs leading-relaxed shadow-sm relative ${
+                            isClient
+                              ? isDark 
+                                ? 'bg-[#1A2030] text-slate-100 border border-white/5 rounded-tl-sm' 
+                                : 'bg-slate-100 text-slate-900 border border-slate-200 rounded-tl-sm'
+                              : isHuman
+                                ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-tr-sm'
+                                : 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-tr-sm'
+                          }`}
+                        >
+                          {/* Sender Label & Badge */}
+                          {!isClient && (
+                            <div className="flex items-center justify-between gap-2 mb-1.5 pb-1 border-b border-white/15">
+                              <span className="text-[10px] font-extrabold flex items-center gap-1 opacity-90">
+                                {isHuman ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
+                                <span>{msg.senderName || (isHuman ? 'Operador Humano' : 'Flowy IA')}</span>
                               </span>
+                              {msg.isHsmTemplate && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-black/20 text-emerald-200 uppercase">
+                                  Plantilla HSM
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Text */}
+                          <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                          {/* Timestamp & Delivery Checks */}
+                          <div className="flex items-center justify-end gap-1 mt-1 text-[9px] opacity-70">
+                            <span>{msg.timestamp}</span>
+                            {!isClient && (
+                              <CheckCheck className="w-3 h-3 text-emerald-300" />
                             )}
                           </div>
-                        )}
-
-                        {/* Text */}
-                        <p className="whitespace-pre-wrap">{msg.text}</p>
-
-                        {/* Timestamp & Delivery Checks */}
-                        <div className="flex items-center justify-end gap-1 mt-1 text-[9px] opacity-70">
-                          <span>{msg.timestamp}</span>
-                          {!isClient && (
-                            <CheckCheck className="w-3 h-3 text-emerald-300" />
-                          )}
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Quick Actions Bar (HSM Templates & Quick Answers Popups) */}
-              <div className="relative pt-2 shrink-0 border-t border-black/5 dark:border-white/10">
-                
-                {/* Popover: Quick HSM Templates */}
-                {showQuickTemplates && (
-                  <div className={`absolute bottom-16 left-0 right-0 p-4 rounded-2xl border shadow-2xl z-30 space-y-2 animate-fade-in ${
-                    isDark ? 'bg-[#141926] border-emerald-500/30' : 'bg-white border-emerald-300'
-                  }`}>
-                    <div className="flex items-center justify-between border-b pb-2 border-black/5 dark:border-white/10">
-                      <strong className={`text-xs font-bold flex items-center gap-1.5 ${
-                        isDark ? 'text-emerald-400' : 'text-emerald-700'
-                      }`}>
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Insertar Plantilla Oficial WhatsApp (Meta HSM)</span>
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => setShowQuickTemplates(false)}
-                        className="text-xs text-slate-400 hover:text-slate-600"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                      {quickHsmTemplatesList.map((tpl, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => handleSendHsmTemplate(tpl.title, tpl.text, tpl.key)}
-                          className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
-                            isDark 
-                              ? 'border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/30 text-slate-200' 
-                              : 'border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-slate-800'
-                          }`}
-                        >
-                          <strong className="block text-[11px] text-emerald-500 mb-0.5">{tpl.title}</strong>
-                          <p className="text-[10px] opacity-80 line-clamp-1">{tpl.text}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Popover: Quick Answers */}
-                {showQuickAnswers && (
-                  <div className={`absolute bottom-16 left-0 right-0 p-4 rounded-2xl border shadow-2xl z-30 space-y-2 animate-fade-in ${
-                    isDark ? 'bg-[#141926] border-cyan-500/30' : 'bg-white border-cyan-300'
-                  }`}>
-                    <div className="flex items-center justify-between border-b pb-2 border-black/5 dark:border-white/10">
-                      <strong className={`text-xs font-bold flex items-center gap-1.5 ${
-                        isDark ? 'text-cyan-400' : 'text-cyan-700'
-                      }`}>
-                        <Zap className="w-3.5 h-3.5" />
-                        <span>Respuestas Rápidas del Salón</span>
-                      </strong>
-                      <button
-                        type="button"
-                        onClick={() => setShowQuickAnswers(false)}
-                        className="text-xs text-slate-400 hover:text-slate-600"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                      {quickAnswersList.map((qa, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            setInputText(qa.text);
-                            setShowQuickAnswers(false);
-                          }}
-                          className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
-                            isDark 
-                              ? 'border-white/5 bg-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/30 text-slate-200' 
-                              : 'border-slate-200 bg-slate-50 hover:bg-cyan-50 hover:border-cyan-300 text-slate-800'
-                          }`}
-                        >
-                          <strong className="block text-[11px] text-cyan-400 mb-0.5">{qa.title}</strong>
-                          <p className="text-[10px] opacity-80 line-clamp-1">{qa.text}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Toolbar Buttons */}
-                <div className="flex items-center gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowQuickTemplates(!showQuickTemplates);
-                      setShowQuickAnswers(false);
-                    }}
-                    className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
-                      showQuickTemplates
-                        ? 'bg-emerald-500 text-black border-emerald-400'
-                        : isDark
-                          ? 'bg-white/5 hover:bg-white/10 text-emerald-400 border-emerald-500/20'
-                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                    }`}
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Plantillas HSM</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowQuickAnswers(!showQuickAnswers);
-                      setShowQuickTemplates(false);
-                    }}
-                    className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
-                      showQuickAnswers
-                        ? 'bg-cyan-500 text-black border-cyan-400'
-                        : isDark
-                          ? 'bg-white/5 hover:bg-white/10 text-cyan-400 border-cyan-500/20'
-                          : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200'
-                    }`}
-                  >
-                    <Zap className="w-3 h-3" />
-                    <span>Respuestas Rápidas</span>
-                  </button>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
                 </div>
 
-                {/* Form Input Message */}
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder={
-                      activeThread.humanTakeoverActive
-                        ? 'Escribe como recepcionista o estilista humano...'
-                        : 'Escribe un mensaje en nombre de Flowy IA...'
-                    }
-                    className={`flex-1 rounded-2xl px-4 py-3 text-xs focus:outline-none focus:border-emerald-500 transition-all ${
-                      isDark
-                        ? 'bg-[#0B0E14] border border-white/10 text-white placeholder-slate-500'
-                        : 'bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400'
-                    }`}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!inputText.trim()}
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold p-3 rounded-2xl flex items-center justify-center shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-40 shrink-0"
-                    title="Enviar mensaje"
-                  >
-                    <Send className="w-4 h-4" />
-                  </button>
-                </form>
+                {/* Quick Actions Bar (HSM Templates & Quick Answers Popups) */}
+                <div className="relative pt-2 shrink-0 border-t border-black/5 dark:border-white/10">
+                  
+                  {/* Popover: Quick HSM Templates */}
+                  {showQuickTemplates && (
+                    <div className={`absolute bottom-16 left-0 right-0 p-4 rounded-2xl border shadow-2xl z-30 space-y-2 animate-fade-in ${
+                      isDark ? 'bg-[#141926] border-emerald-500/30' : 'bg-white border-emerald-300'
+                    }`}>
+                      <div className="flex items-center justify-between border-b pb-2 border-black/5 dark:border-white/10">
+                        <strong className={`text-xs font-bold flex items-center gap-1.5 ${
+                          isDark ? 'text-emerald-400' : 'text-emerald-700'
+                        }`}>
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Insertar Plantilla Oficial WhatsApp (Meta HSM)</span>
+                        </strong>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuickTemplates(false)}
+                          className="text-xs text-slate-400 hover:text-slate-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {quickHsmTemplatesList.map((tpl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSendHsmTemplate(tpl.title, tpl.text, tpl.key)}
+                            className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                              isDark 
+                                ? 'border-white/5 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/30 text-slate-200' 
+                                : 'border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 text-slate-800'
+                            }`}
+                          >
+                            <strong className="block text-[11px] text-emerald-500 mb-0.5">{tpl.title}</strong>
+                            <p className="text-[10px] opacity-80 line-clamp-1">{tpl.text}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Popover: Quick Answers */}
+                  {showQuickAnswers && (
+                    <div className={`absolute bottom-16 left-0 right-0 p-4 rounded-2xl border shadow-2xl z-30 space-y-2 animate-fade-in ${
+                      isDark ? 'bg-[#141926] border-cyan-500/30' : 'bg-white border-cyan-300'
+                    }`}>
+                      <div className="flex items-center justify-between border-b pb-2 border-black/5 dark:border-white/10">
+                        <strong className={`text-xs font-bold flex items-center gap-1.5 ${
+                          isDark ? 'text-cyan-400' : 'text-cyan-700'
+                        }`}>
+                          <Zap className="w-3.5 h-3.5" />
+                          <span>Respuestas Rápidas del Salón</span>
+                        </strong>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuickAnswers(false)}
+                          className="text-xs text-slate-400 hover:text-slate-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                        {quickAnswersList.map((qa, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setInputText(qa.text);
+                              setShowQuickAnswers(false);
+                            }}
+                            className={`w-full p-2.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                              isDark 
+                                ? 'border-white/5 bg-white/5 hover:bg-cyan-500/10 hover:border-cyan-500/30 text-slate-200' 
+                                : 'border-slate-200 bg-slate-50 hover:bg-cyan-50 hover:border-cyan-300 text-slate-800'
+                            }`}
+                          >
+                            <strong className="block text-[11px] text-cyan-400 mb-0.5">{qa.title}</strong>
+                            <p className="text-[10px] opacity-80 line-clamp-1">{qa.text}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Toolbar Buttons */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowQuickTemplates(!showQuickTemplates);
+                        setShowQuickAnswers(false);
+                      }}
+                      className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
+                        showQuickTemplates
+                          ? 'bg-emerald-500 text-black border-emerald-400'
+                          : isDark
+                            ? 'bg-white/5 hover:bg-white/10 text-emerald-400 border-emerald-500/20'
+                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Plantillas HSM</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowQuickAnswers(!showQuickAnswers);
+                        setShowQuickTemplates(false);
+                      }}
+                      className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
+                        showQuickAnswers
+                          ? 'bg-cyan-500 text-black border-cyan-400'
+                          : isDark
+                            ? 'bg-white/5 hover:bg-white/10 text-cyan-400 border-cyan-500/20'
+                            : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200'
+                      }`}
+                    >
+                      <Zap className="w-3 h-3" />
+                      <span>Respuestas Rápidas</span>
+                    </button>
+                  </div>
+
+                  {/* Form Input Message */}
+                  <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder={
+                        activeThread.humanTakeoverActive
+                          ? 'Escribe como recepcionista o estilista humano...'
+                          : 'Escribe un mensaje en nombre de Flowy IA...'
+                      }
+                      className={`flex-1 rounded-2xl px-4 py-3 text-xs focus:outline-none focus:border-emerald-500 transition-all ${
+                        isDark
+                          ? 'bg-[#0B0E14] border border-white/10 text-white placeholder-slate-500'
+                          : 'bg-slate-50 border border-slate-300 text-slate-900 placeholder-slate-400'
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputText.trim()}
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold p-3 rounded-2xl flex items-center justify-center shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-40 shrink-0"
+                      title="Enviar mensaje"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className={`p-8 rounded-3xl border flex flex-col items-center justify-center h-[680px] text-center space-y-4 shadow-xl ${
+                isDark ? 'bg-[#121622] border-white/10' : 'bg-white border-slate-200'
+              }`}>
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                  <Bot className="w-8 h-8" />
+                </div>
+                <div>
+                  <strong className={`text-sm font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Bandeja de Mensajes • {salonName}
+                  </strong>
+                  <p className="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">
+                    Flowy IA está lista para atender a tus clientas por WhatsApp y agendar citas automáticamente.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBoardMode('sandbox')}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>🧪 Probar en Modo Sandbox</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* ======================================================================= */}
           {/* COLUMNA 3: EXPEDIENTE 360° & ACCIONES RÁPIDAS (3 COLS) */}
           {/* ======================================================================= */}
           <div className="lg:col-span-3 space-y-4">
-            <div className={`p-5 rounded-3xl border space-y-4 shadow-lg ${
-              isDark ? 'bg-[#121622] border-white/10' : 'bg-white border-slate-200'
-            }`}>
-              
-              <div className="flex items-center justify-between border-b pb-3 border-black/5 dark:border-white/10">
-                <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}>
-                  <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
-                  <span>Ficha 360° de la Clienta</span>
-                </h3>
-                {activeThread.clientCategory === 'vip' && (
-                  <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
-                    VIP 360°
-                  </span>
-                )}
-              </div>
-
-              {/* Client Profile Snippet */}
-              <div className="text-center space-y-2 pt-1">
-                {activeThread.clientAvatar ? (
-                  <img
-                    src={activeThread.clientAvatar}
-                    alt={activeThread.clientName}
-                    className="w-16 h-16 rounded-3xl object-cover mx-auto border-2 border-emerald-500 shadow-md"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-md">
-                    {activeThread.clientName.charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <strong className={`text-sm font-extrabold block ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {activeThread.clientName}
-                  </strong>
-                  <a
-                    href={`https://wa.me/${activeThread.clientPhone.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-emerald-500 hover:underline flex items-center justify-center gap-1 mt-0.5"
-                  >
-                    <span>{activeThread.clientPhone}</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Upcoming / Current Appointment Card */}
-              {activeThread.appointmentDetails ? (
-                <div className={`p-3.5 rounded-2xl border space-y-2 ${
-                  isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-emerald-500 uppercase tracking-wider flex items-center gap-1">
-                      <Calendar className="w-3 h-3" /> Cita Programada
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      {activeThread.appointmentDetails.status === 'en_atencion' ? 'En Atención' : 'Confirmada'}
-                    </span>
-                  </div>
-
-                  <strong className={`text-xs block ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {activeThread.appointmentDetails.serviceName}
-                  </strong>
-
-                  <div className={`text-[11px] space-y-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <div className="flex justify-between">
-                      <span>Estilista:</span>
-                      <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>
-                        {activeThread.appointmentDetails.stylistName}
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Horario:</span>
-                      <strong className="text-emerald-500">
-                        {activeThread.appointmentDetails.date} • {activeThread.appointmentDetails.time}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className={`p-3 rounded-2xl border text-center text-xs ${
-                  isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'
-                }`}>
-                  Sin citas agendadas próximas.
-                </div>
-              )}
-
-              {/* Quick Actions 1-Click Buttons */}
-              <div className="space-y-2 pt-2">
-                <button
-                  type="button"
-                  onClick={onOpenNewAppointment}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Agendar Nueva Cita</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const clientObj = clients.find(c => c.phone_whatsapp === activeThread.clientPhone || c.full_name === activeThread.clientName);
-                    if (clientObj && onOpenPosWithClient) {
-                      onOpenPosWithClient(clientObj);
-                    }
-                  }}
-                  className={`w-full text-xs font-bold py-2.5 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    isDark 
-                      ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' 
-                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 shadow-sm'
-                  }`}
-                >
-                  <CreditCard className="w-3.5 h-3.5 text-[#FF5A36]" />
-                  <span>Cobrar en Terminal POS</span>
-                </button>
-              </div>
-
-              {/* Hair Color Diagnostic Note Snippet */}
-              <div className={`p-3 rounded-2xl border space-y-1.5 ${
-                isDark ? 'bg-[#0B0E14] border-white/5' : 'bg-slate-50 border-slate-200'
+            {activeThread ? (
+              <div className={`p-5 rounded-3xl border space-y-4 shadow-lg ${
+                isDark ? 'bg-[#121622] border-white/10' : 'bg-white border-slate-200'
               }`}>
-                <span className="text-[10px] font-bold text-[#FF5A36] uppercase flex items-center gap-1">
-                  <Scissors className="w-3 h-3" /> Ficha Técnica Capilar
-                </span>
-                <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Porosidad media. Fondo de decoloración 8. Tono Majirel 7.1 + 8.2 con Plex.
+                
+                <div className="flex items-center justify-between border-b pb-3 border-black/5 dark:border-white/10">
+                  <h3 className={`text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 ${
+                    isDark ? 'text-slate-300' : 'text-slate-700'
+                  }`}>
+                    <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
+                    <span>Ficha 360° de la Clienta</span>
+                  </h3>
+                  {activeThread.clientCategory === 'vip' && (
+                    <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                      VIP 360°
+                    </span>
+                  )}
+                </div>
+
+                {/* Client Profile Snippet */}
+                <div className="text-center space-y-2 pt-1">
+                  {activeThread.clientAvatar ? (
+                    <img
+                      src={activeThread.clientAvatar}
+                      alt={activeThread.clientName}
+                      className="w-16 h-16 rounded-3xl object-cover mx-auto border-2 border-emerald-500 shadow-md"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-md">
+                      {activeThread.clientName.charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <strong className={`text-sm font-extrabold block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {activeThread.clientName}
+                    </strong>
+                    <a
+                      href={`https://wa.me/${activeThread.clientPhone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-emerald-500 hover:underline flex items-center justify-center gap-1 mt-0.5"
+                    >
+                      <span>{activeThread.clientPhone}</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Upcoming / Current Appointment Card */}
+                {activeThread.appointmentDetails ? (
+                  <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                    isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-200'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold text-emerald-500 uppercase tracking-wider flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> Cita Programada
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        {activeThread.appointmentDetails.status === 'en_atencion' ? 'En Atención' : 'Confirmada'}
+                      </span>
+                    </div>
+
+                    <strong className={`text-xs block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {activeThread.appointmentDetails.serviceName}
+                    </strong>
+
+                    <div className={`text-[11px] space-y-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                      <div className="flex justify-between">
+                        <span>Estilista:</span>
+                        <strong className={isDark ? 'text-slate-200' : 'text-slate-800'}>
+                          {activeThread.appointmentDetails.stylistName}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Horario:</span>
+                        <strong className="text-emerald-500">
+                          {activeThread.appointmentDetails.date} • {activeThread.appointmentDetails.time}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`p-3 rounded-2xl border text-center text-xs ${
+                    isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'
+                  }`}>
+                    Sin citas agendadas próximas.
+                  </div>
+                )}
+
+                {/* Quick Actions 1-Click Buttons */}
+                <div className="space-y-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={onOpenNewAppointment}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Agendar Nueva Cita</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clientObj = clients.find(c => c.phone_whatsapp === activeThread.clientPhone || c.full_name === activeThread.clientName);
+                      if (clientObj && onOpenPosWithClient) {
+                        onOpenPosWithClient(clientObj);
+                      }
+                    }}
+                    className={`w-full text-xs font-bold py-2.5 px-3 rounded-xl border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      isDark 
+                        ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' 
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 shadow-sm'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5 text-[#FF5A36]" />
+                    <span>Cobrar en Terminal POS</span>
+                  </button>
+                </div>
+
+                {/* Hair Color Diagnostic Note Snippet */}
+                <div className={`p-3 rounded-2xl border space-y-1.5 ${
+                  isDark ? 'bg-[#0B0E14] border-white/5' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <span className="text-[10px] font-bold text-[#FF5A36] uppercase flex items-center gap-1">
+                    <Scissors className="w-3 h-3" /> Ficha Técnica Capilar
+                  </span>
+                  <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    Porosidad media. Fondo de decoloración 8. Tono Majirel 7.1 + 8.2 con Plex.
+                  </p>
+                </div>
+
+              </div>
+            ) : (
+              <div className={`p-6 rounded-3xl border text-center space-y-2.5 shadow-lg ${
+                isDark ? 'bg-[#121622] border-white/10 text-slate-400' : 'bg-white border-slate-200 text-slate-500'
+              }`}>
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+                  <User className="w-5 h-5" />
+                </div>
+                <strong className={`text-xs block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  Ficha 360° del Cliente
+                </strong>
+                <p className="text-[11px] text-slate-400">
+                  Selecciona un chat activo para consultar el historial y fórmulas de la clienta.
                 </p>
               </div>
-
-            </div>
+            )}
           </div>
 
         </div>
@@ -1316,11 +1512,12 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
                 </span>
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
                   {[
-                    '¿Qué precio tiene el Balayage?',
-                    '¿Dónde están ubicados?',
-                    '¿Tienen parqueadero y aceptan perros?',
-                    '¿Puedo agendar para hoy sábado?',
-                    '¿Qué incluye la Keratina Orgánica?'
+                    '¿Qué servicios y precios tienen?',
+                    '¿Dónde están ubicados y tienen parqueadero?',
+                    '¿Aceptan mascotas (Pet Friendly)?',
+                    '¿Cuáles son los métodos de pago?',
+                    'Quiero agendar una cita para hoy',
+                    '¿Qué políticas tienen si cancelo mi cita?'
                   ].map((preset, idx) => (
                     <button
                       key={idx}

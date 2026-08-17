@@ -2010,7 +2010,7 @@ export const DashboardPage: React.FC = () => {
                           </div>
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                              Valor ({aiSettings.deposit_type === 'fixed' ? '$ USD' : '%'})
+                              Valor ({aiSettings.deposit_type === 'fixed' ? `$ ${salonCurrency || 'COP'}` : '%'})
                             </label>
                             <input
                               type="number"
