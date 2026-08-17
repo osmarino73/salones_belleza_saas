@@ -2237,14 +2237,28 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 6. Plantillas de WhatsApp Oficiales (Meta HSM / Zernio) */}
-                <WhatsAppTemplatesCard
-                  theme={theme}
-                  salonName={salonName}
-                  salonPhone={salonPhone}
-                  aiSettings={aiSettings}
-                  onUpdateSettings={setAiSettings}
-                />
+                {/* 6. Enlace Directo al Centro de Plantillas Oficiales */}
+                <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <strong className="text-xs font-bold block">Centro de Plantillas WhatsApp & Email</strong>
+                      <span className="text-[11px] text-slate-400">Gestiona tus plantillas HSM aprobadas por Meta, correos HTML y matriz de horarios.</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('templates')}
+                    className="text-xs font-bold px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20 flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  >
+                    <span>Abrir Plantillas</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
 
                 {/* 7. Recordatorios & Reseñas Google */}
                 <div className={`p-6 rounded-2xl border space-y-4 ${
