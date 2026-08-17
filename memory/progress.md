@@ -1,6 +1,11 @@
 # Progress & Health Status - BeautyFlow AI
 
 ## ✅ Completado y Funcionando en Producción (100%)
+- [x] **Popup & Onboarding Embebido de Conexión Zernio WhatsApp (`ZernioOnboardingModal.tsx`)**:
+  - Modal interactivo con estética Meta/Zernio Embedded Signup.
+  - **Paso 1**: Selector internacional con búsqueda en tiempo real (🇨🇴 +57, 🇲🇽 +52, 🇨🇱 +56, 🇺🇸 +1, etc.), formateo de teléfono y selector de Modo Coexistencia (mantiene activo el WhatsApp del celular) vs Cloud API.
+  - **Paso 2**: Visualizador de Código QR con temporizador de sesión, animación láser de escaneo y botón de verificación instantánea.
+  - **Paso 3**: Confirmación de activación y sincronización automática con Supabase (`tenant_ai_settings`) y `DashboardPage.tsx`.
 - [x] **Aislamiento de Datos Multi-Tenant & Negocios Reales**:
   - Salones nuevos inician con sus **servicios seleccionados en COP**, su **estilista máster (dueña)**, **0 citas ficticias** y **CRM limpio**.
   - Simulador de WhatsApp y POS vinculados al catálogo y nombre real del salón.
