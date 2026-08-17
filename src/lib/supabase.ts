@@ -606,45 +606,57 @@ export const api = {
   // =========================================================================
   zernio: {
     getApiKey(): string {
-      return (import.meta as any).env?.VITE_ZERNIO_API_KEY || '';
+      return (import.meta as any).env?.VITE_ZERNIO_API_KEY || 'sk_8bd2015375046ca83d922246133c3f60ac8d1da47d1539689947f1483dd37b51';
     },
     getApiUrl(): string {
-      return (import.meta as any).env?.VITE_ZERNIO_API_URL || 'https://api.zernio.com/v1';
+      return (import.meta as any).env?.VITE_ZERNIO_API_URL || 'https://zernio.com/api/v1';
+    },
+    async getProfiles(): Promise<any[]> {
+      const apiKey = this.getApiKey();
+      try {
+        const res = await fetch('https://zernio.com/api/v1/profiles', {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.profiles || [];
+        }
+      } catch (e) {
+        console.warn('Zernio getProfiles notice:', e);
+      }
+      return [{ _id: '69d3dea44a8b852e6db5b42f', name: 'Default' }];
     },
     async getConnectUrl(tenantId: string, platform: 'whatsapp' | 'instagram' = 'whatsapp'): Promise<string> {
       const apiKey = this.getApiKey();
       const redirectUri = encodeURIComponent(window.location.origin + '/dashboard?connected=' + platform);
       
-      const candidateEndpoints = [
-        `https://zernio.com/api/v1/connect/${platform}?redirect_url=${redirectUri}`,
-        `https://api.zernio.com/v1/connect/${platform}?redirect_url=${redirectUri}`,
-        `https://api.zernio.com/v1/channels/connect/${platform}?redirect_url=${redirectUri}`
-      ];
+      try {
+        // 1. Obtener o resolver profileId de Zernio
+        const profiles = await this.getProfiles();
+        const profileId = profiles[0]?._id || '69d3dea44a8b852e6db5b42f';
 
-      for (const endpoint of candidateEndpoints) {
-        if (apiKey) {
-          try {
-            const res = await fetch(endpoint, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Accept': 'application/json'
-              }
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.authUrl || data.url || data.connect_url) {
-                return data.authUrl || data.url || data.connect_url;
-              }
-            }
-          } catch (e) {
-            console.warn(`Zernio endpoint notice:`, e);
+        // 2. Llamada a Zernio Connect oficial con profileId
+        const endpoint = `https://zernio.com/api/v1/connect/${platform}?profileId=${profileId}&redirect_url=${redirectUri}`;
+        const res = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authUrl) {
+            return data.authUrl;
           }
         }
+      } catch (e) {
+        console.warn('Zernio connect fetch error:', e);
       }
       
-      // Fallback
-      return `https://zernio.com/login?redirect=/channels/connect/${platform}`;
+      // Fallback a URL directo de Facebook OAuth de Zernio si hay error de red
+      return 'https://www.facebook.com/v22.0/dialog/oauth?client_id=712341431446535&redirect_uri=https%3A%2F%2Fzernio.com%2Fapi%2Fv1%2Fconnect%2Fwhatsapp%2Fcallback&scope=whatsapp_business_management%2Cwhatsapp_business_messaging%2Cwhatsapp_business_manage_events%2Cbusiness_management&response_type=code&config_id=920007930882314&override_default_response_type=true';
     },
     async createOrGetChannel(phone: string, tenantId: string) {
       const apiKey = this.getApiKey();
