@@ -1,8 +1,7 @@
-- [x] **Integración Oficial de Conexión Zernio & Meta WhatsApp (`GET /api/v1/connect/whatsapp`)**:
-  - Resolución automática de `profileId` con la API Key maestra de Zernio.
-  - Generación directa del `authUrl` de **Meta / Facebook Embedded Signup (`dialog/oauth?client_id=...`)**.
-  - Apertura en ventana emergente nativa para que cualquier salón conecte su WhatsApp Business / Coexistencia en 1 clic.
-  - Sincronización automática de estado y desconexión rápida desde el Dashboard.
+- [x] **Centro Dedicado de Plantillas Multicanal (`TemplatesManagerPage.tsx`)**:
+  - Vista independiente accesible desde la barra superior de navegación y menú de perfil.
+  - **4 Plantillas WhatsApp HSM**: Confirmación de Reserva, Recordatorio Interactivo 24h, Recordatorio Inminente 2h y Reactivación VIP con vista previa en burbuja WhatsApp y envío de prueba.
+  - **5 Plantillas de Correo Electrónico HTML**: Confirmación Elegante de Cita con botón a Calendar, Recordatorio 24h, Recibo Digital POS, Solicitud de Reseña Google 5 Estrellas y Newsletter/Cumpleaños con simulador de cliente de correo y prueba en vivo.
 - [x] **Aislamiento de Datos Multi-Tenant & Negocios Reales**:
   - Salones nuevos inician con sus **servicios seleccionados en COP**, su **estilista máster (dueña)**, **0 citas ficticias** y **CRM limpio**.
   - Simulador de WhatsApp y POS vinculados al catálogo y nombre real del salón.
