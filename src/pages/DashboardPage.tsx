@@ -59,6 +59,7 @@ import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, 
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
+import { MessagesBoardPage } from '../components/MessagesBoardPage';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -685,7 +686,7 @@ export const DashboardPage: React.FC = () => {
               { id: 'overview', label: 'Overview', icon: Layers },
               { id: 'crm', label: 'CRM Colorimetría', icon: Users },
               { id: 'templates', label: 'Plantillas', icon: Sparkles },
-              { id: 'whatsapp', label: 'Simulador Chat', icon: MessageCircle }
+              { id: 'whatsapp', label: 'Mensajes & WhatsApp', icon: MessageSquare }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -878,38 +879,38 @@ export const DashboardPage: React.FC = () => {
 
       {/* Main Fluid Canvas Container */}
       <main className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-6">
-        
-        {/* Top Hero Greeting */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              ¡Hola de nuevo, <span className="text-[#FF5A36]">{ownerName}</span>! 👋
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400">
-              {salonName} (Sede Principal) • Estado del sistema: <span className="text-emerald-500 font-bold">● Operativo en Vivo</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              to="/reservas"
-              target="_blank"
-              className={`text-xs font-bold px-3.5 py-2 rounded-full border flex items-center gap-1.5 transition-all ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-white border-black/5 text-slate-800 hover:border-[#FF5A36] shadow-sm'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#FF5A36]" />
-              <span>Ver Portal Web Público</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
 
         {/* =========================================================================
             VIEW 1: OVERVIEW (FINEXY 3-COLUMN OPERATIONS BOARD)
             ========================================================================= */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            
+            {/* Top Hero Greeting (Solo en Inicio / Overview) */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                  ¡Hola de nuevo, <span className="text-[#FF5A36]">{ownerName}</span>! 👋
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  {salonName} (Sede Principal) • Estado del sistema: <span className="text-emerald-500 font-bold">● Operativo en Vivo</span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/reservas"
+                  target="_blank"
+                  className={`text-xs font-bold px-3.5 py-2 rounded-full border flex items-center gap-1.5 transition-all ${
+                    theme === 'dark' ? 'bg-[#141926] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-white border-black/5 text-slate-800 hover:border-[#FF5A36] shadow-sm'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#FF5A36]" />
+                  <span>Ver Portal Web Público</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
             
             {/* Top Operations 3-Column Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1629,89 +1630,25 @@ export const DashboardPage: React.FC = () => {
         )}
 
         {/* =========================================================================
-            VIEW 5: WHATSAPP IA & AUTOMATIZACIONES
+            VIEW 5: TABLERO DE MENSAJES & WHATSAPP OMNICANAL EN VIVO
             ========================================================================= */}
         {activeTab === 'whatsapp' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className={`lg:col-span-7 rounded-2xl p-6 border flex flex-col h-[550px] ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-            }`}>
-              <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/10 mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <strong className="text-xs block">WhatsApp IA Bot</strong>
-                    <span className="text-[10px] text-emerald-500 font-bold">● Atendiendo en vivo</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                {chatMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex flex-col ${msg.sender === 'client' ? 'items-start' : 'items-end'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-2xl p-3.5 text-xs leading-relaxed ${
-                        msg.sender === 'client'
-                          ? theme === 'dark' ? 'bg-[#1E222B] text-white' : 'bg-[#F0F2F7] text-slate-900'
-                          : 'bg-emerald-600 text-white shadow-md'
-                      }`}
-                    >
-                      {msg.text}
-                      <span className="text-[9px] opacity-70 block text-right mt-1">{msg.time}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleSendMessage} className="pt-3 border-t border-black/5 dark:border-white/10 flex gap-2">
-                <input
-                  type="text"
-                  value={newMsgText}
-                  onChange={(e) => setNewMsgText(e.target.value)}
-                  placeholder="Simula un mensaje de clienta..."
-                  className={`flex-1 border rounded-full px-4 py-2 text-xs focus:outline-none focus:border-emerald-500 ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
-                <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1">
-                  <Send className="w-3.5 h-3.5" /> Enviar
-                </button>
-              </form>
-            </div>
-
-            <div className="lg:col-span-5 space-y-4">
-              <div className={`p-6 rounded-2xl border space-y-4 ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-              }`}>
-                <h3 className="text-sm font-bold">Recordatorios Anti-Plantón</h3>
-                <div className="space-y-3 text-xs">
-                  <div className={`p-3 rounded-xl border space-y-1 ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/5' : 'bg-[#F9FAFC] border-black/5'
-                  }`}>
-                    <div className="flex justify-between text-[#FF5A36] font-bold">
-                      <span>Recordatorio 24h Antes</span>
-                      <span className="text-emerald-500">Activado</span>
-                    </div>
-                    <p className="text-slate-400">"Hola María! Te recordamos tu cita de Balayage mañana a las 02:00 PM con Sofía. ¿Confirmas tu asistencia?"</p>
-                  </div>
-                  <div className={`p-3 rounded-xl border space-y-1 ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/5' : 'bg-[#F9FAFC] border-black/5'
-                  }`}>
-                    <div className="flex justify-between text-[#FF5A36] font-bold">
-                      <span>Alerta 2h Antes con Ubicación</span>
-                      <span className="text-emerald-500">Activado</span>
-                    </div>
-                    <p className="text-slate-400">"¡Tu especialista te espera en 2 horas! Aquí tienes la ubicación en Google Maps."</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <MessagesBoardPage
+            theme={theme}
+            salonName={salonName}
+            salonPhone={salonPhone}
+            salonEmail={ownerEmail}
+            aiSettings={aiSettings}
+            clients={clients}
+            appointments={appointments}
+            stylists={stylists}
+            services={services}
+            onOpenNewAppointment={() => setIsNewAppointmentOpen(true)}
+            onOpenPosWithClient={(client) => {
+              setActiveTab('pos');
+            }}
+            onUpdateAiSettings={(newSettings) => setAiSettings(prev => prev ? ({ ...prev, ...newSettings }) : null)}
+          />
         )}
 
         {/* =========================================================================

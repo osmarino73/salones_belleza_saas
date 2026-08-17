@@ -1,7 +1,10 @@
 - [x] **Centro Dedicado de Plantillas Multicanal (`TemplatesManagerPage.tsx`)**:
   - Vista independiente accesible desde la barra superior de navegación y menú de perfil.
-  - **4 Plantillas WhatsApp HSM**: Confirmación de Reserva, Recordatorio Interactivo 24h, Recordatorio Inminente 2h y Reactivación VIP con vista previa en burbuja WhatsApp y envío de prueba.
-  - **5 Plantillas de Correo Electrónico HTML**: Confirmación Elegante de Cita con botón a Calendar, Recordatorio 24h, Recibo Digital POS, Solicitud de Reseña Google 5 Estrellas y Newsletter/Cumpleaños con simulador de cliente de correo y prueba en vivo.
+  - **Matriz de Reglas y Horarios de Envío (`⚡ Reglas de Envío`)**: Control granular para activar/desactivar qué mensajes disparar (Confirmaciones, Recordatorios 24h, Recordatorios 2h, Reactivación VIP, Reseñas Google, Recibos POS, Cumpleaños), tiempo de anticipación (horas/días), canal preferido y ventana de silencio nocturno anti-molestias (ej. no enviar de 9PM a 8AM).
+  - **Editor Completo de Plantillas WhatsApp HSM & Email HTML**: Modales con edición de textos, variables, botones y previsualización en tiempo real.
+  - **Simulador Móvil iPhone 15 Pro con Dynamic Island**: Chasis de teléfono realista con barra de estado iOS (9:41, 5G, Batería), cabecera oficial de WhatsApp / Apple Mail, checks dobles `✓✓` y barra gestual inferior.
+  - **Creadores Studio Split-Screen**: Modales con preajustes de 1 clic (Promo Balayage, Tips Post-Servicio, Recordatorio Flash, Black Luxury), inserción de variables dinámicas por chips (`+{{1}} Nombre`, etc.) y simulación en tiempo real.
+  - **Ciclo de Aprobación Meta HSM**: Botones interactivos de `🚀 Enviar a Aprobación`, `Enviar Todas a Meta` y sincronización de estado.
 - [x] **Aislamiento de Datos Multi-Tenant & Negocios Reales**:
   - Salones nuevos inician con sus **servicios seleccionados en COP**, su **estilista máster (dueña)**, **0 citas ficticias** y **CRM limpio**.
   - Simulador de WhatsApp y POS vinculados al catálogo y nombre real del salón.
