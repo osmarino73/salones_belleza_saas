@@ -611,32 +611,40 @@ export const api = {
     getApiUrl(): string {
       return (import.meta as any).env?.VITE_ZERNIO_API_URL || 'https://api.zernio.com/v1';
     },
-    async getConnectUrl(tenantId: string, platform: 'whatsapp' | 'instagram' = 'whatsapp') {
+    async getConnectUrl(tenantId: string, platform: 'whatsapp' | 'instagram' = 'whatsapp'): Promise<string> {
       const apiKey = this.getApiKey();
-      const apiUrl = this.getApiUrl();
-      if (apiKey) {
-        try {
-          const res = await fetch(`${apiUrl}/connect`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-              platform,
-              tenant_id: tenantId,
-              redirect_uri: window.location.origin + '/dashboard?connected=' + platform
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.url || data.connect_url) return data.url || data.connect_url;
+      const redirectUri = encodeURIComponent(window.location.origin + '/dashboard?connected=' + platform);
+      
+      const candidateEndpoints = [
+        `https://zernio.com/api/v1/connect/${platform}?redirect_url=${redirectUri}`,
+        `https://api.zernio.com/v1/connect/${platform}?redirect_url=${redirectUri}`,
+        `https://api.zernio.com/v1/channels/connect/${platform}?redirect_url=${redirectUri}`
+      ];
+
+      for (const endpoint of candidateEndpoints) {
+        if (apiKey) {
+          try {
+            const res = await fetch(endpoint, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json'
+              }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.authUrl || data.url || data.connect_url) {
+                return data.authUrl || data.url || data.connect_url;
+              }
+            }
+          } catch (e) {
+            console.warn(`Zernio endpoint notice:`, e);
           }
-        } catch (e) {
-          console.warn('Zernio connect URL notice:', e);
         }
       }
-      return `https://zernio.com/connect?platform=${platform}&tenant_id=${tenantId}&api_key=${apiKey || ''}`;
+      
+      // Fallback
+      return `https://zernio.com/login?redirect=/channels/connect/${platform}`;
     },
     async createOrGetChannel(phone: string, tenantId: string) {
       const apiKey = this.getApiKey();
