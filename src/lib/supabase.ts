@@ -611,6 +611,33 @@ export const api = {
     getApiUrl(): string {
       return (import.meta as any).env?.VITE_ZERNIO_API_URL || 'https://api.zernio.com/v1';
     },
+    async getConnectUrl(tenantId: string, platform: 'whatsapp' | 'instagram' = 'whatsapp') {
+      const apiKey = this.getApiKey();
+      const apiUrl = this.getApiUrl();
+      if (apiKey) {
+        try {
+          const res = await fetch(`${apiUrl}/connect`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+              platform,
+              tenant_id: tenantId,
+              redirect_uri: window.location.origin + '/dashboard?connected=' + platform
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.url || data.connect_url) return data.url || data.connect_url;
+          }
+        } catch (e) {
+          console.warn('Zernio connect URL notice:', e);
+        }
+      }
+      return `https://zernio.com/connect?platform=${platform}&tenant_id=${tenantId}&api_key=${apiKey || ''}`;
+    },
     async createOrGetChannel(phone: string, tenantId: string) {
       const apiKey = this.getApiKey();
       const apiUrl = this.getApiUrl();

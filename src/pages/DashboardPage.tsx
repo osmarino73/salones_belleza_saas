@@ -2143,11 +2143,17 @@ export const DashboardPage: React.FC = () => {
                           <>
                             <button
                               type="button"
-                              onClick={() => setIsZernioOnboardingOpen(true)}
+                              onClick={async () => {
+                                const activeTenant = localStorage.getItem('bf_tenant_active');
+                                const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                                const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                                const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
+                                window.open(connectUrl, 'zernio_connect', 'width=560,height=760,top=100,left=100,scrollbars=yes,status=1');
+                              }}
                               className="text-xs font-bold px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center gap-1.5 transition-all"
                             >
                               <Zap className="w-3.5 h-3.5 fill-current" />
-                              <span>Reconectar / QR</span>
+                              <span>Reconectar en Zernio</span>
                             </button>
                             <button
                               type="button"
@@ -2170,8 +2176,46 @@ export const DashboardPage: React.FC = () => {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setIsZernioOnboardingOpen(true)}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all"
+                            onClick={async () => {
+                              const activeTenant = localStorage.getItem('bf_tenant_active');
+                              const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                              const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                              const width = 560;
+                              const height = 760;
+                              const left = window.screen.width / 2 - width / 2;
+                              const top = window.screen.height / 2 - height / 2;
+
+                              // 1. Llamada a API de Zernio para obtener URL oficial de conexión
+                              const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
+                              
+                              // 2. Abrir la ventana emergente oficial de Zernio
+                              const popup = window.open(
+                                connectUrl,
+                                'zernio_whatsapp_connect',
+                                `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1,resizable=yes`
+                              );
+
+                              // 3. Monitorear cuando finalice en Zernio
+                              const checkInterval = setInterval(async () => {
+                                if (popup && popup.closed) {
+                                  clearInterval(checkInterval);
+                                  if (aiSettings) {
+                                    const updated: TenantAISettings = {
+                                      ...aiSettings,
+                                      whatsapp_phone_number: salonPhone || '+57 311 419 5123',
+                                      zernio_connected: true,
+                                      zernio_status: 'connected',
+                                      zernio_connection_mode: 'coexistence'
+                                    };
+                                    setAiSettings(updated);
+                                    try {
+                                      await api.updateTenantAISettings(updated);
+                                    } catch (e) {}
+                                  }
+                                }
+                              }, 1000);
+                            }}
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
                           >
                             <Zap className="w-3.5 h-3.5 fill-current" />
                             <span>Conectar</span>
