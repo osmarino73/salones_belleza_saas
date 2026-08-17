@@ -2103,46 +2103,80 @@ export const DashboardPage: React.FC = () => {
                   <div className="space-y-3">
                     {/* Canal 1: WhatsApp */}
                     <div className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                      aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5)
+                      aiSettings.zernio_connected
                         ? 'border-emerald-500/40 bg-emerald-500/5'
                         : 'border-white/10 bg-[#0E121B]'
                     }`}>
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                          aiSettings.zernio_connected
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                            : 'bg-white/5 text-slate-400 border-white/10'
+                        }`}>
                           <MessageCircle className="w-5 h-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
                             <strong className="text-sm font-bold text-white">WhatsApp Business</strong>
-                            <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              aiSettings.zernio_connected
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'bg-white/10 text-slate-400'
+                            }`}>
                               Coexistencia
                             </span>
                           </div>
                           <p className="text-xs text-slate-400 mt-0.5">
-                            {aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5) ? (
+                            {aiSettings.zernio_connected ? (
                               <span className="text-emerald-400 font-semibold flex items-center gap-1">
                                 ● Conectado ({aiSettings.whatsapp_phone_number || 'Canal Activo'})
                               </span>
                             ) : (
-                              'Sin cuentas conectadas. El número sigue activo en tu app WhatsApp.'
+                              'Sin cuentas conectadas. Haz clic en Conectar para vincular tu WhatsApp.'
                             )}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setIsZernioOnboardingOpen(true)}
-                          className={`text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
-                            aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5)
-                              ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
-                              : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black shadow-emerald-500/25'
-                          }`}
-                        >
-                          <Zap className="w-3.5 h-3.5 fill-current" />
-                          <span>{aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5) ? 'Reconectar / QR' : 'Conectar'}</span>
-                        </button>
+                        {aiSettings.zernio_connected ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setIsZernioOnboardingOpen(true)}
+                              className="text-xs font-bold px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center gap-1.5 transition-all"
+                            >
+                              <Zap className="w-3.5 h-3.5 fill-current" />
+                              <span>Reconectar / QR</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const updated: TenantAISettings = {
+                                  ...aiSettings,
+                                  zernio_connected: false,
+                                  zernio_status: 'disconnected'
+                                };
+                                setAiSettings(updated);
+                                try {
+                                  await api.updateTenantAISettings(updated);
+                                } catch (e) {}
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all"
+                            >
+                              Desconectar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsZernioOnboardingOpen(true)}
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all"
+                          >
+                            <Zap className="w-3.5 h-3.5 fill-current" />
+                            <span>Conectar</span>
+                          </button>
+                        )}
                       </div>
                     </div>
 
