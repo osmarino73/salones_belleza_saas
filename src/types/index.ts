@@ -134,6 +134,9 @@ export interface TenantAISettings {
   payment_instructions?: string;
   zernio_channel_id?: string;
   whatsapp_phone_number?: string;
+  zernio_connected?: boolean;
+  zernio_status?: 'disconnected' | 'connecting' | 'connected' | 'error';
+  zernio_connection_mode?: 'coexistence' | 'cloud_api';
   is_active: boolean;
   human_takeover_active: boolean;
   human_takeover_until?: string;

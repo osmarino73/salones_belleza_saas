@@ -49,10 +49,14 @@ import {
   UserPlus,
   Tag,
   PlusCircle,
-  Edit3
+  Edit3,
+  Instagram,
+  MessageSquare,
+  Smartphone
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product } from '../types';
+import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -63,6 +67,7 @@ export const DashboardPage: React.FC = () => {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [aiSettings, setAiSettings] = useState<TenantAISettings | null>(null);
+  const [isZernioOnboardingOpen, setIsZernioOnboardingOpen] = useState(false);
   const [isSavingAiSettings, setIsSavingAiSettings] = useState(false);
   const [aiSettingsSavedSuccess, setAiSettingsSavedSuccess] = useState(false);
   const [newFaqQuestion, setNewFaqQuestion] = useState('');
@@ -2081,47 +2086,100 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 5. Conexión Zernio & WhatsApp */}
-                <div className={`p-6 rounded-2xl border space-y-4 ${
+                {/* 5. Canales de Mensajería & Conectividad Zernio */}
+                <div className={`p-6 rounded-2xl border space-y-5 ${
                   theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
-                  <div className="flex items-center gap-2 border-b pb-3 border-black/5 dark:border-white/10">
-                    <MessageCircle className="w-4 h-4 text-emerald-500" />
-                    <h3 className="text-sm font-bold">Conectividad Zernio & WhatsApp</h3>
+                  <div className="flex items-center justify-between border-b pb-3 border-black/5 dark:border-white/10">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-emerald-500" />
+                      <h3 className="text-sm font-bold">Canales de Mensajería & Zernio</h3>
+                    </div>
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> Zernio Gateway
+                    </span>
                   </div>
 
                   <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                        Número de WhatsApp Oficial
-                      </label>
-                      <input
-                        type="text"
-                        value={aiSettings.whatsapp_phone_number || ''}
-                        onChange={(e) => setAiSettings({ ...aiSettings, whatsapp_phone_number: e.target.value })}
-                        placeholder="+57 300 123 4567"
-                        className={`w-full border rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-emerald-500 ${
-                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F9FAFC] border-black/10 text-slate-900'
-                        }`}
-                      />
+                    {/* Canal 1: WhatsApp */}
+                    <div className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5)
+                        ? 'border-emerald-500/40 bg-emerald-500/5'
+                        : 'border-white/10 bg-[#0E121B]'
+                    }`}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                          <MessageCircle className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <strong className="text-sm font-bold text-white">WhatsApp Business</strong>
+                            <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                              Coexistencia
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5) ? (
+                              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                                ● Conectado ({aiSettings.whatsapp_phone_number || 'Canal Activo'})
+                              </span>
+                            ) : (
+                              'Sin cuentas conectadas. El número sigue activo en tu app WhatsApp.'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsZernioOnboardingOpen(true)}
+                          className={`text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-md ${
+                            aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5)
+                              ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+                              : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-black shadow-emerald-500/25'
+                          }`}
+                        >
+                          <Zap className="w-3.5 h-3.5 fill-current" />
+                          <span>{aiSettings.zernio_connected || (aiSettings.whatsapp_phone_number && aiSettings.whatsapp_phone_number.length > 5) ? 'Reconectar / QR' : 'Conectar'}</span>
+                        </button>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                        ID de Canal Zernio (Zernio Channel ID)
-                      </label>
-                      <input
-                        type="text"
-                        value={aiSettings.zernio_channel_id || ''}
-                        onChange={(e) => setAiSettings({ ...aiSettings, zernio_channel_id: e.target.value })}
-                        placeholder="chn_zernio_live_..."
-                        className={`w-full border rounded-xl px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-emerald-500 ${
-                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F9FAFC] border-black/10 text-slate-900'
-                        }`}
-                      />
+                    {/* Canal 2: Instagram */}
+                    <div className="p-3.5 rounded-xl border border-white/5 bg-[#0E121B]/50 flex items-center justify-between opacity-70">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center shrink-0">
+                          <Instagram className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <strong className="text-xs font-semibold text-white block">Instagram Direct</strong>
+                          <span className="text-[10px] text-slate-500">Sin cuentas conectadas • Próximamente</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-semibold px-2.5 py-1 rounded-lg border border-white/5">
+                        Próximamente
+                      </span>
                     </div>
 
-                    <div className="pt-2 border-t border-black/5 dark:border-white/5 space-y-2">
+                    {/* Canal 3: Messenger */}
+                    <div className="p-3.5 rounded-xl border border-white/5 bg-[#0E121B]/50 flex items-center justify-between opacity-70">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <strong className="text-xs font-semibold text-white block">Facebook Messenger</strong>
+                          <span className="text-[10px] text-slate-500">Sin cuentas conectadas • Próximamente</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-semibold px-2.5 py-1 rounded-lg border border-white/5">
+                        Próximamente
+                      </span>
+                    </div>
+
+                    {/* Intervención Humana */}
+                    <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
                       <div className="flex justify-between items-center text-xs">
                         <div>
                           <strong className="block font-semibold">Modo "Intervención Humana"</strong>
@@ -3642,6 +3700,32 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* MODAL ONBOARDING ZERNIO WHATSAPP (META EMBEDDED STYLE) */}
+      <ZernioOnboardingModal
+        isOpen={isZernioOnboardingOpen}
+        onClose={() => setIsZernioOnboardingOpen(false)}
+        salonName={salonName}
+        initialPhone={salonPhone || (aiSettings?.whatsapp_phone_number || '')}
+        onSuccess={async (data) => {
+          if (aiSettings) {
+            const updated: TenantAISettings = {
+              ...aiSettings,
+              whatsapp_phone_number: data.phone,
+              zernio_channel_id: data.channelId,
+              zernio_connected: true,
+              zernio_status: 'connected',
+              zernio_connection_mode: data.mode
+            };
+            setAiSettings(updated);
+            try {
+              await api.updateTenantAISettings(updated);
+            } catch (e) {
+              console.warn('Saved local AI settings:', e);
+            }
+          }
+        }}
+      />
 
     </div>
   );
