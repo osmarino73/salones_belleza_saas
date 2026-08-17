@@ -13,10 +13,10 @@ import {
   Check,
   RefreshCw,
   Zap,
-  Globe,
-  ExternalLink,
   Lock,
-  ArrowUpRight
+  MessageSquare,
+  Users,
+  ShieldAlert
 } from 'lucide-react';
 import { api } from '../lib/supabase';
 
@@ -45,6 +45,8 @@ const COUNTRIES: CountryItem[] = [
   { name: 'Venezuela', code: 'VE', dialCode: '+58', flag: '🇻🇪' },
   { name: 'Suiza', code: 'CH', dialCode: '+41', flag: '🇨🇭' },
   { name: 'China', code: 'CN', dialCode: '+86', flag: '🇨🇳' },
+  { name: 'Chad', code: 'TD', dialCode: '+235', flag: '🇹🇩' },
+  { name: 'Chipre', code: 'CY', dialCode: '+357', flag: '🇨🇾' },
   { name: 'República Checa', code: 'CZ', dialCode: '+420', flag: '🇨🇿' }
 ];
 
@@ -65,6 +67,7 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
   initialPhone = '',
   onSuccess
 }) => {
+  // 1: Welcome & Overview, 2: Add Phone Number, 3: Verification & Success
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [connectionMode, setConnectionMode] = useState<'coexistence' | 'cloud_api'>('coexistence');
   
@@ -81,7 +84,6 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
   // Sync State
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedWebhook, setCopiedWebhook] = useState(false);
-  const [openedZernioPopup, setOpenedZernioPopup] = useState(false);
 
   useEffect(() => {
     if (initialPhone) {
@@ -92,7 +94,7 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
     }
     const cleanId = (tenantId || 'salon').slice(0, 8);
     setChannelId(`chn_zernio_${cleanId}_${Math.random().toString(36).substring(2, 7)}`);
-    setSessionId(`01a${Math.random().toString(36).substring(2, 6)}-620a-7e72-9103-${Math.random().toString(36).substring(2, 10)}`);
+    setSessionId(`01a001c4-620a-7e72-9103-${Math.random().toString(36).substring(2, 12)}`);
   }, [initialPhone, tenantId, isOpen]);
 
   if (!isOpen) return null;
@@ -118,26 +120,9 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
     }
   };
 
-  const handleOpenZernioEmbeddedOAuth = () => {
-    const width = 540;
-    const height = 750;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-    
-    // Zernio Official Onboarding & Channel Connection URL
-    window.open(
-      'https://zernio.com',
-      'zernio_official_onboarding',
-      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1`
-    );
-    setOpenedZernioPopup(true);
-    setStep(2);
-  };
-
   const handleVerifyZernioConnection = async () => {
     setIsVerifying(true);
     try {
-      // Sincronizar y provisionar canal mediante la API de Zernio
       const res = await api.zernio.createOrGetChannel(fullFormattedPhone, tenantId);
       if (res && res.id) {
         setChannelId(res.id);
@@ -178,7 +163,7 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
           <div className="flex items-center gap-2">
             <div className="font-extrabold tracking-tight text-lg leading-none flex items-center gap-1.5">
               <span>facebook</span>
-              <span className="font-light text-xs opacity-80">| Zernio Connector</span>
+              <span className="font-light text-xs opacity-80">| Zernio</span>
             </div>
           </div>
 
@@ -206,313 +191,286 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
             <span className="font-semibold text-slate-800">Social Media Connector</span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenZernioEmbeddedOAuth}
-            className="text-[11px] text-[#1877F2] hover:underline flex items-center gap-1 font-medium"
-          >
-            <span>Abrir consola Zernio.com</span>
-            <ExternalLink className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <div className="w-5 h-5 rounded-full bg-slate-300 overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="font-medium text-[11px] text-slate-700 hidden sm:inline">{salonName}</span>
+          </div>
         </div>
 
-        {/* Modal Body with Left Stepper & Main Form */}
-        <div className="p-6 flex gap-4">
+        {/* Modal Body */}
+        <div className="p-6">
           
-          {/* Left Vertical Stepper Dots (Matching Reference Image) */}
-          <div className="flex flex-col items-center pt-1 shrink-0 space-y-4">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-              step >= 1 ? 'border-2 border-[#1877F2] text-[#1877F2] bg-blue-50 font-extrabold' : 'border border-slate-300 text-slate-400'
-            }`}>
-              {step > 1 ? '✓' : '1'}
-            </div>
-            <div className={`w-0.5 h-8 ${step >= 2 ? 'bg-[#1877F2]' : 'bg-slate-200'}`} />
-            
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-              step >= 2 ? 'border-2 border-[#1877F2] text-[#1877F2] bg-blue-50 font-extrabold' : 'border border-slate-300 text-slate-400'
-            }`}>
-              {step > 2 ? '✓' : '2'}
-            </div>
-            <div className={`w-0.5 h-8 ${step >= 3 ? 'bg-[#1877F2]' : 'bg-slate-200'}`} />
-
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-              step === 3 ? 'border-2 border-emerald-600 text-emerald-600 bg-emerald-50 font-extrabold' : 'border border-slate-300 text-slate-400'
-            }`}>
-              3
-            </div>
-          </div>
-
-          {/* Right Content Area */}
-          <div className="flex-1 space-y-4">
-            
-            {/* =========================================================================
-                STEP 1: NÚMERO DE TELÉFONO & LANZAMIENTO DE ONBOARDING
-                ========================================================================= */}
-            {step === 1 && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 leading-snug">
-                    Agrega tu número de teléfono de WhatsApp
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Choose how you want to be identified when sending messages.
-                  </p>
+          {/* =========================================================================
+              PANTALLA 1 (EXACTA A LA DE LA IMAGEN DE YOUTUBE)
+              "Conecta tu cuenta fácilmente con Zernio"
+              ========================================================================= */}
+          {step === 1 && (
+            <div className="space-y-4">
+              
+              {/* Banner Ilustrativo Superior (Conectar WhatsApp / Zernio) */}
+              <div className="w-full h-28 bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-400 rounded-xl flex items-center justify-between px-6 text-white overflow-hidden relative shadow-inner">
+                <div className="space-y-0.5 z-10">
+                  <div className="text-[10px] uppercase font-bold tracking-widest bg-white/20 px-2 py-0.5 rounded inline-block">
+                    Social Media Connector
+                  </div>
+                  <h3 className="text-base font-extrabold">Zernio Media Gateway</h3>
+                  <p className="text-[11px] opacity-90">WhatsApp Business Cloud & Coexistencia</p>
                 </div>
 
-                {/* Connection Mode Radios */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
-                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                    Modo de Conexión:
+                <div className="flex items-center gap-2 text-white/90 z-10">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 fill-current text-white" />
                   </div>
-                  
-                  <div
-                    onClick={() => setConnectionMode('coexistence')}
-                    className={`p-2.5 rounded-lg border cursor-pointer flex items-center gap-2.5 transition-all ${
-                      connectionMode === 'coexistence' ? 'border-[#1877F2] bg-blue-50/60 shadow-sm' : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      checked={connectionMode === 'coexistence'}
-                      onChange={() => setConnectionMode('coexistence')}
-                      className="text-[#1877F2] accent-[#1877F2]"
-                    />
-                    <div>
-                      <strong className="text-xs text-slate-800 block">Modo Coexistencia (Recomendado)</strong>
-                      <span className="text-[11px] text-slate-500 block">El número sigue activo en tu app de WhatsApp en el móvil.</span>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => setConnectionMode('cloud_api')}
-                    className={`p-2.5 rounded-lg border cursor-pointer flex items-center gap-2.5 transition-all ${
-                      connectionMode === 'cloud_api' ? 'border-[#1877F2] bg-blue-50/60 shadow-sm' : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      checked={connectionMode === 'cloud_api'}
-                      onChange={() => setConnectionMode('cloud_api')}
-                      className="text-[#1877F2] accent-[#1877F2]"
-                    />
-                    <div>
-                      <strong className="text-xs text-slate-800 block">Solo Cloud API Oficial</strong>
-                      <span className="text-[11px] text-slate-500 block">Conexión dedicada por Meta Cloud API.</span>
-                    </div>
+                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Zap className="w-6 h-6 fill-current text-amber-300" />
                   </div>
                 </div>
 
-                {/* Phone Input with Country Search (Matching Image 2) */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Número de teléfono *
-                  </label>
+                {/* Decorative background circle */}
+                <div className="absolute -right-6 -bottom-10 w-32 h-32 rounded-full bg-white/10" />
+              </div>
 
-                  {/* Country Selector Dropdown with Search */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                      className="w-full bg-white border border-slate-300 hover:border-[#1877F2] text-slate-800 text-xs px-3 py-2.5 rounded-lg flex items-center justify-between transition-all"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{selectedCountry.flag}</span>
-                        <span className="font-bold">{selectedCountry.dialCode}</span>
-                        <span className="text-slate-600">({selectedCountry.name})</span>
-                      </div>
-                      <span className="text-xs text-slate-400">▾</span>
-                    </button>
+              {/* Title & Introduction */}
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 leading-snug">
+                  Conecta tu cuenta fácilmente con Zernio
+                </h2>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  En este proceso de registro, se te guiará para que registres tu cuenta de empresa y la conectes con tu socio.
+                </p>
+              </div>
 
-                    {/* Open Country Search Popover */}
-                    {isCountryDropdownOpen && (
-                      <div className="absolute left-0 top-full mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-2xl z-50 p-2 space-y-2">
-                        <div className="relative">
-                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                          <input
-                            type="text"
-                            value={countrySearchQuery}
-                            onChange={(e) => setCountrySearchQuery(e.target.value)}
-                            placeholder="Buscar país o prefijo..."
-                            className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#1877F2]"
-                            autoFocus
-                          />
-                        </div>
+              {/* Feature Points Box */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                <strong className="text-xs font-bold text-slate-800 block">
+                  Podrás hacer lo siguiente:
+                </strong>
 
-                        <div className="max-h-48 overflow-y-auto space-y-0.5 custom-scrollbar divide-y divide-slate-100">
-                          {filteredCountries.map((c) => (
-                            <button
-                              key={`${c.code}-${c.dialCode}`}
-                              type="button"
-                              onClick={() => {
-                                setSelectedCountry(c);
-                                setIsCountryDropdownOpen(false);
-                                setCountrySearchQuery('');
-                              }}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between hover:bg-blue-50 transition-colors ${
-                                selectedCountry.code === c.code ? 'bg-blue-50 text-[#1877F2] font-bold' : 'text-slate-700'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">{c.flag}</span>
-                                <span className="font-semibold">{c.code} {c.dialCode}</span>
-                                <span className="text-slate-500 text-[11px]">{c.name}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#1877F2] flex items-center justify-center shrink-0 mt-0.5">
+                    <MessageSquare className="w-4 h-4" />
                   </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-slate-900">
+                      Comunícate con tus clientes a gran escala
+                    </h4>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      La API de la nube te permite enviar y recibir mensajes de forma segura y administrar las conversaciones de manera automática.
+                    </p>
+                    <ul className="space-y-1 text-[11px] text-slate-600 pt-1 list-disc pl-4">
+                      <li>Manejar grandes volúmenes de mensajes con facilidad.</li>
+                      <li>Reducir los costos asociados a los SMS o llamadas de voz tradicionales.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Phone input box */}
+              {/* Terms disclaimer */}
+              <p className="text-[10px] text-slate-400 leading-tight">
+                Al continuar, aceptas las <span className="text-[#1877F2] hover:underline cursor-pointer">Condiciones de hospedaje de Meta para la API de la nube</span> y las <span className="text-[#1877F2] hover:underline cursor-pointer">Condiciones de Meta para WhatsApp Business</span>.
+              </p>
+
+            </div>
+          )}
+
+          {/* =========================================================================
+              PANTALLA 2 (EXACTA A LA DE LA IMAGEN 2)
+              "Agrega tu número de teléfono de WhatsApp"
+              ========================================================================= */}
+          {step === 2 && (
+            <div className="space-y-4">
+              
+              {/* Stepper horizontal mini */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="text-xs font-bold text-[#1877F2]">Paso 2 de 3: Identificación del Número</span>
+                <span className="text-[10px] bg-blue-50 text-[#1877F2] font-semibold px-2 py-0.5 rounded">
+                  Modo Coexistencia
+                </span>
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 leading-snug">
+                  Agrega tu número de teléfono de WhatsApp
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Choose how you want to be identified when sending messages.
+                </p>
+              </div>
+
+              {/* Mode Selector */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                  Tipo de Conexión:
+                </div>
+                
+                <div
+                  onClick={() => setConnectionMode('coexistence')}
+                  className={`p-2.5 rounded-lg border cursor-pointer flex items-center gap-2.5 transition-all ${
+                    connectionMode === 'coexistence' ? 'border-[#1877F2] bg-blue-50/60 shadow-sm' : 'border-slate-200 bg-white'
+                  }`}
+                >
                   <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => handlePhoneInput(e.target.value)}
-                    placeholder="311 419 5123"
-                    className="w-full bg-white border border-slate-300 focus:border-[#1877F2] text-slate-900 rounded-lg px-3.5 py-2.5 text-sm font-mono focus:outline-none transition-all placeholder-slate-400 shadow-sm"
-                    required
+                    type="radio"
+                    checked={connectionMode === 'coexistence'}
+                    onChange={() => setConnectionMode('coexistence')}
+                    className="text-[#1877F2] accent-[#1877F2]"
                   />
+                  <div>
+                    <strong className="text-xs text-slate-800 block">Modo Coexistencia (WhatsApp del móvil activo)</strong>
+                    <span className="text-[11px] text-slate-500 block">Lo que se conteste desde el móvil también queda sincronizado.</span>
+                  </div>
                 </div>
 
-                {/* Direct Connect Action Button */}
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handleOpenZernioEmbeddedOAuth}
-                    className="w-full bg-gradient-to-r from-[#1877F2] to-blue-700 hover:opacity-95 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all"
-                  >
-                    <span>🚀 Iniciar Onboarding Oficial de Zernio en 1 Clic</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </button>
-                  <span className="text-[10px] text-slate-500 block text-center mt-1.5">
-                    Se abrirá la ventana oficial de Zernio para autorizar WhatsApp con tu API Key.
-                  </span>
+                <div
+                  onClick={() => setConnectionMode('cloud_api')}
+                  className={`p-2.5 rounded-lg border cursor-pointer flex items-center gap-2.5 transition-all ${
+                    connectionMode === 'cloud_api' ? 'border-[#1877F2] bg-blue-50/60 shadow-sm' : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    checked={connectionMode === 'cloud_api'}
+                    onChange={() => setConnectionMode('cloud_api')}
+                    className="text-[#1877F2] accent-[#1877F2]"
+                  />
+                  <div>
+                    <strong className="text-xs text-slate-800 block">Solo Cloud API</strong>
+                    <span className="text-[11px] text-slate-500 block">Conexión directa por Meta Business API.</span>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* =========================================================================
-                STEP 2: CONFIRMACIÓN Y VINCULACIÓN DE CANAL
-                ========================================================================= */}
-            {step === 2 && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
-                    Sincronización de Canal con Zernio
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Una vez completado el inicio de sesión en Zernio, confirma tu canal para vincularlo a tu Dashboard.
-                  </p>
-                </div>
+              {/* Phone Input with Country Search (Dropdown con buscador [ 🔍 ch ]) */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-700">
+                  Número de teléfono *
+                </label>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Salón:</span>
-                    <strong className="text-slate-900">{salonName}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Número de WhatsApp:</span>
-                    <strong className="text-slate-900 font-mono">{fullFormattedPhone}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Modo:</span>
-                    <span className="text-emerald-600 font-bold">
-                      {connectionMode === 'coexistence' ? '✓ Coexistencia Activa' : 'Cloud API'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                    <span className="text-slate-500 text-[11px]">Webhook Zernio:</span>
-                    <button
-                      type="button"
-                      onClick={handleCopyWebhook}
-                      className="text-[11px] text-[#1877F2] font-mono flex items-center gap-1 hover:underline"
-                    >
-                      {copiedWebhook ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                      <span>{copiedWebhook ? 'Copiado' : 'Copiar Webhook'}</span>
-                    </button>
-                  </div>
-                </div>
+                {/* Selector de país */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                    className="w-full bg-white border border-slate-300 hover:border-[#1877F2] text-slate-800 text-xs px-3 py-2.5 rounded-lg flex items-center justify-between transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{selectedCountry.flag}</span>
+                      <span className="font-bold">{selectedCountry.code}</span>
+                      <span className="font-bold text-[#1877F2]">{selectedCountry.dialCode}</span>
+                      <span className="text-slate-600">({selectedCountry.name})</span>
+                    </div>
+                    <span className="text-xs text-slate-400">▾</span>
+                  </button>
 
-                {/* Verification Button */}
-                <button
-                  type="button"
-                  onClick={handleVerifyZernioConnection}
-                  disabled={isVerifying}
-                  className="w-full bg-[#1877F2] hover:bg-blue-600 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all"
-                >
-                  {isVerifying ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Sincronizando canal con Zernio API...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-4 h-4 fill-current" />
-                      <span>Confirmar y Activar Conexión</span>
-                    </>
+                  {/* Popover con buscador tipo [ 🔍 ch ] */}
+                  {isCountryDropdownOpen && (
+                    <div className="absolute left-0 top-full mt-1 w-full bg-white border border-slate-300 rounded-xl shadow-2xl z-50 p-2 space-y-2">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                        <input
+                          type="text"
+                          value={countrySearchQuery}
+                          onChange={(e) => setCountrySearchQuery(e.target.value)}
+                          placeholder="Buscar país o prefijo (ej. ch, +57, +56)..."
+                          className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-2 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#1877F2]"
+                          autoFocus
+                        />
+                      </div>
+
+                      <div className="max-h-48 overflow-y-auto space-y-0.5 custom-scrollbar divide-y divide-slate-100">
+                        {filteredCountries.map((c) => (
+                          <button
+                            key={`${c.code}-${c.dialCode}`}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(c);
+                              setIsCountryDropdownOpen(false);
+                              setCountrySearchQuery('');
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between hover:bg-blue-50 transition-colors ${
+                              selectedCountry.code === c.code ? 'bg-blue-50 text-[#1877F2] font-bold' : 'text-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{c.flag}</span>
+                              <span className="font-semibold">{c.code}</span>
+                              <span className="font-mono text-[#1877F2]">{c.dialCode}</span>
+                              <span className="text-slate-500 text-[11px]">{c.name}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </button>
-
-                <div className="text-center pt-1">
-                  <button
-                    type="button"
-                    onClick={handleOpenZernioEmbeddedOAuth}
-                    className="text-xs text-[#1877F2] hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>¿No se abrió la ventana? Hacer clic para abrir Zernio</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
                 </div>
+
+                {/* Input de número */}
+                <input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => handlePhoneInput(e.target.value)}
+                  placeholder="311 419 5123"
+                  className="w-full bg-white border border-slate-300 focus:border-[#1877F2] text-slate-900 rounded-lg px-3.5 py-2.5 text-sm font-mono focus:outline-none transition-all placeholder-slate-400 shadow-sm"
+                  required
+                />
+                <span className="text-[10px] text-slate-500 block">
+                  Identificador internacional: <strong className="text-slate-800 font-mono">{fullFormattedPhone}</strong>
+                </span>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* =========================================================================
-                STEP 3: ACTIVACIÓN CONFIRMADA
-                ========================================================================= */}
-            {step === 3 && (
-              <div className="space-y-4 text-center py-2">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 border border-emerald-300 flex items-center justify-center mx-auto shadow-md animate-bounce">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-extrabold text-slate-900">¡WhatsApp Vinculado con Éxito!</h2>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    El número <strong className="text-slate-900 font-mono">{fullFormattedPhone}</strong> ha sido vinculado a Zernio Media Gateway.
-                  </p>
-                </div>
-
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-left space-y-2 text-emerald-900">
-                  <div className="flex items-center gap-1.5 font-bold text-emerald-800">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <span>Servicios Activos en BeautyFlow:</span>
-                  </div>
-                  <ul className="space-y-1 text-[11px] pl-5 list-disc text-emerald-800">
-                    <li>Agente IA responde 24/7 con tus servicios y precios en COP.</li>
-                    <li>Envío automático de recordatorios 24h y 2h antes de cada cita.</li>
-                    <li>Modo Coexistencia activo en tu móvil.</li>
-                  </ul>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleFinishAndSave}
-                  className="w-full bg-[#1877F2] hover:bg-blue-600 text-white font-extrabold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Terminar y Guardar en Dashboard</span>
-                </button>
+          {/* =========================================================================
+              PANTALLA 3 (ACTIVACIÓN EXITOSA & SINCRONIZACIÓN)
+              ========================================================================= */}
+          {step === 3 && (
+            <div className="space-y-4 text-center py-2">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 border border-emerald-300 flex items-center justify-center mx-auto shadow-md animate-bounce">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-            )}
 
-          </div>
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">¡WhatsApp Vinculado con Éxito!</h2>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  El número <strong className="text-slate-900 font-mono">{fullFormattedPhone}</strong> ya está conectado mediante Zernio.
+                </p>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-left space-y-2 text-emerald-900">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-800">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Servicios Activos:</span>
+                </div>
+                <ul className="space-y-1 text-[11px] pl-5 list-disc text-emerald-800">
+                  <li>Agente IA responde 24/7 con tus servicios y precios en COP.</li>
+                  <li>Envío automático de recordatorios 24h y 2h antes.</li>
+                  <li>Modo Coexistencia activo en tu móvil.</li>
+                </ul>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleFinishAndSave}
+                className="w-full bg-[#1877F2] hover:bg-blue-600 text-white font-extrabold py-3 rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Terminar y Guardar en Dashboard</span>
+              </button>
+            </div>
+          )}
+
         </div>
 
-        {/* Footer with Session ID and Navigation (Exact from Image 2) */}
+        {/* Footer (Exacto a la Imagen de YouTube y Facebook Onboarding) */}
         <div className="bg-slate-50 border-t border-slate-200 px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <div>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[10px] text-slate-400 block hover:underline cursor-pointer">
               Política de privacidad y Condiciones de Social Media Connector
             </span>
             <span className="text-[10px] font-mono text-slate-400">
@@ -521,25 +479,54 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {step > 1 && step < 3 && (
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition-all"
-              >
-                Volver
-              </button>
+            {step === 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="bg-[#1877F2] hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-lg text-xs shadow transition-all flex items-center gap-1.5"
+                >
+                  <span>Continuar</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
             )}
 
-            {step === 1 && (
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="bg-[#1877F2] hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-lg text-xs shadow transition-all flex items-center gap-1.5"
-              >
-                <span>Siguiente</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+            {step === 2 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition-all"
+                >
+                  Volver
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerifyZernioConnection}
+                  disabled={isVerifying || phoneNumber.replace(/\D/g, '').length < 7}
+                  className="bg-[#1877F2] hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-lg text-xs shadow transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isVerifying ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Conectando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Siguiente</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </>
             )}
           </div>
         </div>
