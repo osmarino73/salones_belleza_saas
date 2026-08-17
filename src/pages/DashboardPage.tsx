@@ -58,10 +58,11 @@ import { api, initialStylists, initialServices, initialProducts } from '../lib/s
 import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
+import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates'>('overview');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
@@ -683,6 +684,7 @@ export const DashboardPage: React.FC = () => {
             {[
               { id: 'overview', label: 'Overview', icon: Layers },
               { id: 'crm', label: 'CRM Colorimetría', icon: Users },
+              { id: 'templates', label: 'Plantillas', icon: Sparkles },
               { id: 'whatsapp', label: 'Simulador Chat', icon: MessageCircle }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -786,6 +788,22 @@ export const DashboardPage: React.FC = () => {
                   >
                     <Scissors className="w-4 h-4 text-cyan-400" />
                     <span>Equipo, Servicios & Stock</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('templates');
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                      activeTab === 'templates'
+                        ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
+                        : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span>Plantillas WhatsApp & Email</span>
                   </button>
 
                   <button
@@ -2759,6 +2777,20 @@ export const DashboardPage: React.FC = () => {
             )}
 
           </div>
+        )}
+
+        {/* =========================================================================
+            VIEW 7: CENTRO DE PLANTILLAS (WHATSAPP HSM & EMAIL HTML)
+            ========================================================================= */}
+        {activeTab === 'templates' && (
+          <TemplatesManagerPage
+            theme={theme}
+            salonName={salonName}
+            salonPhone={salonPhone}
+            salonEmail={ownerEmail}
+            aiSettings={aiSettings}
+            onUpdateSettings={setAiSettings}
+          />
         )}
 
       </main>
