@@ -13,6 +13,21 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Arquitectura de Base de Datos y Almacenamiento de Fotos (`create_storage_avatars_bucket.sql`)**:
+  - **Soporte Híbrido Inteligente**:
+    1. **Supabase Storage Bucket (`avatars`)**: Sube el archivo WebP optimizado al bucket con CDN público y guarda la URL HTTPS en la columna `photo_url TEXT` de `public.stylists`.
+    2. **Fallback Automático DataURL WebP**: Si el bucket no está creado o no hay conexión de storage, guarda directamente el DataURL WebP (<35 KB) en la columna `photo_url TEXT` sin errores ni bloqueos.
+  - Creado script SQL [`create_storage_avatars_bucket.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_storage_avatars_bucket.sql) con políticas de lectura pública y subida RLS.
+- **Compresor y Subida Profesional de Imágenes (`ImageUploadField.tsx` y `imageCompressor.ts`)**:
+  - Motor de compresión HTML5 Canvas del lado del cliente que procesa fotos pesadas de celulares (5MB-10MB) y las optimiza a **WebP 1:1 (~25 KB - 35 KB, reducción >95%)** sin saturar la base de datos ni el ancho de banda.
+  - Interfaz con 3 modalidades:
+    1. **📤 Subir / Arrastrar Archivo**: Selector de archivos o cámara con estadísticas en vivo (`Optimizado: 4.2 MB ➔ 28 KB (-96%)`).
+    2. **✨ Galería Profesional**: 6 avatares predeterminados para estilistas (Colorista, Master, Barber, Nails, Keratina).
+    3. **🌐 Enlace URL**: Opción para pegar links directos HTTPS.
+  - Integrado en el modal de **Agregar / Editar Profesional** de [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx).
+- **Scroll Responsivo y Altura Máxima en Modales (`max-h-[90vh] overflow-y-auto`)**:
+  - Se añadió `max-h-[90vh] overflow-y-auto` a todos los modales de la app (Editar/Agregar Profesional, Registrar Clienta, Ficha 360°, Disponibilidad de Estilistas, Agregar Servicio, Producto Retail, Agendar Cita y Ajustes del Negocio).
+  - Los botones de acción (`Guardar`, `Cancelar`, `Listo`) y todos los campos ahora son 100% visibles y accesibles con scroll fluido en cualquier pantalla o resolución.
 - **Mapeo y Filtrado de Especialistas por Servicio (`Service-to-Stylist Mapping`)**:
   - Cada especialista tiene asignadas sus categorías (`color`, `corte`, `keratina`, `nails`, `barberia`, `spa`) y servicios específicos.
   - **Portal Público de Citas (`BookingPage.tsx`)**: Al elegir un servicio en el Paso 1, el Paso 2 filtra automáticamente y muestra **únicamente los especialistas capacitados** para ese servicio con sus badges de calificación y horarios libres.

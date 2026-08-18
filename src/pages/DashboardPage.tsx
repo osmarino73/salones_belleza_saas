@@ -66,6 +66,7 @@ import { MessagesBoardPage } from '../components/MessagesBoardPage';
 import { PosCashRegisterPage } from '../components/PosCashRegisterPage';
 import { LoyaltyReactivationPage } from '../components/LoyaltyReactivationPage';
 import { TimePickerSelect } from '../components/TimePickerSelect';
+import { ImageUploadField } from '../components/ImageUploadField';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -3051,7 +3052,7 @@ export const DashboardPage: React.FC = () => {
           ========================================================================= */}
       {selectedClientForFormula && !isNewFormulaModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 ${
+          <div className={`border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3119,7 +3120,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVA FÓRMULA */}
       {isNewFormulaModalOpen && selectedClientForFormula && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 ${
+          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3210,7 +3211,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVA CITA MANUAL */}
       {isNewAppointmentOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 ${
+          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3342,7 +3343,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL CONFIGURACIÓN DEL NEGOCIO */}
       {isBusinessSettingsModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3477,7 +3478,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVA / EDITAR CLIENTA */}
       {isClientModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3627,7 +3628,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVO / EDITAR ESTILISTA */}
       {isStylistModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -3763,18 +3764,15 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Foto de Perfil (URL)</label>
-                <input
-                  type="url"
-                  value={stylistForm.photo_url}
-                  onChange={(e) => setStylistForm({ ...stylistForm, photo_url: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
-              </div>
+              {/* Foto de Perfil Optimizada con Compresión WebP */}
+              <ImageUploadField
+                label="Foto de Perfil del Profesional"
+                value={stylistForm.photo_url}
+                onChange={(url) => setStylistForm({ ...stylistForm, photo_url: url })}
+                theme={theme}
+                aspectRatio="square"
+                maxWidth={400}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -3836,7 +3834,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL DISPONIBILIDAD & BLOQUEO DE DÍAS POR ESTILISTA (VISTA DUEÑA) */}
       {isStylistAvailabilityModalOpen && selectedStylistForAvailability && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-5 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             
@@ -4028,7 +4026,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVO / EDITAR SERVICIO */}
       {isServiceModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -4165,7 +4163,7 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL NUEVO / EDITAR PRODUCTO */}
       {isProductModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">

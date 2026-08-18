@@ -1160,7 +1160,7 @@ export const StylistPortalPage: React.FC = () => {
       {/* MODAL REGISTRO DE FÓRMULA DE COLORIMETRÍA */}
       {isFormulaModalOpen && selectedClientForFormula && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
@@ -1272,7 +1272,7 @@ export const StylistPortalPage: React.FC = () => {
       {/* MODAL CAMBIAR CONTRASEÑA DEL COLABORADOR */}
       {isChangePasswordModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 animate-fade-in ${
+          <div className={`border rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
             theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
           }`}>
             <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">

@@ -465,6 +465,25 @@ export const api = {
     localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
   },
 
+  async uploadAvatar(blob: Blob, fileName: string): Promise<string | null> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const filePath = `stylists/${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '')}`;
+        const { data, error } = await supabase.storage.from('avatars').upload(filePath, blob, {
+          contentType: blob.type || 'image/webp',
+          upsert: true
+        });
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+          if (publicUrlData?.publicUrl) return publicUrlData.publicUrl;
+        }
+      } catch (err) {
+        console.warn('Storage upload fallback to DataURL:', err);
+      }
+    }
+    return null;
+  },
+
   // SERVICES
   async getServices(tenantId?: string): Promise<Service[]> {
     const tid = tenantId || getActiveTenantId();
