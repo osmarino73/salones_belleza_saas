@@ -24,15 +24,21 @@ import {
   Activity,
   ArrowUpRight,
   Lock,
-  Key
+  Key,
+  Ban,
+  CalendarOff,
+  AlertTriangle,
+  Trash2,
+  Check
 } from 'lucide-react';
 import { api, initialStylists } from '../lib/supabase';
-import { Appointment, Client, Stylist, ColorFormula } from '../types';
+import { Appointment, Client, Stylist, ColorFormula, BlockedSlot } from '../types';
+import { TimePickerSelect } from '../components/TimePickerSelect';
 
 export const StylistPortalPage: React.FC = () => {
   const { stylistId } = useParams<{ stylistId?: string }>();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [activeTab, setActiveTab] = useState<'agenda' | 'wallet' | 'crm'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'wallet' | 'crm' | 'availability'>('agenda');
 
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
   const [currentStylist, setCurrentStylist] = useState<Stylist>(initialStylists[0]);
@@ -41,6 +47,18 @@ export const StylistPortalPage: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Availability & Blocked Slots State
+  const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
+  const [newBlockStartDate, setNewBlockStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newBlockEndDate, setNewBlockEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newBlockReason, setNewBlockReason] = useState('Vacaciones');
+  const [newBlockFullDay, setNewBlockFullDay] = useState(true);
+  const [newBlockStartTime, setNewBlockStartTime] = useState('02:00 PM');
+  const [newBlockEndTime, setNewBlockEndTime] = useState('06:00 PM');
+  const [availabilitySuccessMsg, setAvailabilitySuccessMsg] = useState('');
 
   // Change Password Modal State
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
@@ -149,6 +167,34 @@ export const StylistPortalPage: React.FC = () => {
     setIsFormulaModalOpen(false);
   };
 
+  // Sync availability state when currentStylist changes
+  useEffect(() => {
+    if (currentStylist) {
+      setWorkingDays(currentStylist.working_days || [1, 2, 3, 4, 5, 6]);
+      setBlockedDates(currentStylist.blocked_dates || []);
+      setBlockedSlots(currentStylist.blocked_slots || [
+        {
+          id: 'blk-1',
+          stylist_id: currentStylist.id,
+          date: '2026-08-25',
+          reason: 'Cita Médica / Trámite',
+          full_day: false,
+          start_time: '02:00 PM',
+          end_time: '05:00 PM',
+          created_at: '2026-08-18'
+        },
+        {
+          id: 'blk-2',
+          stylist_id: currentStylist.id,
+          date: '2026-08-29',
+          reason: 'Día de Descanso Programado',
+          full_day: true,
+          created_at: '2026-08-18'
+        }
+      ]);
+    }
+  }, [currentStylist]);
+
   // Handler for changing collaborator password
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +215,90 @@ export const StylistPortalPage: React.FC = () => {
       setNewPasswordInput('');
       setConfirmPasswordInput('');
     }, 1200);
+  };
+
+  // Handler: Toggle standard working day (0=Dom, 1=Lun ... 6=Sab)
+  const handleToggleWorkingDay = async (dayIndex: number) => {
+    const updated = workingDays.includes(dayIndex)
+      ? workingDays.filter(d => d !== dayIndex)
+      : [...workingDays, dayIndex].sort();
+    
+    setWorkingDays(updated);
+    const updatedStylist: Stylist = {
+      ...currentStylist,
+      working_days: updated
+    };
+    setCurrentStylist(updatedStylist);
+    await api.updateStylist(updatedStylist);
+    setAvailabilitySuccessMsg('Días laborales actualizados con éxito');
+    setTimeout(() => setAvailabilitySuccessMsg(''), 3000);
+  };
+
+  // Handler: Add new Blocked Date or Range
+  const handleAddBlockedSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlockStartDate) return;
+
+    // Generate all dates between start and end
+    const datesToBlock: string[] = [];
+    const start = new Date(newBlockStartDate);
+    const end = new Date(newBlockEndDate || newBlockStartDate);
+
+    for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+      datesToBlock.push(dt.toISOString().split('T')[0]);
+    }
+
+    const newSlots: BlockedSlot[] = datesToBlock.map(dateStr => ({
+      id: `blk-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      stylist_id: currentStylist.id,
+      date: dateStr,
+      reason: newBlockReason,
+      full_day: newBlockFullDay,
+      start_time: newBlockFullDay ? undefined : newBlockStartTime,
+      end_time: newBlockFullDay ? undefined : newBlockEndTime,
+      created_at: new Date().toISOString()
+    }));
+
+    const combinedSlots = [...newSlots, ...blockedSlots];
+    const combinedDates = Array.from(new Set([...datesToBlock, ...blockedDates]));
+
+    setBlockedSlots(combinedSlots);
+    setBlockedDates(combinedDates);
+
+    const updatedStylist: Stylist = {
+      ...currentStylist,
+      blocked_dates: combinedDates,
+      blocked_slots: combinedSlots
+    };
+    setCurrentStylist(updatedStylist);
+    await api.updateStylist(updatedStylist);
+
+    setAvailabilitySuccessMsg(`¡${datesToBlock.length} día(s) bloqueado(s) correctamente! Flowy IA respetará tu descanso.`);
+    setTimeout(() => setAvailabilitySuccessMsg(''), 4000);
+  };
+
+  // Handler: Remove a blocked slot
+  const handleRemoveBlockedSlot = async (slotId: string, dateStr: string) => {
+    const updatedSlots = blockedSlots.filter(s => s.id !== slotId);
+    // Check if other slots share the same date
+    const dateStillHasSlots = updatedSlots.some(s => s.date === dateStr);
+    const updatedDates = dateStillHasSlots
+      ? blockedDates
+      : blockedDates.filter(d => d !== dateStr);
+
+    setBlockedSlots(updatedSlots);
+    setBlockedDates(updatedDates);
+
+    const updatedStylist: Stylist = {
+      ...currentStylist,
+      blocked_dates: updatedDates,
+      blocked_slots: updatedSlots
+    };
+    setCurrentStylist(updatedStylist);
+    await api.updateStylist(updatedStylist);
+
+    setAvailabilitySuccessMsg('Día desbloqueado y disponible nuevamente para citas.');
+    setTimeout(() => setAvailabilitySuccessMsg(''), 3000);
   };
 
   return (
@@ -446,11 +576,335 @@ export const StylistPortalPage: React.FC = () => {
             }`}
           >
             <DollarSign className="w-4 h-4" />
-            <span>Mi Billetera & Liquidación</span>
+            <span>Mi Billetera</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('availability')}
+            className={`flex-1 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all ${
+              activeTab === 'availability'
+                ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <CalendarOff className="w-4 h-4" />
+            <span>Días No Disponibles ({blockedSlots.length})</span>
           </button>
         </div>
 
-        {/* TAB 1: MI AGENDA DE HOY */}
+        {/* TAB 4: MI DISPONIBILIDAD & BLOQUEO DE DÍAS */}
+        {activeTab === 'availability' && (
+          <div className="space-y-6 animate-fade-in">
+            
+            {/* Feedback notification message */}
+            {availabilitySuccessMsg && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-between shadow-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>{availabilitySuccessMsg}</span>
+                </div>
+                <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">Sincronizado con Flowy IA</span>
+              </div>
+            )}
+
+            {/* SECTION 1: JORNADA Y DÍAS HABITUALES DE TRABAJO */}
+            <div className={`p-6 rounded-2xl border space-y-4 ${
+              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+            }`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3 border-black/5 dark:border-white/10">
+                <div>
+                  <h3 className="text-base font-bold flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-[#FF5A36]" />
+                    <span>Días Laborales Habituales</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Marca los días de la semana en los que normalmente atiendes en el salón.
+                  </p>
+                </div>
+                <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                  {workingDays.length} días de atención / semana
+                </span>
+              </div>
+
+              {/* Day Selector Pills */}
+              <div className="grid grid-cols-7 gap-2 text-center">
+                {[
+                  { index: 1, label: 'Lun', full: 'Lunes' },
+                  { index: 2, label: 'Mar', full: 'Martes' },
+                  { index: 3, label: 'Mié', full: 'Miércoles' },
+                  { index: 4, label: 'Jue', full: 'Jueves' },
+                  { index: 5, label: 'Vie', full: 'Viernes' },
+                  { index: 6, label: 'Sáb', full: 'Sábado' },
+                  { index: 0, label: 'Dom', full: 'Domingo' }
+                ].map((d) => {
+                  const isWorking = workingDays.includes(d.index);
+                  return (
+                    <button
+                      key={d.index}
+                      type="button"
+                      onClick={() => handleToggleWorkingDay(d.index)}
+                      className={`p-3 rounded-2xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                        isWorking
+                          ? 'bg-gradient-to-br from-[#FF5A36]/20 to-pink-500/10 border-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/10'
+                          : theme === 'dark'
+                            ? 'bg-[#0E121B] border-white/5 text-slate-500 hover:border-white/20'
+                            : 'bg-slate-100 border-slate-200 text-slate-400 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="text-xs sm:text-sm font-extrabold">{d.label}</span>
+                      <span className={`text-[9px] mt-1 font-bold ${isWorking ? 'text-emerald-400' : 'text-slate-500'}`}>
+                        {isWorking ? 'Activo' : 'Libre'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SECTION 2: FORMULARIO DE BLOQUEO DE FECHAS / VACACIONES */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* Formulario Izquierda (5 cols) */}
+              <div className="lg:col-span-5 space-y-4">
+                <div className={`p-6 rounded-2xl border space-y-4 ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+                }`}>
+                  <div className="border-b pb-3 border-black/5 dark:border-white/10">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Ban className="w-4 h-4 text-red-500" />
+                      <span>Bloquear Días o Vacaciones</span>
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Evita que clientas agenden citas en tus días de descanso, viajes o citas médicas.
+                    </p>
+                  </div>
+
+                  {/* Preset Quick Buttons */}
+                  <div>
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                      Motivos Rápidos
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: '🌴 Vacaciones', reason: 'Vacaciones' },
+                        { label: '🩺 Cita Médica', reason: 'Cita Médica' },
+                        { label: '💆‍♀️ Día Libre', reason: 'Día Libre / Descanso' },
+                        { label: '📚 Masterclass', reason: 'Capacitación' },
+                        { label: '✨ Personal', reason: 'Asunto Personal' }
+                      ].map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setNewBlockReason(item.reason)}
+                          className={`text-xs font-bold px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
+                            newBlockReason === item.reason
+                              ? 'bg-[#FF5A36] text-white border-[#FF5A36]'
+                              : theme === 'dark'
+                                ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                                : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleAddBlockedSlot} className="space-y-3.5 text-xs">
+                    
+                    {/* Date range */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-slate-400 mb-1 font-semibold">Desde la Fecha *</label>
+                        <input
+                          type="date"
+                          value={newBlockStartDate}
+                          onChange={(e) => {
+                            setNewBlockStartDate(e.target.value);
+                            if (new Date(e.target.value) > new Date(newBlockEndDate)) {
+                              setNewBlockEndDate(e.target.value);
+                            }
+                          }}
+                          className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                            theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                          }`}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-400 mb-1 font-semibold">Hasta la Fecha *</label>
+                        <input
+                          type="date"
+                          value={newBlockEndDate}
+                          min={newBlockStartDate}
+                          onChange={(e) => setNewBlockEndDate(e.target.value)}
+                          className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                            theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                          }`}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Motivo personalizado */}
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Motivo / Razón del Bloqueo</label>
+                      <input
+                        type="text"
+                        value={newBlockReason}
+                        onChange={(e) => setNewBlockReason(e.target.value)}
+                        placeholder="Ej. Vacaciones de Verano / Permiso personal"
+                        className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                        }`}
+                        required
+                      />
+                    </div>
+
+                    {/* Todo el día switch */}
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                      <div>
+                        <strong className="block text-xs font-bold">Bloquear Todo el Día</strong>
+                        <span className="text-[11px] text-slate-400">Sin citas durante toda la jornada</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={newBlockFullDay}
+                        onChange={(e) => setNewBlockFullDay(e.target.checked)}
+                        className="w-4 h-4 text-[#FF5A36] rounded"
+                      />
+                    </div>
+
+                    {/* Horas específicas con selector visual interactivo si no es todo el día */}
+                    {!newBlockFullDay && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 animate-fade-in">
+                        <TimePickerSelect
+                          label="Hora de Inicio"
+                          value={newBlockStartTime}
+                          onChange={setNewBlockStartTime}
+                          theme={theme}
+                        />
+                        <TimePickerSelect
+                          label="Hora de Fin"
+                          value={newBlockEndTime}
+                          onChange={setNewBlockEndTime}
+                          theme={theme}
+                        />
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-red-600 to-[#FF5A36] hover:opacity-95 text-white font-extrabold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all cursor-pointer"
+                    >
+                      <Ban className="w-4 h-4" />
+                      <span>Guardar Bloqueo de Días</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Lista Derecha de Bloqueos Activos (7 cols) */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className={`p-6 rounded-2xl border space-y-4 ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+                }`}>
+                  <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+                    <div>
+                      <h3 className="text-base font-bold flex items-center gap-2">
+                        <CalendarOff className="w-4 h-4 text-[#FF5A36]" />
+                        <span>Días y Fechas Bloqueadas Activas ({blockedSlots.length})</span>
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Fechas donde el bot y la web no permitirán agendar citas con {currentStylist.name.split(' ')[0]}.
+                      </p>
+                    </div>
+                  </div>
+
+                  {blockedSlots.length === 0 ? (
+                    <div className="p-8 rounded-2xl text-center space-y-2 border border-dashed border-white/10 text-slate-400">
+                      <Calendar className="w-10 h-10 mx-auto text-emerald-500/40" />
+                      <strong className="text-sm block">Sin días bloqueados actualmente</strong>
+                      <p className="text-xs max-w-sm mx-auto">
+                        Estás 100% disponible para recibir citas según tus días habituales de trabajo.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-1">
+                      {blockedSlots.map((slot) => {
+                        const dateObj = new Date(slot.date + 'T00:00:00');
+                        const formattedDate = dateObj.toLocaleDateString('es-ES', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+
+                        return (
+                          <div
+                            key={slot.id}
+                            className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/5 hover:border-white/15' : 'bg-slate-50 border-slate-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-extrabold text-sm shrink-0">
+                                {dateObj.getDate()}
+                              </div>
+
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <strong className="text-xs capitalize font-bold">
+                                    {formattedDate}
+                                  </strong>
+                                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
+                                    {slot.reason || 'Día No Disponible'}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-400 mt-0.5">
+                                  {slot.full_day
+                                    ? '🚫 No disponible todo el día'
+                                    : `⏰ Bloqueado de ${slot.start_time} a ${slot.end_time}`}
+                                </div>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveBlockedSlot(slot.id, slot.date)}
+                              className="p-2 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all cursor-pointer shrink-0"
+                              title="Desbloquear este día"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Flowy Banner */}
+                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-slate-300">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <strong className="block text-white font-bold">Protección Automática Flowy IA</strong>
+                      <span className="text-[11px] text-slate-400">
+                        Si una clienta pide cita por WhatsApp en tus días bloqueados, Flowy le ofrecerá tus días libres más cercanos.
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
         {activeTab === 'agenda' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -953,6 +1407,19 @@ export const StylistPortalPage: React.FC = () => {
             <DollarSign className="w-4 h-4" />
           </div>
           <span>Billetera</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('availability')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
+            activeTab === 'availability' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400'
+          }`}
+        >
+          <div className={`p-1.5 rounded-full ${activeTab === 'availability' ? 'bg-[#FF5A36]/15' : ''}`}>
+            <CalendarOff className="w-4 h-4" />
+          </div>
+          <span>Días Libres</span>
         </button>
 
         <Link

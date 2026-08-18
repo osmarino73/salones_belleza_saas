@@ -1,0 +1,171 @@
+{
+  "name": "BeautyFlow AI - Meta Omnichannel (Instagram Direct & Messenger)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "meta-omnichannel",
+        "options": {}
+      },
+      "id": "node-webhook-meta",
+      "name": "Webhook Meta Suite (IG & FB)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer datos del webhook de Meta (Instagram Direct o Facebook Messenger)\nconst body = $input.first().json.body || $input.first().json;\n\n// Detectar si el canal es Instagram o Messenger\nlet channel = 'instagram';\nlet senderId = '';\nlet senderName = 'Clienta';\nlet messageText = '';\nlet tenantId = body.tenant_id || 'default-tenant';\n\nif (body.object === 'instagram' || body.entry?.[0]?.messaging?.[0]?.recipient) {\n  channel = 'instagram';\n  const entry = body.entry?.[0]?.messaging?.[0];\n  senderId = entry?.sender?.id || 'ig_user';\n  senderName = entry?.sender?.username ? `@${entry.sender.username}` : 'Clienta Instagram';\n  messageText = entry?.message?.text || '';\n} else if (body.object === 'page') {\n  channel = 'messenger';\n  const entry = body.entry?.[0]?.messaging?.[0];\n  senderId = entry?.sender?.id || 'fb_user';\n  senderName = entry?.sender?.name || 'Cliente Facebook';\n  messageText = entry?.message?.text || '';\n} else {\n  senderId = body.from || body.sender?.id || 'user';\n  senderName = body.sender?.name || 'Cliente';\n  messageText = body.text || body.message?.text || '';\n  channel = body.channel || 'instagram';\n}\n\nreturn [{\n  json: {\n    channel,\n    senderId,\n    senderName,\n    messageText,\n    tenantId,\n    rawPayload: body\n  }\n}];"
+      },
+      "id": "node-extract-meta-payload",
+      "name": "Normalizar Payload Meta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messageText }}",
+        "options": {
+          "systemMessage": "=Eres 'Flowy', la asistente virtual experta de BeautyFlow AI para salones de belleza y spas.\n\nEstás atendiendo a una clienta a través de {{ $json.channel === 'instagram' ? 'Instagram Direct (@DMs)' : 'Facebook Messenger' }}.\n\nDatos de la clienta:\n- Nombre / Handle: {{ $json.senderName }}\n- Canal: {{ $json.channel }}\n- Tenant ID: {{ $json.tenantId }}\n\nTu objetivo es:\n1. Responder cálida y elegantemente con emojis acorde a redes sociales (✨, 💖, 💇‍♀️, 💅).\n2. Consultar servicios y tarifas en Pesos Colombianos ($ COP).\n3. Recomendar agendar cita en línea facilitando el enlace directo: https://belleza2027.netlify.app/reservas\n4. Si la clienta pregunta por una foto, reel o historia, ofrece detalles del tratamiento y horarios disponibles."
+        }
+      },
+      "id": "node-ai-agent-meta",
+      "name": "Flowy IA Meta Suite",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "node-openai-meta",
+      "name": "OpenAI gpt-4o-mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        620,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "name": "consultar_catalogo_servicios_cop",
+        "description": "Obtiene catálogo de servicios, precios en Pesos Colombianos ($ COP) y duraciones.",
+        "jsCode": "return JSON.stringify([\n  { id: 'srv-1', name: 'Balayage & Colorimetría Master', category: 'Color', price_cop: 180000, duration_minutes: 180 },\n  { id: 'srv-2', name: 'Corte Bob / Capas + Brushing', category: 'Corte', price_cop: 45000, duration_minutes: 60 },\n  { id: 'srv-3', name: 'Uñas Esculpidas en Poligel / Semipermanente', category: 'Nails', price_cop: 55000, duration_minutes: 75 },\n  { id: 'srv-4', name: 'Keratina Orgánica Antifrizz (Sin Formol)', category: 'Tratamiento', price_cop: 160000, duration_minutes: 150 }\n]);"
+      },
+      "id": "node-tool-meta-services",
+      "name": "Tool: Servicios COP",
+      "type": "@n8n/n8n-nodes-langchain.toolCustom",
+      "typeVersion": 1,
+      "position": [
+        780,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={{ { \"id\": $node[\"Normalizar Payload Meta\"].json[\"senderId\"] } }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ { \"text\": $json.output } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-send-meta-reply",
+      "name": "Enviar Respuesta por Meta API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Meta Suite (IG & FB)": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Payload Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Payload Meta": {
+      "main": [
+        [
+          {
+            "node": "Flowy IA Meta Suite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI gpt-4o-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Flowy IA Meta Suite",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Servicios COP": {
+      "ai_tool": [
+        [
+          {
+            "node": "Flowy IA Meta Suite",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flowy IA Meta Suite": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta por Meta API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

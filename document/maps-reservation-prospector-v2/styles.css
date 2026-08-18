@@ -1,0 +1,41 @@
+
+#mrp-root {
+  position: fixed;
+  z-index: 2147483647;
+  top: 14px;
+  right: 14px;
+  width: 390px;
+  max-height: calc(100vh - 28px);
+  overflow: hidden;
+  background: #fff;
+  color: #1f2937;
+  border: 1px solid #d9dee7;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.22);
+  font: 13px/1.4 Arial, sans-serif;
+}
+#mrp-root * { box-sizing: border-box; }
+.mrp-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #edf0f4; }
+.mrp-header strong { display:block; font-size:15px; }
+#mrp-status { display:block; color:#6b7280; font-size:11px; margin-top:2px; }
+#mrp-close { border:0; background:transparent; font-size:22px; cursor:pointer; color:#6b7280; }
+.mrp-toolbar { display:flex; gap:8px; padding:10px 14px; }
+.mrp-toolbar button, .mrp-save { border:0; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:600; }
+#mrp-scan { background:#1c56be; color:#fff; }
+#mrp-open { background:#eef3ff; color:#16479e; }
+#mrp-results { max-height:calc(100vh - 190px); overflow:auto; padding:0 10px 10px; }
+.mrp-row { padding:10px; margin-top:8px; border:1px solid #e5e7eb; border-radius:10px; background:#fafbfc; }
+.mrp-row-title { font-weight:700; margin-bottom:4px; }
+.mrp-row-data { color:#4b5563; font-size:12px; margin-top:2px; overflow-wrap:anywhere; }
+.mrp-row-data a { color:#1456c0; }
+.mrp-row-actions { margin-top:8px; }
+.mrp-save { background:#111827; color:white; width:100%; }
+.mrp-empty { padding:18px; color:#6b7280; text-align:center; }
+#mrp-note { border-top:1px solid #edf0f4; padding:8px 14px; color:#6b7280; font-size:10px; }
+.mrp-badge { position:absolute; right:8px; top:8px; z-index:5; padding:4px 7px; border-radius:999px; font:bold 10px Arial; box-shadow:0 1px 3px rgba(0,0,0,.15); }
+.mrp-no-booking { background:#fff3cd; color:#7a5600; }
+.mrp-booking { background:#dff6e8; color:#126b35; }
+.mrp-checking { background:#e7eefc; color:#234b91; }
+.mrp-review { background:#f3f4f6; color:#4b5563; }
+.mrp-row-data strong { color:#111827; }
+.mrp-row-data a { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

@@ -11,6 +11,17 @@ export interface Tenant {
   created_at: string;
 }
 
+export interface BlockedSlot {
+  id: string;
+  stylist_id: string;
+  date: string; // 'YYYY-MM-DD'
+  reason: string; // 'Vacaciones', 'Cita Médica', 'Día Libre', 'Capacitación', 'Personal'
+  full_day: boolean;
+  start_time?: string;
+  end_time?: string;
+  created_at?: string;
+}
+
 export interface Stylist {
   id: string;
   tenant_id: string;
@@ -24,6 +35,9 @@ export interface Stylist {
   reviews_count: number;
   commission_service_pct: number;
   commission_retail_pct: number;
+  working_days?: number[]; // [0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab]
+  blocked_dates?: string[]; // ['2026-08-25', '2026-08-26']
+  blocked_slots?: BlockedSlot[];
   is_active: boolean;
 }
 

@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS public.stylists (
     rating NUMERIC(3,2) DEFAULT 4.9,
     reviews_count INTEGER DEFAULT 0,
     working_hours JSONB DEFAULT '{"dias": ["Mar", "Mie", "Jue", "Vie", "Sab"], "inicio": "09:00", "fin": "19:00"}'::jsonb,
+    working_days JSONB DEFAULT '[1, 2, 3, 4, 5, 6]'::jsonb,
+    blocked_dates JSONB DEFAULT '[]'::jsonb,
+    blocked_slots JSONB DEFAULT '[]'::jsonb,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

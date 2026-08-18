@@ -1,0 +1,16 @@
+
+body { width:380px; margin:0; font:13px Arial,sans-serif; color:#1f2937; background:#fff; }
+header { display:flex; gap:10px; align-items:center; padding:14px; border-bottom:1px solid #e5e7eb; }
+header img { width:32px; height:32px; }
+header strong { display:block; font-size:15px; }
+header small { color:#6b7280; }
+.toolbar { display:flex; gap:8px; padding:10px 14px; }
+button { border:0; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:600; }
+#export { background:#1c56be; color:white; }
+#clear { background:#f3f4f6; color:#374151; }
+#count { padding:0 14px 8px; color:#6b7280; }
+#list { max-height:480px; overflow:auto; padding:0 14px 14px; }
+.item { border:1px solid #e5e7eb; border-radius:9px; padding:10px; margin-top:8px; }
+.name { font-weight:700; }
+.meta { color:#4b5563; font-size:12px; margin-top:3px; overflow-wrap:anywhere; }
+.empty { color:#6b7280; padding:15px 0; text-align:center; }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Scissors,
@@ -12,7 +12,9 @@ import {
   ShieldCheck,
   Check,
   MessageCircle,
-  Sparkles
+  Sparkles,
+  AlertTriangle,
+  Ban
 } from 'lucide-react';
 import { api, initialServices, initialStylists } from '../lib/supabase';
 import { Service, Stylist } from '../types';
@@ -34,6 +36,33 @@ export const BookingPage: React.FC = () => {
   const [countryCode, setCountryCode] = useState<string>('+57');
   const [phone10Digits, setPhone10Digits] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+
+  // Check if stylist is blocked on selected date or if day of week is non-working
+  const stylistAvailability = useMemo(() => {
+    if (!selectedStylist || !selectedDate) return { blocked: false, reason: '' };
+
+    // 1. Specific blocked dates / vacations
+    if (selectedStylist.blocked_dates?.includes(selectedDate)) {
+      const slot = selectedStylist.blocked_slots?.find(s => s.date === selectedDate);
+      return {
+        blocked: true,
+        reason: slot?.reason || 'Vacaciones / Día Libre'
+      };
+    }
+
+    // 2. Standard working days (0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab)
+    if (selectedStylist.working_days && selectedStylist.working_days.length > 0) {
+      const dayOfWeek = new Date(selectedDate + 'T00:00:00').getDay();
+      if (!selectedStylist.working_days.includes(dayOfWeek)) {
+        return {
+          blocked: true,
+          reason: 'Día de descanso semanal'
+        };
+      }
+    }
+
+    return { blocked: false, reason: '' };
+  }, [selectedStylist, selectedDate]);
 
   useEffect(() => {
     async function loadBookingData() {
@@ -304,44 +333,59 @@ export const BookingPage: React.FC = () => {
                 <input
                   type="date"
                   value={selectedDate}
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2">Horarios Disponibles para esta Fecha</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedTime(slot)}
-                      className={`p-3 rounded-xl border text-xs font-bold transition-all ${
-                        selectedTime === slot
-                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
-                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
+              {/* Warning if Stylist is on Vacation or Off Day */}
+              {stylistAvailability.blocked ? (
+                <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs space-y-1.5 animate-fade-in">
+                  <div className="flex items-center gap-2 font-bold text-red-400">
+                    <Ban className="w-4 h-4 shrink-0" />
+                    <span>{selectedStylist?.name} no tiene disponibilidad para esta fecha</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    Motivo: <strong className="text-white">{stylistAvailability.reason}</strong>. Por favor selecciona otro día en el calendario o regresa a elegir otro profesional.
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-2">Horarios Disponibles para esta Fecha</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {availableSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedTime(slot)}
+                        className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          selectedTime === slot
+                            ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                            : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="pt-4 flex justify-between">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="text-slate-400 hover:text-white px-4 py-2 text-sm flex items-center gap-1"
+                className="text-slate-400 hover:text-white px-4 py-2 text-sm flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <button
                 type="button"
+                disabled={stylistAvailability.blocked}
                 onClick={() => setStep(4)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>Continuar a Mis Datos</span>
                 <ChevronRight className="w-4 h-4" />
