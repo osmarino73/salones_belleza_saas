@@ -64,6 +64,47 @@ export const BookingPage: React.FC = () => {
     return { blocked: false, reason: '' };
   }, [selectedStylist, selectedDate]);
 
+  // Filter stylists that can perform the selected service
+  const filteredStylists = useMemo(() => {
+    if (!selectedService) return stylists;
+    const cat = selectedService.category;
+    const srvId = selectedService.id;
+
+    const matched = stylists.filter(s => {
+      // 1. Exact service ID match
+      if (s.service_ids && s.service_ids.length > 0) {
+        if (s.service_ids.includes(srvId)) return true;
+      }
+      // 2. Service category match
+      if (s.service_categories && s.service_categories.length > 0) {
+        if (s.service_categories.includes(cat)) return true;
+      }
+      // 3. Fallback: Specialty keyword match
+      if (s.specialty) {
+        const spec = s.specialty.toLowerCase();
+        if (cat === 'color' && (spec.includes('color') || spec.includes('balayage'))) return true;
+        if (cat === 'corte' && (spec.includes('corte') || spec.includes('estilista') || spec.includes('barber'))) return true;
+        if (cat === 'keratina' && (spec.includes('keratina') || spec.includes('alisado') || spec.includes('color') || spec.includes('estilista'))) return true;
+        if (cat === 'nails' && (spec.includes('nail') || spec.includes('uña') || spec.includes('manicur'))) return true;
+        if (cat === 'barberia' && (spec.includes('barber') || spec.includes('corte') || spec.includes('caballero'))) return true;
+        if (cat === 'spa' && (spec.includes('spa') || spec.includes('facial') || spec.includes('masaje') || spec.includes('nail'))) return true;
+      }
+      return false;
+    });
+
+    return matched.length > 0 ? matched : stylists;
+  }, [stylists, selectedService]);
+
+  // Auto-select first matching stylist when service changes if current is not in list
+  useEffect(() => {
+    if (filteredStylists.length > 0 && selectedStylist) {
+      const isCurrentValid = filteredStylists.some(s => s.id === selectedStylist.id);
+      if (!isCurrentValid) {
+        setSelectedStylist(filteredStylists[0]);
+      }
+    }
+  }, [filteredStylists]);
+
   useEffect(() => {
     async function loadBookingData() {
       // 1. Cargar datos del salón activo
@@ -246,10 +287,17 @@ export const BookingPage: React.FC = () => {
         {/* Step 2: Select Specialist */}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <User className="w-5 h-5 text-[#FF5A36]" />
-              Escoge tu Especialista
-            </h2>
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <User className="w-5 h-5 text-[#FF5A36]" />
+                Escoge tu Especialista
+              </h2>
+              {selectedService && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Mostrando profesionales capacitados para: <strong className="text-[#FF5A36]">{selectedService.name}</strong>
+                </p>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Option: First Available */}
@@ -257,7 +305,7 @@ export const BookingPage: React.FC = () => {
                 onClick={() => setSelectedStylist(null)}
                 className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                   selectedStylist === null
-                    ? 'border-[#FF5A36] bg-[#FF5A36]/10'
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
                     : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                 }`}
               >
@@ -267,36 +315,48 @@ export const BookingPage: React.FC = () => {
                 <div>
                   <strong className="text-sm text-white block">Cualquier Especialista</strong>
                   <span className="text-xs text-slate-400 block">Primer horario disponible</span>
-                  <span className="text-[11px] text-emerald-400">⚡ Mayor disponibilidad</span>
+                  <span className="text-[11px] text-emerald-400 font-semibold">⚡ Mayor disponibilidad de turnos</span>
                 </div>
               </div>
 
-              {/* Specialists List */}
-              {stylists.map((sty) => (
-                <div
-                  key={sty.id}
-                  onClick={() => setSelectedStylist(sty)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 ${
-                    selectedStylist?.id === sty.id
-                      ? 'border-[#FF5A36] bg-[#FF5A36]/10'
-                      : 'border-white/10 bg-[#0E121B] hover:border-white/20'
-                  }`}
-                >
-                  <img
-                    src={sty.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'}
-                    alt={sty.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-[#FF5A36] shrink-0"
-                  />
-                  <div>
-                    <strong className="text-sm text-white block">{sty.name}</strong>
-                    <span className="text-xs text-slate-400 block">{sty.specialty}</span>
-                    <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
-                      <span>{sty.rating || 5.0} ({sty.reviews_count || 12} reseñas)</span>
+              {/* Filtered Specialists List */}
+              {filteredStylists.map((sty) => {
+                const isSelected = selectedStylist?.id === sty.id;
+                const isBlockedToday = sty.blocked_dates?.includes(selectedDate);
+
+                return (
+                  <div
+                    key={sty.id}
+                    onClick={() => setSelectedStylist(sty)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 relative ${
+                      isSelected
+                        ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
+                        : 'border-white/10 bg-[#0E121B] hover:border-white/20'
+                    }`}
+                  >
+                    <img
+                      src={sty.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'}
+                      alt={sty.name}
+                      className={`w-14 h-14 rounded-full object-cover border-2 shrink-0 ${
+                        isSelected ? 'border-[#FF5A36]' : 'border-white/15'
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <strong className="text-sm text-white block truncate">{sty.name}</strong>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shrink-0">
+                          Calificado/a
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-400 block truncate">{sty.specialty}</span>
+                      <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <span>{sty.rating || 5.0} ({sty.reviews_count || 12} reseñas)</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="pt-4 flex justify-between">

@@ -13,6 +13,13 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Mapeo y Filtrado de Especialistas por Servicio (`Service-to-Stylist Mapping`)**:
+  - Cada especialista tiene asignadas sus categorías (`color`, `corte`, `keratina`, `nails`, `barberia`, `spa`) y servicios específicos.
+  - **Portal Público de Citas (`BookingPage.tsx`)**: Al elegir un servicio en el Paso 1, el Paso 2 filtra automáticamente y muestra **únicamente los especialistas capacitados** para ese servicio con sus badges de calificación y horarios libres.
+  - **Panel del Salón (`DashboardPage.tsx`)**:
+    - Modal de Crear/Editar Estilista con chips interactivos de categorías autorizadas.
+    - Modal de Agendar Nueva Cita Manual filtra dinámicamente los especialistas al cambiar el servicio seleccionado.
+    - Tarjetas de equipo muestran los chips de especialidad (`🎨 Color`, `✂️ Corte`, `💅 Nails`, etc.).
 - **Nuevo Selector de Hora Interactivo (`TimePickerSelect.tsx`)**:
   - Reemplaza inputs manuales de texto por un selector moderno con presets inteligentes (`08:00 AM`, `09:30 AM`, `11:00 AM`, `02:00 PM`, `05:00 PM`, etc.).
   - Incluye cuadrícula desplazable de intervalos de 15 minutos (de 07:00 AM a 09:45 PM).

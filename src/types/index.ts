@@ -38,6 +38,8 @@ export interface Stylist {
   working_days?: number[]; // [0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab]
   blocked_dates?: string[]; // ['2026-08-25', '2026-08-26']
   blocked_slots?: BlockedSlot[];
+  service_ids?: string[]; // IDs de servicios específicos que atiende
+  service_categories?: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[]; // Categorías que domina
   is_active: boolean;
 }
 

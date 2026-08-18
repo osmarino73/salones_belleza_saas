@@ -3,16 +3,20 @@
 -- BeautyFlow AI SaaS - Soporte para Vacaciones, Días Libres y Horarios
 -- ==========================================================================
 
--- 1. Agregar columnas de disponibilidad directa en la tabla 'stylists'
+-- 1. Agregar columnas de disponibilidad y especialidades en la tabla 'stylists'
 ALTER TABLE public.stylists 
 ADD COLUMN IF NOT EXISTS working_days JSONB DEFAULT '[1, 2, 3, 4, 5, 6]'::jsonb,
 ADD COLUMN IF NOT EXISTS blocked_dates JSONB DEFAULT '[]'::jsonb,
-ADD COLUMN IF NOT EXISTS blocked_slots JSONB DEFAULT '[]'::jsonb;
+ADD COLUMN IF NOT EXISTS blocked_slots JSONB DEFAULT '[]'::jsonb,
+ADD COLUMN IF NOT EXISTS service_categories JSONB DEFAULT '["color", "corte"]'::jsonb,
+ADD COLUMN IF NOT EXISTS service_ids JSONB DEFAULT '[]'::jsonb;
 
 -- Comentarios explicativos
 COMMENT ON COLUMN public.stylists.working_days IS 'Días semanales de trabajo: 0=Domingo, 1=Lunes, ..., 6=Sábado';
 COMMENT ON COLUMN public.stylists.blocked_dates IS 'Array de strings con fechas YYYY-MM-DD bloqueadas para citas';
 COMMENT ON COLUMN public.stylists.blocked_slots IS 'Array JSON con objetos detallados de bloqueo: id, date, reason, full_day, start_time, end_time';
+COMMENT ON COLUMN public.stylists.service_categories IS 'Array JSON con categorias autorizadas: color, corte, keratina, nails, barberia, spa';
+COMMENT ON COLUMN public.stylists.service_ids IS 'Array JSON con UUIDs de servicios especificos asignados al profesional';
 
 -- 2. Crear tabla normalizada 'stylist_blocked_slots' (Para consultas SQL directas desde n8n / Flowy IA)
 CREATE TABLE IF NOT EXISTS public.stylist_blocked_slots (

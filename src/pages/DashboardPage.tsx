@@ -87,10 +87,20 @@ export const DashboardPage: React.FC = () => {
   // Catalog & Team Sub-tab State
   const [catalogSubTab, setCatalogSubTab] = useState<'stylists' | 'services' | 'products'>('stylists');
 
-  // Modals for CRUD Management
   const [isStylistModalOpen, setIsStylistModalOpen] = useState(false);
   const [editingStylist, setEditingStylist] = useState<Stylist | null>(null);
-  const [stylistForm, setStylistForm] = useState({
+  const [stylistForm, setStylistForm] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    specialty: string;
+    photo_url: string;
+    commission_service_pct: number;
+    commission_retail_pct: number;
+    service_categories: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
+    service_ids: string[];
+  }>({
     name: '',
     email: '',
     phone: '',
@@ -98,7 +108,9 @@ export const DashboardPage: React.FC = () => {
     specialty: '',
     photo_url: '',
     commission_service_pct: 45,
-    commission_retail_pct: 10
+    commission_retail_pct: 10,
+    service_categories: ['color', 'corte'],
+    service_ids: []
   });
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -384,7 +396,9 @@ export const DashboardPage: React.FC = () => {
       specialty: '',
       photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
       commission_service_pct: 45,
-      commission_retail_pct: 10
+      commission_retail_pct: 10,
+      service_categories: ['color', 'corte'],
+      service_ids: []
     });
     setIsStylistModalOpen(true);
   };
@@ -399,7 +413,9 @@ export const DashboardPage: React.FC = () => {
       specialty: sty.specialty,
       photo_url: sty.photo_url || '',
       commission_service_pct: sty.commission_service_pct || 45,
-      commission_retail_pct: sty.commission_retail_pct || 10
+      commission_retail_pct: sty.commission_retail_pct || 10,
+      service_categories: sty.service_categories || ['color', 'corte'],
+      service_ids: sty.service_ids || []
     });
     setIsStylistModalOpen(true);
   };
@@ -417,7 +433,9 @@ export const DashboardPage: React.FC = () => {
         specialty: stylistForm.specialty,
         photo_url: stylistForm.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
         commission_service_pct: Number(stylistForm.commission_service_pct),
-        commission_retail_pct: Number(stylistForm.commission_retail_pct)
+        commission_retail_pct: Number(stylistForm.commission_retail_pct),
+        service_categories: stylistForm.service_categories,
+        service_ids: stylistForm.service_ids
       };
       await api.updateStylist(updated);
       setStylists(stylists.map(s => s.id === updated.id ? updated : s));
@@ -434,6 +452,9 @@ export const DashboardPage: React.FC = () => {
         reviews_count: 0,
         commission_service_pct: Number(stylistForm.commission_service_pct),
         commission_retail_pct: Number(stylistForm.commission_retail_pct),
+        working_days: [1, 2, 3, 4, 5, 6],
+        service_categories: stylistForm.service_categories,
+        service_ids: stylistForm.service_ids,
         is_active: true
       };
       await api.createStylist(newSty);
@@ -2717,6 +2738,28 @@ export const DashboardPage: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* Service Categories Chips */}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {(sty.service_categories && sty.service_categories.length > 0 ? sty.service_categories : ['color', 'corte']).map(cat => {
+                            const catLabels: Record<string, string> = {
+                              color: '🎨 Color',
+                              corte: '✂️ Corte',
+                              keratina: '💆‍♀️ Keratina',
+                              nails: '💅 Nails',
+                              barberia: '💈 Barber',
+                              spa: '🧖‍♀️ Spa'
+                            };
+                            return (
+                              <span
+                                key={cat}
+                                className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20"
+                              >
+                                {catLabels[cat] || cat}
+                              </span>
+                            );
+                          })}
+                        </div>
+
                         {/* Availability Pill Summary */}
                         <div className="flex items-center justify-between text-[11px] px-3 py-2 rounded-xl bg-white/5 border border-white/5 mb-3">
                           <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
@@ -3215,21 +3258,36 @@ export const DashboardPage: React.FC = () => {
                 <label className="block text-slate-400 mb-1 font-semibold">Servicio *</label>
                 <select
                   value={newService}
-                  onChange={(e) => setNewService(e.target.value)}
+                  onChange={(e) => {
+                    setNewService(e.target.value);
+                    const matchedSrv = services.find(s => s.name === e.target.value);
+                    if (matchedSrv) {
+                      const qualified = stylists.filter(st => 
+                        (st.service_ids && st.service_ids.includes(matchedSrv.id)) ||
+                        (st.service_categories && st.service_categories.includes(matchedSrv.category)) ||
+                        (st.specialty && st.specialty.toLowerCase().includes(matchedSrv.category))
+                      );
+                      if (qualified.length > 0) {
+                        setNewStylist(qualified[0].name);
+                      }
+                    }
+                  }}
                   className={`w-full border rounded-lg p-2.5 focus:outline-none focus:border-[#FF5A36] ${
                     theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                   }`}
                 >
-                  <option value="Balayage Rubio Cenizo + Olaplex">Balayage Rubio Cenizo + Olaplex ($110)</option>
-                  <option value="Corte Bob en Capas + Hidratación">Corte Bob en Capas + Hidratación ($45)</option>
-                  <option value="Keratina Orgánica Antifrizz">Keratina Orgánica Antifrizz ($75)</option>
-                  <option value="Uñas Esculpidas en Poligel">Uñas Esculpidas en Poligel ($55)</option>
+                  {services.map(s => (
+                    <option key={s.id} value={s.name}>{s.name} (${s.price_usd})</option>
+                  ))}
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Especialista</label>
+                  <label className="block text-slate-400 mb-1 font-semibold flex items-center justify-between">
+                    <span>Especialista</span>
+                    <span className="text-[9px] text-emerald-400 font-bold">Filtrado por servicio</span>
+                  </label>
                   <select
                     value={newStylist}
                     onChange={(e) => setNewStylist(e.target.value)}
@@ -3237,9 +3295,18 @@ export const DashboardPage: React.FC = () => {
                       theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                     }`}
                   >
-                    {stylists.map(s => (
-                      <option key={s.id} value={s.name}>{s.name}</option>
-                    ))}
+                    {stylists
+                      .filter(st => {
+                        const matchedSrv = services.find(s => s.name === newService);
+                        if (!matchedSrv) return true;
+                        if (st.service_ids && st.service_ids.includes(matchedSrv.id)) return true;
+                        if (st.service_categories && st.service_categories.includes(matchedSrv.category)) return true;
+                        if (st.specialty && st.specialty.toLowerCase().includes(matchedSrv.category)) return true;
+                        return false;
+                      })
+                      .map(s => (
+                        <option key={s.id} value={s.name}>{s.name} ({s.specialty.split('&')[0].trim()})</option>
+                      ))}
                   </select>
                 </div>
                 <div>
@@ -3655,6 +3722,45 @@ export const DashboardPage: React.FC = () => {
                   }`}
                   required
                 />
+              </div>
+
+              {/* Selector de Categorías & Servicios Habilitados */}
+              <div>
+                <label className="block text-slate-400 mb-1.5 font-semibold">
+                  Categorías de Servicios que Realiza *
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {[
+                    { id: 'color', label: '🎨 Color & Tinte' },
+                    { id: 'corte', label: '✂️ Corte Capilar' },
+                    { id: 'keratina', label: '💆‍♀️ Keratinas' },
+                    { id: 'nails', label: '💅 Nails & Uñas' },
+                    { id: 'barberia', label: '💈 Barbería' },
+                    { id: 'spa', label: '🧖‍♀️ Spa & Faciales' }
+                  ].map((cat) => {
+                    const isSelected = (stylistForm.service_categories || []).includes(cat.id as any);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          const current = stylistForm.service_categories || [];
+                          const updated = isSelected
+                            ? current.filter(c => c !== cat.id)
+                            : [...current, cat.id as any];
+                          setStylistForm({ ...stylistForm, service_categories: updated });
+                        }}
+                        className={`text-[11px] font-bold p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-sm'
+                            : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-400 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-600'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>

@@ -39,6 +39,9 @@ export const initialStylists: Stylist[] = [
     reviews_count: 128,
     commission_service_pct: 45,
     commission_retail_pct: 10,
+    working_days: [1, 2, 3, 4, 5, 6],
+    service_categories: ['color', 'corte', 'keratina'],
+    service_ids: ['srv-1', 'srv-2', 'srv-3'],
     is_active: true
   },
   {
@@ -53,6 +56,9 @@ export const initialStylists: Stylist[] = [
     reviews_count: 95,
     commission_service_pct: 45,
     commission_retail_pct: 10,
+    working_days: [1, 2, 3, 4, 5, 6],
+    service_categories: ['corte', 'barberia'],
+    service_ids: ['srv-2'],
     is_active: true
   },
   {
@@ -67,6 +73,9 @@ export const initialStylists: Stylist[] = [
     reviews_count: 82,
     commission_service_pct: 50,
     commission_retail_pct: 10,
+    working_days: [1, 2, 3, 4, 5, 6],
+    service_categories: ['nails', 'spa'],
+    service_ids: ['srv-4'],
     is_active: true
   }
 ];

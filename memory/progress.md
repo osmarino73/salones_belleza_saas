@@ -33,6 +33,25 @@
   - Enlace con slug único: `https://belleza2027.netlify.app/reservas?salon=mi-salon`.
   - Carga inteligente de catálogo, precios en COP y guardado directo en Supabase.
 
+- [x] **Motor de Fidelización & Reactivación IA (`LoyaltyReactivationPage.tsx`)**:
+  - Radar de clientas inactivas segmentado por umbrales de tiempo (`🟡 35 - 60 Días`, `🟠 60 - 90 Días`, `🔴 +90 Días Crítico`, `🎂 Cumpleañeras del Mes`, `👑 VIP en Riesgo`).
+  - Cálculo en vivo del **Ingreso Potencial en Riesgo** y **Recuperación Proyectada (~38% benchmark)** en $ COP.
+  - 4 Campañas inteligentes de 1-clic con variables dinámicas y vista previa en tiempo real de WhatsApp.
+  - Disparador de campaña masiva multicliente o reactivación individual directa.
+  - Piloto Automático Flowy IA integrado.
+
+- [x] **Gestor de Disponibilidad & Bloqueo de Días por Especialista**:
+  - Portal de Colaborador (`StylistPortalPage.tsx`): Pestaña dedicada para marcar días semanales de atención y bloquear fechas específicas o rangos de vacaciones.
+  - Panel de Dueña (`DashboardPage.tsx`): Tarjetas de especialistas con badges de disponibilidad y modal de gestión administrativa de bloqueos.
+  - Portal Público de Citas (`BookingPage.tsx`): Detección automática y bloqueo de horarios cuando el especialista no está disponible.
+  - Script SQL de base de datos: [`add_stylist_availability_and_blocked_slots.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/add_stylist_availability_and_blocked_slots.sql).
+
+- [x] **Selector de Hora Visual Interactivo (`TimePickerSelect.tsx`)**:
+  - Reemplazo de inputs manuales de texto por selector con horarios frecuentes, cuadrícula de intervalos de 15 min y diales de precisión (Hora, Minuto, AM/PM).
+
+- [x] **Extractor Google Maps Prospector v2 (`document/maps-reservation-prospector-v2/`)**:
+  - Selectores 2026 actualizados para extracción de nombre, categoría, rating, reseñas, teléfono, dirección y sitio web con exportación CSV.
+
 - [x] **Despliegue Continuo (CI/CD) Netlify + GitHub**:
   - Repositorio oficial: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas).
   - Producción activa: [https://belleza2027.netlify.app](https://belleza2027.netlify.app).
