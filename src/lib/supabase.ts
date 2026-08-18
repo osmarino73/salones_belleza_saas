@@ -286,6 +286,27 @@ export function getActiveTenantId(): string {
   return '00000000-0000-0000-0000-000000000001';
 }
 
+// Cache en memoria para sitios pesados (>5MB con Base64) y evitar QuotaExceededError
+let inMemoryProspectSitesCache: ProspectSite[] | null = null;
+
+const safeSaveProspectSitesToLocalStorage = (sites: ProspectSite[]) => {
+  try {
+    // Si el HTML contiene imágenes Base64 pesadas (>150KB), guardar versión ligera en localStorage para no exceder cuota de 5MB
+    const safeSites = sites.map(s => {
+      if (s.raw_html && s.raw_html.length > 150000) {
+        return {
+          ...s,
+          raw_html: s.raw_html.slice(0, 5000) + '<!-- heavy payload preserved in memory -->'
+        };
+      }
+      return s;
+    });
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(safeSites));
+  } catch (err) {
+    console.warn('LocalStorage quota warning (safely stored in memory):', err);
+  }
+};
+
 // Data API Helper functions (Supabase Live or Local fallback)
 export const api = {
   // APPOINTMENTS
@@ -1477,7 +1498,7 @@ export const api = {
   },
 
   // =========================================================================
-  // PROSPECT SITES (SUPERADMIN LEAD ENGINE)
+  // SUPERADMIN & SITIOS WEB GANCHO DE PROSPECCIÓN (LEAD ENGINE)
   // =========================================================================
   async getProspectSites(): Promise<ProspectSite[]> {
     if (supabase && isSupabaseConfigured) {
@@ -1486,20 +1507,32 @@ export const api = {
           .from('prospect_sites')
           .select('*')
           .order('created_at', { ascending: false });
-        if (!error && data) return data as ProspectSite[];
+        if (!error && data && data.length > 0) {
+          inMemoryProspectSitesCache = data as ProspectSite[];
+          safeSaveProspectSitesToLocalStorage(data as ProspectSite[]);
+          return data as ProspectSite[];
+        }
       } catch (e) {}
     }
+
+    if (inMemoryProspectSitesCache && inMemoryProspectSitesCache.length > 0) {
+      return inMemoryProspectSitesCache;
+    }
+
     const saved = localStorage.getItem('bf_prospect_sites_v1');
     if (saved) {
       try {
-        return JSON.parse(saved) as ProspectSite[];
+        const parsed = JSON.parse(saved);
+        inMemoryProspectSitesCache = parsed;
+        return parsed;
       } catch (e) {}
     }
-    // Demo seed prospect site
+
+    // Datos Demo Iniciales (Studio Glamour Spa Poblado)
     const demoSite: ProspectSite = {
-      id: 'demo-prospect-1',
-      slug: 'studio-glamour-demo',
-      business_name: 'Studio Glamour Spa Poblado',
+      id: 'ps-demo-101',
+      slug: 'studio-glamour-spa',
+      business_name: 'Studio Glamour Spa',
       phone_whatsapp: '+573001234567',
       address: 'Calle 10 # 43E-22, El Poblado',
       city: 'Medellín',
@@ -1509,14 +1542,13 @@ export const api = {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Studio Glamour Spa - Medellín</title>
+  <title>Studio Glamour Spa - Sitio Oficial</title>
   <style>
-    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: #0b0f19; color: #fff; text-align: center; }
-    .hero { padding: 60px 20px; background: radial-gradient(circle, rgba(255,90,54,0.15) 0%, rgba(11,15,25,1) 70%); }
-    h1 { font-size: 2.5rem; margin-bottom: 10px; color: #FF5A36; }
-    p { color: #94a3b8; max-width: 600px; margin: 0 auto 30px; }
-    .services { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 20px; }
+    body { font-family: sans-serif; background: #0B0F19; color: #fff; text-align: center; padding: 40px 20px; }
+    .hero { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 2.5rem; color: #FF5A36; }
+    p { color: #94a3b8; font-size: 1.1rem; line-height: 1.6; }
+    .services { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
     .card { background: #151c2e; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; width: 250px; text-align: left; }
     .card h3 { margin-top: 0; color: #fff; font-size: 1.1rem; }
     .price { color: #10b981; font-weight: bold; font-size: 1.2rem; }
@@ -1526,27 +1558,10 @@ export const api = {
 </head>
 <body>
   <div class="hero">
-    <span class="badge">Salón & Spa Oficial en Google Maps</span>
+    <span class="badge">Salón & Spa Oficial</span>
     <h1>Studio Glamour Spa</h1>
-    <p>Especialistas en Balayage, Colorimetría Europea, Keratinas y Tratamientos Capilares en El Poblado, Medellín.</p>
+    <p>Especialistas en estética capilar en El Poblado, Medellín.</p>
     <a href="https://wa.me/573001234567" class="btn-wa">💬 Escribir al WhatsApp</a>
-  </div>
-  <div class="services">
-    <div class="card">
-      <h3>Balayage Rubio Cenizo</h3>
-      <p>Decoloración técnica + matiz y nutrición profunda.</p>
-      <div class="price">$ 280.000 COP</div>
-    </div>
-    <div class="card">
-      <h3>Keratina Orgánica</h3>
-      <p>Liso espejo 100% libre de formol y brillo extremo.</p>
-      <div class="price">$ 230.000 COP</div>
-    </div>
-    <div class="card">
-      <h3>Manicura Rusa & Semipermanente</h3>
-      <p>Limpieza profunda de cutícula con esmaltado pro.</p>
-      <div class="price">$ 65.000 COP</div>
-    </div>
   </div>
 </body>
 </html>`,
@@ -1554,8 +1569,8 @@ export const api = {
       status: 'prospecto',
       views_count: 5,
       business_data: {
-        nombre: 'Studio Glamour Spa Poblado',
-        rubro: 'Salón de Belleza & Spa',
+        nombre: 'Studio Glamour Spa',
+        rubro: 'Salón de Belleza',
         contacto: {
           telefono_principal: '(300) 123-4567',
           whatsapp: { numero: '+573001234567', link: 'https://wa.me/573001234567' }
@@ -1566,9 +1581,7 @@ export const api = {
           google_maps_url: 'https://maps.google.com/?q=Studio+Glamour+Poblado'
         },
         servicios: [
-          { titulo: 'Balayage Rubio Cenizo', descripcion: 'Decoloración técnica + matiz y nutrición profunda.', precio_cop: 280000, duracion_minutos: 120 },
-          { titulo: 'Keratina Orgánica', descripcion: 'Liso espejo 100% libre de formol y brillo extremo.', precio_cop: 230000, duracion_minutos: 90 },
-          { titulo: 'Manicura Rusa & Semipermanente', descripcion: 'Limpieza profunda de cutícula con esmaltado pro.', precio_cop: 65000, duracion_minutos: 60 }
+          { titulo: 'Balayage', descripcion: 'Colorimetría premium.', precio_cop: 280000, duracion_minutos: 120 }
         ],
         especialistas: [
           { nombre: 'Camila Master', rol: 'Master Colorista' },
@@ -1577,7 +1590,8 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify([demoSite]));
+    inMemoryProspectSitesCache = [demoSite];
+    safeSaveProspectSitesToLocalStorage([demoSite]);
     return [demoSite];
   },
 
@@ -1589,7 +1603,13 @@ export const api = {
           .select('*')
           .eq('slug', slug)
           .single();
-        if (!error && data) return data as ProspectSite;
+        if (!error && data) {
+          const site = data as ProspectSite;
+          if (inMemoryProspectSitesCache) {
+            inMemoryProspectSitesCache = [site, ...inMemoryProspectSitesCache.filter(s => s.id !== site.id)];
+          }
+          return site;
+        }
       } catch (e) {}
     }
     const sites = await this.getProspectSites();
@@ -1646,13 +1666,14 @@ export const api = {
           await supabase.from('prospect_sites').insert([newSite]);
         }
       } catch (e) {
-        console.warn('Supabase prospect site notice (using local storage fallback):', e);
+        console.warn('Supabase prospect site notice (using in-memory & local cache):', e);
       }
     }
 
     const current = await this.getProspectSites();
     const updated = [newSite, ...current.filter(s => s.slug !== newSite.slug && s.id !== newSite.id)];
-    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    inMemoryProspectSitesCache = updated;
+    safeSaveProspectSitesToLocalStorage(updated);
     return newSite;
   },
 
@@ -1675,7 +1696,8 @@ export const api = {
       }
       return s;
     });
-    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    inMemoryProspectSitesCache = updated;
+    safeSaveProspectSitesToLocalStorage(updated);
     return updatedSite;
   },
 
@@ -1687,7 +1709,8 @@ export const api = {
     }
     const current = await this.getProspectSites();
     const updated = current.filter(s => s.id !== id);
-    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    inMemoryProspectSitesCache = updated;
+    safeSaveProspectSitesToLocalStorage(updated);
     return true;
   },
 
