@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client, Stylist, Service, Appointment, ColorFormula, TenantAISettings, Product } from '../types';
+import { Client, Stylist, Service, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant } from '../types';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -1474,6 +1474,215 @@ export const api = {
       services: serviceEntities,
       aiSettings: aiSettingsPayload
     };
+  },
+
+  // =========================================================================
+  // PROSPECT SITES (SUPERADMIN LEAD ENGINE)
+  // =========================================================================
+  async getProspectSites(): Promise<ProspectSite[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('prospect_sites')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data) return data as ProspectSite[];
+      } catch (e) {}
+    }
+    const saved = localStorage.getItem('bf_prospect_sites_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved) as ProspectSite[];
+      } catch (e) {}
+    }
+    // Demo seed prospect site
+    const demoSite: ProspectSite = {
+      id: 'demo-prospect-1',
+      slug: 'studio-glamour-demo',
+      business_name: 'Studio Glamour Spa Poblado',
+      phone_whatsapp: '+573001234567',
+      address: 'Calle 10 # 43E-22, El Poblado',
+      city: 'Medellín',
+      country: 'Colombia',
+      google_maps_url: 'https://maps.google.com/?q=Studio+Glamour+Poblado',
+      raw_html: `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio Glamour Spa - Medellín</title>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background: #0b0f19; color: #fff; text-align: center; }
+    .hero { padding: 60px 20px; background: radial-gradient(circle, rgba(255,90,54,0.15) 0%, rgba(11,15,25,1) 70%); }
+    h1 { font-size: 2.5rem; margin-bottom: 10px; color: #FF5A36; }
+    p { color: #94a3b8; max-width: 600px; margin: 0 auto 30px; }
+    .services { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 20px; }
+    .card { background: #151c2e; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; width: 250px; text-align: left; }
+    .card h3 { margin-top: 0; color: #fff; font-size: 1.1rem; }
+    .price { color: #10b981; font-weight: bold; font-size: 1.2rem; }
+    .btn-wa { display: inline-block; background: #25D366; color: #fff; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: bold; margin-top: 20px; box-shadow: 0 10px 20px rgba(37,211,102,0.3); }
+    .badge { background: #FF5A36/20; color: #FF5A36; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <span class="badge">Salón & Spa Oficial en Google Maps</span>
+    <h1>Studio Glamour Spa</h1>
+    <p>Especialistas en Balayage, Colorimetría Europea, Keratinas y Tratamientos Capilares en El Poblado, Medellín.</p>
+    <a href="https://wa.me/573001234567" class="btn-wa">💬 Escribir al WhatsApp</a>
+  </div>
+  <div class="services">
+    <div class="card">
+      <h3>Balayage Rubio Cenizo</h3>
+      <p>Decoloración técnica + matiz y nutrición profunda.</p>
+      <div class="price">$ 280.000 COP</div>
+    </div>
+    <div class="card">
+      <h3>Keratina Orgánica</h3>
+      <p>Liso espejo 100% libre de formol y brillo extremo.</p>
+      <div class="price">$ 230.000 COP</div>
+    </div>
+    <div class="card">
+      <h3>Manicura Rusa & Semipermanente</h3>
+      <p>Limpieza profunda de cutícula con esmaltado pro.</p>
+      <div class="price">$ 65.000 COP</div>
+    </div>
+  </div>
+</body>
+</html>`,
+      category: 'salon',
+      status: 'prospecto',
+      views_count: 5,
+      created_at: new Date().toISOString()
+    };
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify([demoSite]));
+    return [demoSite];
+  },
+
+  async getProspectSiteBySlug(slug: string): Promise<ProspectSite | null> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('prospect_sites')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+        if (!error && data) return data as ProspectSite;
+      } catch (e) {}
+    }
+    const sites = await this.getProspectSites();
+    return sites.find(s => s.slug === slug || s.slug.toLowerCase() === slug.toLowerCase()) || null;
+  },
+
+  async createProspectSite(site: Partial<ProspectSite>): Promise<ProspectSite> {
+    const newSite: ProspectSite = {
+      id: site.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ps-${Date.now()}`),
+      slug: (site.slug || site.business_name || 'salon')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, ''),
+      business_name: site.business_name || 'Salón de Belleza',
+      phone_whatsapp: site.phone_whatsapp || '+573000000000',
+      address: site.address || '',
+      city: site.city || 'Medellín',
+      country: site.country || 'Colombia',
+      google_maps_url: site.google_maps_url || '',
+      raw_html: site.raw_html || '<h1>Bienvenido a nuestro Salón</h1>',
+      category: site.category || 'salon',
+      status: site.status || 'prospecto',
+      views_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('prospect_sites').insert([newSite]);
+        if (error) console.error('Error creating prospect site in supabase:', error.message);
+      } catch (e) {}
+    }
+
+    const current = await this.getProspectSites();
+    const updated = [newSite, ...current.filter(s => s.id !== newSite.id)];
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    return newSite;
+  },
+
+  async updateProspectSite(id: string, siteData: Partial<ProspectSite>): Promise<ProspectSite | null> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('prospect_sites')
+          .update({ ...siteData, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        if (error) console.error('Error updating prospect site:', error.message);
+      } catch (e) {}
+    }
+    const current = await this.getProspectSites();
+    let updatedSite: ProspectSite | null = null;
+    const updated = current.map(s => {
+      if (s.id === id) {
+        updatedSite = { ...s, ...siteData, updated_at: new Date().toISOString() };
+        return updatedSite;
+      }
+      return s;
+    });
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    return updatedSite;
+  },
+
+  async deleteProspectSite(id: string): Promise<boolean> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('prospect_sites').delete().eq('id', id);
+      } catch (e) {}
+    }
+    const current = await this.getProspectSites();
+    const updated = current.filter(s => s.id !== id);
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+    return true;
+  },
+
+  async incrementProspectSiteViews(id: string): Promise<void> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.rpc('increment_prospect_views', { site_id: id });
+      } catch (e) {}
+    }
+    const current = await this.getProspectSites();
+    const updated = current.map(s => s.id === id ? { ...s, views_count: (s.views_count || 0) + 1 } : s);
+    localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
+  },
+
+  async getAllTenants(): Promise<Tenant[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('tenants')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) return data as Tenant[];
+      } catch (e) {}
+    }
+    // Fallback demo tenant
+    const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+    if (activeTenantRaw) {
+      try {
+        return [JSON.parse(activeTenantRaw) as Tenant];
+      } catch (e) {}
+    }
+    return [{
+      id: '00000000-0000-0000-0000-000000000001',
+      name: 'Studio Glamour Spa',
+      slug: 'studio-glamour',
+      phone: '+57 300 123 4567',
+      address: 'Calle 10 # 43E-22, El Poblado',
+      city: 'Medellín',
+      country: 'Colombia',
+      is_active: true,
+      plan: 'pro_ai',
+      created_at: '2026-08-15'
+    }];
   }
 };
 

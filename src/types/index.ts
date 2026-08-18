@@ -264,3 +264,21 @@ export interface PosSale {
   created_at: string;
 }
 
+export interface ProspectSite {
+  id: string;
+  slug: string;
+  business_name: string;
+  phone_whatsapp: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  google_maps_url?: string;
+  raw_html: string;
+  category?: 'salon' | 'barberia' | 'spa' | 'estetica' | 'nails';
+  status: 'prospecto' | 'contactado' | 'reclamado' | 'cliente_pago';
+  claimed_tenant_id?: string;
+  views_count: number;
+  created_at: string;
+  updated_at?: string;
+}
+

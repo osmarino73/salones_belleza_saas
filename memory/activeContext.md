@@ -13,6 +13,12 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Dashboard de Superadmin & Lead Engine Studio ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+  - **Módulo de Prospección de Alto Impacto (Lead Magnet)**:
+    1. **Creador de Sitios Gancho**: Permite al dueño del SaaS pegar el código HTML generado por su herramienta externa, asociarlo a Google Maps (o formulario manual), e inyectarle automáticamente el botón de reservas online (`/reservar/:slug`), el banner para activar 14 días gratis (`/onboarding?reclamar=:slug`) y el Schema SEO Local (`LocalBusiness`).
+    2. **Generador de Pitch de WhatsApp en 1-Click**: Crea un mensaje persuasivo personalizado listo para enviar a la dueña por WhatsApp Web con el enlace público a su web de regalo.
+    3. **Embudo de Prospectos**: Rastrear visitas web en vivo y cambiar el estado del prospecto (`Prospecto`, `Contactado`, `Reclamó 14 Días`, `Cliente de Pago`).
+    4. **Gestión Global de Tenants SaaS**: Control de todos los salones registrados, días restantes de prueba gratis, facturación mensual recurrente (MRR) y acceso directo como soporte.
 - **Corrección de Contraste y Scroll en Modal de Cobro POS ([`PosCashRegisterPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/PosCashRegisterPage.tsx))**:
   - **Problema corregido**: 
     1. En modo claro, el monto total (`$58.000 COP`) se veía blanco sobre fondo blanco (completamente invisible).
