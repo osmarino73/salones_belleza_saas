@@ -27,17 +27,45 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.auth.signIn(email, password);
+      const authRes = await api.auth.signIn(email, password);
+      const cleanEmail = email.toLowerCase().trim();
+
+      // Verificar rol real del usuario desde Supabase / BD
+      let isCollaborator = false;
+      let matchedStylistId: string | null = null;
+
+      // 1. Revisar metadata de autenticación
+      if (authRes?.user?.user_metadata?.role === 'colaborador') {
+        isCollaborator = true;
+      }
+
+      // 2. Revisar lista de estilistas/colaboradores
+      try {
+        const allStylists = await api.getStylists();
+        const found = allStylists.find(s => s.email?.toLowerCase().trim() === cleanEmail);
+        if (found) {
+          matchedStylistId = found.id;
+          if (!found.is_owner && found.role !== 'admin') {
+            isCollaborator = true;
+          }
+        }
+      } catch (err) {}
+
+      // 3. Fallback a selector demo
+      if (!isCollaborator && (selectedRole === 'estilista' || selectedRole === 'nails')) {
+        isCollaborator = true;
+      }
+
       setTimeout(() => {
         setLoading(false);
-        if (selectedRole === 'estilista' || selectedRole === 'nails') {
-          navigate('/colaborador');
+        if (isCollaborator) {
+          navigate(matchedStylistId ? `/colaborador/${matchedStylistId}` : '/colaborador');
         } else {
           navigate('/dashboard');
         }
       }, 400);
     } catch (err) {
-      console.warn('Login error:', err);
+      console.warn('Login notice:', err);
       setLoading(false);
       navigate('/dashboard');
     }

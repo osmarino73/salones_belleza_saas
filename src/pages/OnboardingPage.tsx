@@ -248,6 +248,8 @@ export const OnboardingPage: React.FC = () => {
   const [ownerEmail, setOwnerEmail] = useState('');
   const [ownerPassword, setOwnerPassword] = useState('');
   const [ownerPhone, setOwnerPhone] = useState('');
+  const [ownerAttendsClients, setOwnerAttendsClients] = useState(true);
+  const [ownerSpecialty, setOwnerSpecialty] = useState('Dueña & Especialista Principal');
 
   const businessSlug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'mi-salon';
   const siteOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://belleza2027.netlify.app';
@@ -267,6 +269,8 @@ export const OnboardingPage: React.FC = () => {
           category: s.category,
           duration_minutes: s.duration_minutes,
           price: s.price_cop,
+          price_usd: s.price_cop,
+          price_cop: s.price_cop,
           description: `${s.name} profesional`
         }));
 
@@ -289,7 +293,11 @@ export const OnboardingPage: React.FC = () => {
           name: ownerName,
           email: ownerEmail,
           password: ownerPassword,
-          phone: ownerPhone
+          phone: ownerPhone,
+          role: 'admin',
+          is_owner: true,
+          attends_clients: ownerAttendsClients,
+          specialty: ownerSpecialty
         },
         services: activeServices,
         aiSettings: {
@@ -1006,9 +1014,41 @@ export const OnboardingPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Opción de Rol & Atención de Citas */}
+                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <strong className="text-white text-xs block">¿También atiendes clientes en el salón?</strong>
+                      <p className="text-[11px] text-slate-400">Si lo activas, aparecerás como especialista disponible en el portal de reservas.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setOwnerAttendsClients(!ownerAttendsClients)}
+                      className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                        ownerAttendsClients ? 'bg-[#FF5A36] justify-end' : 'bg-slate-700 justify-start'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                    </button>
+                  </div>
+
+                  {ownerAttendsClients && (
+                    <div>
+                      <label className="block font-semibold text-slate-300 mb-1">Tu Especialidad / Título Profesional</label>
+                      <input
+                        type="text"
+                        value={ownerSpecialty}
+                        onChange={(e) => setOwnerSpecialty(e.target.value)}
+                        placeholder="Ej. Directora & Master Stylist, Barbero Principal, Colorista"
+                        className="w-full bg-[#0E121B] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-[#FF5A36]"
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 shrink-0" />
-                  <span>Tu cuenta incluye 14 días de prueba gratuita del Plan Pro IA sin tarjeta de crédito.</span>
+                  <span>Tu cuenta de Administradora tiene acceso total al negocio y 14 días de prueba Pro IA.</span>
                 </div>
               </div>
 

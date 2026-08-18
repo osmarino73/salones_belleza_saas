@@ -9,7 +9,10 @@ ADD COLUMN IF NOT EXISTS working_days JSONB DEFAULT '[1, 2, 3, 4, 5, 6]'::jsonb,
 ADD COLUMN IF NOT EXISTS blocked_dates JSONB DEFAULT '[]'::jsonb,
 ADD COLUMN IF NOT EXISTS blocked_slots JSONB DEFAULT '[]'::jsonb,
 ADD COLUMN IF NOT EXISTS service_categories JSONB DEFAULT '["color", "corte"]'::jsonb,
-ADD COLUMN IF NOT EXISTS service_ids JSONB DEFAULT '[]'::jsonb;
+ADD COLUMN IF NOT EXISTS service_ids JSONB DEFAULT '[]'::jsonb,
+ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'colaborador',
+ADD COLUMN IF NOT EXISTS is_owner BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS attends_clients BOOLEAN DEFAULT TRUE;
 
 -- Comentarios explicativos
 COMMENT ON COLUMN public.stylists.working_days IS 'Días semanales de trabajo: 0=Domingo, 1=Lunes, ..., 6=Sábado';

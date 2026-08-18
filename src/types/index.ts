@@ -29,6 +29,9 @@ export interface Stylist {
   email?: string;
   phone?: string;
   phone_whatsapp?: string;
+  role?: 'admin' | 'colaborador';
+  is_owner?: boolean;
+  attends_clients?: boolean; // True si atiende clientes y aparece en reservas
   specialty: string;
   photo_url: string;
   rating: number;
@@ -49,7 +52,9 @@ export interface Service {
   name: string;
   category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
   duration_minutes: number;
-  price_usd: number;
+  price_usd?: number;
+  price?: number;
+  price_cop?: number;
   requires_patch_test: boolean;
   description: string;
 }
@@ -113,7 +118,7 @@ export interface Appointment {
   time: string;
   duration_minutes: number;
   price_usd: number;
-  status: 'pendiente' | 'confirmada_wa' | 'en_atencion' | 'cobrada' | 'no_show';
+  status: 'pendiente' | 'confirmada_wa' | 'en_atencion' | 'completada' | 'cobrada' | 'no_show';
   wa_reminder_24h_sent: boolean;
   wa_reminder_2h_sent: boolean;
   notes?: string;

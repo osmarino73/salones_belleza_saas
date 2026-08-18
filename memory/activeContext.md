@@ -13,6 +13,92 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Corrección de Contraste y Scroll en Modal de Cobro POS ([`PosCashRegisterPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/PosCashRegisterPage.tsx))**:
+  - **Problema corregido**: 
+    1. En modo claro, el monto total (`$58.000 COP`) se veía blanco sobre fondo blanco (completamente invisible).
+    2. El modal excedía la altura de pantalla en laptops y cortaba el botón de acción inferior.
+  - **Solución implementada**:
+    1. Se rediseñó la tarjeta hero con fondo oscuro contrastante `bg-gradient-to-br from-slate-900 via-[#161c2d] to-[#0f1422]` y texto blanco brillante `$ 58.000` con insignia coral `COP`, garantizando visibilidad 100% nítida en modo claro y oscuro.
+    2. Se añadió `max-h-[92vh] overflow-y-auto` y se ajustaron los contrastes de los 6 botones de medios de pago, chips rápidos de billetes y botón de cobro para encajar con fluidez en cualquier pantalla.
+- **Flujo Seguro Anti-Descuadre: Completar en Sillón vs Cobro en Caja POS ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - **Problema de Seguridad Resuelto**: Se eliminó el riesgo de que el colaborador pudiera auto-marcar un turno como "Cobrado" por sí mismo.
+  - **Nuevo Ciclo Operativo Blindado**:
+    1. **Especialista en el Sillón**: Presiona **`"✓ Terminado / Enviar a Caja"`** -> La cita pasa a estado `'completada'` y el especialista queda libre (`disponible`) para su siguiente cita.
+    2. **Visualización en Billetera Colaborador**: La comisión del servicio se muestra como **`💳 En Caja (Esperando Pago - Por Liquidar)`**, pero **NO suma al saldo cobrado disponible** hasta que recepción valide el dinero.
+    3. **Administradora en Recepción / POS**: En el Dashboard de administración se destacan las órdenes listas para cobro (`💳 Por Cobrar en Caja`) con el botón directo **`"Cobrar en POS"`**.
+    4. **Acreditación Simultánea**: Al registrar el pago en caja (Efectivo/Tarjeta/Transferencia) o validar prepago, la cita pasa a `'cobrada'`. En ese instante exacto se acredita la comisión a la billetera del colaborador y el dinero a la caja general.
+- **Sincronización Estricta de Saldo de Comisiones (Solo Citas Cobradas)**:
+  - **Regla Contable Unificada**: Una comisión se considera **saldo ganado y liquidable** ÚNICAMENTE cuando la cita tiene el estado `status: 'cobrada'` (es decir, fue pagada en el punto de venta POS o cancelada por adelantado).
+  - **Comportamiento corregido**:
+    1. Cuando el profesional presiona "Iniciar Atención" (`status: 'en_atencion'`), el servicio está en proceso en el sillón. Su comisión se muestra como *En sillón / En proceso*, pero **NO suma al saldo cobrado de comisiones** ni en el portal del colaborador ni en el panel del administrador.
+    2. Cuando el servicio se finaliza/cobra (`status: 'cobrada'`), el saldo se acredita y sincroniza **simultáneamente y en tiempo real** tanto en la billetera del especialista como en la caja/dashboard del administrador.
+- **Eliminación del Botón "Dueña" en la Barra de Navegación ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+  - **Problema corregido**: En la barra de navegación móvil inferior del portal de colaborador aparecía un botón llamado "Dueña" con acceso al dashboard de administración.
+  - **Solución implementada**: Se eliminó dicho botón del *Bottom Navigation Bar* móvil, dejando únicamente las opciones pertinentes al colaborador (*Mi Agenda*, *Fórmulas*, *Billetera*, *Días Libres*) y asegurando que ninguna referencia de administración sea accesible para el especialista.
+- **Optimización de Navegación Móvil en Portal del Colaborador ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+  - **Problema corregido**: En la vista móvil aparecía duplicado el menú de pestañas centrales (`Mi Agenda`, `Fórmulas`, `Mi Billetera`, `Días No Disponibles`) cuando en móviles ya existe la barra de navegación fija inferior (*Bottom Navigation Bar* tipo App móvil).
+  - **Solución implementada**: Se configuró `hidden sm:flex` en el contenedor de pestañas superior para que en teléfonos móviles (< 640px) quede 100% invisible y la navegación se realice limpiamente a través del *Bottom Nav* inferior, conservando el menú superior segmentado únicamente en pantallas de escritorio y tablets.
+- **Moneda Dinámica y Cálculo Real de Comisiones en Portal de Colaboradores ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+  - **Problema corregido**: 
+    1. En el portal del especialista se mostraba un valor fijo ficticio de prueba de `$1240.00 USD` en el acumulado del mes aún cuando el profesional no había atendido ningún servicio.
+    2. Las tarjetas y listas mostraban texto quemado con `USD` en vez de la moneda configurada para el negocio (`COP $`).
+  - **Solución implementada**:
+    1. Eliminado el valor estático `+ 1240`. Las comisiones del día y del mes ahora se calculan **100% en vivo** según los servicios efectivamente completados o cobrados por el estilista (`0 turnos = $ 0 COP`).
+    2. Integrado `formatCurrency` en todas las tarjetas de métricas, tarjetas de turnos en agenda y pestaña de liquidación/billetera para respetar la moneda oficial del salón (`COP`, `MXN`, `USD`, `EUR`, etc.).
+- **Aislamiento de Roles y Protección de Privacidad (Admin vs Colaborador)**:
+  - **Problema corregido**: Al iniciar sesión con la cuenta de un colaborador (ej. `ommsoluciones@gmail.com`), el enrutador lo dirigía a `/dashboard` donde podía ver la facturación global, caja registradora, prompts de IA y configuraciones del administrador.
+  - **Solución implementada**:
+    1. **Enrutamiento Inteligente en Login ([`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**: Al autenticarse, verifica en Supabase Auth y en la tabla de colaboradores si el usuario es colaborador. Si es colaborador, lo redirige automáticamente a su portal privado en `/colaborador/:id`.
+    2. **Role Guard en Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**: Si un colaborador intenta entrar directamente a `/dashboard`, el sistema detecta su rol y lo redirige de inmediato a su propio portal.
+    3. **Aislamiento en Portal del Especialista ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**: El colaborador únicamente tiene acceso a sus citas asignadas, sus comisiones personales ganadas, sus fichas de clientes/fórmulas y su propia disponibilidad, sin acceso a cajas POS ni configuraciones del salón.
+- **Registro Automático de Colaboradores en Supabase Auth (`auth.users`)**:
+  - **Problema corregido**: Al crear un nuevo colaborador desde el Dashboard con correo (ej. `ommsoluciones@gmail.com`) y contraseña provisoria, únicamente se guardaba en la tabla de base de datos `public.stylists`, pero no se registraba en el panel de **Authentication (`auth.users`)** de Supabase.
+  - **Solución implementada**: Se integró `api.auth.signUp` dentro de [`api.createStylist`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) y [`api.updateStylist`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) para que cada vez que se cree un colaborador o se le asigne una contraseña, se genere de forma inmediata y automática su usuario autenticado en **Supabase Auth (`auth.users`)** con su rol y `tenant_id` en metadata.
+- **Diseño de Pestañas Segmentadas en Expediente 360° (Sin Barra de Desplazamiento)**:
+  - **Problema corregido**: El menú superior del modal de expediente del colaborador usaba `overflow-x-auto` con textos extensos, lo que provocaba una barra de desplazamiento horizontal antiestética.
+  - **Solución implementada**: Reemplazado por un contenedor de cuadrícula segmentada responsiva de 4 columnas (`grid grid-cols-2 sm:grid-cols-4`) con etiquetas concisas (*Citas*, *Comisiones*, *Servicios*, *Horarios*) que ocupa exactamente el 100% del ancho sin desbordamiento ni scrollbars.
+- **Expediente 360° y Dossier Financiero/Operativo por Colaborador (`isStylistDetailsModalOpen`)**:
+  - **Nueva funcionalidad**: Al hacer clic sobre la tarjeta de cualquier estilista o colaboradora en la sección *Servicios & Equipo > Equipo*, se abre un modal interactivo 360° con desglose detallado de:
+    1. **4 KPIs Clave en Vivo**: Facturado Total por Servicios, Comisiones Ganadas Acumuladas, Total de Citas en Agenda (atendidas vs pendientes) y Ticket Promedio por Cliente (en la moneda del salón).
+    2. **Pestaña Citas & Agenda**: Historial cronológico con cliente, servicio, hora, precio, estado y cálculo exacto de comisión ganada por cada cita.
+    3. **Pestaña Comisiones & Liquidación**: Resumen de porcentajes acordados (Servicios vs Retail) y acumulado pendiente por liquidar.
+    4. **Pestaña Especialidades & Servicios**: Categorías habilitadas (`🎨 Color`, `✂️ Corte`, `💆‍♀️ Keratina`, `💅 Nails`, `💈 Barbería`, `🧖‍♀️ Spa`).
+    5. **Pestaña Horarios & Disponibilidad**: Días de trabajo semanales, bloqueos activos y botón directo para agregar permisos o vacaciones.
+- **Sincronización Bidireccional y Persistencia de Colaboradores en BD ([`api.createStylist`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`api.updateStylist`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+  - **Problema corregido**: Al crear o editar un estilista/colaborador, no se persistían los datos en Supabase porque los nombres de columnas del frontend (`commission_service_pct`, `commission_retail_pct`, IDs con prefijo `sty-...`) no coincidían con el esquema PostgreSQL (`service_commission_pct`, `product_commission_pct`, `UUID`). PostgreSQL rechazaba los comandos con `column does not exist` o `invalid input syntax for type uuid`.
+  - **Solución implementada**:
+    1. Creado mapeador bidireccional (`mapStylistToDBPayload` y `mapStylistFromDB`) que normaliza las columnas de comisión, disponibilidad, roles (`role`, `is_owner`, `attends_clients`) y categorías JSONB.
+    2. Generación automática y validación de UUIDs antes del `insert`/`update` en Supabase.
+    3. Actualizado el script de migración [`add_stylist_availability_and_blocked_slots.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/add_stylist_availability_and_blocked_slots.sql) con las columnas `role`, `is_owner` y `attends_clients`.
+- **Jerarquía de Rol Admin/Dueña y Capacidad Opcional de Atender Citas (`role: 'admin'`, `attends_clients: boolean`)**:
+  - **Problema corregido**: Al crear un negocio desde el Onboarding, la cuenta de la dueña/administradora se registraba directamente como un colaborador ordinario sin distinguir su rol de administración general y sin permitirle decidir si quería atender citas o solo gestionar.
+  - **Solución implementada**:
+    1. **Rol Maestro (`role: 'admin'`, `is_owner: true`)**: La cuenta de la dueña tiene privilegios maestros protegidos (no puede ser eliminada por error y porta la insignia dorada `👑 Dueña / Admin`).
+    2. **Opción de Atender Citas (`attends_clients: boolean`)**: Tanto en el Onboarding (Paso 4) como en el modal de edición de equipo en el Dashboard, la Administradora puede activar o desactivar si atiende citas con clientas y especificar su especialidad/categorías (ej. *Corte*, *Color*, *Barbería*).
+    3. **Aislamiento en Portal de Reservas ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**: Si la dueña o algún miembro del equipo tiene `attends_clients: false` (modo *Solo Gestión*), el sistema lo excluye automáticamente del flujo público de agendamiento.
+- **Corrección en Creación de Citas y Validación UUID (`api.createAppointment`)**:
+  - **Problema corregido**: Al agendar una cita desde el portal público (`/reservas`) o crearla manualmente desde el Dashboard, el sistema enviaba IDs de texto planos (`apt-1723...`, `cli-1723...`, `sty-1`), lo cual provocaba un error de sintaxis en PostgreSQL (`invalid input syntax for type uuid`) impidiendo que la cita se insertara en la tabla `public.appointments` de Supabase.
+  - **Solución implementada**:
+    1. Sanitización y validación estricta de UUIDs en [`api.createAppointment`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts): genera UUIDs estándar v4 y asigna `null` a llaves foráneas opcionales si no son UUIDs válidos.
+    2. Vinculación dinámica del `tenant_id`, especialista real y servicio real tanto en [`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx) como en [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx).
+    3. Persistencia reactiva en LocalStorage y Supabase sin bloqueos.
+- **Sincronización Automática de Salón por Email de Usuario (`api.getTenantByUserEmail`)**:
+  - **Problema corregido**: Al iniciar sesión con un correo nuevo registrado (ej. `asovid2025@gmail.com`), el dashboard seguía mostrando el salón demo inicial (*Studio Glamour Spa*) y sus servicios demo (*Balayage, Corte Bob...*) porque el LocalStorage mantenía en caché el `tenant_id` demo anterior.
+  - **Solución implementada**:
+    1. Creada función [`api.getTenantByUserEmail`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) que busca en Supabase el negocio exacto creado por la cuenta activa.
+    2. Integrado en `api.auth.signIn` y en el `loadData()` del Dashboard (`DashboardPage.tsx`) para actualizar automáticamente el salón, nombre, teléfono, moneda y **cargar exclusivamente los servicios y colaboradores reales de ese usuario**.
+- **Aislamiento Estricto Multitenant en Portal de Reservas (`/reservas?salon=slug`)**:
+  - **Problema corregido**: Al entrar a `/reservas`, si no se encontraba coincidencia exacta o había registros en localStorage sin `tenant_id`, se mezclaban los servicios del salón demo con el nuevo salón registrado.
+  - **Solución implementada**:
+    1. Búsqueda inteligente por slug en Supabase (`api.getTenantBySlug`) con fallback al salón activo en sesión.
+    2. Filtrado estricto por `tenant_id` en `api.getServices(targetTenantId)` y `api.getStylists(targetTenantId)` que garantiza que **cada salón cargue exclusivamente sus servicios y colaboradores propios**.
+    3. Estado vacío elegante en el Paso 1 de reservas si el negocio recién registrado aún no ha publicado servicios.
+- **Corrección Integral de Moneda y Precios (`formatCurrency` y Normalización Supabase)**:
+  - **Problema corregido**: En Supabase la columna es `price`, mientras que en el frontend se leía `price_usd`, provocando que en salones nuevos o registrados en COP saliera `$ undefined USD` o `$ USD` sin número.
+  - **Solución implementada**:
+    1. Normalización en `api.getServices()`, `createService()` y `updateService()` para mapear `price`, `price_usd` y `price_cop` de forma transparente.
+    2. Función universal `formatCurrency(amount, salonCurrency)` que formatea en **COP (`$ 35.000 COP`)**, **USD (`$ 35 USD`)**, **MXN (`$ 35 MXN`)** o **EUR (`€ 35 EUR`)** según la moneda seleccionada en el Onboarding o configuración del salón.
+    3. Actualizado en **Portal Público de Reservas (`BookingPage.tsx`)** y en el **Catálogo del Dashboard (`DashboardPage.tsx`)**.
 - **Arquitectura de Base de Datos y Almacenamiento de Fotos (`create_storage_avatars_bucket.sql`)**:
   - **Soporte Híbrido Inteligente**:
     1. **Supabase Storage Bucket (`avatars`)**: Sube el archivo WebP optimizado al bucket con CDN público y guarda la URL HTTPS en la columna `photo_url TEXT` de `public.stylists`.

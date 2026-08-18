@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Ban
 } from 'lucide-react';
-import { api, initialServices, initialStylists } from '../lib/supabase';
+import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
 import { Service, Stylist } from '../types';
 
 export const BookingPage: React.FC = () => {
@@ -24,6 +24,7 @@ export const BookingPage: React.FC = () => {
   const salonSlug = searchParams.get('salon') || '';
 
   const [salonName, setSalonName] = useState<string>('Studio Glamour Spa');
+  const [salonCurrency, setSalonCurrency] = useState<string>('COP');
   const [services, setServices] = useState<Service[]>(initialServices);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
 
@@ -66,11 +67,12 @@ export const BookingPage: React.FC = () => {
 
   // Filter stylists that can perform the selected service
   const filteredStylists = useMemo(() => {
-    if (!selectedService) return stylists;
+    const activeStylists = stylists.filter(s => s.attends_clients !== false);
+    if (!selectedService) return activeStylists;
     const cat = selectedService.category;
     const srvId = selectedService.id;
 
-    const matched = stylists.filter(s => {
+    const matched = activeStylists.filter(s => {
       // 1. Exact service ID match
       if (s.service_ids && s.service_ids.length > 0) {
         if (s.service_ids.includes(srvId)) return true;
@@ -92,7 +94,7 @@ export const BookingPage: React.FC = () => {
       return false;
     });
 
-    return matched.length > 0 ? matched : stylists;
+    return matched.length > 0 ? matched : activeStylists;
   }, [stylists, selectedService]);
 
   // Auto-select first matching stylist when service changes if current is not in list
@@ -107,31 +109,52 @@ export const BookingPage: React.FC = () => {
 
   useEffect(() => {
     async function loadBookingData() {
-      // 1. Cargar datos del salón activo
+      let targetTenantId: string | undefined = undefined;
+
+      // 1. Cargar datos del salón activo desde LocalStorage
       const activeTenantRaw = localStorage.getItem('bf_tenant_active');
       if (activeTenantRaw) {
         try {
           const tenant = JSON.parse(activeTenantRaw);
           if (tenant.name) setSalonName(tenant.name);
+          if (tenant.currency) setSalonCurrency(tenant.currency);
+          if (tenant.id) targetTenantId = tenant.id;
         } catch (e) {}
-      } else if (salonSlug) {
-        const formatted = salonSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        setSalonName(formatted);
       }
 
-      // 2. Cargar servicios y estilistas
+      // 2. Si hay slug en URL, buscar en Supabase
+      if (salonSlug) {
+        try {
+          const tenantBySlug = await api.getTenantBySlug(salonSlug);
+          if (tenantBySlug) {
+            if (tenantBySlug.name) setSalonName(tenantBySlug.name);
+            if (tenantBySlug.currency) setSalonCurrency(tenantBySlug.currency);
+            if (tenantBySlug.id) targetTenantId = tenantBySlug.id;
+          } else {
+            const formatted = salonSlug.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            setSalonName(formatted);
+          }
+        } catch (e) {}
+      }
+
+      // 3. Cargar servicios y estilistas
       const [srvs, stys] = await Promise.all([
-        api.getServices(),
-        api.getStylists()
+        api.getServices(targetTenantId),
+        api.getStylists(targetTenantId)
       ]);
 
       if (srvs && srvs.length > 0) {
         setServices(srvs);
         setSelectedService(srvs[0]);
+      } else {
+        setServices([]);
       }
       if (stys && stys.length > 0) {
         setStylists(stys);
         setSelectedStylist(stys[0]);
+      } else {
+        setStylists([]);
+        setSelectedStylist(null);
       }
     }
     loadBookingData();
@@ -155,20 +178,21 @@ export const BookingPage: React.FC = () => {
   const handleConfirmBooking = async () => {
     if (!selectedService) return;
     try {
+      const activeTid = selectedService.tenant_id || getActiveTenantId();
       await api.createAppointment({
-        id: `apt-${Date.now()}`,
-        tenant_id: selectedService.tenant_id,
-        client_id: `cli-${Date.now()}`,
+        id: '',
+        tenant_id: activeTid,
+        client_id: '',
         client_name: clientName.trim() || 'Clienta Web',
         client_phone: `${countryCode} ${phone10Digits}`.trim(),
-        stylist_id: selectedStylist?.id || stylists[0]?.id || 'sty-1',
+        stylist_id: selectedStylist?.id || (stylists[0]?.id && stylists[0]?.id !== 'sty-1' ? stylists[0]?.id : '') || '',
         stylist_name: selectedStylist ? selectedStylist.name : (stylists[0]?.name || 'Primer Disponible'),
         service_id: selectedService.id,
         service_name: selectedService.name,
         date: selectedDate,
         time: selectedTime,
-        duration_minutes: selectedService.duration_minutes,
-        price_usd: selectedService.price_usd,
+        duration_minutes: selectedService.duration_minutes || 60,
+        price_usd: Number(selectedService.price_usd ?? selectedService.price ?? 0),
         status: 'confirmada_wa',
         wa_reminder_24h_sent: true,
         wa_reminder_2h_sent: false,
@@ -180,8 +204,18 @@ export const BookingPage: React.FC = () => {
     setIsSuccess(true);
   };
 
-  const formatPrice = (price: number) => {
-    return price > 1000 ? `$ ${price.toLocaleString('es-CO')} COP` : `$ ${price} USD`;
+  const formatCurrency = (amount: number | undefined | null, currency: string = salonCurrency || 'COP') => {
+    const num = Number(amount ?? 0);
+    if (currency === 'COP' || (!currency && num > 1000)) {
+      return `$ ${num.toLocaleString('es-CO')} COP`;
+    }
+    if (currency === 'MXN') {
+      return `$ ${num.toLocaleString('es-MX')} MXN`;
+    }
+    if (currency === 'EUR') {
+      return `€ ${num.toLocaleString('es-ES')} EUR`;
+    }
+    return `$ ${num.toLocaleString('en-US')} USD`;
   };
 
   return (
@@ -238,38 +272,48 @@ export const BookingPage: React.FC = () => {
               Selecciona el Servicio Deseado
             </h2>
 
-            <div className="grid grid-cols-1 gap-3">
-              {services.map((srv) => (
-                <div
-                  key={srv.id}
-                  onClick={() => setSelectedService(srv)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
-                    selectedService?.id === srv.id
-                      ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
-                      : 'border-white/10 bg-[#0E121B] hover:border-white/20'
-                  }`}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <strong className="text-sm sm:text-base text-white">{srv.name}</strong>
-                      {srv.requires_patch_test && (
-                        <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full">
-                          Test de Parche
-                        </span>
-                      )}
+            {services.length === 0 ? (
+              <div className="text-center py-10 text-slate-400 bg-white/[0.02] border border-white/5 rounded-xl">
+                <Scissors className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#FF5A36]" />
+                <p className="text-sm font-semibold text-white">No hay servicios disponibles en este momento.</p>
+                <p className="text-xs text-slate-400 mt-1">Por favor comunícate directamente con el salón.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                {services.map((srv) => (
+                  <div
+                    key={srv.id}
+                    onClick={() => setSelectedService(srv)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
+                      selectedService?.id === srv.id
+                        ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
+                        : 'border-white/10 bg-[#0E121B] hover:border-white/20'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-sm sm:text-base text-white">{srv.name}</strong>
+                        {srv.requires_patch_test && (
+                          <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full">
+                            Test de Parche
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400">{srv.description}</p>
+                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" /> {srv.duration_minutes} minutos
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-400">{srv.description}</p>
-                    <span className="text-xs text-slate-500 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" /> {srv.duration_minutes} minutos
-                    </span>
-                  </div>
 
-                  <div className="text-right pl-4 shrink-0">
-                    <div className="text-base sm:text-lg font-extrabold text-[#FF5A36]">{formatPrice(srv.price_usd)}</div>
+                    <div className="text-right pl-4 shrink-0">
+                      <div className="text-base sm:text-lg font-extrabold text-[#FF5A36]">
+                        {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="pt-4 flex justify-end">
               <button
@@ -515,7 +559,9 @@ export const BookingPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between pt-2 border-t border-white/10 text-sm">
                   <span className="font-bold text-white">Total Estimado:</span>
-                  <strong className="text-white font-extrabold">{selectedService ? formatPrice(selectedService.price_usd) : '$ 0'}</strong>
+                  <strong className="text-white font-extrabold">
+                    {selectedService ? formatCurrency(selectedService.price_usd ?? selectedService.price ?? selectedService.price_cop, salonCurrency) : '$ 0'}
+                  </strong>
                 </div>
               </div>
             </div>

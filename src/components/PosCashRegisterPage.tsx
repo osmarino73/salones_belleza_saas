@@ -2141,73 +2141,73 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
           MODAL 3: CHECKOUT MULTI-MÉTODO DE PAGO ULTRA-PREMIUM
           ===================================================================== */}
       {isCheckoutOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className={`w-full max-w-xl p-6 sm:p-7 rounded-3xl border shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 relative overflow-hidden ${
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+          <div className={`w-full max-w-xl p-5 sm:p-7 rounded-3xl border shadow-2xl space-y-4 sm:space-y-5 animate-in zoom-in-95 duration-200 relative max-h-[92vh] overflow-y-auto ${
             isDark 
               ? 'bg-[#121624]/95 border-white/15 text-white shadow-black/80' 
-              : 'bg-white/95 border-slate-200 text-slate-900 shadow-slate-300/60'
+              : 'bg-white border-slate-200 text-slate-900 shadow-2xl'
           }`}>
             {/* Glow decorativo de fondo */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header del Modal */}
-            <div className="flex items-center justify-between border-b pb-4 border-black/5 dark:border-white/10 relative">
+            <div className="flex items-center justify-between border-b pb-3.5 border-black/5 dark:border-white/10 relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white shadow-lg shadow-[#FF5A36]/30">
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-base font-extrabold tracking-tight">Terminal de Cobro & Facturación</h3>
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30">
                       POS EN VIVO
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    Cliente: <strong className="text-slate-200">{selectedClient?.full_name || '👤 Cliente Ocasional / Mostrador'}</strong>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Cliente: <strong className="text-slate-800 dark:text-slate-200 font-bold">{selectedClient?.full_name || '👤 Cliente Ocasional / Mostrador'}</strong>
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCheckoutOpen(false)}
-                className="w-8 h-8 rounded-xl border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl border border-black/10 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Tarjeta Hero: Total a Cancelar */}
+            {/* Tarjeta Hero: Total a Cancelar con Contraste Perfecto */}
             <div className={`p-4 sm:p-5 rounded-2xl border text-center relative overflow-hidden transition-all ${
               isDark
                 ? 'bg-gradient-to-b from-[#182033] to-[#0E121B] border-white/10 shadow-inner'
-                : 'bg-gradient-to-b from-orange-50 to-amber-50/40 border-orange-200'
+                : 'bg-gradient-to-br from-slate-900 via-[#161c2d] to-[#0f1422] text-white border-slate-800 shadow-xl'
             }`}>
               <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[10px]">Resumen de la Venta</span>
+                <span className="font-semibold uppercase tracking-wider text-[10px] text-slate-300">Resumen de la Venta</span>
                 <span className="font-bold text-slate-300">{cartItems.length} ítems en ticket</span>
               </div>
 
-              <div className="my-1">
-                <span className="text-3xl sm:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300">
+              <div className="my-1.5">
+                <span className="text-3xl sm:text-4xl font-black tracking-tight text-white">
                   ${cartTotalToPay.toLocaleString()}
                 </span>
-                <span className="text-sm font-bold text-[#FF5A36] ml-1.5 uppercase">{salonCurrency}</span>
+                <span className="text-sm font-extrabold text-[#FF5A36] ml-2 uppercase tracking-wide">{salonCurrency}</span>
               </div>
 
               {/* Desglose rápido de beneficios */}
               <div className="flex items-center justify-center gap-2 mt-2 flex-wrap text-[11px]">
-                <span className="px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-slate-200 font-medium">
                   Subtotal: ${cartSubtotal.toLocaleString()}
                 </span>
                 {computedDiscount > 0 && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold">
                     Descuento: -${computedDiscount.toLocaleString()}
                   </span>
                 )}
                 {depositDeduction > 0 && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 font-bold">
                     Anticipo: -${depositDeduction.toLocaleString()}
                   </span>
                 )}
@@ -2216,7 +2216,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
 
             {/* Selector de Medios de Pago (6 Tarjetas con Glow) */}
             <div className="space-y-2 text-xs">
-              <label className="font-bold text-slate-400 uppercase tracking-wider text-[10px] block">
+              <label className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] block">
                 Selecciona el Medio de Pago:
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -2226,42 +2226,42 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                     label: 'Efectivo',
                     sub: 'Billetes / Monedas',
                     icon: '💵',
-                    accentColor: 'border-emerald-500/60 bg-emerald-500/15 text-emerald-300 shadow-emerald-500/10'
+                    accentColor: 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 shadow-emerald-500/10'
                   },
                   {
                     id: 'nequi',
                     label: 'Nequi',
                     sub: 'QR / Transferencia',
                     icon: '💜',
-                    accentColor: 'border-fuchsia-500/60 bg-fuchsia-500/15 text-fuchsia-300 shadow-fuchsia-500/10'
+                    accentColor: 'border-fuchsia-500 bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-300 shadow-fuchsia-500/10'
                   },
                   {
                     id: 'daviplata',
                     label: 'Daviplata',
                     sub: 'Número Celular',
                     icon: '🔴',
-                    accentColor: 'border-red-500/60 bg-red-500/15 text-red-300 shadow-red-500/10'
+                    accentColor: 'border-red-500 bg-red-500/10 text-red-600 dark:text-red-300 shadow-red-500/10'
                   },
                   {
                     id: 'tarjeta',
                     label: 'Datáfono',
                     sub: 'Débito / Crédito NFC',
                     icon: '💳',
-                    accentColor: 'border-blue-500/60 bg-blue-500/15 text-blue-300 shadow-blue-500/10'
+                    accentColor: 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-300 shadow-blue-500/10'
                   },
                   {
                     id: 'transferencia',
                     label: 'Transferencia',
                     sub: 'Bancolombia / Otros',
                     icon: '🏦',
-                    accentColor: 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300 shadow-cyan-500/10'
+                    accentColor: 'border-cyan-500 bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 shadow-cyan-500/10'
                   },
                   {
                     id: 'mixto',
                     label: 'Pago Mixto',
                     sub: 'Efectivo + Digital',
                     icon: '⚡',
-                    accentColor: 'border-[#FF5A36]/70 bg-[#FF5A36]/15 text-[#FF5A36] shadow-[#FF5A36]/10'
+                    accentColor: 'border-[#FF5A36] bg-[#FF5A36]/10 text-[#FF5A36] shadow-[#FF5A36]/10'
                   }
                 ].map(pm => {
                   const isSelected = paymentMethod === pm.id;
@@ -2272,23 +2272,27 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                       onClick={() => setPaymentMethod(pm.id as any)}
                       className={`p-3 rounded-2xl border text-left transition-all duration-150 relative cursor-pointer group flex flex-col justify-between ${
                         isSelected
-                          ? `${pm.accentColor} shadow-md ring-1 ring-white/20`
+                          ? `${pm.accentColor} shadow-md ring-2 ring-[#FF5A36]/30`
                           : isDark
-                            ? 'border-white/5 bg-[#0E121B]/90 text-slate-400 hover:border-white/20 hover:bg-[#141926]'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            ? 'border-white/10 bg-[#0E121B]/90 text-slate-400 hover:border-white/20 hover:bg-[#141926]'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xl">{pm.icon}</span>
                         {isSelected && (
-                          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                         )}
                       </div>
                       <div>
-                        <strong className={`block text-xs font-bold ${isSelected ? 'text-white' : 'group-hover:text-white'}`}>
+                        <strong className={`block text-xs font-extrabold ${
+                          isSelected 
+                            ? (isDark ? 'text-white' : 'text-slate-900') 
+                            : (isDark ? 'text-slate-200 group-hover:text-white' : 'text-slate-800')
+                        }`}>
                           {pm.label}
                         </strong>
-                        <span className="text-[10px] text-slate-500 block truncate">{pm.sub}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">{pm.sub}</span>
                       </div>
                     </button>
                   );
@@ -2304,10 +2308,10 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
               {paymentMethod === 'efectivo' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="font-bold text-slate-300 text-[11px] flex items-center gap-1.5">
+                    <label className="font-bold text-slate-700 dark:text-slate-300 text-[11px] flex items-center gap-1.5">
                       <span>💵 Efectivo Recibido de la Clienta:</span>
                     </label>
-                    <span className="text-[10px] text-slate-400">Total a pagar: ${cartTotalToPay.toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Total a pagar: ${cartTotalToPay.toLocaleString()}</span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -2340,8 +2344,10 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                           onClick={() => setCashReceived(chip.value)}
                           className={`px-2.5 py-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer whitespace-nowrap ${
                             cashReceived === chip.value
-                              ? 'bg-emerald-500 text-black border-emerald-400 font-extrabold'
-                              : 'bg-white/5 border-white/10 hover:bg-white/15 text-slate-300'
+                              ? 'bg-emerald-500 text-black border-emerald-400 font-extrabold shadow-sm'
+                              : isDark 
+                                ? 'bg-white/5 border-white/10 hover:bg-white/15 text-slate-300' 
+                                : 'bg-white border-slate-300 hover:bg-slate-100 text-slate-700'
                           }`}
                         >
                           {chip.label}
@@ -2353,14 +2359,14 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                   {/* Indicador de Cambio / Vuelto */}
                   <div className={`p-3.5 rounded-xl border flex items-center justify-between transition-all ${
                     changeDue > 0
-                      ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                      ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-300'
                       : changeDue === 0
-                        ? 'bg-blue-500/10 border-blue-500/20 text-blue-300'
-                        : 'bg-red-500/15 border-red-500/30 text-red-300'
+                        ? 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-300'
+                        : 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-300'
                   }`}>
                     <div className="flex items-center gap-2">
                       <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold ${
-                        changeDue >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                        changeDue >= 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'
                       }`}>
                         {changeDue >= 0 ? '🪙' : '⚠️'}
                       </div>
@@ -2368,7 +2374,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                         <strong className="text-xs block font-bold">
                           {changeDue > 0 ? 'Cambio / Vuelto a Devolver' : changeDue === 0 ? 'Pago Exacto (Sin vuelto)' : 'Monto Insuficiente'}
                         </strong>
-                        <span className="text-[10px] opacity-80">
+                        <span className="text-[10px] opacity-85">
                           {changeDue >= 0 ? 'Entrega en efectivo a la clienta' : `Faltan $${Math.abs(changeDue).toLocaleString()} COP`}
                         </span>
                       </div>
@@ -2385,11 +2391,11 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
               {paymentMethod === 'nequi' && (
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-fuchsia-300 text-xs">💜 Cobro vía Nequi</span>
-                    <span className="text-[10px] text-slate-400">Verifica la notificación en tu App Nequi</span>
+                    <span className="font-bold text-fuchsia-600 dark:text-fuchsia-300 text-xs">💜 Cobro vía Nequi</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Verifica la notificación en tu App Nequi</span>
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 block mb-1 font-semibold">
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold">
                       Número de Aprobación / Referencia M (Opcional):
                     </label>
                     <input
@@ -2398,7 +2404,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                       onChange={(e) => setDigitalReferenceCode(e.target.value)}
                       placeholder="Ej: M123456 o # celular origen"
                       className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:border-fuchsia-500 ${
-                        isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300'
+                        isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'
                       }`}
                     />
                   </div>
@@ -2409,11 +2415,11 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
               {paymentMethod === 'daviplata' && (
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-red-300 text-xs">🔴 Cobro vía Daviplata</span>
-                    <span className="text-[10px] text-slate-400">Confirmación instantánea</span>
+                    <span className="font-bold text-red-600 dark:text-red-300 text-xs">🔴 Cobro vía Daviplata</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Confirmación instantánea</span>
                   </div>
                   <div>
-                    <label className="text-[10px] text-slate-400 block mb-1 font-semibold">
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold">
                       Código de Autorización / Celular Daviplata:
                     </label>
                     <input
@@ -2422,7 +2428,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                       onChange={(e) => setDigitalReferenceCode(e.target.value)}
                       placeholder="Ej: 300 123 4567 / Aut #9876"
                       className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:border-red-500 ${
-                        isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300'
+                        isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'
                       }`}
                     />
                   </div>
@@ -2434,15 +2440,15 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                 <div className="space-y-2.5">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-semibold">Tipo de Tarjeta:</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold">Tipo de Tarjeta:</label>
                       <div className="grid grid-cols-2 gap-1">
                         <button
                           type="button"
                           onClick={() => setCardType('debito')}
                           className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
                             cardType === 'debito'
-                              ? 'bg-blue-500 text-white border-blue-400'
-                              : 'bg-white/5 border-white/10 text-slate-400'
+                              ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
+                              : isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-300 text-slate-700'
                           }`}
                         >
                           Débito
@@ -2452,8 +2458,8 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                           onClick={() => setCardType('credito')}
                           className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
                             cardType === 'credito'
-                              ? 'bg-blue-500 text-white border-blue-400'
-                              : 'bg-white/5 border-white/10 text-slate-400'
+                              ? 'bg-blue-500 text-white border-blue-400 shadow-sm'
+                              : isDark ? 'bg-white/5 border-white/10 text-slate-400' : 'bg-white border-slate-300 text-slate-700'
                           }`}
                         >
                           Crédito
@@ -2461,14 +2467,14 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-semibold"># Voucher / Autorización:</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold"># Voucher / Autorización:</label>
                       <input
                         type="text"
                         value={digitalReferenceCode}
                         onChange={(e) => setDigitalReferenceCode(e.target.value)}
                         placeholder="Ej: 004523"
                         className={`w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none ${
-                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300'
+                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       />
                     </div>
@@ -2481,12 +2487,12 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                 <div className="space-y-2.5">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-semibold">Banco Destino:</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold">Banco Destino:</label>
                       <select
                         value={bankName}
                         onChange={(e) => setBankName(e.target.value)}
                         className={`w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none ${
-                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300'
+                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       >
                         <option value="Bancolombia">Bancolombia (Ahorros / QR)</option>
@@ -2499,14 +2505,14 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400 block mb-1 font-semibold"># Comprobante / CUS:</label>
+                      <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-semibold"># Comprobante / CUS:</label>
                       <input
                         type="text"
                         value={digitalReferenceCode}
                         onChange={(e) => setDigitalReferenceCode(e.target.value)}
                         placeholder="Ej: CUS 98124501"
                         className={`w-full px-3 py-1.5 rounded-lg border text-xs focus:outline-none ${
-                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300'
+                          isDark ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       />
                     </div>
@@ -2519,12 +2525,12 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-[#FF5A36] text-xs">⚡ Desglose de Pago Combinado</span>
-                    <span className="text-[10px] text-slate-400">Total: ${cartTotalToPay.toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Total: ${cartTotalToPay.toLocaleString()}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-1">
-                      <label className="text-[10px] font-bold text-emerald-400 uppercase block">💵 Parte Efectivo:</label>
+                      <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block">💵 Parte Efectivo:</label>
                       <input
                         type="number"
                         min={0}
@@ -2536,13 +2542,13 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                           setMixedDigital(Math.max(0, cartTotalToPay - val));
                         }}
                         className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-bold focus:outline-none ${
-                          isDark ? 'bg-[#141926] border-white/15 text-white' : 'bg-white border-slate-300'
+                          isDark ? 'bg-[#141926] border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       />
                     </div>
 
                     <div className="p-2.5 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 space-y-1">
-                      <label className="text-[10px] font-bold text-fuchsia-400 uppercase block">📱 Parte Nequi / Tarjeta:</label>
+                      <label className="text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400 uppercase block">📱 Parte Nequi / Tarjeta:</label>
                       <input
                         type="number"
                         min={0}
@@ -2554,7 +2560,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                           setMixedCash(Math.max(0, cartTotalToPay - val));
                         }}
                         className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-bold focus:outline-none ${
-                          isDark ? 'bg-[#141926] border-white/15 text-white' : 'bg-white border-slate-300'
+                          isDark ? 'bg-[#141926] border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
                         }`}
                       />
                     </div>
@@ -2572,8 +2578,8 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
                   onChange={(e) => setSendWhatsAppReceipt(e.target.checked)}
                   className="rounded text-[#FF5A36] focus:ring-[#FF5A36] w-4 h-4 cursor-pointer"
                 />
-                <span className="text-[11px] text-slate-300 flex items-center gap-1">
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-1 font-medium">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
                   Abrir comprobante de WhatsApp al finalizar
                 </span>
               </label>
@@ -2584,7 +2590,7 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCheckoutOpen(false)}
-                className="w-1/3 py-3 rounded-2xl border border-white/10 text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
+                className="w-1/3 py-3 rounded-2xl border border-black/10 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-xs cursor-pointer transition-colors"
               >
                 Volver
               </button>

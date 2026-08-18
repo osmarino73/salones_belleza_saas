@@ -77,21 +77,66 @@ export const StylistPortalPage: React.FC = () => {
   const [newDiagnosticNotes, setNewDiagnosticNotes] = useState('Raíz natural 5. Matiz suave en lava cabezas.');
   const [isPlexUsed, setIsPlexUsed] = useState(true);
 
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [salonCurrency, setSalonCurrency] = useState('COP');
+  const [salonName, setSalonName] = useState('Salón');
+
   useEffect(() => {
     async function loadData() {
       setLoading(false);
+
+      let currentEmail = '';
+      const authUserRaw = localStorage.getItem('bf_auth_user');
+      if (authUserRaw) {
+        try {
+          const authUser = JSON.parse(authUserRaw);
+          if (authUser.email) currentEmail = authUser.email.toLowerCase().trim();
+          if (authUser.user_metadata?.role === 'admin' || authUser.user_metadata?.is_owner) {
+            setIsUserAdmin(true);
+          }
+        } catch (e) {}
+      }
+
+      // Cargar tenant activo para moneda y nombre
+      const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+      let targetTenantId: string | undefined = undefined;
+      if (activeTenantRaw) {
+        try {
+          const activeTenant = JSON.parse(activeTenantRaw);
+          targetTenantId = activeTenant.id;
+          if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
+          if (activeTenant.name) setSalonName(activeTenant.name);
+        } catch (e) {}
+      }
+
       const [stys, apts, cls] = await Promise.all([
-        api.getStylists(),
-        api.getAppointments(),
-        api.getClients()
+        api.getStylists(targetTenantId),
+        api.getAppointments(targetTenantId),
+        api.getClients(targetTenantId)
       ]);
       setStylists(stys);
       setAppointments(apts);
       setClients(cls);
 
+      // 1. Si se especificó un stylistId en la URL
       if (stylistId) {
         const found = stys.find(s => s.id === stylistId || s.name.toLowerCase().includes(stylistId.toLowerCase()));
-        if (found) setCurrentStylist(found);
+        if (found) {
+          setCurrentStylist(found);
+          if (found.is_owner || found.role === 'admin') setIsUserAdmin(true);
+          return;
+        }
+      }
+
+      // 2. Si el usuario autenticado coincide con un estilista específico
+      if (currentEmail) {
+        const matched = stys.find(s => s.email?.toLowerCase().trim() === currentEmail);
+        if (matched) {
+          setCurrentStylist(matched);
+          if (matched.is_owner || matched.role === 'admin') {
+            setIsUserAdmin(true);
+          }
+        }
       }
     }
     loadData();
@@ -109,16 +154,58 @@ export const StylistPortalPage: React.FC = () => {
          myAppointments.some(a => a.client_name === c.full_name)
   );
 
-  // Commission Calculations
-  const serviceCommissionPct = currentStylist.commission_service_pct || 45;
-  const retailCommissionPct = currentStylist.commission_retail_pct || 10;
+  // Currency Formatter
+  const formatCurrency = (val: number, cur: string = salonCurrency) => {
+    const num = Number(val || 0);
+    if (cur === 'COP') {
+      return `$ ${Math.round(num).toLocaleString('es-CO')} COP`;
+    }
+    if (cur === 'MXN') {
+      return `$ ${num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+    }
+    if (cur === 'ARS') {
+      return `$ ${Math.round(num).toLocaleString('es-AR')} ARS`;
+    }
+    if (cur === 'CLP') {
+      return `$ ${Math.round(num).toLocaleString('es-CL')} CLP`;
+    }
+    if (cur === 'EUR') {
+      return `€ ${num.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return `$ ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+  };
 
-  const totalBilledToday = myAppointments
-    .filter(a => a.status === 'cobrada' || a.status === 'en_atencion')
-    .reduce((sum, a) => sum + (a.price_usd || 0), 0);
+  // Commission Calculations (100% reales basadas en las citas efectivamente COBRADAS)
+  const serviceCommissionPct = Number(currentStylist.commission_service_pct || 45);
+  const retailCommissionPct = Number(currentStylist.commission_retail_pct || 10);
 
-  const earnedCommissionsToday = Math.round((totalBilledToday * serviceCommissionPct) / 100);
-  const earnedMonthCommissions = earnedCommissionsToday + 1240; // Base demo month
+  // Citas efectivamente cobradas en caja hoy
+  const todayStr = new Date().toISOString().split('T')[0];
+  const billedAppointmentsToday = myAppointments.filter(
+    a => a.status === 'cobrada' && a.date === todayStr
+  );
+  const totalBilledToday = billedAppointmentsToday.reduce((sum, a) => sum + (Number(a.price_usd || 0)), 0);
+  const earnedCommissionsToday = (totalBilledToday * serviceCommissionPct) / 100;
+
+  // Citas terminadas en espera de pago en caja hoy
+  const waitingPayAppointmentsToday = myAppointments.filter(
+    a => a.status === 'completada' && a.date === todayStr
+  );
+  const waitingPayCommissionsToday = waitingPayAppointmentsToday.reduce((sum, a) => sum + ((Number(a.price_usd || 0) * serviceCommissionPct) / 100), 0);
+
+  // Citas actualmente en atención en el sillón hoy
+  const inProgressAppointmentsToday = myAppointments.filter(
+    a => a.status === 'en_atencion' && a.date === todayStr
+  );
+
+  // Total acumulado de citas efectivamente cobradas en el salón (Mes)
+  const completedAppointmentsMonth = myAppointments.filter(a => a.status === 'cobrada');
+  const totalBilledMonth = completedAppointmentsMonth.reduce((sum, a) => sum + (Number(a.price_usd || 0)), 0);
+  const earnedMonthCommissions = (totalBilledMonth * serviceCommissionPct) / 100;
+
+  // Total acumulado esperando pago en caja (Mes)
+  const waitingPayAppointmentsMonth = myAppointments.filter(a => a.status === 'completada');
+  const waitingPayMonthCommissions = waitingPayAppointmentsMonth.reduce((sum, a) => sum + ((Number(a.price_usd || 0) * serviceCommissionPct) / 100), 0);
 
   // Handler for appointment status update
   const handleUpdateAppointmentStatus = async (id: string, newStatus: Appointment['status']) => {
@@ -126,7 +213,7 @@ export const StylistPortalPage: React.FC = () => {
     setAppointments(appointments.map(a => a.id === id ? { ...a, status: newStatus } : a));
     if (newStatus === 'en_atencion') {
       setStylistStatus('en_atencion');
-    } else if (newStatus === 'cobrada') {
+    } else if (newStatus === 'completada' || newStatus === 'cobrada') {
       setStylistStatus('disponible');
     }
   };
@@ -328,22 +415,31 @@ export const StylistPortalPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Center Stylist Switcher (For Demo/Staff Selection) */}
+          {/* Center Stylist Badge / Switcher */}
           <div className="flex items-center gap-1">
-            <select
-              value={currentStylist.id}
-              onChange={(e) => {
-                const found = stylists.find(s => s.id === e.target.value);
-                if (found) setCurrentStylist(found);
-              }}
-              className={`text-[11px] sm:text-xs font-bold border rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-[#FF5A36] max-w-[130px] sm:max-w-none truncate ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/10 text-slate-900'
-              }`}
-            >
-              {stylists.map(s => (
-                <option key={s.id} value={s.id}>{s.name.split(' ')[0]} ({s.specialty.split('&')[0].trim()})</option>
-              ))}
-            </select>
+            {isUserAdmin ? (
+              <select
+                value={currentStylist.id}
+                onChange={(e) => {
+                  const found = stylists.find(s => s.id === e.target.value);
+                  if (found) setCurrentStylist(found);
+                }}
+                className={`text-[11px] sm:text-xs font-bold border rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-[#FF5A36] max-w-[130px] sm:max-w-none truncate ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/10 text-slate-900'
+                }`}
+                title="Modo Dueña: Seleccionar colaborador para previsualizar"
+              >
+                {stylists.map(s => (
+                  <option key={s.id} value={s.id}>{s.name.split(' ')[0]} ({s.specialty.split('&')[0].trim()})</option>
+                ))}
+              </select>
+            ) : (
+              <span className={`text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full border ${
+                theme === 'dark' ? 'bg-[#141926] border-white/10 text-slate-300' : 'bg-slate-100 border-black/5 text-slate-700'
+              }`}>
+                {salonName}
+              </span>
+            )}
           </div>
 
           {/* Right Action Buttons */}
@@ -359,16 +455,18 @@ export const StylistPortalPage: React.FC = () => {
               {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
             </button>
 
-            <Link
-              to="/dashboard"
-              className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border hidden sm:flex items-center gap-1 transition-all ${
-                theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 bg-white shadow-sm'
-              }`}
-              title="Volver al panel general de dueña"
-            >
-              <span>Vista Dueña</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
+            {isUserAdmin && (
+              <Link
+                to="/dashboard"
+                className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border hidden sm:flex items-center gap-1 transition-all ${
+                  theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 bg-white shadow-sm'
+                }`}
+                title="Volver al panel general de administración"
+              >
+                <span>Panel Administrador</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
 
             <Link
               to="/login"
@@ -488,15 +586,22 @@ export const StylistPortalPage: React.FC = () => {
             theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
           }`}>
             <div className="flex justify-between items-center text-xs text-slate-400 font-semibold mb-2">
-              <span>Mi Comisión de Hoy</span>
+              <span>Mi Comisión Cobrada Hoy</span>
               <DollarSign className="w-4 h-4 text-emerald-500" />
             </div>
-            <div className="text-3xl font-extrabold text-emerald-500 tracking-tight mb-1">
-              ${earnedCommissionsToday}.00 <span className="text-xs text-slate-400 font-normal">USD</span>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-500 tracking-tight mb-1">
+              {formatCurrency(earnedCommissionsToday, salonCurrency)}
             </div>
-            <div className="text-[11px] text-slate-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-              <span>{myAppointments.filter(a => a.status === 'cobrada').length} turnos completados hoy</span>
+            <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1 flex-wrap">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                <span>{billedAppointmentsToday.length} turno(s) cobrado(s)</span>
+              </span>
+              {inProgressAppointmentsToday.length > 0 && (
+                <span className="text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                  ⏳ {inProgressAppointmentsToday.length} en sillón
+                </span>
+              )}
             </div>
           </div>
 
@@ -508,11 +613,11 @@ export const StylistPortalPage: React.FC = () => {
               <span>Acumulado del Mes</span>
               <TrendingUp className="w-4 h-4 text-[#FF5A36]" />
             </div>
-            <div className="text-3xl font-extrabold text-[#FF5A36] tracking-tight mb-1">
-              ${earnedMonthCommissions}.00 <span className="text-xs text-slate-400 font-normal">USD</span>
+            <div className="text-2xl sm:text-3xl font-extrabold text-[#FF5A36] tracking-tight mb-1">
+              {formatCurrency(earnedMonthCommissions, salonCurrency)}
             </div>
             <div className="text-[11px] text-slate-400">
-              Liquidación quincenal automática
+              {completedAppointmentsMonth.length} servicio(s) completado(s) • Liquidación quincenal
             </div>
           </div>
 
@@ -536,8 +641,8 @@ export const StylistPortalPage: React.FC = () => {
 
         </div>
 
-        {/* NAVIGATION SEGMENTED TABS */}
-        <div className={`p-1.5 rounded-2xl border flex items-center gap-2 ${
+        {/* NAVIGATION SEGMENTED TABS (Solo Desktop, en móvil se usa el Bottom Nav) */}
+        <div className={`hidden sm:flex p-1.5 rounded-2xl border items-center gap-2 ${
           theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
         }`}>
           <button
@@ -927,6 +1032,7 @@ export const StylistPortalPage: React.FC = () => {
                 {myAppointments.map((apt) => {
                   const clientObj = clients.find(c => c.full_name === apt.client_name);
                   const isOngoing = apt.status === 'en_atencion';
+                  const isWaitingPay = apt.status === 'completada';
                   const isDone = apt.status === 'cobrada';
 
                   return (
@@ -934,9 +1040,11 @@ export const StylistPortalPage: React.FC = () => {
                       key={apt.id}
                       className={`p-4 sm:p-5 rounded-2xl border transition-all ${
                         isOngoing
-                          ? 'border-[#FF5A36] bg-[#FF5A36]/5 ring-1 ring-[#FF5A36]/30'
+                          ? 'border-amber-500 bg-amber-500/5 ring-1 ring-amber-500/30'
+                          : isWaitingPay
+                          ? 'border-purple-500/40 bg-purple-500/5'
                           : isDone
-                          ? 'border-emerald-500/30 bg-emerald-500/5 opacity-80'
+                          ? 'border-emerald-500/30 bg-emerald-500/5 opacity-90'
                           : theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
                       }`}
                     >
@@ -945,7 +1053,7 @@ export const StylistPortalPage: React.FC = () => {
                         {/* Time & Client info */}
                         <div className="flex items-start gap-3">
                           <div className={`p-2.5 rounded-xl text-center min-w-[70px] ${
-                            isOngoing ? 'bg-[#FF5A36] text-white' : theme === 'dark' ? 'bg-[#0E121B]' : 'bg-[#F0F2F7]'
+                            isOngoing ? 'bg-amber-500 text-white' : isWaitingPay ? 'bg-purple-600 text-white' : theme === 'dark' ? 'bg-[#0E121B]' : 'bg-[#F0F2F7]'
                           }`}>
                             <span className="text-xs font-mono font-extrabold block">{apt.time}</span>
                             <span className="text-[9px] opacity-75">{apt.duration_minutes} min</span>
@@ -957,16 +1065,18 @@ export const StylistPortalPage: React.FC = () => {
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 isOngoing
                                   ? 'bg-amber-500 text-white animate-pulse'
+                                  : isWaitingPay
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                                   : isDone
                                   ? 'bg-emerald-500/20 text-emerald-500'
                                   : 'bg-blue-500/20 text-blue-400'
                               }`}>
-                                {isOngoing ? '● En Sillón' : isDone ? '✓ Cobrada' : 'Confirmada WA'}
+                                {isOngoing ? '● En Sillón' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isDone ? '✓ Cobrada & Liquidada' : 'Confirmada WA'}
                               </span>
                             </div>
 
                             <span className="text-xs text-[#FF5A36] font-semibold block mt-0.5">
-                              {apt.service_name} • ${apt.price_usd} USD
+                              {apt.service_name} • {formatCurrency(apt.price_usd, salonCurrency)}
                             </span>
 
                             <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
@@ -1001,25 +1111,32 @@ export const StylistPortalPage: React.FC = () => {
                             </button>
                           )}
 
-                          {apt.status !== 'en_atencion' && apt.status !== 'cobrada' && (
+                          {isOngoing ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
+                              className="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
+                              title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>✓ Terminado / Enviar a Caja</span>
+                            </button>
+                          ) : isWaitingPay ? (
+                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/10 px-3 py-1.5 rounded-xl border border-purple-500/20 flex items-center gap-1">
+                              💳 Esperando Cobro en Recepción
+                            </span>
+                          ) : isDone ? (
+                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20 flex items-center gap-1">
+                              ✓ Liquidada en Caja
+                            </span>
+                          ) : (
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'en_atencion')}
-                              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all"
+                              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
                             >
                               <Scissors className="w-3.5 h-3.5" />
                               <span>Iniciar Atención</span>
-                            </button>
-                          )}
-
-                          {apt.status === 'en_atencion' && (
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'cobrada')}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Finalizar Turno</span>
                             </button>
                           )}
                         </div>
@@ -1128,24 +1245,48 @@ export const StylistPortalPage: React.FC = () => {
                   <p className="text-xs text-slate-400">Cada servicio completado se liquida con tu porcentaje acordado.</p>
                 </div>
                 <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  Total Acumulado: ${earnedMonthCommissions}.00 USD
+                  Total Acumulado: {formatCurrency(earnedMonthCommissions, salonCurrency)}
                 </span>
               </div>
 
               <div className="divide-y divide-black/5 dark:divide-white/5 text-xs">
                 {myAppointments.map((apt) => {
                   const comAmount = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
+                  const isDone = apt.status === 'cobrada';
+                  const isWaitingPay = apt.status === 'completada';
+                  const isOngoing = apt.status === 'en_atencion';
+
                   return (
-                    <div key={apt.id} className="py-3 flex justify-between items-center">
+                    <div key={apt.id} className="py-3.5 flex justify-between items-center gap-3">
                       <div>
-                        <strong className="block text-sm">{apt.service_name}</strong>
-                        <span className="text-slate-400">{apt.client_name} • {apt.date} {apt.time}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <strong className="block text-sm font-bold">{apt.service_name}</strong>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isDone ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
+                            isWaitingPay ? 'bg-purple-500/15 text-purple-300 border border-purple-500/20' :
+                            isOngoing ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
+                            'bg-blue-500/10 text-slate-400'
+                          }`}>
+                            {isDone ? '✓ Cobrada en Caja' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isOngoing ? '● En Sillón' : 'Agendada'}
+                          </span>
+                        </div>
+                        <span className="text-slate-400 text-[11px] block mt-0.5">{apt.client_name} • {apt.date} {apt.time}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs text-slate-400 block">Total: ${apt.price_usd} USD</span>
-                        <strong className="text-sm text-emerald-500 font-extrabold">
-                          +${comAmount} USD ({serviceCommissionPct}%)
-                        </strong>
+                        <span className="text-[11px] text-slate-400 block">Total: {formatCurrency(apt.price_usd, salonCurrency)}</span>
+                        {isDone ? (
+                          <strong className="text-sm text-emerald-400 font-extrabold block">
+                            +{formatCurrency(comAmount, salonCurrency)} ({serviceCommissionPct}%)
+                          </strong>
+                        ) : isWaitingPay ? (
+                          <strong className="text-xs text-purple-300 font-bold block">
+                            {formatCurrency(comAmount, salonCurrency)} (Por Liquidar)
+                          </strong>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium block">
+                            {formatCurrency(comAmount, salonCurrency)} (Estimada)
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
@@ -1421,16 +1562,6 @@ export const StylistPortalPage: React.FC = () => {
           </div>
           <span>Días Libres</span>
         </button>
-
-        <Link
-          to="/dashboard"
-          className="flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 text-slate-400 hover:text-[#FF5A36]"
-        >
-          <div className="p-1.5 rounded-full">
-            <User className="w-4 h-4" />
-          </div>
-          <span>Dueña</span>
-        </Link>
       </div>
 
     </div>

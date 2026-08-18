@@ -52,6 +52,15 @@
 - [x] **Extractor Google Maps Prospector v2 (`document/maps-reservation-prospector-v2/`)**:
   - Selectores 2026 actualizados para extracción de nombre, categoría, rating, reseñas, teléfono, dirección y sitio web con exportación CSV.
 
+- [x] **Compresor y Subida Profesional de Imágenes WebP (`ImageUploadField.tsx` y `imageCompressor.ts`)**:
+  - Compresión HTML5 Canvas del lado del cliente (>95% de reducción, fotos de 5MB pasan a ~25KB WebP a 400x400 px).
+  - Soporte híbrido: Subida a bucket de Supabase Storage (`avatars`) con fallback inteligente a DataURL WebP ultraligero.
+  - 3 Modos integrados: Subida de archivos / cámara, galería de 6 avatares predeterminados y enlaces URL.
+  - Script SQL de base de datos y storage: [`create_storage_avatars_bucket.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_storage_avatars_bucket.sql).
+
+- [x] **Scroll Responsivo y Altura Máxima en Modales (`max-h-[90vh] overflow-y-auto`)**:
+  - Ajuste en todos los modales del Dashboard y Portal de Colaboradores para asegurar visibilidad total y accesibilidad en cualquier resolución de pantalla.
+
 - [x] **Despliegue Continuo (CI/CD) Netlify + GitHub**:
   - Repositorio oficial: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas).
   - Producción activa: [https://belleza2027.netlify.app](https://belleza2027.netlify.app).

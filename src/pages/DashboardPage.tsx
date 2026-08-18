@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Scissors,
   Sparkles,
@@ -55,9 +55,17 @@ import {
   Smartphone,
   Heart,
   Ban,
-  CalendarOff
+  CalendarOff,
+  Eye,
+  Mail,
+  Award,
+  Percent,
+  Briefcase,
+  CalendarCheck,
+  ExternalLink,
+  Wallet
 } from 'lucide-react';
-import { api, initialStylists, initialServices, initialProducts } from '../lib/supabase';
+import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product, BlockedSlot } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
@@ -69,6 +77,7 @@ import { TimePickerSelect } from '../components/TimePickerSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 
 export const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates' | 'loyalty'>('overview');
   const [posInitialClient, setPosInitialClient] = useState<Client | null>(null);
@@ -97,6 +106,9 @@ export const DashboardPage: React.FC = () => {
     password: string;
     specialty: string;
     photo_url: string;
+    role: 'admin' | 'colaborador';
+    is_owner: boolean;
+    attends_clients: boolean;
     commission_service_pct: number;
     commission_retail_pct: number;
     service_categories: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
@@ -108,6 +120,9 @@ export const DashboardPage: React.FC = () => {
     password: '',
     specialty: '',
     photo_url: '',
+    role: 'colaborador',
+    is_owner: false,
+    attends_clients: true,
     commission_service_pct: 45,
     commission_retail_pct: 10,
     service_categories: ['color', 'corte'],
@@ -155,6 +170,20 @@ export const DashboardPage: React.FC = () => {
   const [salonCurrency, setSalonCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
   const [salonAddress, setSalonAddress] = useState('Calle 10 # 43E-22, El Poblado');
   const [salonHours, setSalonHours] = useState('Lun - Sáb: 08:00 AM - 08:00 PM');
+
+  const formatCurrency = (amount: number | undefined | null, currency: string = salonCurrency || 'COP') => {
+    const num = Number(amount ?? 0);
+    if (currency === 'COP' || (!currency && num > 1000)) {
+      return `$ ${num.toLocaleString('es-CO')} COP`;
+    }
+    if (currency === 'MXN') {
+      return `$ ${num.toLocaleString('es-MX')} MXN`;
+    }
+    if (currency === 'EUR') {
+      return `€ ${num.toLocaleString('es-ES')} EUR`;
+    }
+    return `$ ${num.toLocaleString('en-US')} USD`;
+  };
 
   // CRM Client State & Modals
   const [searchTermClient, setSearchTermClient] = useState('');
@@ -216,38 +245,63 @@ export const DashboardPage: React.FC = () => {
     async function loadData() {
       setLoading(false);
 
+      let currentEmail = '';
+      let targetTenantId: string | undefined = undefined;
+
       // 1. Cargar usuario autenticado / dueña
       const authUserRaw = localStorage.getItem('bf_auth_user');
       if (authUserRaw) {
         try {
           const authUser = JSON.parse(authUserRaw);
           if (authUser.user_metadata?.name) setOwnerName(authUser.user_metadata.name);
-          if (authUser.email) setOwnerEmail(authUser.email);
+          if (authUser.email) {
+            setOwnerEmail(authUser.email);
+            currentEmail = authUser.email;
+          }
         } catch (e) {}
       }
 
-      // 2. Cargar información del negocio activo registrado
-      const activeTenantRaw = localStorage.getItem('bf_tenant_active');
-      if (activeTenantRaw) {
+      // 2. Buscar tenant oficial asociado a este email en Supabase
+      if (currentEmail) {
         try {
-          const activeTenant = JSON.parse(activeTenantRaw);
-          if (activeTenant.name) setSalonName(activeTenant.name);
-          if (activeTenant.phone) setSalonPhone(activeTenant.phone);
-          if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
-          if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
-          if (activeTenant.business_hours?.summary) setSalonHours(activeTenant.business_hours.summary);
-        } catch (e) {
-          console.warn('Error parsing active tenant:', e);
+          const tenantFromEmail = await api.getTenantByUserEmail(currentEmail);
+          if (tenantFromEmail) {
+            targetTenantId = tenantFromEmail.id;
+            if (tenantFromEmail.name) setSalonName(tenantFromEmail.name);
+            if (tenantFromEmail.phone) setSalonPhone(tenantFromEmail.phone);
+            if (tenantFromEmail.address) setSalonAddress(tenantFromEmail.address.replace(/^,\s*/, '').trim());
+            if (tenantFromEmail.currency) setSalonCurrency(tenantFromEmail.currency);
+            if (tenantFromEmail.business_hours?.summary) setSalonHours(tenantFromEmail.business_hours.summary);
+            localStorage.setItem('bf_tenant_active', JSON.stringify(tenantFromEmail));
+          }
+        } catch (e) {}
+      }
+
+      // 3. Fallback a información en LocalStorage si no se recuperó de Supabase
+      if (!targetTenantId) {
+        const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+        if (activeTenantRaw) {
+          try {
+            const activeTenant = JSON.parse(activeTenantRaw);
+            targetTenantId = activeTenant.id;
+            if (activeTenant.name) setSalonName(activeTenant.name);
+            if (activeTenant.phone) setSalonPhone(activeTenant.phone);
+            if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
+            if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
+            if (activeTenant.business_hours?.summary) setSalonHours(activeTenant.business_hours.summary);
+          } catch (e) {
+            console.warn('Error parsing active tenant:', e);
+          }
         }
       }
 
       const [apts, cls, stys, srvs, prods, settings] = await Promise.all([
-        api.getAppointments(),
-        api.getClients(),
-        api.getStylists(),
-        api.getServices(),
-        api.getProducts(),
-        api.getTenantAISettings()
+        api.getAppointments(targetTenantId),
+        api.getClients(targetTenantId),
+        api.getStylists(targetTenantId),
+        api.getServices(targetTenantId),
+        api.getProducts(targetTenantId),
+        api.getTenantAISettings(targetTenantId)
       ]);
       setAppointments(apts);
       setClients(cls);
@@ -256,14 +310,25 @@ export const DashboardPage: React.FC = () => {
       setProducts(prods);
       setAiSettings(settings);
 
+      // ROLE GUARD: Si el usuario autenticado es un colaborador y NO es admin/dueña, redirigir a /colaborador
+      if (currentEmail) {
+        const cleanEmail = currentEmail.toLowerCase().trim();
+        const matchedSty = stys.find(s => s.email?.toLowerCase().trim() === cleanEmail);
+        const authRole = authUserRaw ? JSON.parse(authUserRaw)?.user_metadata?.role : null;
+        if (authRole === 'colaborador' || (matchedSty && !matchedSty.is_owner && matchedSty.role !== 'admin')) {
+          navigate(matchedSty ? `/colaborador/${matchedSty.id}` : '/colaborador', { replace: true });
+          return;
+        }
+      }
+
       // Cargar datos reales en el simulador de WhatsApp y POS
       if (srvs && srvs.length > 0) {
         const topSrv = srvs[0];
         const masterStylist = (stys && stys[0]?.name) || 'Directora';
-        const currentSalonName = activeTenantRaw ? JSON.parse(activeTenantRaw).name : 'Nuestro Salón';
+        const currentSalonName = salonName || 'Nuestro Salón';
 
         setCartItems([
-          { name: topSrv.name, price: topSrv.price_usd, type: 'service' }
+          { name: topSrv.name, price: Number(topSrv.price_usd ?? topSrv.price ?? 0), type: 'service' }
         ]);
 
         setChatMessages([
@@ -393,9 +458,12 @@ export const DashboardPage: React.FC = () => {
       name: '',
       email: '',
       phone: '',
-      password: 'Glamour2026*',
-      specialty: '',
+      password: 'BeautyFlow2026*',
+      specialty: 'Especialista Capilar',
       photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      role: 'colaborador',
+      is_owner: false,
+      attends_clients: true,
       commission_service_pct: 45,
       commission_retail_pct: 10,
       service_categories: ['color', 'corte'],
@@ -413,6 +481,9 @@ export const DashboardPage: React.FC = () => {
       password: '',
       specialty: sty.specialty,
       photo_url: sty.photo_url || '',
+      role: sty.role || (sty.is_owner ? 'admin' : 'colaborador'),
+      is_owner: sty.is_owner || sty.role === 'admin' || false,
+      attends_clients: sty.attends_clients !== false,
       commission_service_pct: sty.commission_service_pct || 45,
       commission_retail_pct: sty.commission_retail_pct || 10,
       service_categories: sty.service_categories || ['color', 'corte'],
@@ -433,22 +504,28 @@ export const DashboardPage: React.FC = () => {
         phone: stylistForm.phone,
         specialty: stylistForm.specialty,
         photo_url: stylistForm.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        role: stylistForm.role,
+        is_owner: stylistForm.is_owner,
+        attends_clients: stylistForm.attends_clients,
         commission_service_pct: Number(stylistForm.commission_service_pct),
         commission_retail_pct: Number(stylistForm.commission_retail_pct),
         service_categories: stylistForm.service_categories,
         service_ids: stylistForm.service_ids
       };
-      await api.updateStylist(updated);
+      await api.updateStylist(updated, stylistForm.password || undefined);
       setStylists(stylists.map(s => s.id === updated.id ? updated : s));
     } else {
       const newSty: Stylist = {
-        id: `sty-${Date.now()}`,
-        tenant_id: 'ten-1',
+        id: '',
+        tenant_id: getActiveTenantId(),
         name: stylistForm.name,
         email: stylistForm.email,
         phone: stylistForm.phone,
         specialty: stylistForm.specialty,
         photo_url: stylistForm.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        role: stylistForm.role,
+        is_owner: stylistForm.is_owner,
+        attends_clients: stylistForm.attends_clients,
         rating: 5.0,
         reviews_count: 0,
         commission_service_pct: Number(stylistForm.commission_service_pct),
@@ -458,17 +535,33 @@ export const DashboardPage: React.FC = () => {
         service_ids: stylistForm.service_ids,
         is_active: true
       };
-      await api.createStylist(newSty);
-      setStylists([newSty, ...stylists]);
+      const saved = await api.createStylist(newSty, stylistForm.password || 'BeautyFlow2026*');
+      setStylists([saved, ...stylists]);
     }
     setIsStylistModalOpen(false);
   };
 
   const handleDeleteStylist = async (id: string) => {
+    const target = stylists.find(s => s.id === id);
+    if (target?.is_owner || target?.role === 'admin') {
+      alert('La cuenta principal de Administradora / Dueña no puede ser eliminada.');
+      return;
+    }
     if (confirm('¿Estás seguro de eliminar este profesional?')) {
       await api.deleteStylist(id);
       setStylists(stylists.filter(s => s.id !== id));
     }
+  };
+
+  // STYLIST 360° PROFILE DOSSIER STATE
+  const [selectedStylistForDetails, setSelectedStylistForDetails] = useState<Stylist | null>(null);
+  const [isStylistDetailsModalOpen, setIsStylistDetailsModalOpen] = useState(false);
+  const [stylistDetailsTab, setStylistDetailsTab] = useState<'appointments' | 'commissions' | 'schedule' | 'specialties'>('appointments');
+
+  const handleOpenStylistDetails = (sty: Stylist) => {
+    setSelectedStylistForDetails(sty);
+    setStylistDetailsTab('appointments');
+    setIsStylistDetailsModalOpen(true);
   };
 
   // OWNER AVAILABILITY & BLOCKED DATES HANDLERS
@@ -586,7 +679,7 @@ export const DashboardPage: React.FC = () => {
       name: srv.name,
       category: srv.category,
       duration_minutes: srv.duration_minutes,
-      price_usd: srv.price_usd,
+      price_usd: Number(srv.price_usd ?? srv.price ?? srv.price_cop ?? 40),
       requires_patch_test: srv.requires_patch_test,
       description: srv.description || ''
     });
@@ -711,20 +804,24 @@ export const DashboardPage: React.FC = () => {
 
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
+    const matchedService = services.find(s => s.name === newService) || services[0];
+    const matchedStylist = stylists.find(s => s.name === newStylist) || stylists[0];
+    const activeTid = getActiveTenantId();
+
     const newApt: Appointment = {
-      id: `cit-00${appointments.length + 86}`,
-      tenant_id: 'ten-1',
-      client_id: `cli-${Date.now()}`,
-      client_name: newClientName,
-      client_phone: newClientPhone,
-      stylist_id: stylists.find(s => s.name === newStylist)?.id || 'sty-1',
-      stylist_name: newStylist,
-      service_id: 'srv-1',
-      service_name: newService,
-      date: '2026-08-18',
+      id: '',
+      tenant_id: activeTid,
+      client_id: '',
+      client_name: newClientName || 'Cliente Salón',
+      client_phone: newClientPhone || '',
+      stylist_id: matchedStylist?.id || '',
+      stylist_name: matchedStylist?.name || newStylist || 'Especialista',
+      service_id: matchedService?.id || '',
+      service_name: matchedService?.name || newService || 'Servicio General',
+      date: new Date().toISOString().split('T')[0],
       time: newTime,
-      duration_minutes: 90,
-      price_usd: 95,
+      duration_minutes: matchedService?.duration_minutes || 60,
+      price_usd: Number(matchedService?.price_usd ?? matchedService?.price ?? 40),
       status: 'confirmada_wa',
       wa_reminder_24h_sent: true,
       wa_reminder_2h_sent: false,
@@ -1287,27 +1384,45 @@ export const DashboardPage: React.FC = () => {
                               <td className="py-3.5">
                                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                   apt.status === 'en_atencion'
-                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                    : apt.status === 'completada'
+                                    ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30 font-extrabold'
                                     : apt.status === 'cobrada'
-                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                                 }`}>
-                                  {apt.status === 'en_atencion' ? 'En Atención' : apt.status === 'cobrada' ? 'Cobrada' : 'Confirmada WA'}
+                                  {apt.status === 'en_atencion' ? '● En Sillón' : apt.status === 'completada' ? '💳 Por Cobrar en Caja' : apt.status === 'cobrada' ? '✓ Cobrada' : 'Confirmada WA'}
                                 </span>
                               </td>
                               <td className="py-3.5 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
-                                    if (cl) setSelectedClientForFormula(cl);
-                                  }}
-                                  className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
-                                    theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
-                                  }`}
-                                >
-                                  <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
-                                </button>
+                                <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                  {apt.status === 'completada' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const cl = clients.find(c => c.full_name === apt.client_name);
+                                        if (cl) setPosInitialClient(cl);
+                                        setActiveTab('pos');
+                                      }}
+                                      className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all inline-flex items-center gap-1 shadow-sm"
+                                      title="Cobrar servicio en el Punto de Venta POS y liquidar comisión"
+                                    >
+                                      <CreditCard className="w-3.5 h-3.5" /> Cobrar en POS
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
+                                      if (cl) setSelectedClientForFormula(cl);
+                                    }}
+                                    className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
+                                      theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                                    }`}
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -2694,8 +2809,11 @@ export const DashboardPage: React.FC = () => {
                   {stylists.map((sty) => (
                     <div
                       key={sty.id}
-                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all ${
-                        theme === 'dark' ? 'bg-[#141926] border-white/10 hover:border-white/20' : 'bg-white border-black/5 hover:border-black/15 shadow-sm'
+                      onClick={() => handleOpenStylistDetails(sty)}
+                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all cursor-pointer group ${
+                        theme === 'dark'
+                          ? 'bg-[#141926] border-white/10 hover:border-[#FF5A36]/60 hover:shadow-xl hover:shadow-[#FF5A36]/10'
+                          : 'bg-white border-black/5 hover:border-[#FF5A36]/60 hover:shadow-md'
                       }`}
                     >
                       <div>
@@ -2704,10 +2822,13 @@ export const DashboardPage: React.FC = () => {
                             <img
                               src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                               alt={sty.name}
-                              className="w-14 h-14 rounded-full object-cover border-2 border-[#FF5A36]"
+                              className="w-14 h-14 rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform"
                             />
                             <div>
-                              <strong className="text-sm font-bold block">{sty.name}</strong>
+                              <div className="flex items-center gap-1.5">
+                                <strong className="text-sm font-bold block group-hover:text-[#FF5A36] transition-colors">{sty.name}</strong>
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-[#FF5A36] transition-all" />
+                              </div>
                               <span className="text-xs text-slate-400 block">{sty.specialty}</span>
                               {sty.email && <span className="text-[11px] text-[#FF5A36] block truncate font-mono">{sty.email}</span>}
                               {sty.phone && <span className="text-[10px] text-slate-500 block">WhatsApp: {sty.phone}</span>}
@@ -2718,9 +2839,26 @@ export const DashboardPage: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-                            Activo
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            {sty.is_owner || sty.role === 'admin' ? (
+                              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1">
+                                👑 Dueña / Admin
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                                Colaborador
+                              </span>
+                            )}
+                            {sty.attends_clients === false ? (
+                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                💼 Solo Gestión
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                ✂️ Atiende Citas
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Commission stats */}
@@ -2777,13 +2915,25 @@ export const DashboardPage: React.FC = () => {
                               : '✅ 100% Disponible'}
                           </span>
                         </div>
+
+                        {/* Quick detail hint */}
+                        <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-400 group-hover:text-[#FF5A36] transition-colors py-1">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Ver Expediente 360° (Citas & Comisiones)</span>
+                        </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-between items-center gap-2 text-xs">
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-between items-center gap-2 text-xs"
+                      >
                         <button
                           type="button"
-                          onClick={() => handleOpenStylistAvailability(sty)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenStylistAvailability(sty);
+                          }}
                           className="px-3 py-1.5 rounded-lg border border-blue-500/20 text-blue-400 hover:bg-blue-500/10 font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                           title="Gestionar días no disponibles y vacaciones"
                         >
@@ -2794,7 +2944,10 @@ export const DashboardPage: React.FC = () => {
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => handleEditStylist(sty)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditStylist(sty);
+                            }}
                             className={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 transition-all cursor-pointer ${
                               theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
                             }`}
@@ -2803,7 +2956,10 @@ export const DashboardPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleDeleteStylist(sty.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteStylist(sty.id);
+                            }}
                             className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -2847,7 +3003,7 @@ export const DashboardPage: React.FC = () => {
                             {srv.category}
                           </span>
                           <span className="text-base font-extrabold text-[#FF5A36]">
-                            ${srv.price_usd} <span className="text-[10px] text-slate-400 font-normal">USD</span>
+                            {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
                           </span>
                         </div>
 
@@ -3278,7 +3434,7 @@ export const DashboardPage: React.FC = () => {
                   }`}
                 >
                   {services.map(s => (
-                    <option key={s.id} value={s.name}>{s.name} (${s.price_usd})</option>
+                    <option key={s.id} value={s.name}>{s.name} ({formatCurrency(s.price_usd ?? s.price ?? s.price_cop, salonCurrency)})</option>
                   ))}
                 </select>
               </div>
@@ -3648,6 +3804,55 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSaveStylist} className="space-y-3.5 text-xs">
+              
+              {/* Rol & Privilegios */}
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <strong className="text-white text-xs block">Rol en el Salón</strong>
+                    <span className="text-[11px] text-slate-400">Tipo de perfil y accesos</span>
+                  </div>
+                  <div className="flex rounded-lg overflow-hidden border border-white/10 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setStylistForm({ ...stylistForm, role: 'admin', is_owner: true })}
+                      className={`px-3 py-1 font-bold transition-all cursor-pointer ${
+                        stylistForm.role === 'admin' || stylistForm.is_owner ? 'bg-amber-500 text-black' : 'bg-white/5 text-slate-400'
+                      }`}
+                    >
+                      👑 Dueña / Admin
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStylistForm({ ...stylistForm, role: 'colaborador', is_owner: false })}
+                      className={`px-3 py-1 font-bold transition-all cursor-pointer ${
+                        stylistForm.role === 'colaborador' && !stylistForm.is_owner ? 'bg-[#FF5A36] text-white' : 'bg-white/5 text-slate-400'
+                      }`}
+                    >
+                      ✂️ Colaborador
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  <div>
+                    <strong className="text-white text-xs block">¿Atiende citas con clientas?</strong>
+                    <span className="text-[10px] text-slate-400">
+                      {stylistForm.attends_clients ? 'Visible en el portal público de reservas y selección de citas.' : 'Solo gestión administrativa, no se agendan citas a su nombre.'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStylistForm({ ...stylistForm, attends_clients: !stylistForm.attends_clients })}
+                    className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                      stylistForm.attends_clients ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nombre Completo *</label>
                 <input
@@ -4023,6 +4228,475 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
+      {/* MODAL EXPEDIENTE 360° & RENDIMIENTO DEL COLABORADOR / ESTILISTA */}
+      {isStylistDetailsModalOpen && selectedStylistForDetails && (() => {
+        const sty = selectedStylistForDetails;
+        const stylistAppointments = appointments.filter(a => a.stylist_id === sty.id || a.stylist_name === sty.name);
+        const completedApts = stylistAppointments.filter(a => a.status === 'cobrada');
+        const inProgressApts = stylistAppointments.filter(a => a.status === 'en_atencion');
+        const upcomingApts = stylistAppointments.filter(a => a.status === 'confirmada_wa' || a.status === 'pendiente');
+        const totalRevenue = completedApts.reduce((acc, a) => acc + (Number(a.price_usd ?? 0)), 0);
+        const serviceCommPct = Number(sty.commission_service_pct ?? 45);
+        const retailCommPct = Number(sty.commission_retail_pct ?? 10);
+        const totalEarnedCommissions = (totalRevenue * serviceCommPct) / 100;
+        const avgTicket = completedApts.length > 0 ? (totalRevenue / completedApts.length) : 0;
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div className={`border rounded-3xl max-w-3xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-7 shadow-2xl space-y-6 animate-fade-in relative ${
+              theme === 'dark' ? 'bg-[#121622] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+            }`}>
+              
+              {/* Header con Perfil & Botón Cerrar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-black/10 dark:border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <img
+                      src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
+                      alt={sty.name}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#FF5A36] shadow-lg shadow-[#FF5A36]/20"
+                    />
+                    {sty.is_owner || sty.role === 'admin' ? (
+                      <span className="absolute -top-2 -right-2 text-xs bg-amber-500 text-black px-2 py-0.5 rounded-full font-black shadow">
+                        👑
+                      </span>
+                    ) : null}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-xl sm:text-2xl font-black">{sty.name}</h2>
+                      {sty.is_owner || sty.role === 'admin' ? (
+                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40">
+                          👑 Dueña / Administradora
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                          ✂️ Colaborador
+                        </span>
+                      )}
+                      {sty.attends_clients === false ? (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          💼 Solo Gestión
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                          ✂️ Atiende Citas
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">{sty.specialty}</p>
+                    
+                    <div className="flex items-center gap-3 mt-2 flex-wrap text-xs">
+                      {sty.phone && (
+                        <a
+                          href={`https://wa.me/${sty.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-mono font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>+{sty.phone}</span>
+                        </a>
+                      )}
+                      {sty.email && (
+                        <span className="flex items-center gap-1 text-slate-400 font-mono bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                          <Mail className="w-3.5 h-3.5 text-[#FF5A36]" />
+                          <span>{sty.email}</span>
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 text-amber-400 font-bold bg-amber-400/10 px-2 py-1 rounded-lg border border-amber-400/20">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <span>{sty.rating || '5.0'} ({sty.reviews_count || 0})</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsStylistDetailsModalOpen(false)}
+                  className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-all self-end sm:self-auto"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* 4 KPIs Clave de Rendimiento */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className={`p-3.5 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                }`}>
+                  <div className="flex items-center justify-between text-slate-400 mb-1">
+                    <span>Facturado Total</span>
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <strong className="text-base sm:text-lg font-black text-emerald-400 block">
+                    {formatCurrency(totalRevenue, salonCurrency)}
+                  </strong>
+                  <span className="text-[10px] text-slate-500">en {stylistAppointments.length} servicios</span>
+                </div>
+
+                <div className={`p-3.5 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                }`}>
+                  <div className="flex items-center justify-between text-slate-400 mb-1">
+                    <span>Comisiones Ganadas</span>
+                    <Award className="w-4 h-4 text-[#FF5A36]" />
+                  </div>
+                  <strong className="text-base sm:text-lg font-black text-[#FF5A36] block">
+                    {formatCurrency(totalEarnedCommissions, salonCurrency)}
+                  </strong>
+                  <span className="text-[10px] text-slate-500">{serviceCommPct}% de comisión</span>
+                </div>
+
+                <div className={`p-3.5 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                }`}>
+                  <div className="flex items-center justify-between text-slate-400 mb-1">
+                    <span>Citas en Agenda</span>
+                    <CalendarCheck className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <strong className="text-base sm:text-lg font-black text-white block">
+                    {stylistAppointments.length} citas
+                  </strong>
+                  <span className="text-[10px] text-slate-500">{completedApts.length} atendidas • {upcomingApts.length} prox.</span>
+                </div>
+
+                <div className={`p-3.5 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                }`}>
+                  <div className="flex items-center justify-between text-slate-400 mb-1">
+                    <span>Ticket Promedio</span>
+                    <TrendingUp className="w-4 h-4 text-purple-400" />
+                  </div>
+                  <strong className="text-base sm:text-lg font-black text-purple-400 block">
+                    {formatCurrency(avgTicket, salonCurrency)}
+                  </strong>
+                  <span className="text-[10px] text-slate-500">por cliente</span>
+                </div>
+              </div>
+
+              {/* Pestañas Segmentadas sin scrollbar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 rounded-2xl bg-white/[0.03] border border-white/10 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setStylistDetailsTab('appointments')}
+                  className={`py-2 px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                    stylistDetailsTab === 'appointments'
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Citas ({stylistAppointments.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStylistDetailsTab('commissions')}
+                  className={`py-2 px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                    stylistDetailsTab === 'commissions'
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Comisiones</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStylistDetailsTab('specialties')}
+                  className={`py-2 px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                    stylistDetailsTab === 'specialties'
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Scissors className="w-3.5 h-3.5" />
+                  <span>Servicios</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStylistDetailsTab('schedule')}
+                  className={`py-2 px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                    stylistDetailsTab === 'schedule'
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Horarios</span>
+                </button>
+              </div>
+
+              {/* CONTENIDO DE LAS PESTAÑAS */}
+              <div className="space-y-4 min-h-[220px]">
+                {/* TAB 1: CITAS */}
+                {stylistDetailsTab === 'appointments' && (
+                  <div className="space-y-3">
+                    {stylistAppointments.length === 0 ? (
+                      <div className="p-8 text-center border border-dashed border-white/10 rounded-2xl space-y-2">
+                        <Calendar className="w-8 h-8 text-slate-500 mx-auto" />
+                        <strong className="text-sm text-slate-300 block">Sin citas registradas aún</strong>
+                        <p className="text-xs text-slate-500">Este profesional no tiene citas asociadas en el período actual.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                        {stylistAppointments.map((apt) => {
+                          const price = Number(apt.price_usd ?? 0);
+                          const comm = (price * serviceCommPct) / 100;
+                          return (
+                            <div
+                              key={apt.id}
+                              className={`p-3 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
+                                theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex flex-col items-center justify-center font-bold font-mono">
+                                  <span className="text-[11px] leading-tight">{apt.time.split(' ')[0]}</span>
+                                  <span className="text-[9px] text-slate-400">{apt.time.split(' ')[1]}</span>
+                                </div>
+                                <div>
+                                  <strong className="text-sm font-bold text-white block">{apt.client_name}</strong>
+                                  <span className="text-slate-400">{apt.service_name} • {apt.date}</span>
+                                  {apt.client_phone && (
+                                    <a
+                                      href={`https://wa.me/${apt.client_phone.replace(/\D/g, '')}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-[10px] text-emerald-400 block font-mono hover:underline mt-0.5"
+                                    >
+                                      💬 {apt.client_phone}
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 self-end sm:self-center">
+                                <div className="text-right">
+                                  <strong className="text-sm font-bold text-white block">
+                                    {formatCurrency(price, salonCurrency)}
+                                  </strong>
+                                  <span className="text-[10px] text-emerald-400 font-bold block">
+                                    +{formatCurrency(comm, salonCurrency)} com.
+                                  </span>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                  apt.status === 'cobrada' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
+                                  apt.status === 'completada' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold' :
+                                  apt.status === 'en_atencion' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
+                                  apt.status === 'confirmada_wa' ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' :
+                                  'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                                }`}>
+                                  {apt.status === 'cobrada' ? '✓ Cobrada' : apt.status === 'completada' ? '💳 Esperando Caja' : apt.status === 'en_atencion' ? '● En Sillón' : apt.status === 'confirmada_wa' ? 'Confirmada WA' : apt.status}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* TAB 2: COMISIONES & LIQUIDACIÓN */}
+                {stylistDetailsTab === 'commissions' && (
+                  <div className="space-y-4 text-xs">
+                    <div className={`p-4 rounded-2xl border space-y-3 ${
+                      theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                    }`}>
+                      <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                        <strong className="text-sm font-bold text-white">Esquema de Liquidación de Comisiones</strong>
+                        <span className="text-xs text-[#FF5A36] font-bold font-mono">Tasa Acordada</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="p-3 rounded-xl bg-white/5 flex justify-between items-center">
+                          <div>
+                            <span className="text-slate-400 block">Comisión en Servicios</span>
+                            <strong className="text-base font-bold text-[#FF5A36]">{serviceCommPct}%</strong>
+                          </div>
+                          <Scissors className="w-5 h-5 text-[#FF5A36]/60" />
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/5 flex justify-between items-center">
+                          <div>
+                            <span className="text-slate-400 block">Comisión en Venta Retail</span>
+                            <strong className="text-base font-bold text-emerald-400">{retailCommPct}%</strong>
+                          </div>
+                          <ShoppingBag className="w-5 h-5 text-emerald-400/60" />
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+                        <div>
+                          <strong className="text-xs text-emerald-300 block">Total Liquidable Acumulado</strong>
+                          <span className="text-[11px] text-emerald-400/80">Basado en servicios completados y agendados</span>
+                        </div>
+                        <strong className="text-lg font-black text-emerald-400">
+                          {formatCurrency(totalEarnedCommissions, salonCurrency)}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: ESPECIALIDADES & SERVICIOS */}
+                {stylistDetailsTab === 'specialties' && (
+                  <div className="space-y-4 text-xs">
+                    <div className={`p-4 rounded-2xl border space-y-3 ${
+                      theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                    }`}>
+                      <strong className="text-sm font-bold text-white block">Categorías de Servicio Autorizadas</strong>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { id: 'color', label: '🎨 Color & Tinte', desc: 'Balayage, Babylights, Corrección' },
+                          { id: 'corte', label: '✂️ Corte Capilar', desc: 'Damas, Caballeros, Diseños' },
+                          { id: 'keratina', label: '💆‍♀️ Keratinas', desc: 'Alisados orgánicos, Botox' },
+                          { id: 'nails', label: '💅 Nails & Uñas', desc: 'Acrílicas, Poligel, Semi' },
+                          { id: 'barberia', label: '💈 Barbería', desc: 'Fades, Barba, Perfilados' },
+                          { id: 'spa', label: '🧖‍♀️ Spa & Faciales', desc: 'Hidratación, Limpieza, Masajes' }
+                        ].map((cat) => {
+                          const isAuthorized = (sty.service_categories || ['color', 'corte']).includes(cat.id as any);
+                          return (
+                            <div
+                              key={cat.id}
+                              className={`p-3 rounded-xl border transition-all ${
+                                isAuthorized
+                                  ? 'bg-[#FF5A36]/10 border-[#FF5A36]/30 text-white'
+                                  : 'bg-white/5 border-white/5 text-slate-500 opacity-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <strong className="font-bold">{cat.label}</strong>
+                                {isAuthorized ? <Check className="w-3.5 h-3.5 text-[#FF5A36]" /> : null}
+                              </div>
+                              <p className="text-[10px] text-slate-400">{cat.desc}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: HORARIO & DISPONIBILIDAD */}
+                {stylistDetailsTab === 'schedule' && (
+                  <div className="space-y-4 text-xs">
+                    <div className={`p-4 rounded-2xl border space-y-3 ${
+                      theme === 'dark' ? 'bg-[#181E2E] border-white/5' : 'bg-slate-50 border-black/5'
+                    }`}>
+                      <div className="flex justify-between items-center">
+                        <strong className="text-sm font-bold text-white">Días Laborales Habituales</strong>
+                        <span className="text-[11px] text-emerald-400 font-bold">
+                          {(sty.working_days || [1, 2, 3, 4, 5, 6]).length} días por semana
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1.5 text-center">
+                        {[
+                          { idx: 1, label: 'Lun' },
+                          { idx: 2, label: 'Mar' },
+                          { idx: 3, label: 'Mié' },
+                          { idx: 4, label: 'Jue' },
+                          { idx: 5, label: 'Vie' },
+                          { idx: 6, label: 'Sáb' },
+                          { idx: 0, label: 'Dom' }
+                        ].map(d => {
+                          const isWorking = (sty.working_days || [1, 2, 3, 4, 5, 6]).includes(d.idx);
+                          return (
+                            <div
+                              key={d.idx}
+                              className={`p-2 rounded-xl border text-center ${
+                                isWorking
+                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-bold'
+                                  : 'bg-white/5 border-white/5 text-slate-500 font-medium'
+                              }`}
+                            >
+                              <span className="block text-[11px]">{d.label}</span>
+                              <span className="text-[9px] block mt-0.5">{isWorking ? 'Activo' : 'Libre'}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="pt-3 border-t border-white/5 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <strong className="text-xs font-bold text-slate-300">Días Bloqueados / Vacaciones</strong>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsStylistDetailsModalOpen(false);
+                              handleOpenStylistAvailability(sty);
+                            }}
+                            className="text-[#FF5A36] hover:underline text-xs font-bold flex items-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Agregar Bloqueo
+                          </button>
+                        </div>
+
+                        {(!sty.blocked_slots || sty.blocked_slots.length === 0) ? (
+                          <div className="p-3 text-center text-xs text-slate-400 border border-dashed border-white/10 rounded-xl">
+                            Sin días bloqueados. 100% disponible para agendar citas.
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                            {sty.blocked_slots.map(slot => (
+                              <div key={slot.id} className="p-2 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center text-xs">
+                                <span className="font-mono text-[#FF5A36] font-bold">{slot.date}</span>
+                                <span className="text-slate-300">{slot.reason}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="pt-4 border-t border-black/10 dark:border-white/10 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsStylistDetailsModalOpen(false);
+                    handleOpenStylistAvailability(sty);
+                  }}
+                  className="px-4 py-2.5 rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 font-bold flex items-center gap-1.5 transition-all w-full sm:w-auto justify-center cursor-pointer"
+                >
+                  <CalendarOff className="w-4 h-4" />
+                  <span>Gestionar Disponibilidad / Vacaciones</span>
+                </button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsStylistDetailsModalOpen(false);
+                      handleEditStylist(sty);
+                    }}
+                    className="px-5 py-2.5 rounded-full bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all cursor-pointer"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Editar Profesional</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsStylistDetailsModalOpen(false)}
+                    className="px-4 py-2.5 rounded-full border border-white/10 text-slate-400 hover:text-white font-semibold cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
+
       {/* MODAL NUEVO / EDITAR SERVICIO */}
       {isServiceModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -4080,12 +4754,12 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Precio ($ USD) *</label>
+                  <label className="block text-slate-400 mb-1 font-semibold">Precio ({salonCurrency}) *</label>
                   <div className="relative">
                     <input
                       type="number"
-                      min="1"
-                      step="0.5"
+                      min="0"
+                      step={salonCurrency === 'COP' ? '1000' : '1'}
                       value={serviceForm.price_usd}
                       onChange={(e) => setServiceForm({ ...serviceForm, price_usd: Number(e.target.value) })}
                       className={`w-full border rounded-xl p-2.5 pl-6 font-bold text-[#FF5A36] focus:outline-none focus:border-[#FF5A36] ${

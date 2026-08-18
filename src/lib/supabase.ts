@@ -318,15 +318,64 @@ export const api = {
 
   async createAppointment(apt: Appointment): Promise<Appointment> {
     const tid = apt.tenant_id || getActiveTenantId();
-    const aptWithTenant = { ...apt, tenant_id: tid };
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+
+    const isValidUUID = (str?: string) => {
+      if (!str) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    };
+
+    const cleanAptId = isValidUUID(apt.id) ? apt.id : generateUUID();
+    const cleanTenantId = isValidUUID(tid) ? tid : getActiveTenantId();
+    const cleanStylistId = isValidUUID(apt.stylist_id) ? apt.stylist_id : null;
+    const cleanServiceId = isValidUUID(apt.service_id) ? apt.service_id : null;
+    const cleanClientId = isValidUUID(apt.client_id) ? apt.client_id : null;
+
+    const aptPayload = {
+      id: cleanAptId,
+      tenant_id: cleanTenantId,
+      client_id: cleanClientId,
+      client_name: apt.client_name || 'Clienta',
+      client_phone: apt.client_phone || '',
+      stylist_id: cleanStylistId,
+      stylist_name: apt.stylist_name || 'Especialista',
+      service_id: cleanServiceId,
+      service_name: apt.service_name || 'Servicio General',
+      date: apt.date || new Date().toISOString().split('T')[0],
+      time: apt.time || '02:00 PM',
+      duration_minutes: apt.duration_minutes || 60,
+      price_usd: Number(apt.price_usd || 0),
+      status: apt.status || 'confirmada_wa',
+      wa_reminder_24h_sent: true,
+      wa_reminder_2h_sent: false
+    };
+
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('appointments').insert([aptWithTenant]).select().single();
-      if (!error && data) return data as Appointment;
+      try {
+        const { data, error } = await supabase.from('appointments').insert([aptPayload]).select().single();
+        if (error) {
+          console.error('Error inserting appointment in Supabase:', error.message, error);
+        } else if (data) {
+          console.log('Appointment created successfully in Supabase:', data);
+          return data as Appointment;
+        }
+      } catch (err) {
+        console.error('Exception creating appointment in Supabase:', err);
+      }
     }
-    const current = await this.getAppointments(tid);
-    const updated = [aptWithTenant, ...current];
+
+    const current = await this.getAppointments(cleanTenantId);
+    const updated = [aptPayload as Appointment, ...current];
     localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updated));
-    return aptWithTenant;
+    return aptPayload as Appointment;
   },
 
   async updateAppointmentStatus(id: string, status: Appointment['status']): Promise<void> {
@@ -415,52 +464,263 @@ export const api = {
   // STYLISTS
   async getStylists(tenantId?: string): Promise<Stylist[]> {
     const tid = tenantId || getActiveTenantId();
+
+    const mapStylistFromDB = (d: any): Stylist => ({
+      id: d.id,
+      tenant_id: d.tenant_id,
+      name: d.name,
+      email: d.email || '',
+      phone: d.phone || '',
+      phone_whatsapp: d.phone || d.phone_whatsapp || '',
+      role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
+      is_owner: d.is_owner || d.role === 'admin' || false,
+      attends_clients: d.attends_clients !== false,
+      specialty: d.specialty || 'Master Stylist',
+      photo_url: d.photo_url || '',
+      rating: Number(d.rating || 5.0),
+      reviews_count: Number(d.reviews_count || 0),
+      commission_service_pct: Number(d.service_commission_pct ?? d.commission_service_pct ?? 45),
+      commission_retail_pct: Number(d.product_commission_pct ?? d.commission_retail_pct ?? 10),
+      working_days: d.working_days || [1, 2, 3, 4, 5, 6],
+      blocked_dates: d.blocked_dates || [],
+      blocked_slots: d.blocked_slots || [],
+      service_categories: d.service_categories || ['color', 'corte'],
+      service_ids: d.service_ids || [],
+      is_active: d.is_active !== false
+    });
+
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from('stylists')
-        .select('*')
-        .eq('tenant_id', tid)
-        .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) return data as Stylist[];
+      try {
+        const { data, error } = await supabase
+          .from('stylists')
+          .select('*')
+          .eq('tenant_id', tid)
+          .order('created_at', { ascending: false });
+        if (error) {
+          console.warn('Notice reading stylists from Supabase:', error.message);
+        } else if (data && data.length > 0) {
+          return data.map(mapStylistFromDB);
+        }
+      } catch (e) {
+        console.warn('Exception reading stylists from Supabase:', e);
+      }
     }
+
     const saved = localStorage.getItem(STORAGE_KEYS.STYLISTS);
     if (saved) {
       const list: Stylist[] = JSON.parse(saved);
-      const filtered = list.filter(s => s.tenant_id === tid || !s.tenant_id);
+      const filtered = list.filter(s => s.tenant_id === tid);
       if (filtered.length > 0) return filtered;
     }
     return tid === '00000000-0000-0000-0000-000000000001' ? initialStylists : [];
   },
 
-  async createStylist(stylist: Stylist): Promise<Stylist> {
+  async createStylist(stylist: Stylist, password?: string): Promise<Stylist> {
     const tid = stylist.tenant_id || getActiveTenantId();
-    const stylistWithTenant = { ...stylist, tenant_id: tid };
-    if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('stylists').insert([stylistWithTenant]).select().single();
-      if (!error && data) return data as Stylist;
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+
+    const isValidUUID = (str?: string) => {
+      if (!str) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    };
+
+    const cleanId = isValidUUID(stylist.id) ? stylist.id : generateUUID();
+    const cleanTenantId = isValidUUID(tid) ? tid : getActiveTenantId();
+
+    // 1. Crear usuario en Supabase Auth (auth.users)
+    if (stylist.email && password) {
+      try {
+        const authRes = await this.auth.signUp(stylist.email, password, {
+          name: stylist.name,
+          role: stylist.role || 'colaborador',
+          tenant_id: cleanTenantId
+        });
+        console.log(`Supabase Auth account registered for collaborator (${stylist.email}):`, authRes);
+      } catch (authErr) {
+        console.warn('Auth registration notice for collaborator:', authErr);
+      }
     }
-    const current = await this.getStylists(tid);
-    const updated = [stylistWithTenant, ...current];
+
+    const payload = {
+      id: cleanId,
+      tenant_id: cleanTenantId,
+      name: stylist.name,
+      email: stylist.email || null,
+      phone: stylist.phone || stylist.phone_whatsapp || null,
+      specialty: stylist.specialty || 'Master Stylist',
+      photo_url: stylist.photo_url || null,
+      service_commission_pct: Number(stylist.commission_service_pct ?? 45),
+      product_commission_pct: Number(stylist.commission_retail_pct ?? 10),
+      rating: Number(stylist.rating || 5.0),
+      reviews_count: Number(stylist.reviews_count || 0),
+      working_days: stylist.working_days || [1, 2, 3, 4, 5, 6],
+      blocked_dates: stylist.blocked_dates || [],
+      blocked_slots: stylist.blocked_slots || [],
+      service_categories: stylist.service_categories || ['color', 'corte'],
+      service_ids: stylist.service_ids || [],
+      role: stylist.role || (stylist.is_owner ? 'admin' : 'colaborador'),
+      is_owner: stylist.is_owner || stylist.role === 'admin' || false,
+      attends_clients: stylist.attends_clients !== false,
+      is_active: stylist.is_active !== false
+    };
+
+    const mapStylistFromDB = (d: any): Stylist => ({
+      id: d.id,
+      tenant_id: d.tenant_id,
+      name: d.name,
+      email: d.email || '',
+      phone: d.phone || '',
+      phone_whatsapp: d.phone || d.phone_whatsapp || '',
+      role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
+      is_owner: d.is_owner || d.role === 'admin' || false,
+      attends_clients: d.attends_clients !== false,
+      specialty: d.specialty || 'Master Stylist',
+      photo_url: d.photo_url || '',
+      rating: Number(d.rating || 5.0),
+      reviews_count: Number(d.reviews_count || 0),
+      commission_service_pct: Number(d.service_commission_pct ?? d.commission_service_pct ?? 45),
+      commission_retail_pct: Number(d.product_commission_pct ?? d.commission_retail_pct ?? 10),
+      working_days: d.working_days || [1, 2, 3, 4, 5, 6],
+      blocked_dates: d.blocked_dates || [],
+      blocked_slots: d.blocked_slots || [],
+      service_categories: d.service_categories || ['color', 'corte'],
+      service_ids: d.service_ids || [],
+      is_active: d.is_active !== false
+    });
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('stylists').insert([payload]).select().single();
+        if (error) {
+          console.error('Error inserting stylist in Supabase:', error.message, error);
+        } else if (data) {
+          console.log('Stylist created successfully in Supabase:', data);
+          const mapped = mapStylistFromDB(data);
+          const current = await this.getStylists(cleanTenantId);
+          const updated = [mapped, ...current.filter(s => s.id !== mapped.id)];
+          localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+          return mapped;
+        }
+      } catch (e) {
+        console.error('Exception inserting stylist in Supabase:', e);
+      }
+    }
+
+    const localMapped = mapStylistFromDB(payload);
+    const current = await this.getStylists(cleanTenantId);
+    const updated = [localMapped, ...current.filter(s => s.id !== localMapped.id)];
     localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
-    return stylistWithTenant;
+    return localMapped;
   },
 
-  async updateStylist(stylist: Stylist): Promise<Stylist> {
-    if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('stylists').update(stylist).eq('id', stylist.id).select().single();
-      if (!error && data) return data as Stylist;
+  async updateStylist(stylist: Stylist, password?: string): Promise<Stylist> {
+    const tid = stylist.tenant_id || getActiveTenantId();
+
+    // Si se especificó una nueva contraseña, registrar/actualizar en Supabase Auth
+    if (stylist.email && password) {
+      try {
+        await this.auth.signUp(stylist.email, password, {
+          name: stylist.name,
+          role: stylist.role || 'colaborador',
+          tenant_id: tid
+        });
+      } catch (authErr) {}
     }
-    const current = await this.getStylists();
-    const updated = current.map(s => s.id === stylist.id ? stylist : s);
+
+    const payload = {
+      id: stylist.id,
+      tenant_id: tid,
+      name: stylist.name,
+      email: stylist.email || null,
+      phone: stylist.phone || stylist.phone_whatsapp || null,
+      specialty: stylist.specialty || 'Master Stylist',
+      photo_url: stylist.photo_url || null,
+      service_commission_pct: Number(stylist.commission_service_pct ?? 45),
+      product_commission_pct: Number(stylist.commission_retail_pct ?? 10),
+      rating: Number(stylist.rating || 5.0),
+      reviews_count: Number(stylist.reviews_count || 0),
+      working_days: stylist.working_days || [1, 2, 3, 4, 5, 6],
+      blocked_dates: stylist.blocked_dates || [],
+      blocked_slots: stylist.blocked_slots || [],
+      service_categories: stylist.service_categories || ['color', 'corte'],
+      service_ids: stylist.service_ids || [],
+      role: stylist.role || (stylist.is_owner ? 'admin' : 'colaborador'),
+      is_owner: stylist.is_owner || stylist.role === 'admin' || false,
+      attends_clients: stylist.attends_clients !== false,
+      is_active: stylist.is_active !== false
+    };
+
+    const mapStylistFromDB = (d: any): Stylist => ({
+      id: d.id,
+      tenant_id: d.tenant_id,
+      name: d.name,
+      email: d.email || '',
+      phone: d.phone || '',
+      phone_whatsapp: d.phone || d.phone_whatsapp || '',
+      role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
+      is_owner: d.is_owner || d.role === 'admin' || false,
+      attends_clients: d.attends_clients !== false,
+      specialty: d.specialty || 'Master Stylist',
+      photo_url: d.photo_url || '',
+      rating: Number(d.rating || 5.0),
+      reviews_count: Number(d.reviews_count || 0),
+      commission_service_pct: Number(d.service_commission_pct ?? d.commission_service_pct ?? 45),
+      commission_retail_pct: Number(d.product_commission_pct ?? d.commission_retail_pct ?? 10),
+      working_days: d.working_days || [1, 2, 3, 4, 5, 6],
+      blocked_dates: d.blocked_dates || [],
+      blocked_slots: d.blocked_slots || [],
+      service_categories: d.service_categories || ['color', 'corte'],
+      service_ids: d.service_ids || [],
+      is_active: d.is_active !== false
+    });
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('stylists')
+          .update(payload)
+          .eq('id', stylist.id)
+          .select()
+          .single();
+        if (error) {
+          console.error('Error updating stylist in Supabase:', error.message, error);
+        } else if (data) {
+          console.log('Stylist updated successfully in Supabase:', data);
+          const mapped = mapStylistFromDB(data);
+          const current = await this.getStylists(tid);
+          const updated = current.map(s => s.id === mapped.id ? mapped : s);
+          localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+          return mapped;
+        }
+      } catch (e) {
+        console.error('Exception updating stylist in Supabase:', e);
+      }
+    }
+
+    const localMapped = mapStylistFromDB(payload);
+    const current = await this.getStylists(tid);
+    const updated = current.map(s => s.id === localMapped.id ? localMapped : s);
     localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
-    return stylist;
+    return localMapped;
   },
 
   async deleteStylist(id: string): Promise<void> {
+    const tid = getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      await supabase.from('stylists').delete().eq('id', id);
+      try {
+        const { error } = await supabase.from('stylists').delete().eq('id', id);
+        if (error) console.error('Error deleting stylist in Supabase:', error.message);
+      } catch (e) {}
     }
-    const current = await this.getStylists();
+    const current = await this.getStylists(tid);
     const updated = current.filter(s => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
   },
@@ -493,23 +753,68 @@ export const api = {
         .select('*')
         .eq('tenant_id', tid)
         .order('name', { ascending: true });
-      if (!error && data && data.length > 0) return data as Service[];
+      if (!error && data && data.length > 0) {
+        return data.map((d: any) => {
+          const p = Number(d.price ?? d.price_usd ?? d.price_cop ?? 0);
+          return {
+            ...d,
+            price: p,
+            price_usd: p,
+            price_cop: p
+          };
+        }) as Service[];
+      }
     }
     const saved = localStorage.getItem(STORAGE_KEYS.SERVICES);
     if (saved) {
-      const list: Service[] = JSON.parse(saved);
-      const filtered = list.filter(s => s.tenant_id === tid || !s.tenant_id);
-      if (filtered.length > 0) return filtered;
+      const list: any[] = JSON.parse(saved);
+      const filtered = list.filter(s => s.tenant_id === tid);
+      if (filtered.length > 0) {
+        return filtered.map((d: any) => {
+          const p = Number(d.price ?? d.price_usd ?? d.price_cop ?? 0);
+          return {
+            ...d,
+            price: p,
+            price_usd: p,
+            price_cop: p
+          };
+        });
+      }
     }
     return tid === '00000000-0000-0000-0000-000000000001' ? initialServices : [];
   },
 
   async createService(service: Service): Promise<Service> {
     const tid = service.tenant_id || getActiveTenantId();
-    const serviceWithTenant = { ...service, tenant_id: tid };
+    const priceValue = Number(service.price ?? service.price_usd ?? service.price_cop ?? 0);
+    const serviceWithTenant = {
+      ...service,
+      tenant_id: tid,
+      price: priceValue,
+      price_usd: priceValue,
+      price_cop: priceValue
+    };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').insert([serviceWithTenant]).select().single();
-      if (!error && data) return data as Service;
+      const { data, error } = await supabase.from('services').insert([{
+        id: serviceWithTenant.id,
+        tenant_id: tid,
+        name: serviceWithTenant.name,
+        category: serviceWithTenant.category,
+        price: priceValue,
+        duration_minutes: serviceWithTenant.duration_minutes,
+        requires_patch_test: serviceWithTenant.requires_patch_test,
+        description: serviceWithTenant.description,
+        is_active: true
+      }]).select().single();
+      if (!error && data) {
+        const p = Number(data.price ?? priceValue);
+        return {
+          ...data,
+          price: p,
+          price_usd: p,
+          price_cop: p
+        } as Service;
+      }
     }
     const current = await this.getServices(tid);
     const updated = [serviceWithTenant, ...current];
@@ -518,14 +823,36 @@ export const api = {
   },
 
   async updateService(service: Service): Promise<Service> {
+    const priceValue = Number(service.price ?? service.price_usd ?? service.price_cop ?? 0);
+    const normalized = {
+      ...service,
+      price: priceValue,
+      price_usd: priceValue,
+      price_cop: priceValue
+    };
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').update(service).eq('id', service.id).select().single();
-      if (!error && data) return data as Service;
+      const { data, error } = await supabase.from('services').update({
+        name: normalized.name,
+        category: normalized.category,
+        price: priceValue,
+        duration_minutes: normalized.duration_minutes,
+        requires_patch_test: normalized.requires_patch_test,
+        description: normalized.description
+      }).eq('id', service.id).select().single();
+      if (!error && data) {
+        const p = Number(data.price ?? priceValue);
+        return {
+          ...data,
+          price: p,
+          price_usd: p,
+          price_cop: p
+        } as Service;
+      }
     }
     const current = await this.getServices();
-    const updated = current.map(s => s.id === service.id ? service : s);
+    const updated = current.map(s => s.id === service.id ? normalized : s);
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
-    return service;
+    return normalized;
   },
 
   async deleteService(id: string): Promise<void> {
@@ -535,6 +862,76 @@ export const api = {
     const current = await this.getServices();
     const updated = current.filter(s => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+  },
+
+  async getTenantBySlug(slug: string): Promise<any | null> {
+    if (!slug) return null;
+    const cleanSlug = slug.toLowerCase().trim();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('tenants')
+          .select('*')
+          .or(`slug.ilike.${cleanSlug},slug.ilike.${cleanSlug}-%,slug.ilike.%${cleanSlug}%`)
+          .limit(1)
+          .maybeSingle();
+        if (!error && data) return data;
+      } catch (e) {}
+    }
+    const saved = localStorage.getItem('bf_tenant_active');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.slug && (parsed.slug.toLowerCase().includes(cleanSlug) || cleanSlug.includes(parsed.slug.toLowerCase()))) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return null;
+  },
+
+  async getTenantByUserEmail(email: string): Promise<any | null> {
+    if (!email) return null;
+    const cleanEmail = email.toLowerCase().trim();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        // 1. Buscar estilista/dueña asociada en la tabla stylists
+        const { data: styData } = await supabase
+          .from('stylists')
+          .select('tenant_id')
+          .ilike('email', cleanEmail)
+          .limit(1)
+          .maybeSingle();
+
+        if (styData && styData.tenant_id) {
+          const { data: tenantData } = await supabase
+            .from('tenants')
+            .select('*')
+            .eq('id', styData.tenant_id)
+            .maybeSingle();
+          if (tenantData) return tenantData;
+        }
+
+        // 2. Si no es la cuenta demo de Sofía, buscar el último tenant creado
+        if (cleanEmail !== 'sofia@studioglamour.co') {
+          const { data: latestTenant } = await supabase
+            .from('tenants')
+            .select('*')
+            .neq('id', '00000000-0000-0000-0000-000000000001')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latestTenant) return latestTenant;
+        }
+      } catch (e) {}
+    }
+    const saved = localStorage.getItem('bf_tenant_active');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return null;
   },
 
   // PRODUCTS
@@ -783,6 +1180,7 @@ export const api = {
     },
 
     async signIn(email: string, password: string) {
+      let loggedUser: any = null;
       if (supabase && isSupabaseConfigured) {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -790,8 +1188,7 @@ export const api = {
             password
           });
           if (!error && data.user) {
-            localStorage.setItem('bf_auth_user', JSON.stringify(data.user));
-            return { user: data.user, session: data.session, error: null };
+            loggedUser = data.user;
           }
           if (error) {
             console.warn('Supabase auth signIn notice:', error.message);
@@ -800,14 +1197,27 @@ export const api = {
           console.warn('Supabase auth exception:', e.message);
         }
       }
-      const localUser = {
-        id: `usr-${Date.now()}`,
-        email,
-        user_metadata: { name: email.split('@')[0] },
-        created_at: new Date().toISOString()
-      };
-      localStorage.setItem('bf_auth_user', JSON.stringify(localUser));
-      return { user: localUser, session: { access_token: 'mock-token' }, error: null };
+
+      if (!loggedUser) {
+        loggedUser = {
+          id: `usr-${Date.now()}`,
+          email,
+          user_metadata: { name: email.split('@')[0] },
+          created_at: new Date().toISOString()
+        };
+      }
+
+      localStorage.setItem('bf_auth_user', JSON.stringify(loggedUser));
+
+      // Sincronizar automáticamente el tenant perteneciente a este usuario
+      try {
+        const tenant = await api.getTenantByUserEmail(email);
+        if (tenant) {
+          localStorage.setItem('bf_tenant_active', JSON.stringify(tenant));
+        }
+      } catch (tErr) {}
+
+      return { user: loggedUser, session: { access_token: 'mock-token' }, error: null };
     },
 
     async signOut() {
@@ -843,6 +1253,11 @@ export const api = {
       email: string;
       password?: string;
       phone?: string;
+      role?: 'admin' | 'colaborador';
+      is_owner?: boolean;
+      attends_clients?: boolean;
+      specialty?: string;
+      service_categories?: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
     };
     services: Array<{
       name: string;
@@ -876,7 +1291,8 @@ export const api = {
       try {
         const authRes = await this.auth.signUp(params.owner.email, params.owner.password, {
           name: params.owner.name,
-          role: 'owner',
+          role: 'admin',
+          is_owner: true,
           salon_name: params.tenant.name
         });
         console.log('Supabase Auth user created:', authRes);
@@ -920,20 +1336,25 @@ export const api = {
       }
     }
 
-    // 3. Insert into Supabase 'stylists' table (Owner as master stylist)
+    // 3. Insert into Supabase 'stylists' table (Owner as Admin & Master Stylist)
     const ownerStylistId = generateUUID();
+    const activeCategories = Array.from(new Set(params.services.map(s => s.category))) as any[];
     const ownerStylist: Stylist = {
       id: ownerStylistId,
       tenant_id: createdTenantId,
       name: params.owner.name,
       email: params.owner.email,
       phone: params.owner.phone || params.tenant.phone,
-      specialty: 'Directora & Master Stylist',
+      role: 'admin',
+      is_owner: true,
+      attends_clients: params.owner.attends_clients !== false,
+      specialty: params.owner.specialty || (params.owner.attends_clients !== false ? 'Dueña & Especialista Principal' : 'Administradora General'),
       photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
       rating: 5.0,
       reviews_count: 1,
       commission_service_pct: 50,
       commission_retail_pct: 10,
+      service_categories: params.owner.service_categories || activeCategories,
       is_active: true
     };
 
@@ -945,8 +1366,12 @@ export const api = {
           name: ownerStylist.name,
           email: ownerStylist.email,
           phone: ownerStylist.phone,
+          role: 'admin',
+          is_owner: true,
+          attends_clients: ownerStylist.attends_clients,
           specialty: ownerStylist.specialty,
           photo_url: ownerStylist.photo_url,
+          service_categories: ownerStylist.service_categories,
           service_commission_pct: 50,
           product_commission_pct: 10,
           is_active: true
