@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Centro de Plantillas HSM/Email, Tablero de Mensajes & WhatsApp Omnicanal con Human Takeover, y Portal de Reservas Multi-Tenant.
+- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional (Apertura y Cierre de Caja, Arqueo, Comisiones y Multi-pago en $ COP), Centro de Plantillas HSM/Email, Tablero Omnicanal (WhatsApp + Instagram Direct + Messenger), y Portal de Reservas.
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -7,17 +7,20 @@
 ## 🎯 Foco para la Próxima Sesión & Roadmap Futuro
 1. **Flujo de Webhooks n8n & Supabase**:
    - Conectar los webhooks en n8n para consultar las reglas de `tenant_dispatch_rules` y despachar WhatsApp HSM / Emails automáticos.
-2. **Bandeja Omnicanal 360° (Meta Suite)**:
-   - Integrar mensajes directos de **Instagram Direct (DM)** y **Facebook Messenger** en el mismo Tablero de Mensajes para que Flowy IA atienda todos los canales desde una única bandeja centralizada.
-3. **Caja POS & Cobros**:
-   - Emisión de recibos digitales por WhatsApp y cálculo automático de abonos.
-4. **Módulo de Fidelización & Campañas IA**:
+2. **Módulo de Fidelización & Campañas IA**:
    - Mensajes automáticos a clientas inactivas (+35 días sin visita).
+3. **Vertical Dental / Salud (`DentalFlow AI`)**:
+   - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
-- **Tablero de Mensajes & WhatsApp Omnicanal (`MessagesBoardPage.tsx`)**: Bandeja de 3 columnas (Inbox, Chat en vivo con Human Takeover toggle, y Ficha CRM 360° con diagnóstico capilar).
-- **Modo Sandbox / Simulador**: Pestaña dedicada para testear prompts y respuestas de Flowy IA de forma aislada sin enviar mensajes a clientas reales.
-- **Botón Maestro de Bot IA**: Switch directo en la barra de mensajes para activar o pausar el bot para todo el salón en 1 clic.
-- **Validación Estricta de WhatsApp**: Eliminación de auto-aprobaciones simuladas en plantillas; validación estricta de conexión antes de enviar a Meta Cloud API.
-- **Header Overview Aislado**: El saludo de bienvenida solo se muestra en la pestaña de Inicio / Overview.
-- **Migración SQL de Plantillas**: Archivo `create_templates_tables.sql` creado con tablas `tenant_whatsapp_templates`, `tenant_email_templates` y `tenant_dispatch_rules`.
+- **Módulo de Caja POS Profesional (`PosCashRegisterPage.tsx`)**:
+  - Control de turnos con **Apertura de Caja** (base inicial en efectivo $ COP, responsable, notas).
+  - Terminal de ventas con catálogo filtrable, asignación de estilista por ítem y cálculo automático de comisiones (% servicio / % retail).
+  - **Cuadros de Diálogo de Cobro Rediseñados (Luxury Glassmorphism POS)**:
+    - **Modal de Checkout**: Tarjetas interactivas con glows y paletas neón para los 6 medios de pago (Efectivo con teclado rápido de billetes colombianos `$20k`, `$50k`, `$100k`, `$200k`, `Exacto` y calculadora de vuelto; Nequi; Daviplata; Datáfono con Débito/Crédito; Transferencia bancaria; y Pago Mixto con desglose proporcional dual).
+    - **Modal de Éxito & Ticket Térmico Digital**: Comprobante tipo recibo de salón con envío de 1 clic a WhatsApp para la clienta e impresión térmica.
+    - **Modal de Confirmación de Liquidación de Comisiones**: Reemplazo de diálogos nativos por un modal visual con avatar del estilista, monto en verde esmeralda y paso automático a $0 COP.
+    - **Modal de Cobro Extra & Movimientos de Caja**: Diseños pulidos con bordes suaves y presets rápidos.
+  - **Arqueo y Cierre Oficial (Reporte Z)** con cuadre físico en vivo e impresión de comprobante fiscal.
+- **Meta Suite Omnicanal**: Conectores para Instagram Direct y Facebook Messenger en Configuración IA.
+- **Moneda $ COP Unificada**: Todo el sistema opera fluidamente en Pesos Colombianos.

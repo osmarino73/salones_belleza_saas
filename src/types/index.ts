@@ -17,6 +17,7 @@ export interface Stylist {
   name: string;
   email?: string;
   phone?: string;
+  phone_whatsapp?: string;
   specialty: string;
   photo_url: string;
   rating: number;
@@ -137,6 +138,12 @@ export interface TenantAISettings {
   zernio_connected?: boolean;
   zernio_status?: 'disconnected' | 'connecting' | 'connected' | 'error';
   zernio_connection_mode?: 'coexistence' | 'cloud_api';
+  instagram_username?: string;
+  instagram_connected?: boolean;
+  instagram_status?: 'disconnected' | 'connecting' | 'connected' | 'error';
+  messenger_page_name?: string;
+  messenger_connected?: boolean;
+  messenger_status?: 'disconnected' | 'connecting' | 'connected' | 'error';
   is_active: boolean;
   human_takeover_active: boolean;
   human_takeover_until?: string;
@@ -149,5 +156,90 @@ export interface TenantAISettings {
   google_maps_review_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+// =========================================================================
+// POS & CAJA REGISTRADORA TYPES
+// =========================================================================
+
+export interface CashShift {
+  id: string;
+  tenant_id: string;
+  opened_by_name: string;
+  opened_by_email?: string;
+  opened_at: string;
+  initial_amount_cop: number;
+  opening_notes?: string;
+  status: 'open' | 'closed';
+  closed_by_name?: string;
+  closed_at?: string;
+  closing_notes?: string;
+  expected_cash_cop?: number;
+  actual_cash_cop?: number;
+  difference_cash_cop?: number;
+  total_sales_cop?: number;
+  total_cash_sales_cop?: number;
+  total_card_sales_cop?: number;
+  total_digital_sales_cop?: number; // Nequi, Daviplata, Transferencia
+  total_expenses_cop?: number;
+  total_incomes_cop?: number;
+  total_commissions_cop?: number;
+}
+
+export interface CashMovement {
+  id: string;
+  shift_id: string;
+  tenant_id: string;
+  type: 'expense' | 'income'; // Gasto o Entrada extra de efectivo
+  category: 'insumos' | 'servicios' | 'cafe_alimentos' | 'domicilios' | 'propinas' | 'otro';
+  amount_cop: number;
+  description: string;
+  created_by_name: string;
+  created_at: string;
+}
+
+export interface PosSaleItem {
+  id: string;
+  item_id: string;
+  name: string;
+  type: 'service' | 'retail';
+  quantity: number;
+  unit_price_cop: number;
+  total_cop: number;
+  stylist_id?: string;
+  stylist_name?: string;
+  commission_pct?: number;
+  commission_amount_cop?: number;
+}
+
+export interface PosSale {
+  id: string;
+  shift_id: string;
+  tenant_id: string;
+  sale_number: string;
+  client_id?: string;
+  client_name: string;
+  client_phone?: string;
+  items: PosSaleItem[];
+  subtotal_cop: number;
+  discount_amount_cop: number;
+  deposit_deducted_cop: number;
+  extra_charge_amount_cop?: number;
+  extra_charge_concept?: string;
+  tip_amount_cop: number;
+  total_cop: number;
+  payment_method: 'efectivo' | 'nequi' | 'daviplata' | 'tarjeta' | 'transferencia' | 'mixto';
+  payment_breakdown?: {
+    cash_cop?: number;
+    nequi_daviplata_cop?: number;
+    card_cop?: number;
+    transfer_cop?: number;
+  };
+  cash_received_cop?: number;
+  change_returned_cop?: number;
+  total_commissions_cop: number;
+  receipt_sent_wa?: boolean;
+  notes?: string;
+  created_at: string;
 }
 

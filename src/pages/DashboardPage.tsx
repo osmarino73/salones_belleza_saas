@@ -60,10 +60,12 @@ import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
 import { MessagesBoardPage } from '../components/MessagesBoardPage';
+import { PosCashRegisterPage } from '../components/PosCashRegisterPage';
 
 export const DashboardPage: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates'>('overview');
+  const [posInitialClient, setPosInitialClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
@@ -1494,139 +1496,21 @@ export const DashboardPage: React.FC = () => {
         )}
 
         {/* =========================================================================
-            VIEW 4: POS & CAJA & LIQUIDACIÓN
+            VIEW 4: POS & CAJA & LIQUIDACIÓN (NUEVO MOTOR PROFESIONAL)
             ========================================================================= */}
         {activeTab === 'pos' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className={`lg:col-span-7 rounded-2xl p-6 border space-y-4 ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-            }`}>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('overview')}
-                  className={`p-1.5 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-all ${
-                    theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-[#F0F2F7] border-black/5 text-slate-800 hover:border-[#FF5A36]'
-                  }`}
-                  title="Volver a Overview"
-                >
-                  <ArrowDownLeft className="w-3.5 h-3.5 rotate-45" />
-                  <span>Volver</span>
-                </button>
-                <h2 className="text-base font-bold">Terminal POS & Cobro Rápido</h2>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {[
-                  { name: 'Balayage + Olaplex', price: 110, type: 'service' },
-                  { name: 'Corte + Brushing', price: 45, type: 'service' },
-                  { name: 'Keratina Orgánica', price: 75, type: 'service' },
-                  { name: 'Poligel + Nail Art', price: 55, type: 'service' },
-                  { name: 'Olaplex Nº 3 (Retail)', price: 32, type: 'retail' },
-                  { name: 'Shampoo Matizador', price: 24, type: 'retail' }
-                ].map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setCartItems([...cartItems, item as any])}
-                    className={`p-3.5 rounded-xl border text-left transition-all ${
-                      theme === 'dark' ? 'bg-[#1A2133] border-white/10 hover:border-[#FF5A36]' : 'bg-[#F9FAFC] border-black/5 hover:border-[#FF5A36]'
-                    }`}
-                  >
-                    <span className="text-[10px] text-[#FF5A36] font-bold uppercase block">{item.type}</span>
-                    <strong className="text-xs block mt-0.5">{item.name}</strong>
-                    <span className="text-sm font-extrabold text-[#FF5A36] mt-1 block">${item.price} USD</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Commission calculation card */}
-              <div className={`p-4 rounded-xl border space-y-3 mt-6 ${
-                theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F9FAFC] border-black/5'
-              }`}>
-                <h3 className="text-xs font-bold uppercase text-[#FF5A36]">Liquidación de Comisiones del Equipo</h3>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span>Sofía Restrepo (45% Servicios + 10% Retail):</span>
-                    <strong className="text-emerald-500 font-bold">$1,120.00 USD</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Carlos Morales (45% Servicios + 10% Retail):</span>
-                    <strong className="text-emerald-500 font-bold">$780.00 USD</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Laura Valencia (50% Servicios + 10% Retail):</span>
-                    <strong className="text-emerald-500 font-bold">$550.00 USD</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Ticket Checkout */}
-            <div className={`lg:col-span-5 rounded-2xl p-6 border flex flex-col justify-between ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-            }`}>
-              <div>
-                <h2 className="text-base font-bold mb-4">Ticket de Venta Actual</h2>
-                <div className="space-y-2 mb-4">
-                  {cartItems.map((it, idx) => (
-                    <div key={idx} className={`flex justify-between items-center p-3 rounded-xl text-xs ${
-                      theme === 'dark' ? 'bg-[#0E121B]' : 'bg-[#F9FAFC]'
-                    }`}>
-                      <div>
-                        <strong className="block">{it.name}</strong>
-                        <span className="text-[10px] text-slate-400 uppercase">{it.type}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm">${it.price}</span>
-                        <button
-                          type="button"
-                          onClick={() => setCartItems(cartItems.filter((_, i) => i !== idx))}
-                          className="text-slate-400 hover:text-rose-500"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-black/5 dark:border-white/10 pt-3 space-y-1.5 text-xs text-slate-400">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>${cartTotal} USD</span>
-                  </div>
-                  <div className="flex justify-between font-extrabold text-lg pt-2 border-t border-black/5 dark:border-white/10 text-slate-900 dark:text-white">
-                    <span>Total a Cobrar:</span>
-                    <span className="text-[#FF5A36]">${cartTotal} USD</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6">
-                {paymentSuccess ? (
-                  <div className="bg-emerald-500/20 text-emerald-500 p-3 rounded-xl text-center text-xs font-bold flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> ¡Cobro registrado y comisión liquidada!
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentSuccess(true);
-                      setTimeout(() => {
-                        setPaymentSuccess(false);
-                        setCartItems([]);
-                      }, 2000);
-                    }}
-                    className="w-full bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold py-3.5 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-[#FF5A36]/30 text-sm"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>Cobrar ${cartTotal} USD</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          <PosCashRegisterPage
+            theme={theme}
+            salonName={salonName}
+            salonCurrency={salonCurrency}
+            services={services}
+            products={products}
+            stylists={stylists}
+            clients={clients}
+            ownerName={ownerName}
+            initialCartClient={posInitialClient}
+            onBackToOverview={() => setActiveTab('overview')}
+          />
         )}
 
         {/* =========================================================================
@@ -1645,6 +1529,7 @@ export const DashboardPage: React.FC = () => {
             services={services}
             onOpenNewAppointment={() => setIsNewAppointmentOpen(true)}
             onOpenPosWithClient={(client) => {
+              setPosInitialClient(client);
               setActiveTab('pos');
             }}
             onUpdateAiSettings={(newSettings) => setAiSettings(prev => prev ? ({ ...prev, ...newSettings }) : null)}
@@ -2184,36 +2069,244 @@ export const DashboardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Canal 2: Instagram */}
-                    <div className="p-3.5 rounded-xl border border-white/5 bg-[#0E121B]/50 flex items-center justify-between opacity-70">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center shrink-0">
-                          <Instagram className="w-4 h-4" />
+                    {/* Canal 2: Instagram Direct */}
+                    <div className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden ${
+                      aiSettings.instagram_connected
+                        ? 'border-pink-500/40 bg-pink-500/5'
+                        : 'border-white/10 bg-[#0E121B]'
+                    }`}>
+                      <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                          aiSettings.instagram_connected
+                            ? 'bg-pink-500/20 text-pink-400 border-pink-500/30'
+                            : 'bg-white/5 text-pink-400 border-white/10'
+                        }`}>
+                          <Instagram className="w-5 h-5 shrink-0" />
                         </div>
-                        <div>
-                          <strong className="text-xs font-semibold text-white block">Instagram Direct</strong>
-                          <span className="text-[10px] text-slate-500">Sin cuentas conectadas • Próximamente</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-sm font-bold text-white">Instagram Direct</strong>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              aiSettings.instagram_connected
+                                ? 'bg-pink-500/20 text-pink-400'
+                                : 'bg-white/10 text-slate-400'
+                            }`}>
+                              Meta Graph API
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5 break-words">
+                            {aiSettings.instagram_connected ? (
+                              <span className="text-pink-400 font-semibold flex items-center gap-1">
+                                ● Conectado ({aiSettings.instagram_username || '@salon_oficial'})
+                              </span>
+                            ) : (
+                              'Conecta tu cuenta profesional de Instagram para responder DMs automáticamente con IA.'
+                            )}
+                          </p>
                         </div>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-semibold px-2.5 py-1 rounded-lg border border-white/5">
-                        Próximamente
-                      </span>
+
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 w-full sm:w-auto">
+                        {aiSettings.instagram_connected ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const activeTenant = localStorage.getItem('bf_tenant_active');
+                                const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                                const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                                const connectUrl = await api.zernio.getConnectUrl(tid, 'instagram');
+                                window.open(connectUrl, 'zernio_instagram_connect', 'width=560,height=760,top=100,left=100,scrollbars=yes,status=1');
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center justify-center gap-1.5 transition-all flex-1 sm:flex-initial cursor-pointer"
+                            >
+                              <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
+                              <span>Reconectar</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const updated: TenantAISettings = {
+                                  ...aiSettings,
+                                  instagram_connected: false,
+                                  instagram_status: 'disconnected'
+                                };
+                                setAiSettings(updated);
+                                try {
+                                  await api.updateTenantAISettings(updated);
+                                } catch (e) {}
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all flex-1 sm:flex-initial text-center cursor-pointer"
+                            >
+                              Desconectar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const activeTenant = localStorage.getItem('bf_tenant_active');
+                              const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                              const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                              const width = 560;
+                              const height = 760;
+                              const left = window.screen.width / 2 - width / 2;
+                              const top = window.screen.height / 2 - height / 2;
+
+                              const connectUrl = await api.zernio.getConnectUrl(tid, 'instagram');
+                              const popup = window.open(
+                                connectUrl,
+                                'zernio_instagram_connect',
+                                `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1,resizable=yes`
+                              );
+
+                              const checkInterval = setInterval(async () => {
+                                if (popup && popup.closed) {
+                                  clearInterval(checkInterval);
+                                  try {
+                                    const accounts = await api.zernio.getAccounts();
+                                    const igAccount = accounts.find((a: any) => a.platform === 'instagram' || a.provider === 'instagram');
+                                    const updated: TenantAISettings = {
+                                      ...aiSettings,
+                                      instagram_username: igAccount?.username ? `@${igAccount.username}` : `@${salonName.toLowerCase().replace(/\s+/g, '_')}`,
+                                      instagram_connected: true,
+                                      instagram_status: 'connected'
+                                    };
+                                    setAiSettings(updated);
+                                    await api.updateTenantAISettings(updated);
+                                  } catch (e) {
+                                    console.warn('IG account verification notice:', e);
+                                  }
+                                }
+                              }, 1200);
+                            }}
+                            className="bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:opacity-95 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-pink-500/25 transition-all cursor-pointer w-full sm:w-auto"
+                          >
+                            <Instagram className="w-3.5 h-3.5 shrink-0" />
+                            <span>Conectar</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Canal 3: Messenger */}
-                    <div className="p-3.5 rounded-xl border border-white/5 bg-[#0E121B]/50 flex items-center justify-between opacity-70">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                          <MessageSquare className="w-4 h-4" />
+                    {/* Canal 3: Facebook Messenger */}
+                    <div className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden ${
+                      aiSettings.messenger_connected
+                        ? 'border-blue-500/40 bg-blue-500/5'
+                        : 'border-white/10 bg-[#0E121B]'
+                    }`}>
+                      <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                          aiSettings.messenger_connected
+                            ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                            : 'bg-white/5 text-blue-400 border-white/10'
+                        }`}>
+                          <MessageSquare className="w-5 h-5 shrink-0" />
                         </div>
-                        <div>
-                          <strong className="text-xs font-semibold text-white block">Facebook Messenger</strong>
-                          <span className="text-[10px] text-slate-500">Sin cuentas conectadas • Próximamente</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-sm font-bold text-white">Facebook Messenger</strong>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              aiSettings.messenger_connected
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-white/10 text-slate-400'
+                            }`}>
+                              Página de Facebook
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5 break-words">
+                            {aiSettings.messenger_connected ? (
+                              <span className="text-blue-400 font-semibold flex items-center gap-1">
+                                ● Conectado ({aiSettings.messenger_page_name || salonName})
+                              </span>
+                            ) : (
+                              'Vincula tu Fanpage de Facebook para que Flowy IA atienda la mensajería de tu página.'
+                            )}
+                          </p>
                         </div>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-semibold px-2.5 py-1 rounded-lg border border-white/5">
-                        Próximamente
-                      </span>
+
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0 w-full sm:w-auto">
+                        {aiSettings.messenger_connected ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const activeTenant = localStorage.getItem('bf_tenant_active');
+                                const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                                const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                                const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
+                                window.open(connectUrl, 'zernio_messenger_connect', 'width=560,height=760,top=100,left=100,scrollbars=yes,status=1');
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 flex items-center justify-center gap-1.5 transition-all flex-1 sm:flex-initial cursor-pointer"
+                            >
+                              <Zap className="w-3.5 h-3.5 fill-current shrink-0" />
+                              <span>Reconectar</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const updated: TenantAISettings = {
+                                  ...aiSettings,
+                                  messenger_connected: false,
+                                  messenger_status: 'disconnected'
+                                };
+                                setAiSettings(updated);
+                                try {
+                                  await api.updateTenantAISettings(updated);
+                                } catch (e) {}
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all flex-1 sm:flex-initial text-center cursor-pointer"
+                            >
+                              Desconectar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const activeTenant = localStorage.getItem('bf_tenant_active');
+                              const tenantObj = activeTenant ? JSON.parse(activeTenant) : null;
+                              const tid = tenantObj?.id || '00000000-0000-0000-0000-000000000001';
+                              const width = 560;
+                              const height = 760;
+                              const left = window.screen.width / 2 - width / 2;
+                              const top = window.screen.height / 2 - height / 2;
+
+                              const connectUrl = await api.zernio.getConnectUrl(tid, 'whatsapp');
+                              const popup = window.open(
+                                connectUrl,
+                                'zernio_messenger_connect',
+                                `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1,resizable=yes`
+                              );
+
+                              const checkInterval = setInterval(async () => {
+                                if (popup && popup.closed) {
+                                  clearInterval(checkInterval);
+                                  try {
+                                    const accounts = await api.zernio.getAccounts();
+                                    const fbAccount = accounts.find((a: any) => a.platform === 'facebook' || a.provider === 'facebook');
+                                    const updated: TenantAISettings = {
+                                      ...aiSettings,
+                                      messenger_page_name: fbAccount?.name || `${salonName} Official`,
+                                      messenger_connected: true,
+                                      messenger_status: 'connected'
+                                    };
+                                    setAiSettings(updated);
+                                    await api.updateTenantAISettings(updated);
+                                  } catch (e) {
+                                    console.warn('FB account verification notice:', e);
+                                  }
+                                }
+                              }, 1200);
+                            }}
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/25 transition-all cursor-pointer w-full sm:w-auto"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                            <span>Conectar</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Intervención Humana */}
