@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
   Scissors,
   Sparkles,
@@ -27,9 +27,11 @@ import {
   Flame,
   Heart,
   Palette,
-  Smile
+  Smile,
+  Gift
 } from 'lucide-react';
 import { api } from '../lib/supabase';
+import { ProspectSite } from '../types';
 
 export type BusinessType = 
   | 'salon' 
@@ -54,22 +56,82 @@ interface ServiceTemplate {
 
 export const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const reclaimSlug = searchParams.get('reclamar') || '';
+  const [reclaimedSite, setReclaimedSite] = useState<ProspectSite | null>(null);
+
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [copiedLink, setCopiedLink] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   // STEP 1: BUSINESS BASICS
-  const [businessName, setBusinessName] = useState('');
+  const [businessName, setBusinessName] = useState(searchParams.get('nombre') || '');
   const [businessTypes, setBusinessTypes] = useState<BusinessType[]>(['salon', 'nails']);
   const [city, setCity] = useState('Medellín');
   const [country, setCountry] = useState('Colombia');
   const [address, setAddress] = useState('');
-  const [businessPhone, setBusinessPhone] = useState('');
+  const [businessPhone, setBusinessPhone] = useState(searchParams.get('tel') || '');
   const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
 
   // STEP 2: PRICING TIER & COP TEMPLATES
   const [pricingTier, setPricingTier] = useState<'express' | 'estandar' | 'luxury'>('estandar');
+
+  // Auto-cargar datos si viene desde un sitio de prospección gancho (?reclamar=slug)
+  useEffect(() => {
+    async function loadProspectData() {
+      if (!reclaimSlug) return;
+      try {
+        const site = await api.getProspectSiteBySlug(reclaimSlug);
+        if (site) {
+          setReclaimedSite(site);
+          if (site.business_name) setBusinessName(site.business_name);
+          if (site.phone_whatsapp) {
+            setBusinessPhone(site.phone_whatsapp);
+            setOwnerPhone(site.phone_whatsapp);
+          }
+          if (site.address) setAddress(site.address);
+          if (site.city) setCity(site.city);
+          if (site.country) setCountry(site.country || 'Colombia');
+
+          // Precargar servicios de DATOS_NEGOCIO.json
+          if (site.business_data?.servicios && site.business_data.servicios.length > 0) {
+            const customServices: ServiceTemplate[] = site.business_data.servicios.map((s: any, idx: number) => {
+              const titleLower = s.titulo.toLowerCase();
+              let cat: ServiceTemplate['category'] = 'corte';
+              if (titleLower.includes('color') || titleLower.includes('balayage') || titleLower.includes('tinte')) cat = 'color';
+              else if (titleLower.includes('keratina') || titleLower.includes('alisad') || titleLower.includes('botox')) cat = 'keratina';
+              else if (titleLower.includes('nail') || titleLower.includes('uña')) cat = 'nails';
+              else if (titleLower.includes('barber') || titleLower.includes('fade')) cat = 'barberia';
+              else if (titleLower.includes('facial') || titleLower.includes('spa') || titleLower.includes('masaje') || titleLower.includes('novia')) cat = 'spa';
+
+              return {
+                id: `srv-json-${idx + 1}`,
+                name: s.titulo,
+                businessType: 'salon',
+                category: cat,
+                duration_minutes: s.duracion_minutos || 60,
+                base_price_cop: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
+                price_cop: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
+                selected: true
+              };
+            });
+            setServicesList(customServices);
+          }
+
+          // Precargar especialista dueño
+          if (site.business_data?.especialistas && site.business_data.especialistas.length > 0) {
+            const firstEsp = site.business_data.especialistas[0];
+            if (firstEsp.nombre) setOwnerName(firstEsp.nombre);
+            if (firstEsp.rol) setOwnerSpecialty(firstEsp.rol);
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading prospect site in onboarding:', e);
+      }
+    }
+    loadProspectData();
+  }, [reclaimSlug]);
 
   const defaultTemplates: Record<BusinessType, Omit<ServiceTemplate, 'price_cop'>[]> = {
     salon: [
@@ -309,6 +371,15 @@ export const OnboardingPage: React.FC = () => {
         }
       });
 
+      // Marcar prospect_site como reclamado si existe
+      if (reclaimedSite?.id) {
+        try {
+          await api.updateProspectSite(reclaimedSite.id, {
+            status: 'reclamado'
+          });
+        } catch (e) {}
+      }
+
       setTimeout(() => {
         setLoading(false);
         setCurrentStep(5);
@@ -360,6 +431,26 @@ export const OnboardingPage: React.FC = () => {
       {/* MAIN WIZARD CARD */}
       <main className="max-w-3xl w-full mx-auto my-auto py-6 z-10">
         <div className="bg-[#141926]/90 border border-white/10 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 shadow-2xl space-y-6">
+
+          {/* Banner de Regalo / Reclamo de Sitio Web Gancho */}
+          {reclaimedSite && currentStep < 5 && (
+            <div className="bg-gradient-to-r from-[#FF5A36]/20 via-pink-500/20 to-purple-500/20 border border-[#FF5A36]/40 rounded-2xl p-3.5 flex items-center gap-3 text-xs animate-fade-in shadow-lg shadow-[#FF5A36]/10">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF5A36]/30">
+                <Gift className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-white">🎁 ¡Página Web de Regalo Vinculada!</span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    14 Días Gratis
+                  </span>
+                </div>
+                <p className="text-slate-300 text-[11px] mt-0.5">
+                  Activando cuenta para <strong>{reclaimedSite.business_name}</strong>. Hemos precargado tus servicios y datos de Google Maps automáticamente.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* =========================================================================
               PASO 1: IDENTIDAD DEL NEGOCIO

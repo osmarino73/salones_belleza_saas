@@ -9,15 +9,16 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('BeautyFlow2026*');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'dueña' | 'estilista' | 'nails'>('dueña');
+  const [selectedRole, setSelectedRole] = useState<'superadmin' | 'dueña' | 'estilista' | 'nails'>('dueña');
 
   const demoAccounts = {
+    superadmin: { email: 'osmarino73@yahoo.es', pass: 'BeautyFlow2026*' },
     dueña: { email: 'sofia@studioglamour.co', pass: 'BeautyFlow2026*' },
     estilista: { email: 'carlos@vargasbarber.co', pass: 'BarberFlow2026*' },
     nails: { email: 'laura@valeriacolor.co', pass: 'NailsFlow2026*' }
   };
 
-  const handleSelectRole = (role: 'dueña' | 'estilista' | 'nails') => {
+  const handleSelectRole = (role: 'superadmin' | 'dueña' | 'estilista' | 'nails') => {
     setSelectedRole(role);
     setEmail(demoAccounts[role].email);
     setPassword(demoAccounts[role].pass);
@@ -27,8 +28,21 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const authRes = await api.auth.signIn(email, password);
       const cleanEmail = email.toLowerCase().trim();
+
+      // Redirección directa para Superadmin
+      if (cleanEmail === 'osmarino73@yahoo.es') {
+        try {
+          await api.auth.signIn(email, password);
+        } catch (e) {}
+        setTimeout(() => {
+          setLoading(false);
+          navigate('/superadmin');
+        }, 300);
+        return;
+      }
+
+      const authRes = await api.auth.signIn(email, password);
 
       // Verificar rol real del usuario desde Supabase / BD
       let isCollaborator = false;
@@ -126,6 +140,17 @@ export const LoginPage: React.FC = () => {
               <span>⚡ Acceso Rápido de Prueba:</span>
             </div>
             <div className="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleSelectRole('superadmin')}
+                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
+                  selectedRole === 'superadmin'
+                    ? 'bg-gradient-to-r from-amber-500 to-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                    : 'bg-dark-900 text-amber-300 border border-amber-500/30 hover:border-amber-500'
+                }`}
+              >
+                👑 Superadmin (osmarino73)
+              </button>
               <button
                 type="button"
                 onClick={() => handleSelectRole('dueña')}

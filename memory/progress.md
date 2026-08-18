@@ -1,5 +1,12 @@
 # Progreso del Proyecto BeautyFlow AI
 
+- [x] **Ingesta Inteligente de Carpetas & Generador Web (`DATOS_NEGOCIO.json`)**:
+  - **Superadmin Lead Hub (`SuperadminDashboardPage.tsx`)**: Carga por drag & drop o selector de `DATOS_NEGOCIO.json` y `.html`, con preset de 1-clic para *Luxus Beauty Spa*, auto-completado de campos, visualización previa en tarjetas de servicios y especialistas, y generador de pitch personalizado para WhatsApp.
+  - **Portal Dinámico de Reservas (`BookingPage.tsx`)**: Carga automática de los servicios y especialistas reales extraídos de `DATOS_NEGOCIO.json` para sitios de prospección (`/reservar/:slug`), con botón directo de notificación al WhatsApp del negocio.
+  - **Onboarding de Reclamo Automático (`OnboardingPage.tsx`)**: Detección de `/onboarding?reclamar=:slug` que precarga catálogo real, equipo, contacto y marca el prospecto como `status: 'reclamado'`.
+  - **CLI Importer (`scripts/import_prospect_folder.js`)**: Script Node.js para compilar HTML standalone con Base64 e ingestar carpetas en masa.
+  - **Esquema de Base de Datos (`create_prospect_sites_table.sql` & `types/index.ts`)**: Soporte para `business_data JSONB`.
+
 - [x] **Tablero de Mensajes & WhatsApp Omnicanal (`MessagesBoardPage.tsx`)**:
   - **Bandeja de Entrada en Tiempo Real (3 Columnas Split-Screen)**:
     - *Columna 1*: Sidebar de conversaciones con búsqueda en vivo, filtros por estado (`IA Activa`, `Control Humano`, `Con Cita`, `No Leídos`) y badges VIP.

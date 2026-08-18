@@ -1553,6 +1553,28 @@ export const api = {
       category: 'salon',
       status: 'prospecto',
       views_count: 5,
+      business_data: {
+        nombre: 'Studio Glamour Spa Poblado',
+        rubro: 'Salón de Belleza & Spa',
+        contacto: {
+          telefono_principal: '(300) 123-4567',
+          whatsapp: { numero: '+573001234567', link: 'https://wa.me/573001234567' }
+        },
+        ubicacion: {
+          direccion: 'Calle 10 # 43E-22, El Poblado',
+          ciudad: 'Medellín',
+          google_maps_url: 'https://maps.google.com/?q=Studio+Glamour+Poblado'
+        },
+        servicios: [
+          { titulo: 'Balayage Rubio Cenizo', descripcion: 'Decoloración técnica + matiz y nutrición profunda.', precio_cop: 280000, duracion_minutos: 120 },
+          { titulo: 'Keratina Orgánica', descripcion: 'Liso espejo 100% libre de formol y brillo extremo.', precio_cop: 230000, duracion_minutos: 90 },
+          { titulo: 'Manicura Rusa & Semipermanente', descripcion: 'Limpieza profunda de cutícula con esmaltado pro.', precio_cop: 65000, duracion_minutos: 60 }
+        ],
+        especialistas: [
+          { nombre: 'Camila Master', rol: 'Master Colorista' },
+          { nombre: 'Valentina Nails', rol: 'Especialista en Manicura Rusa' }
+        ]
+      },
       created_at: new Date().toISOString()
     };
     localStorage.setItem('bf_prospect_sites_v1', JSON.stringify([demoSite]));
@@ -1575,12 +1597,22 @@ export const api = {
   },
 
   async createProspectSite(site: Partial<ProspectSite>): Promise<ProspectSite> {
+    const isValidUUID = (str?: string) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const generatedId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
+    
+    const targetId = isValidUUID(site.id) ? site.id! : generatedId;
+    const targetSlug = (site.slug || site.business_name || 'salon')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
     const newSite: ProspectSite = {
-      id: site.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ps-${Date.now()}`),
-      slug: (site.slug || site.business_name || 'salon')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, ''),
+      id: targetId,
+      slug: targetSlug,
       business_name: site.business_name || 'Salón de Belleza',
       phone_whatsapp: site.phone_whatsapp || '+573000000000',
       address: site.address || '',
@@ -1590,20 +1622,36 @@ export const api = {
       raw_html: site.raw_html || '<h1>Bienvenido a nuestro Salón</h1>',
       category: site.category || 'salon',
       status: site.status || 'prospecto',
-      views_count: 0,
-      created_at: new Date().toISOString(),
+      business_data: site.business_data,
+      views_count: site.views_count || 0,
+      created_at: site.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
     if (supabase && isSupabaseConfigured) {
       try {
-        const { error } = await supabase.from('prospect_sites').insert([newSite]);
-        if (error) console.error('Error creating prospect site in supabase:', error.message);
-      } catch (e) {}
+        const { data: existing } = await supabase
+          .from('prospect_sites')
+          .select('id')
+          .eq('slug', targetSlug)
+          .maybeSingle();
+
+        if (existing) {
+          newSite.id = existing.id;
+          await supabase
+            .from('prospect_sites')
+            .update({ ...newSite, id: existing.id })
+            .eq('id', existing.id);
+        } else {
+          await supabase.from('prospect_sites').insert([newSite]);
+        }
+      } catch (e) {
+        console.warn('Supabase prospect site notice (using local storage fallback):', e);
+      }
     }
 
     const current = await this.getProspectSites();
-    const updated = [newSite, ...current.filter(s => s.id !== newSite.id)];
+    const updated = [newSite, ...current.filter(s => s.slug !== newSite.slug && s.id !== newSite.id)];
     localStorage.setItem('bf_prospect_sites_v1', JSON.stringify(updated));
     return newSite;
   },

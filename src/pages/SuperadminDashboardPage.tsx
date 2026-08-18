@@ -45,6 +45,11 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [slug, setSlug] = useState('');
   const [category, setCategory] = useState<'salon' | 'barberia' | 'spa' | 'estetica' | 'nails'>('salon');
   const [rawHtml, setRawHtml] = useState('');
+  const [businessData, setBusinessData] = useState<any | null>(null);
+  const [jsonInputText, setJsonInputText] = useState('');
+  const [showJsonPaste, setShowJsonPaste] = useState(false);
+  const [fileNameJson, setFileNameJson] = useState<string>('');
+  const [fileNameHtml, setFileNameHtml] = useState<string>('');
   
   // Estado post-publicación exitosa
   const [createdSite, setCreatedSite] = useState<ProspectSite | null>(null);
@@ -78,29 +83,251 @@ export const SuperadminDashboardPage: React.FC = () => {
     setSlug(generatedSlug);
   };
 
+  // Procesador inteligente de DATOS_NEGOCIO.json
+  const parseAndApplyBusinessData = (jsonData: any) => {
+    try {
+      const b = jsonData.negocio || jsonData;
+      setBusinessData(b);
+
+      if (b.nombre) handleBusinessNameChange(b.nombre);
+      
+      // Extraer teléfono / WhatsApp
+      const waNumber = b.contacto?.whatsapp?.numero || b.contacto?.telefono_principal || b.telefono || '';
+      if (waNumber) setPhoneWhatsapp(waNumber);
+
+      // Extraer Google Maps URL
+      const mapsUrl = b.ubicacion?.google_maps_url || b.google_maps_url || '';
+      if (mapsUrl) setGoogleMapsUrl(mapsUrl);
+
+      // Extraer Dirección y Ciudad
+      if (b.ubicacion?.direccion) setAddress(b.ubicacion.direccion);
+      if (b.ubicacion?.ciudad) setCity(b.ubicacion.ciudad);
+
+      // Auto-detección inteligente de categoría
+      const rubroText = ((b.rubro || '') + ' ' + (b.nombre || '') + ' ' + (b.eslogan || '')).toLowerCase();
+      if (rubroText.includes('barber') || rubroText.includes('barbero')) {
+        setCategory('barberia');
+      } else if (rubroText.includes('spa') || rubroText.includes('masaje') || rubroText.includes('relax')) {
+        setCategory('spa');
+      } else if (rubroText.includes('nail') || rubroText.includes('uña') || rubroText.includes('pestaña')) {
+        setCategory('nails');
+      } else if (rubroText.includes('estetic') || rubroText.includes('facial') || rubroText.includes('corporal')) {
+        setCategory('estetica');
+      } else {
+        setCategory('salon');
+      }
+
+      // Auto-generar HTML Luxury si no hay uno cargado aún
+      const autoHtml = generateStandaloneHtmlFromBusinessData(b);
+      setRawHtml(autoHtml);
+    } catch (e) {
+      console.error('Error parsing business data:', e);
+    }
+  };
+
+  // Generador de HTML Autónomo de Lujo basado en DATOS_NEGOCIO.json
+  const generateStandaloneHtmlFromBusinessData = (b: any) => {
+    const name = b.nombre || 'Salón & Spa Oficial';
+    const slogan = b.eslogan || 'Look & Siente Lo Mejor de Ti';
+    const wa = b.contacto?.whatsapp?.numero || b.contacto?.telefono_principal || '+573000000000';
+    const cleanWa = wa.replace(/\D/g, '');
+    const services = b.servicios || [
+      { titulo: 'Cortes & Estilismo', descripcion: 'Diseño de corte personalizado y cepillado profesional.' },
+      { titulo: 'Color & Iluminación', descripcion: 'Balayage, tintes premium y brillo extremo.' },
+      { titulo: 'Spa & Bienestar', descripcion: 'Tratamientos faciales y corporales de relajación profunda.' }
+    ];
+    const specialists = b.especialistas || [
+      { nombre: 'Especialista Máster', rol: 'Directora & Estilista Principal' }
+    ];
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${name} - Sitio Oficial</title>
+  <style>
+    :root {
+      --primary: #FF5A36;
+      --accent: #ec4899;
+      --dark: #0b0f19;
+      --card-bg: #141a29;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--dark); color: var(--text); line-height: 1.6; }
+    .top-bar { background: linear-gradient(90deg, #FF5A36, #ec4899); color: #fff; text-align: center; padding: 9px 16px; font-size: 0.85rem; font-weight: 800; }
+    .header { padding: 45px 20px; text-align: center; background: radial-gradient(circle at center, rgba(255,90,54,0.15) 0%, rgba(11,15,25,1) 70%); }
+    .badge { display: inline-block; background: rgba(255,90,54,0.15); border: 1px solid rgba(255,90,54,0.4); color: #ff7e61; padding: 6px 16px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    h1 { font-size: 2.8rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 12px; background: linear-gradient(135deg, #fff 40%, #ff7e61 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slogan { font-size: 1.1rem; color: var(--muted); max-width: 650px; margin: 0 auto 24px; }
+    .cta-wa { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 999px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(37,211,102,0.3); transition: transform 0.2s; }
+    .cta-wa:hover { transform: scale(1.04); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+    .section-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 24px; text-align: center; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 50px; }
+    .service-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; transition: transform 0.2s, border-color 0.2s; }
+    .service-card:hover { transform: translateY(-4px); border-color: rgba(255,90,54,0.4); }
+    .service-card h3 { font-size: 1.25rem; margin-bottom: 8px; color: #fff; }
+    .service-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 12px; min-height: 40px; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .team-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 20px; text-align: center; }
+    .team-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #FF5A36, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 12px; border: 2px solid rgba(255,255,255,0.2); }
+    .team-name { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
+    .team-role { font-size: 0.8rem; color: #ff7e61; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">✨ ${slogan} — Agenda tu Cita Online con Confirmación en WhatsApp</div>
+  <header class="header">
+    <div class="badge">Salón & Spa Oficial en Google Maps</div>
+    <h1>${name}</h1>
+    <p class="slogan">${slogan}. Atención personalizada de alta gama y especialistas calificados.</p>
+    <a href="https://wa.me/${cleanWa}?text=${encodeURIComponent(`Hola ${name}, vi su página web oficial y quisiera cotizar una cita.`)}" target="_blank" class="cta-wa">
+      💬 Consultar por WhatsApp
+    </a>
+  </header>
+  <main class="container">
+    <h2 class="section-title">Nuestros Servicios Destacados</h2>
+    <div class="services-grid">
+      ${services.map((s: any) => `
+      <div class="service-card">
+        <h3>✨ ${s.titulo}</h3>
+        <p>${s.descripcion}</p>
+        ${s.precio_cop ? `<div style="color: #10b981; font-weight: 800; font-size: 1.1rem;">$ ${s.precio_cop.toLocaleString('es-CO')} COP</div>` : ''}
+      </div>`).join('')}
+    </div>
+    <h2 class="section-title">Equipo de Especialistas</h2>
+    <div class="team-grid">
+      ${specialists.map((esp: any) => `
+      <div class="team-card">
+        <div class="team-avatar">👑</div>
+        <div class="team-name">${esp.nombre}</div>
+        <div class="team-role">${esp.rol}</div>
+      </div>`).join('')}
+    </div>
+  </main>
+</body>
+</html>`;
+  };
+
+  // Carga de archivo DATOS_NEGOCIO.json
+  const handleJsonFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileNameJson(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        setJsonInputText(text);
+        const parsed = JSON.parse(text);
+        parseAndApplyBusinessData(parsed);
+      } catch (err) {
+        alert('Error al leer el archivo JSON. Verifica que sea un formato JSON válido.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Carga de archivo HTML (.html)
+  const handleHtmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileNameHtml(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      setRawHtml(text);
+    };
+    reader.readAsText(file);
+  };
+
+  // Carga del preset Luxus Beauty Spa
+  const handleLoadLuxusPreset = async () => {
+    const luxusJson = {
+      negocio: {
+        nombre: "Luxus Beauty Spa",
+        rubro: "Salón de Belleza, Estilismo & Spa de Lujo",
+        eslogan: "Look & Siente Lo Mejor de Ti en Nuestro Spa de Lujo",
+        contacto: {
+          telefono_principal: "(300) 987-6543",
+          whatsapp: {
+            numero: "+573009876543",
+            link: "https://wa.me/573009876543?text=Hola,%20quisiera%20reservar%20una%20cita%20en%20Luxus%20Beauty%20Spa"
+          }
+        },
+        ubicacion: {
+          google_maps_url: "https://share.google/yWGLacyAcBcrQ8Zy7",
+          direccion: "Carrera 43A # 1Sur-220, El Poblado",
+          ciudad: "Medellín"
+        },
+        horario_atencion: "Martes a Sábado: 9:00 AM – 8:00 PM",
+        servicios: [
+          { titulo: "Cortes & Peinados", descripcion: "Cortes modernos, cepillado y peinados de alto impacto.", precio_cop: 65000, duracion_minutos: 45 },
+          { titulo: "Colorimetría & Balayage", descripcion: "Iluminación, balayage y reconstrucción capilar profunda con Olaplex.", precio_cop: 290000, duracion_minutos: 150 },
+          { titulo: "Faciales & Spa Relax", descripcion: "Limpieza facial ultrasónica, peelings orgánicos y masajes relajantes.", precio_cop: 130000, duracion_minutos: 75 },
+          { titulo: "Maquillaje & Novias", descripcion: "Maquillaje profesional con aerógrafo y paquetes para novias.", precio_cop: 250000, duracion_minutos: 90 }
+        ],
+        especialistas: [
+          { nombre: "Emma Styles", rol: "Master Colorista & Balayage" },
+          { nombre: "Alex Carter", rol: "Master Stylist & Cortes" },
+          { nombre: "Jessica Moore", rol: "Especialista en Piel & Spa" }
+        ]
+      }
+    };
+
+    setFileNameJson('DATOS_NEGOCIO.json (Luxus Beauty Spa)');
+    setFileNameHtml('luxus_beauty_spa_standalone.html');
+    parseAndApplyBusinessData(luxusJson);
+    setJsonInputText(JSON.stringify(luxusJson, null, 2));
+  };
+
+  const [isPublishing, setIsPublishing] = useState(false);
+
   const handlePublishSite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!businessName || !rawHtml) {
-      alert('Por favor ingresa el nombre del negocio y pega el código HTML generado.');
+    if (!businessName) {
+      alert('Por favor ingresa el nombre del negocio o carga DATOS_NEGOCIO.json.');
       return;
     }
 
-    const siteData: Partial<ProspectSite> = {
-      business_name: businessName,
-      phone_whatsapp: phoneWhatsapp || '+573001234567',
-      address,
-      city,
-      country: 'Colombia',
-      google_maps_url: googleMapsUrl,
-      slug: slug || businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      category,
-      raw_html: rawHtml,
-      status: 'prospecto'
-    };
+    setIsPublishing(true);
 
-    const published = await api.createProspectSite(siteData);
-    setCreatedSite(published);
-    setProspectSites([published, ...prospectSites.filter(s => s.id !== published.id)]);
+    try {
+      // Si no hay rawHtml, generarlo automáticamente con el template de lujo
+      const finalHtml = rawHtml.trim() || generateStandaloneHtmlFromBusinessData(businessData || { nombre: businessName });
+
+      const siteData: Partial<ProspectSite> = {
+        business_name: businessName,
+        phone_whatsapp: phoneWhatsapp || '+573001234567',
+        address,
+        city,
+        country: 'Colombia',
+        google_maps_url: googleMapsUrl,
+        slug: slug || businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        category,
+        raw_html: finalHtml,
+        business_data: businessData,
+        status: 'prospecto'
+      };
+
+      const published = await api.createProspectSite(siteData);
+      setCreatedSite(published);
+      setProspectSites([published, ...prospectSites.filter(s => s.id !== published.id && s.slug !== published.slug)]);
+      
+      // Auto-scroll al resultado
+      setTimeout(() => {
+        const resEl = document.getElementById('published-result-box');
+        if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (err) {
+      console.error('Error publishing prospect site:', err);
+      alert('Ocurrió un error al publicar el sitio. Intenta nuevamente.');
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   const handleDeleteSite = async (id: string) => {
@@ -116,15 +343,19 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
   };
 
-  // Generar pitch de WhatsApp
+  // Generar pitch de WhatsApp enriquecido
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
+    const servicesText = siteObj.business_data?.servicios && siteObj.business_data.servicios.length > 0
+      ? ` para sus servicios de ${siteObj.business_data.servicios.slice(0, 2).map((s: any) => s.titulo).join(' y ')}`
+      : '';
+
     return `Hola ${siteObj.business_name}! 💖 Vimos su perfil en Google Maps y notamos que no tenían una página web oficial vinculada.
 
-Les creamos esta página web de regalo optimizada para posicionar en Google Maps y recibir citas online:
+Les creamos esta página web de regalo optimizada para posicionar en Google Maps${servicesText} y recibir citas online:
 👉 ${siteUrl}
 
-Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas. ¿Les gustaría que les ayudemos a activarla gratis?`;
+Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con catálogo interactivo. ¿Les gustaría que les ayudemos a activarla gratis?`;
   };
 
   const handleCopy = (text: string, type: 'link' | 'pitch') => {
@@ -247,17 +478,173 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas. ¿Le
             {/* Left: Formulario de Ingesta & Datos (7 Cols) */}
             <div className="lg:col-span-7 space-y-5">
               <div className="bg-[#121624] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5">
+                
+                {/* Header Card */}
                 <div className="border-b border-white/10 pb-4">
-                  <div className="flex items-center gap-2 text-[#FF5A36] text-xs font-bold uppercase tracking-wider mb-1">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Inyector Automático de Agendamiento & SEO</span>
+                  <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                    <div className="flex items-center gap-2 text-[#FF5A36] text-xs font-bold uppercase tracking-wider">
+                      <Sparkles className="w-4 h-4" />
+                      <span>Inyector Automático de Agendamiento & SEO</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLoadLuxusPreset}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-300 border border-pink-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                      <span>✨ Cargar Demo: Luxus Beauty Spa</span>
+                    </button>
                   </div>
-                  <h2 className="text-xl font-black">Nuevo Sitio Web para Prospecto</h2>
+                  <h2 className="text-xl font-black">Ingesta de Negocio & Sitio Web</h2>
                   <p className="text-xs text-slate-400">
-                    Pega el código HTML generado y asócialo a los datos de Google Maps. El sistema inyectará automáticamente el botón de reservas y el banner de 14 días gratis.
+                    Carga el archivo <code>DATOS_NEGOCIO.json</code> y el archivo <code>.html</code> generados por tu herramienta. El sistema inyectará automáticamente el botón de reservas y el agendador con los servicios reales.
                   </p>
                 </div>
 
+                {/* ===================================================================
+                    ZONA DE CARGA RÁPIDA DE ARCHIVOS (CARPETA / JSON / HTML)
+                    =================================================================== */}
+                <div className="bg-[#0A0D14] border border-white/10 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold uppercase text-slate-300 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-[#FF5A36]" />
+                      Importación 1-Clic desde Carpeta del Generador
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowJsonPaste(!showJsonPaste)}
+                      className="text-[11px] text-[#FF5A36] hover:underline font-semibold cursor-pointer"
+                    >
+                      {showJsonPaste ? 'Ocultar editor JSON' : 'Pegar JSON de texto'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Cargar DATOS_NEGOCIO.json */}
+                    <label className="border border-dashed border-white/20 hover:border-[#FF5A36]/60 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-[#FF5A36]/5 group">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-[#FF5A36]/20 flex items-center justify-center text-[#FF5A36] mb-1.5 transition-colors">
+                        <Building2 className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-white group-hover:text-[#FF5A36]">
+                        {fileNameJson ? `✓ ${fileNameJson}` : '1. Cargar DATOS_NEGOCIO.json'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        {fileNameJson ? 'Datos del negocio cargados' : 'Haz clic para seleccionar archivo'}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={handleJsonFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {/* Cargar HTML / Standalone */}
+                    <label className="border border-dashed border-white/20 hover:border-emerald-500/60 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-emerald-500/5 group">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-1.5 transition-colors">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-white group-hover:text-emerald-400">
+                        {fileNameHtml ? `✓ ${fileNameHtml}` : '2. Cargar Sitio Web (.html)'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        {fileNameHtml ? 'HTML standalone listo' : 'index.html o standalone.html'}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".html,text/html"
+                        onChange={handleHtmlFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Editor / Pegado de JSON Opcional */}
+                  {showJsonPaste && (
+                    <div className="pt-2 border-t border-white/10 space-y-2 animate-fade-in">
+                      <label className="block text-[11px] font-bold text-slate-300">
+                        Pega aquí el contenido de <code>DATOS_NEGOCIO.json</code>:
+                      </label>
+                      <textarea
+                        rows={6}
+                        value={jsonInputText}
+                        onChange={(e) => {
+                          setJsonInputText(e.target.value);
+                          try {
+                            const parsed = JSON.parse(e.target.value);
+                            parseAndApplyBusinessData(parsed);
+                          } catch (err) {}
+                        }}
+                        placeholder='{ "negocio": { "nombre": "Luxus Beauty Spa", "contacto": { "whatsapp": { "numero": "+573009876543" } }, ... } }'
+                        className="w-full bg-[#121624] border border-white/10 rounded-xl p-3 text-white font-mono text-xs focus:outline-none focus:border-[#FF5A36]"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* ===================================================================
+                    PREVISUALIZACIÓN DE SERVICIOS Y ESPECIALISTAS DETECTADOS
+                    =================================================================== */}
+                {businessData && (
+                  <div className="bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent border border-pink-500/30 rounded-2xl p-4 space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold uppercase text-pink-300 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                        Catálogo & Equipo Detectados ({businessData.servicios?.length || 0} Servicios, {businessData.especialistas?.length || 0} Especialistas)
+                      </span>
+                      {businessData.eslogan && (
+                        <span className="text-[10px] text-slate-400 italic max-w-xs truncate">
+                          "{businessData.eslogan}"
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Chips de Servicios */}
+                    {businessData.servicios && businessData.servicios.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Servicios:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {businessData.servicios.map((srv: any, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg bg-pink-500/20 text-pink-200 border border-pink-500/30 text-[11px] font-medium flex items-center gap-1"
+                              title={srv.descripcion}
+                            >
+                              <span>✨ {srv.titulo}</span>
+                              {srv.precio_cop && (
+                                <strong className="text-emerald-300 text-[10px]">
+                                  ${srv.precio_cop.toLocaleString('es-CO')}
+                                </strong>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Chips de Especialistas */}
+                    {businessData.especialistas && businessData.especialistas.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Equipo & Especialistas:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {businessData.especialistas.map((esp: any, idx: number) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-200 border border-purple-500/30 text-[11px] font-medium flex items-center gap-1"
+                            >
+                              <span>👤 {esp.nombre}</span>
+                              <span className="text-[10px] text-purple-300/80">({esp.rol})</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ===================================================================
+                    FORMULARIO EDITABLE DE DETALLES
+                    =================================================================== */}
                 <form onSubmit={handlePublishSite} className="space-y-4 text-xs">
                   
                   {/* Nombre y WhatsApp */}
@@ -360,11 +747,11 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas. ¿Le
                   {/* Código HTML Puro */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-slate-300 font-bold">Pega aquí el Código HTML generado por tu herramienta *</label>
+                      <label className="text-slate-300 font-bold">Código HTML del Sitio Web *</label>
                       <span className="text-[10px] text-[#FF5A36] font-semibold">HTML + CSS embebido</span>
                     </div>
                     <textarea
-                      rows={9}
+                      rows={8}
                       value={rawHtml}
                       onChange={(e) => setRawHtml(e.target.value)}
                       placeholder="<!DOCTYPE html><html><head>...</head><body><h1>Mi Salón</h1>...</body></html>"
@@ -376,10 +763,15 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas. ¿Le
                   {/* Botón de Publicación */}
                   <button
                     type="submit"
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5A36] via-orange-500 to-pink-500 hover:opacity-95 text-white font-black text-sm shadow-xl shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
+                    disabled={isPublishing}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5A36] via-orange-500 to-pink-500 hover:opacity-95 text-white font-black text-sm shadow-xl shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>🚀 Publicar Sitio Gancho & Inyectar Agendador</span>
+                    {isPublishing ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    <span>{isPublishing ? 'Publicando y optimizando sitio...' : '🚀 Publicar Sitio Gancho & Inyectar Agendador'}</span>
                   </button>
 
                 </form>
@@ -387,7 +779,7 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas. ¿Le
             </div>
 
             {/* Right: Resultado & Pitch de WhatsApp (5 Cols) */}
-            <div className="lg:col-span-5 space-y-5">
+            <div id="published-result-box" className="lg:col-span-5 space-y-5">
               {createdSite ? (
                 <div className="bg-[#121624] border-2 border-emerald-500/40 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
                   <div className="flex items-center gap-3">

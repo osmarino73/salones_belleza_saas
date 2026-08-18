@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useParams } from 'react-router-dom';
 import {
   Scissors,
   CheckCircle2,
@@ -14,16 +14,19 @@ import {
   MessageCircle,
   Sparkles,
   AlertTriangle,
-  Ban
+  Ban,
+  Phone
 } from 'lucide-react';
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
 import { Service, Stylist } from '../types';
 
 export const BookingPage: React.FC = () => {
+  const { slug: routeSlug } = useParams<{ slug?: string }>();
   const [searchParams] = useSearchParams();
-  const salonSlug = searchParams.get('salon') || '';
+  const salonSlug = routeSlug || searchParams.get('salon') || '';
 
   const [salonName, setSalonName] = useState<string>('Studio Glamour Spa');
+  const [salonPhone, setSalonPhone] = useState<string>('');
   const [salonCurrency, setSalonCurrency] = useState<string>('COP');
   const [services, setServices] = useState<Service[]>(initialServices);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
@@ -117,17 +120,76 @@ export const BookingPage: React.FC = () => {
         try {
           const tenant = JSON.parse(activeTenantRaw);
           if (tenant.name) setSalonName(tenant.name);
+          if (tenant.phone) setSalonPhone(tenant.phone);
           if (tenant.currency) setSalonCurrency(tenant.currency);
           if (tenant.id) targetTenantId = tenant.id;
         } catch (e) {}
       }
 
-      // 2. Si hay slug en URL, buscar en Supabase
+      // 2. Si hay slug en URL, buscar primero en prospect_sites (sitios gancho creados con DATOS_NEGOCIO.json)
       if (salonSlug) {
         try {
+          const prospectSite = await api.getProspectSiteBySlug(salonSlug);
+          if (prospectSite) {
+            if (prospectSite.business_name) setSalonName(prospectSite.business_name);
+            if (prospectSite.phone_whatsapp) setSalonPhone(prospectSite.phone_whatsapp);
+            setSalonCurrency('COP');
+
+            // Mapear servicios reales de DATOS_NEGOCIO.json si existen
+            if (prospectSite.business_data?.servicios && prospectSite.business_data.servicios.length > 0) {
+              const mappedSrvs: Service[] = prospectSite.business_data.servicios.map((s: any, idx: number) => {
+                const titleLower = s.titulo.toLowerCase();
+                let cat: Service['category'] = 'corte';
+                if (titleLower.includes('color') || titleLower.includes('balayage') || titleLower.includes('tinte')) cat = 'color';
+                else if (titleLower.includes('keratina') || titleLower.includes('alisad') || titleLower.includes('botox')) cat = 'keratina';
+                else if (titleLower.includes('nail') || titleLower.includes('uña') || titleLower.includes('pedicur')) cat = 'nails';
+                else if (titleLower.includes('barber') || titleLower.includes('fade')) cat = 'barberia';
+                else if (titleLower.includes('facial') || titleLower.includes('spa') || titleLower.includes('masaje') || titleLower.includes('pestaña')) cat = 'spa';
+
+                return {
+                  id: `ps-srv-${idx + 1}`,
+                  tenant_id: prospectSite.id,
+                  name: s.titulo,
+                  category: cat,
+                  duration_minutes: s.duracion_minutos || 60,
+                  price: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
+                  price_cop: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
+                  price_usd: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
+                  requires_patch_test: cat === 'color',
+                  description: s.descripcion || `${s.titulo} profesional`
+                };
+              });
+              setServices(mappedSrvs);
+              setSelectedService(mappedSrvs[0]);
+            }
+
+            // Mapear especialistas reales de DATOS_NEGOCIO.json si existen
+            if (prospectSite.business_data?.especialistas && prospectSite.business_data.especialistas.length > 0) {
+              const mappedStys: Stylist[] = prospectSite.business_data.especialistas.map((esp: any, idx: number) => ({
+                id: `ps-sty-${idx + 1}`,
+                tenant_id: prospectSite.id,
+                name: esp.nombre,
+                specialty: esp.rol || 'Master Stylist',
+                photo_url: '',
+                rating: 5.0,
+                reviews_count: 14 + idx * 6,
+                commission_service_pct: 45,
+                commission_retail_pct: 10,
+                working_days: [1, 2, 3, 4, 5, 6],
+                attends_clients: true,
+                is_active: true
+              }));
+              setStylists(mappedStys);
+              setSelectedStylist(mappedStys[0]);
+              return; // Terminamos la carga específica de prospect site
+            }
+          }
+
+          // Si no es prospect_site, buscar en tenants SaaS registrados
           const tenantBySlug = await api.getTenantBySlug(salonSlug);
           if (tenantBySlug) {
             if (tenantBySlug.name) setSalonName(tenantBySlug.name);
+            if (tenantBySlug.phone) setSalonPhone(tenantBySlug.phone);
             if (tenantBySlug.currency) setSalonCurrency(tenantBySlug.currency);
             if (tenantBySlug.id) targetTenantId = tenantBySlug.id;
           } else {
@@ -137,7 +199,7 @@ export const BookingPage: React.FC = () => {
         } catch (e) {}
       }
 
-      // 3. Cargar servicios y estilistas
+      // 3. Cargar servicios y estilistas estándar del tenant
       const [srvs, stys] = await Promise.all([
         api.getServices(targetTenantId),
         api.getStylists(targetTenantId)
@@ -597,7 +659,21 @@ export const BookingPage: React.FC = () => {
               Hemos enviado un mensaje de confirmación a tu WhatsApp <strong>{countryCode} {phone10Digits}</strong> con los detalles y recordatorio automático.
             </p>
 
-            <div className="pt-4 flex justify-center gap-3">
+            {salonPhone && (
+              <div className="pt-2">
+                <a
+                  href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${salonName}! 💖 Acabo de reservar mi cita online para *${selectedService?.name}* con *${selectedStylist ? selectedStylist.name : 'su equipo'}* para el día *${selectedDate}* a las *${selectedTime}*. Mi nombre es *${clientName || 'Clienta Web'}*.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black px-6 py-3 rounded-full text-xs shadow-xl shadow-emerald-500/30 transition-all hover:scale-105"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Notificar al Salón por WhatsApp Directo</span>
+                </a>
+              </div>
+            )}
+
+            <div className="pt-4 flex justify-center gap-3 flex-wrap">
               <Link
                 to="/dashboard"
                 className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-[#FF5A36]/30"

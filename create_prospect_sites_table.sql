@@ -16,10 +16,14 @@ CREATE TABLE IF NOT EXISTS public.prospect_sites (
   category TEXT DEFAULT 'salon', -- salon, barberia, spa, estetica, nails
   status TEXT DEFAULT 'prospecto', -- prospecto, contactado, reclamado, cliente_pago
   claimed_tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  business_data JSONB, -- Estructura DATOS_NEGOCIO.json (servicios, especialistas, contacto, horario, etc.)
   views_count INT DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- Asegurar columna en caso de existir previamente
+ALTER TABLE public.prospect_sites ADD COLUMN IF NOT EXISTS business_data JSONB;
 
 -- Índices para búsquedas ultrarrápidas
 CREATE INDEX IF NOT EXISTS idx_prospect_sites_slug ON public.prospect_sites(slug);

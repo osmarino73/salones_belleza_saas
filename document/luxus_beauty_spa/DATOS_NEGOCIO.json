@@ -1,0 +1,50 @@
+{
+  "negocio": {
+    "nombre": "Luxus Beauty Spa",
+    "rubro": "Salón de Belleza, Estilismo & Spa de Lujo",
+    "eslogan": "Look & Siente Lo Mejor de Ti en Nuestro Spa de Lujo",
+    "contacto": {
+      "telefono_principal": "(300) 987-6543",
+      "whatsapp": {
+        "numero": "+573009876543",
+        "link": "https://wa.me/573009876543?text=Hola,%20quisiera%20reservar%20una%20cita%20en%20Luxus%20Beauty%20Spa"
+      }
+    },
+    "ubicacion": {
+      "google_maps_url": "https://share.google/yWGLacyAcBcrQ8Zy7"
+    },
+    "horario_atencion": "Martes a Sábado: 9:00 AM – 8:00 PM",
+    "servicios": [
+      {
+        "titulo": "Cortes & Peinados",
+        "descripcion": "Cortes modernos, cepillado y peinados de alto impacto."
+      },
+      {
+        "titulo": "Colorimetría & Balayage",
+        "descripcion": "Iluminación, balayage y reconstrucción capilar profunda con Olaplex."
+      },
+      {
+        "titulo": "Faciales & Spa Relax",
+        "descripcion": "Limpieza facial ultrasónica, peelings orgánicos y masajes relajantes."
+      },
+      {
+        "titulo": "Maquillaje & Novias",
+        "descripcion": "Maquillaje profesional con aerógrafo y paquetes para novias."
+      }
+    ],
+    "especialistas": [
+      {
+        "nombre": "Emma Styles",
+        "rol": "Master Colorista & Balayage"
+      },
+      {
+        "nombre": "Alex Carter",
+        "rol": "Master Stylist & Cortes"
+      },
+      {
+        "nombre": "Jessica Moore",
+        "rol": "Especialista en Piel & Spa"
+      }
+    ]
+  }
+}

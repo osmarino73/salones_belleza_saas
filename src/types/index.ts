@@ -264,6 +264,42 @@ export interface PosSale {
   created_at: string;
 }
 
+export interface BusinessServiceItem {
+  titulo: string;
+  descripcion: string;
+  precio_cop?: number;
+  duracion_minutos?: number;
+}
+
+export interface BusinessSpecialistItem {
+  nombre: string;
+  rol: string;
+  especialidades?: string[];
+}
+
+export interface BusinessContactData {
+  telefono_principal?: string;
+  whatsapp?: {
+    numero: string;
+    link?: string;
+  };
+}
+
+export interface BusinessDataPayload {
+  nombre: string;
+  rubro?: string;
+  eslogan?: string;
+  contacto?: BusinessContactData;
+  ubicacion?: {
+    google_maps_url?: string;
+    direccion?: string;
+    ciudad?: string;
+  };
+  horario_atencion?: string;
+  servicios?: BusinessServiceItem[];
+  especialistas?: BusinessSpecialistItem[];
+}
+
 export interface ProspectSite {
   id: string;
   slug: string;
@@ -277,6 +313,7 @@ export interface ProspectSite {
   category?: 'salon' | 'barberia' | 'spa' | 'estetica' | 'nails';
   status: 'prospecto' | 'contactado' | 'reclamado' | 'cliente_pago';
   claimed_tenant_id?: string;
+  business_data?: BusinessDataPayload;
   views_count: number;
   created_at: string;
   updated_at?: string;

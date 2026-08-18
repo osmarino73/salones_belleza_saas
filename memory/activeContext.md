@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional (Apertura y Cierre de Caja, Arqueo, Comisiones y Multi-pago en $ COP), Centro de Plantillas HSM/Email, Tablero Omnicanal (WhatsApp + Instagram Direct + Messenger), y Portal de Reservas.
+- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Lead Engine Studio con Ingesta Inteligente de Sitios y Carpetas de Negocios (`DATOS_NEGOCIO.json`).
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -13,6 +13,24 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Integración de Carpetas de Negocios y Generador Web (`DATOS_NEGOCIO.json` & Standalone HTML)**:
+  - **Problema resuelto**: Cada negocio generado por la herramienta externa se exporta como una carpeta (ej. `document/luxus_beauty_spa`) con `DATOS_NEGOCIO.json`, `index.html`, `styles.css` e imágenes Base64. El SaaS requería una forma automatizada de asimilar esta estructura sin configuraciones manuales.
+  - **Solución implementada**:
+    1. **Superadmin Ingest Hub ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+       - Zona de carga para `DATOS_NEGOCIO.json` y archivos `.html`.
+       - Auto-rellenado instantáneo de Nombre, Teléfono/WhatsApp normalizado, Google Maps URL, Dirección, Ciudad, Slug y Categoría auto-detectada.
+       - Preset de 1-clic para cargar *Luxus Beauty Spa* de prueba inmediata.
+       - Tarjetas de previsualización visual de servicios y especialistas detectados.
+       - Generador de pitch de WhatsApp enriquecido mencionando los servicios específicos del negocio.
+    2. **Portal de Reservas Dinámico ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+       - Al entrar a `/reservar/:slug`, si el slug pertenece a un sitio prospecto, carga automáticamente los servicios y especialistas reales del JSON (`negocio.servicios` y `negocio.especialistas`).
+       - En la pantalla de éxito, incluye botón directo de confirmación hacia el WhatsApp del negocio.
+    3. **Onboarding con Reclamo Automático ([`OnboardingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/OnboardingPage.tsx))**:
+       - Al entrar con `/onboarding?reclamar=:slug`, precarga identidad, servicios reales y especialistas del negocio, muestra banner de 14 días gratis y al registrarse la dueña marca el prospecto como `status: 'reclamado'`.
+    4. **Script CLI de Ingesta ([`scripts/import_prospect_folder.js`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/import_prospect_folder.js))**:
+       - Script Node.js ejecutable (`node scripts/import_prospect_folder.js document/luxus_beauty_spa` o `--all`) que compila el HTML standalone con Base64 y procesa el JSON.
+    5. **Tipos y Base de Datos ([`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`create_prospect_sites_table.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_prospect_sites_table.sql))**:
+       - Soporte para `business_data JSONB` en `prospect_sites`.
 - **Dashboard de Superadmin & Lead Engine Studio ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
   - **Módulo de Prospección de Alto Impacto (Lead Magnet)**:
     1. **Creador de Sitios Gancho**: Permite al dueño del SaaS pegar el código HTML generado por su herramienta externa, asociarlo a Google Maps (o formulario manual), e inyectarle automáticamente el botón de reservas online (`/reservar/:slug`), el banner para activar 14 días gratis (`/onboarding?reclamar=:slug`) y el Schema SEO Local (`LocalBusiness`).
