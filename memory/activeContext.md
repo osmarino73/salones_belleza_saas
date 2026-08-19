@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal, Lead Engine Studio con Biblioteca de Imágenes de Muestra Stock CDN WebP y Optimizador Automático de HTML anti-Base64.
+- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Local Homepage Studio (Diseño Web Guiado por Referencia Visual & Google Maps), Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -13,6 +13,14 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Local Homepage Studio (Estudio Integral de Diseño Web B2B) ([`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`homepageStudioEngine.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/homepageStudioEngine.ts))**:
+  - **Solución implementada**:
+    1. **Subida de Imagen de Referencia**: Permite cargar una captura de pantalla de cualquier página web como modelo de diseño visual.
+    2. **Extracción & Presets de Paleta de Colores**: Presets de lujo (`Rose Gold Luxury`, `Dark Gold Obsidian`, `Botanical Sage`, `Pastel Pink`, `Cyber Neon`, `Minimalist Clean`) y selectores interactivos de color primario y fondo.
+    3. **Integración con Google Maps & `DATOS_NEGOCIO.json`**: Autocompletado de dirección, horario, enlace Maps, servicios con precios COP y equipo de especialistas con fotos.
+    4. **Biblioteca Multimedia & Subida Personalizada**: Selector visual de imágenes CDN WebP de alta velocidad para Hero, Servicios y Especialistas con soporte para añadir nuevas fotos por URL o archivo local.
+    5. **Live Preview Split-Screen**: Visualización en vivo en tiempo real con conmutador Móvil (375px) y Desktop (100%).
+    6. **Publicación en 1-Clic**: Genera `/sitio/:slug`, inyecta el agendador (`/reservar/:slug`), el reclamo (`/onboarding?reclamar=:slug`) y el pitch de WhatsApp listo para prospectar.
 - **Biblioteca de Imágenes de Muestra Stock CDN WebP & Optimizador anti-Base64 ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - **Problema resuelto**: Al incrustar imágenes en Base64 dentro del HTML generado, cada sitio pesaba más de 5 MB, provocando lentitud de carga, saturación de la cuota de `localStorage` (`QuotaExceededError`) y lentitud en base de datos.
   - **Solución implementada**:
