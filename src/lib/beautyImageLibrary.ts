@@ -5,6 +5,8 @@
  * barberías y centros de estética. Reemplaza Base64 pesados reduciendo el peso de 5MB a ~12KB.
  */
 
+import { MediaItem } from '../types';
+
 export interface StockImageItem {
   id: string;
   category: 'hero_salon' | 'hero_spa' | 'hero_barber' | 'hero_nails' | 'color' | 'cortes' | 'keratina' | 'nails' | 'spa_facial' | 'barberia' | 'maquillaje' | 'especialistas';
@@ -294,4 +296,64 @@ export function optimizeProspectHtml(html: string, category: string = 'salon'): 
   });
 
   return optimized;
+}
+
+const CUSTOM_MEDIA_STORAGE_KEY = 'bf_custom_media_library_v1';
+
+/**
+ * Obtiene las imágenes personalizadas guardadas por el usuario
+ */
+export function getCustomMediaLibrary(): MediaItem[] {
+  try {
+    const raw = localStorage.getItem(CUSTOM_MEDIA_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+/**
+ * Agrega una nueva imagen personalizada a la biblioteca
+ */
+export function addCustomMediaItem(item: Omit<MediaItem, 'id' | 'created_at'>): MediaItem {
+  const customItems = getCustomMediaLibrary();
+  const newItem: MediaItem = {
+    ...item,
+    id: `media-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    is_custom: true,
+    created_at: new Date().toISOString()
+  };
+  const updated = [newItem, ...customItems];
+  try {
+    localStorage.setItem(CUSTOM_MEDIA_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Could not persist custom image to local storage:', e);
+  }
+  return newItem;
+}
+
+/**
+ * Elimina una imagen personalizada de la biblioteca
+ */
+export function deleteCustomMediaItem(id: string): void {
+  const customItems = getCustomMediaLibrary();
+  const updated = customItems.filter(item => item.id !== id);
+  try {
+    localStorage.setItem(CUSTOM_MEDIA_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {}
+}
+
+/**
+ * Devuelve todas las imágenes (predeterminadas de stock CDN + personalizadas subidas por el usuario)
+ */
+export function getAllMediaItems(): MediaItem[] {
+  const stockAsMedia: MediaItem[] = BEAUTY_STOCK_LIBRARY.map(s => ({
+    id: s.id,
+    title: s.title,
+    url: s.url,
+    category: s.category,
+    tags: s.tags,
+    is_custom: false
+  }));
+  const custom = getCustomMediaLibrary();
+  return [...custom, ...stockAsMedia];
 }

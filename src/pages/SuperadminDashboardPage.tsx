@@ -10,6 +10,7 @@ import {
   getSpecialistAvatar,
   optimizeProspectHtml
 } from '../lib/beautyImageLibrary';
+import { HomepageStudioModal } from '../components/HomepageStudio/HomepageStudioModal';
 import {
   Crown,
   Sparkles,
@@ -46,6 +47,9 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
+
+  // Homepage Studio Modal State
+  const [showHomepageStudioModal, setShowHomepageStudioModal] = useState(false);
 
   // Form State para el Generador de Sitios Gancho
   const [businessName, setBusinessName] = useState('');
@@ -509,7 +513,36 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
             TAB 1: CREADOR DE SITIOS GANCHO (LEAD MAGNET STUDIO)
             =================================================================== */}
         {activeTab === 'generator' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="space-y-6">
+
+            {/* VIP HERO CARD: LOCAL HOMEPAGE STUDIO */}
+            <div className="bg-gradient-to-r from-purple-950/50 via-[#1A1E2C] to-[#161220] border border-[#FF5A36]/40 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-5 animate-fade-in relative overflow-hidden">
+              <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none" />
+              <div className="space-y-2 text-center md:text-left z-10">
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#FF5A36] bg-[#FF5A36]/15 px-2.5 py-0.5 rounded-full border border-[#FF5A36]/30">
+                    ✨ ESTUDIO DE DISEÑO VISUAL ALL-IN-ONE
+                  </span>
+                  <span className="text-[10px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    Nuevo
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">Local Homepage Studio (IA & Referencia Visual)</h3>
+                <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                  Crea páginas web gancho no-genéricas usando una <strong>captura de referencia</strong> para extraer paleta y tipografía, combinada con los datos de <strong>Google Maps</strong> y fotos de la biblioteca con <strong>Live Preview Split-Screen</strong>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHomepageStudioModal(true)}
+                className="px-6 py-4 rounded-2xl bg-gradient-to-r from-[#FF5A36] via-orange-500 to-pink-500 hover:opacity-95 text-white font-black text-sm shadow-xl shadow-[#FF5A36]/40 flex items-center gap-2.5 cursor-pointer transition-all hover:scale-105 shrink-0 z-10"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>🎨 Abrir Homepage Studio</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left: Formulario de Ingesta & Datos (7 Cols) */}
             <div className="lg:col-span-7 space-y-5">
@@ -520,7 +553,7 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
                   <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
                     <div className="flex items-center gap-2 text-[#FF5A36] text-xs font-bold uppercase tracking-wider">
                       <Sparkles className="w-4 h-4" />
-                      <span>Inyector Automático de Agendamiento & SEO</span>
+                      <span>Ingesta Rápida por JSON / Formulario Manual</span>
                     </div>
                     <button
                       type="button"
@@ -953,6 +986,7 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
             </div>
 
           </div>
+          </div>
         )}
 
         {/* ===================================================================
@@ -1342,6 +1376,18 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
           </div>
         </div>
       )}
+
+      {/* =====================================================================
+          MODAL: LOCAL HOMEPAGE STUDIO (DISEÑO CON IA & REFERENCIA)
+          ===================================================================== */}
+      <HomepageStudioModal
+        isOpen={showHomepageStudioModal}
+        onClose={() => setShowHomepageStudioModal(false)}
+        onSitePublished={(site) => {
+          setProspectSites([site, ...prospectSites.filter(s => s.id !== site.id && s.slug !== site.slug)]);
+          setCreatedSite(site);
+        }}
+      />
 
     </div>
   );

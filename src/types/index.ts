@@ -319,3 +319,63 @@ export interface ProspectSite {
   updated_at?: string;
 }
 
+export interface MediaItem {
+  id: string;
+  title: string;
+  url: string;
+  category: 'hero_salon' | 'hero_spa' | 'hero_barber' | 'hero_nails' | 'color' | 'cortes' | 'keratina' | 'nails' | 'spa_facial' | 'barberia' | 'maquillaje' | 'especialistas' | 'general';
+  tags: string[];
+  is_custom?: boolean;
+  tenant_id?: string;
+  created_at?: string;
+}
+
+export interface StudioThemeConfig {
+  presetName: 'rose_gold' | 'dark_gold' | 'botanical_sage' | 'pastel_pink' | 'cyber_neon' | 'minimal_white' | 'custom';
+  primaryColor: string;      // Ej. #FF5A36, #ec4899, #d97706
+  accentColor: string;       // Ej. #f43f5e, #a855f7, #10b981
+  backgroundColor: string;   // Ej. #090B10, #0B130E, #FFFFFF
+  surfaceColor: string;       // Ej. #141926, #121F17, #F8FAFC
+  textColor: string;          // Ej. #F8FAFC, #0F172A
+  mutedColor: string;         // Ej. #94A3B8, #64748B
+  fontFamily: 'serif_luxury' | 'modern_sans' | 'clean_minimal' | 'bold_display';
+  borderRadius: 'rounded-xl' | 'rounded-2xl' | 'rounded-3xl' | 'rounded-none';
+  glassmorphism: boolean;
+}
+
+export interface StudioServiceItem {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  precio_cop: number;
+  duracion_minutos: number;
+  imagen_url: string;
+  badge?: string;
+}
+
+export interface StudioSpecialistItem {
+  id: string;
+  nombre: string;
+  rol: string;
+  avatar_url: string;
+  especialidad: string;
+}
+
+export interface HomepageStudioState {
+  businessName: string;
+  slogan: string;
+  rubroDescription: string;
+  category: 'salon' | 'barberia' | 'spa' | 'estetica' | 'nails';
+  phoneWhatsapp: string;
+  phoneCall: string;
+  address: string;
+  city: string;
+  googleMapsUrl: string;
+  scheduleSummary: string;
+  heroImageUrl: string;
+  referenceImageUrl?: string;
+  theme: StudioThemeConfig;
+  services: StudioServiceItem[];
+  specialists: StudioSpecialistItem[];
+}
+
