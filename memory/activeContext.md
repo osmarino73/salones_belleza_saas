@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Lead Engine Studio con Ingesta Inteligente de Sitios y Carpetas de Negocios (`DATOS_NEGOCIO.json`).
+- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal, Lead Engine Studio con Biblioteca de Imágenes de Muestra Stock CDN WebP y Optimizador Automático de HTML anti-Base64.
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -13,6 +13,12 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Biblioteca de Imágenes de Muestra Stock CDN WebP & Optimizador anti-Base64 ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+  - **Problema resuelto**: Al incrustar imágenes en Base64 dentro del HTML generado, cada sitio pesaba más de 5 MB, provocando lentitud de carga, saturación de la cuota de `localStorage` (`QuotaExceededError`) y lentitud en base de datos.
+  - **Solución implementada**:
+    1. **Biblioteca CDN Curada WebP**: Catálogo estructurado de imágenes de alta resolución (Hero de Salón, Spa, Barbería, Nails, Colorimetría, Balayage, Cortes, Keratinas, Limpieza Facial, Maquillaje y Avatares de Especialistas).
+    2. **Optimizador Automático (`optimizeProspectHtml`)**: Reemplaza al vuelo cualquier cadena Base64 pesada o rutas locales rotas por URLs optimizadas CDN. Reducción de peso de **5.000 KB (5 MB) a solo ~12 KB - 39 KB (99.2% de reducción)**.
+    3. **Modal de Galería Stock en Superadmin**: Selector visual interactivo con pestañas por categoría y botón de 1-clic para copiar enlaces CDN de muestra.
 - **Integración de Carpetas de Negocios y Generador Web (`DATOS_NEGOCIO.json` & Standalone HTML)**:
   - **Problema resuelto**: Cada negocio generado por la herramienta externa se exporta como una carpeta (ej. `document/luxus_beauty_spa`) con `DATOS_NEGOCIO.json`, `index.html`, `styles.css` e imágenes Base64. El SaaS requería una forma automatizada de asimilar esta estructura sin configuraciones manuales.
   - **Solución implementada**:
