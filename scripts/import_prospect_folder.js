@@ -25,14 +25,17 @@ function sanitizeSlug(text) {
     .replace(/^-+|-+$/g, '');
 }
 
+const CDN_FALLBACKS = {
+  hero: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80',
+  color: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80',
+  corte: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=800&q=80',
+  spa: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+  nails: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
+  barber: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80'
+};
+
 function buildStandaloneHtml(folderPath) {
   const indexHtmlPath = path.join(folderPath, 'index.html');
-  const standalonePath = path.join(folderPath, 'luxus_beauty_spa_standalone.html');
-
-  // Si ya existe un standalone.html
-  if (fs.existsSync(standalonePath)) {
-    return fs.readFileSync(standalonePath, 'utf8');
-  }
 
   if (!fs.existsSync(indexHtmlPath)) {
     throw new Error(`No se encontró index.html en ${folderPath}`);
@@ -51,20 +54,11 @@ function buildStandaloneHtml(folderPath) {
     }
   }
 
-  // Embeber imágenes en Base64
-  const imgDir = path.join(folderPath, 'assets', 'images');
-  if (fs.existsSync(imgDir)) {
-    const files = fs.readdirSync(imgDir);
-    for (let file of files) {
-      const ext = path.extname(file).replace('.', '').toLowerCase();
-      const mime = ext === 'svg' ? 'image/svg+xml' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      const imgPath = path.join(imgDir, file);
-      const base64 = fs.readFileSync(imgPath).toString('base64');
-      const dataUri = `data:${mime};base64,${base64}`;
-      const relativePath = `assets/images/${file}`;
-      html = html.split(relativePath).join(dataUri);
-    }
-  }
+  // Reemplazar rutas locales o Base64 por imágenes CDN de muestra de alta gama
+  html = html.replace(/src=["']assets\/images\/[^"']+["']/gi, `src="${CDN_FALLBACKS.hero}"`);
+  html = html.replace(/url\(["']?assets\/images\/[^)"']+["']?\)/gi, `url("${CDN_FALLBACKS.hero}")`);
+  html = html.replace(/src=["']data:image\/[^"']+["']/gi, `src="${CDN_FALLBACKS.hero}"`);
+  html = html.replace(/url\(["']?data:image\/[^)"']+["']?\)/gi, `url("${CDN_FALLBACKS.hero}")`);
 
   return html;
 }

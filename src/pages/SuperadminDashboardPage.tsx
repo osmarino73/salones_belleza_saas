@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/supabase';
 import { ProspectSite, Tenant } from '../types';
 import {
+  BEAUTY_STOCK_LIBRARY,
+  StockImageItem,
+  getHeroImageForCategory,
+  getSuggestedImageForService,
+  getSpecialistAvatar,
+  optimizeProspectHtml
+} from '../lib/beautyImageLibrary';
+import {
   Crown,
   Sparkles,
   Globe,
@@ -25,7 +33,10 @@ import {
   Layers,
   ArrowUpRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Image as ImageIcon,
+  Check,
+  X
 } from 'lucide-react';
 
 export const SuperadminDashboardPage: React.FC = () => {
@@ -55,6 +66,11 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [createdSite, setCreatedSite] = useState<ProspectSite | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPitch, setCopiedPitch] = useState(false);
+
+  // Galería de Imágenes de Muestra CDN
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [selectedGalleryCategory, setSelectedGalleryCategory] = useState<string>('todos');
+  const [copiedImageUrl, setCopiedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -125,19 +141,23 @@ export const SuperadminDashboardPage: React.FC = () => {
     }
   };
 
-  // Generador de HTML Autónomo de Lujo basado en DATOS_NEGOCIO.json
+  // Generador de HTML Autónomo de Lujo basado en DATOS_NEGOCIO.json con Imágenes CDN de Alta Gama
   const generateStandaloneHtmlFromBusinessData = (b: any) => {
     const name = b.nombre || 'Salón & Spa Oficial';
     const slogan = b.eslogan || 'Look & Siente Lo Mejor de Ti';
     const wa = b.contacto?.whatsapp?.numero || b.contacto?.telefono_principal || '+573000000000';
     const cleanWa = wa.replace(/\D/g, '');
+    const detectedCategory = category || 'salon';
+    const heroBgUrl = getHeroImageForCategory(detectedCategory);
+
     const services = b.servicios || [
       { titulo: 'Cortes & Estilismo', descripcion: 'Diseño de corte personalizado y cepillado profesional.' },
       { titulo: 'Color & Iluminación', descripcion: 'Balayage, tintes premium y brillo extremo.' },
       { titulo: 'Spa & Bienestar', descripcion: 'Tratamientos faciales y corporales de relajación profunda.' }
     ];
     const specialists = b.especialistas || [
-      { nombre: 'Especialista Máster', rol: 'Directora & Estilista Principal' }
+      { nombre: 'Especialista Máster', rol: 'Directora & Estilista Principal' },
+      { nombre: 'Master Stylist', rol: 'Colorista & Asesor de Imagen' }
     ];
 
     return `<!DOCTYPE html>
@@ -150,32 +170,34 @@ export const SuperadminDashboardPage: React.FC = () => {
     :root {
       --primary: #FF5A36;
       --accent: #ec4899;
-      --dark: #0b0f19;
-      --card-bg: #141a29;
+      --dark: #090B10;
+      --card-bg: #141926;
       --text: #f8fafc;
       --muted: #94a3b8;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { background-color: var(--dark); color: var(--text); line-height: 1.6; }
     .top-bar { background: linear-gradient(90deg, #FF5A36, #ec4899); color: #fff; text-align: center; padding: 9px 16px; font-size: 0.85rem; font-weight: 800; }
-    .header { padding: 45px 20px; text-align: center; background: radial-gradient(circle at center, rgba(255,90,54,0.15) 0%, rgba(11,15,25,1) 70%); }
-    .badge { display: inline-block; background: rgba(255,90,54,0.15); border: 1px solid rgba(255,90,54,0.4); color: #ff7e61; padding: 6px 16px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-    h1 { font-size: 2.8rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 12px; background: linear-gradient(135deg, #fff 40%, #ff7e61 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .slogan { font-size: 1.1rem; color: var(--muted); max-width: 650px; margin: 0 auto 24px; }
-    .cta-wa { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 999px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(37,211,102,0.3); transition: transform 0.2s; }
+    .header { position: relative; padding: 70px 20px 60px; text-align: center; background: linear-gradient(180deg, rgba(9,11,16,0.7) 0%, rgba(9,11,16,0.95) 100%), url('${heroBgUrl}') center/cover no-repeat; }
+    .badge { display: inline-block; background: rgba(255,90,54,0.2); border: 1px solid rgba(255,90,54,0.5); color: #ff7e61; padding: 6px 16px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; backdrop-blur: 8px; }
+    h1 { font-size: 3rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 12px; background: linear-gradient(135deg, #fff 40%, #ff7e61 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .slogan { font-size: 1.15rem; color: #cbd5e1; max-width: 650px; margin: 0 auto 26px; }
+    .cta-wa { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff; text-decoration: none; padding: 14px 30px; border-radius: 999px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 10px 25px rgba(37,211,102,0.3); transition: transform 0.2s; }
     .cta-wa:hover { transform: scale(1.04); }
-    .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-    .section-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 24px; text-align: center; }
-    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 50px; }
-    .service-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 24px; transition: transform 0.2s, border-color 0.2s; }
-    .service-card:hover { transform: translateY(-4px); border-color: rgba(255,90,54,0.4); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 50px 20px; }
+    .section-title { font-size: 1.9rem; font-weight: 900; margin-bottom: 30px; text-align: center; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 60px; }
+    .service-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+    .service-card:hover { transform: translateY(-5px); border-color: rgba(255,90,54,0.4); }
+    .service-img { width: 100%; height: 180px; object-fit: cover; }
+    .service-body { padding: 22px; }
     .service-card h3 { font-size: 1.25rem; margin-bottom: 8px; color: #fff; }
-    .service-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 12px; min-height: 40px; }
-    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .team-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 20px; text-align: center; }
-    .team-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #FF5A36, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 12px; border: 2px solid rgba(255,255,255,0.2); }
-    .team-name { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
-    .team-role { font-size: 0.8rem; color: #ff7e61; font-weight: 600; }
+    .service-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 14px; min-height: 42px; }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+    .team-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 24px; text-align: center; }
+    .team-avatar { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px; border: 3px solid #FF5A36; box-shadow: 0 8px 20px rgba(255,90,54,0.25); }
+    .team-name { font-weight: 800; font-size: 1.1rem; margin-bottom: 4px; }
+    .team-role { font-size: 0.82rem; color: #ff7e61; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -193,16 +215,19 @@ export const SuperadminDashboardPage: React.FC = () => {
     <div class="services-grid">
       ${services.map((s: any) => `
       <div class="service-card">
-        <h3>✨ ${s.titulo}</h3>
-        <p>${s.descripcion}</p>
-        ${s.precio_cop ? `<div style="color: #10b981; font-weight: 800; font-size: 1.1rem;">$ ${s.precio_cop.toLocaleString('es-CO')} COP</div>` : ''}
+        <img src="${getSuggestedImageForService(s.titulo, detectedCategory)}" alt="${s.titulo}" class="service-img" loading="lazy" />
+        <div class="service-body">
+          <h3>✨ ${s.titulo}</h3>
+          <p>${s.descripcion}</p>
+          ${s.precio_cop ? `<div style="color: #10b981; font-weight: 800; font-size: 1.15rem;">$ ${s.precio_cop.toLocaleString('es-CO')} COP</div>` : ''}
+        </div>
       </div>`).join('')}
     </div>
     <h2 class="section-title">Equipo de Especialistas</h2>
     <div class="team-grid">
-      ${specialists.map((esp: any) => `
+      ${specialists.map((esp: any, idx: number) => `
       <div class="team-card">
-        <div class="team-avatar">👑</div>
+        <img src="${getSpecialistAvatar(idx)}" alt="${esp.nombre}" class="team-avatar" loading="lazy" />
         <div class="team-name">${esp.nombre}</div>
         <div class="team-role">${esp.rol}</div>
       </div>`).join('')}
@@ -231,7 +256,7 @@ export const SuperadminDashboardPage: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // Carga de archivo HTML (.html)
+  // Carga de archivo HTML (.html) con optimización de Base64
   const handleHtmlFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -239,7 +264,9 @@ export const SuperadminDashboardPage: React.FC = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      setRawHtml(text);
+      // Optimizar automáticamente reemplazando Base64 pesados por CDN de muestra
+      const optimized = optimizeProspectHtml(text, category);
+      setRawHtml(optimized);
     };
     reader.readAsText(file);
   };
@@ -401,6 +428,15 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowGalleryModal(true)}
+            className="text-xs font-bold px-3 py-1.5 rounded-xl border border-pink-500/30 hover:border-pink-500/60 bg-pink-500/10 text-pink-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
+            <span className="hidden sm:inline">🖼️ Galería Stock CDN</span>
+          </button>
+
           <Link
             to="/dashboard"
             className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 hover:text-white transition-all flex items-center gap-1.5"
@@ -1177,6 +1213,135 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
         )}
 
       </main>
+
+      {/* =====================================================================
+          MODAL: GALERÍA DE IMÁGENES DE MUESTRA (STOCK CDN)
+          ===================================================================== */}
+      {showGalleryModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#121624] border border-white/10 rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#151c2e]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-[#FF5A36] flex items-center justify-center text-white">
+                  <ImageIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Biblioteca de Imágenes de Muestra (CDN WebP)</h3>
+                  <p className="text-xs text-slate-400">Imágenes ultra-livianas de alta resolución para reemplazar Base64 y optimizar sitios web</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGalleryModal(false)}
+                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Categorías Filter */}
+            <div className="px-5 py-3 border-b border-white/10 bg-[#0c101a] flex gap-2 overflow-x-auto">
+              {[
+                { id: 'todos', label: 'Todas' },
+                { id: 'hero_salon', label: '👑 Hero Salón' },
+                { id: 'hero_spa', label: '🧖‍♀️ Hero Spa' },
+                { id: 'hero_barber', label: '💈 Hero Barber' },
+                { id: 'hero_nails', label: '💅 Hero Nails' },
+                { id: 'color', label: '🎨 Color & Balayage' },
+                { id: 'cortes', label: '✂️ Cortes & Peinados' },
+                { id: 'keratina', label: '✨ Alisados & Keratina' },
+                { id: 'nails', label: '💅 Nail Art' },
+                { id: 'spa_facial', label: '🧖‍♀️ Spa & Faciales' },
+                { id: 'barberia', label: '💈 Barbería' },
+                { id: 'maquillaje', label: '💄 Maquillaje' },
+                { id: 'especialistas', label: '👥 Especialistas' }
+              ].map(cat => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedGalleryCategory(cat.id)}
+                  className={`text-xs px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    selectedGalleryCategory === cat.id
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                      : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Grid of Images */}
+            <div className="p-5 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+              {BEAUTY_STOCK_LIBRARY
+                .filter(img => selectedGalleryCategory === 'todos' || img.category === selectedGalleryCategory)
+                .map(img => (
+                  <div key={img.id} className="bg-[#171f30] border border-white/10 rounded-2xl overflow-hidden group hover:border-[#FF5A36]/50 transition-all flex flex-col justify-between">
+                    <div>
+                      <div className="relative h-36 overflow-hidden">
+                        <img src={img.url} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                        <span className="absolute top-2 left-2 text-[10px] font-bold bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-md uppercase">
+                          {img.category}
+                        </span>
+                      </div>
+                      <div className="p-3">
+                        <h4 className="text-xs font-bold text-white mb-1 line-clamp-1">{img.title}</h4>
+                        <div className="flex gap-1 flex-wrap">
+                          {img.tags.map(t => (
+                            <span key={t} className="text-[9px] text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">#{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 pt-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(img.url);
+                          setCopiedImageUrl(img.id);
+                          setTimeout(() => setCopiedImageUrl(null), 2000);
+                        }}
+                        className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          copiedImageUrl === img.id
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-white/10 hover:bg-[#FF5A36] text-slate-200 hover:text-white'
+                        }`}
+                      >
+                        {copiedImageUrl === img.id ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>✓ URL Copiada</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copiar Enlace CDN</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-white/10 bg-[#0E121B] flex items-center justify-between text-xs text-slate-400">
+              <span>💡 Todas las imágenes cargan en formato WebP comprimido a 800-1200px.</span>
+              <button
+                type="button"
+                onClick={() => setShowGalleryModal(false)}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
