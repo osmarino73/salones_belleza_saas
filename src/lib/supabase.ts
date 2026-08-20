@@ -1831,7 +1831,7 @@ export const api = {
       }
     }
 
-    // 3. Crear Dueña / Admin Stylist Profile
+    // 3. Crear Dueña / Admin Stylist Profile (Perfil administrativo)
     const ownerStylist: Stylist = {
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'sty-owner-' + Date.now(),
       tenant_id: newTenant.id,
@@ -1848,61 +1848,15 @@ export const api = {
       commission_service_pct: 100,
       commission_retail_pct: 100,
       working_days: [1, 2, 3, 4, 5, 6],
-      service_categories: ['spa', 'corte'],
+      service_categories: ['spa', 'corte', 'color', 'keratina', 'nails', 'barberia'],
       service_ids: [],
       is_active: true
     };
     await this.createStylist(ownerStylist, tempPassword);
 
-    // 4. Migrar Especialistas reales de business_data
-    const specialists = prospect?.business_data?.especialistas || [];
-    for (let i = 0; i < specialists.length; i++) {
-      const esp = specialists[i];
-      const stylistId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sty-${Date.now()}-${i}`;
-      const newSty: Stylist = {
-        id: stylistId,
-        tenant_id: newTenant.id,
-        name: esp.nombre,
-        email: `${esp.nombre.toLowerCase().replace(/[^a-z0-9]/g, '')}@${cleanSlug}.co`,
-        phone: wa,
-        specialty: esp.rol || 'Especialista',
-        photo_url: esp.foto && !esp.foto.startsWith('assets/') ? esp.foto : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-        role: 'colaborador',
-        is_owner: false,
-        attends_clients: true,
-        rating: 5.0,
-        reviews_count: 10,
-        commission_service_pct: 45,
-        commission_retail_pct: 10,
-        working_days: [1, 2, 3, 4, 5, 6],
-        service_categories: ['spa', 'corte'],
-        service_ids: [],
-        is_active: true
-      };
-      await this.createStylist(newSty, 'BeautyFlow2026*');
-    }
+    // 4. Salón creado en estado virgen (0 colaboradores extra, 0 servicios precargados para configurar en onboarding)
 
-    // 5. Migrar Servicios reales de business_data
-    const services = prospect?.business_data?.servicios || [];
-    for (let i = 0; i < services.length; i++) {
-      const srv = services[i];
-      const serviceId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `srv-${Date.now()}-${i}`;
-      const newSrv: Service = {
-        id: serviceId,
-        tenant_id: newTenant.id,
-        name: srv.titulo,
-        category: (prospect?.category === 'barberia' ? 'barberia' : prospect?.category === 'nails' ? 'nails' : 'spa'),
-        duration_minutes: srv.duracion_minutos || 60,
-        price_cop: srv.precio_cop || 90000,
-        price_usd: srv.precio_cop ? Math.round(srv.precio_cop / 4000) : 30,
-        price: srv.precio_cop || 90000,
-        requires_patch_test: false,
-        description: srv.descripcion || 'Servicio profesional garantizado.'
-      };
-      await this.createService(newSrv);
-    }
-
-    // 6. Actualizar prospect_sites como 'reclamado'
+    // 5. Actualizar prospect_sites como 'reclamado'
     if (prospect) {
       await this.updateProspectSite(prospect.id, {
         status: 'reclamado',
@@ -1910,7 +1864,7 @@ export const api = {
       });
     }
 
-    // 7. Guardar en localStorage para disponibilidad inmediata
+    // 6. Guardar en localStorage para disponibilidad inmediata
     localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
 
     return {

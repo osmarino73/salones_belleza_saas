@@ -1677,23 +1677,23 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                   </div>
                 </div>
 
-                {/* Resumen de Migración */}
+                {/* Resumen de Activación Limpia */}
                 <div className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Elementos que se migrarán a su cuenta SaaS:
+                    Estado de la nueva cuenta del negocio:
                   </span>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-emerald-400 font-bold block">
-                        ✓ {activatingProspect.business_data?.servicios?.length || 4} Servicios
+                        ✨ Cuenta Virgen
                       </span>
-                      <span className="text-[10px] text-slate-400">Precios y duraciones oficiales</span>
+                      <span className="text-[10px] text-slate-400">0 citas ni facturación ficticia</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                      <span className="text-blue-400 font-bold block">
-                        ✓ {activatingProspect.business_data?.especialistas?.length || 3} Especialistas
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-amber-400 font-bold block">
+                        🎯 Onboarding Guiado
                       </span>
-                      <span className="text-[10px] text-slate-400">Perfiles de colaboradoras</span>
+                      <span className="text-[10px] text-slate-400">Creará servicios y colaboradoras</span>
                     </div>
                   </div>
                 </div>
@@ -1709,7 +1709,7 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                   ) : (
                     <Key className="w-4 h-4" />
                   )}
-                  <span>{isActivatingTenant ? 'Creando tenant y migrando catálogo...' : '🚀 Activar Salón & Entregar Credenciales'}</span>
+                  <span>{isActivatingTenant ? 'Creando tenant y acceso administrativo...' : '🚀 Activar Salón & Entregar Credenciales'}</span>
                 </button>
 
               </form>

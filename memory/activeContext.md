@@ -13,6 +13,14 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Onboarding de Bienvenida para Nuevos Negocios & Activación Virgen ([`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+  - **Cuentas Vírgenes**: Al activar un negocio desde el Superadmin (`activateProspectAsTenant`), ya no se migran servicios ni colaboradoras ficticias. El negocio inicia en estado 100% virgen (con $0 facturación, 0 citas ficticias y solo el perfil administrativo de la dueña).
+  - **Onboarding Wizard en 4 Pasos**: Se diseñó un asistente interactivo que se despliega automáticamente para nuevas cuentas:
+    1. **Paso 1 (Tu Salón)**: Confirmación de Nombre, WhatsApp, Ciudad, Horarios y Moneda principal (COP, USD, MXN, EUR).
+    2. **Paso 2 (Servicios)**: Creación de catálogo inicial con nombre, categoría, duración y precios reales.
+    3. **Paso 3 (Equipo)**: Registro de colaboradoras/especialistas con % de comisión de servicios y ventas de producto.
+    4. **Paso 4 (WhatsApp IA - 100% Opcional)**: Presentación del asistente virtual con opción de vincular número o botón directo de **"Omitir este paso y finalizar"**.
+  - **Persistencia & Recarga**: Al completar u omitir, el dashboard recarga en tiempo real los servicios y colaboradoras creadas sin requerir recargar la página.
 - **Flujo de Activación de Tenants B2B & Solicitud de Correo ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
   - **Eliminación de barras superpuestas**: Se eliminó el banner de reclamo de 14 días y los botones flotantes de `/sitio/:slug` para mantener la estética 100% pura y original del diseño.
   - **Inyección no intrusiva de enlaces**: Se creó la skill `landing-html-injector` y el util `prospectHtmlInjector.ts` para conectar los botones nativos del HTML a `/reservar/:slug` y los botones de WhatsApp nativos con el número internacional del negocio.

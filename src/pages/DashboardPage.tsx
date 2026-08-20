@@ -66,8 +66,9 @@ import {
   Wallet
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
-import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product, BlockedSlot } from '../types';
+import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
+import { SalonOnboardingModal } from '../components/SalonOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
 import { MessagesBoardPage } from '../components/MessagesBoardPage';
@@ -83,9 +84,11 @@ export const DashboardPage: React.FC = () => {
   const [posInitialClient, setPosInitialClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
-  const [services, setServices] = useState<Service[]>(initialServices);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [stylists, setStylists] = useState<Stylist[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [activeTenantObj, setActiveTenantObj] = useState<Tenant | null>(null);
+  const [isSalonOnboardingOpen, setIsSalonOnboardingOpen] = useState(false);
   const [aiSettings, setAiSettings] = useState<TenantAISettings | null>(null);
   const [isZernioOnboardingOpen, setIsZernioOnboardingOpen] = useState(false);
   const [isSavingAiSettings, setIsSavingAiSettings] = useState(false);
@@ -295,6 +298,13 @@ export const DashboardPage: React.FC = () => {
         }
       }
 
+      if (targetTenantId) {
+        try {
+          const rawT = localStorage.getItem('bf_tenant_active');
+          if (rawT) setActiveTenantObj(JSON.parse(rawT));
+        } catch (e) {}
+      }
+
       const [apts, cls, stys, srvs, prods, settings] = await Promise.all([
         api.getAppointments(targetTenantId),
         api.getClients(targetTenantId),
@@ -309,6 +319,16 @@ export const DashboardPage: React.FC = () => {
       setServices(srvs);
       setProducts(prods);
       setAiSettings(settings);
+
+      // ONBOARDING TRIGGER: Si es un nuevo salón virgen (0 servicios o sin onboarding completado)
+      if (currentEmail && currentEmail !== 'sofia@studioglamour.co' && currentEmail !== 'osmarino73@yahoo.es') {
+        const cleanE = currentEmail.toLowerCase().trim();
+        const onboardingDone = localStorage.getItem(`bf_onboarding_done_${cleanE}`) === 'true' ||
+                               (targetTenantId && localStorage.getItem(`bf_onboarding_done_${targetTenantId}`) === 'true');
+        if (!onboardingDone || (srvs && srvs.length === 0)) {
+          setIsSalonOnboardingOpen(true);
+        }
+      }
 
       // ROLE GUARD: Si el usuario autenticado es un colaborador y NO es admin/dueña, redirigir a /colaborador
       if (currentEmail) {
@@ -5000,28 +5020,40 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL ONBOARDING ZERNIO WHATSAPP (META EMBEDDED STYLE) */}
-      <ZernioOnboardingModal
-        isOpen={isZernioOnboardingOpen}
-        onClose={() => setIsZernioOnboardingOpen(false)}
-        salonName={salonName}
-        initialPhone={salonPhone || (aiSettings?.whatsapp_phone_number || '')}
-        onSuccess={async (data) => {
-          if (aiSettings) {
-            const updated: TenantAISettings = {
-              ...aiSettings,
-              whatsapp_phone_number: data.phone,
-              zernio_channel_id: data.channelId,
-              zernio_connected: true,
-              zernio_status: 'connected',
-              zernio_connection_mode: data.mode
-            };
-            setAiSettings(updated);
-            try {
-              await api.updateTenantAISettings(updated);
-            } catch (e) {
-              console.warn('Saved local AI settings:', e);
+      {/* MODAL ONBOARDING INICIAL PARA NUEVOS SALONES (BIENVENIDA GUIADA) */}
+      <SalonOnboardingModal
+        isOpen={isSalonOnboardingOpen}
+        onClose={() => setIsSalonOnboardingOpen(false)}
+        tenant={activeTenantObj}
+        ownerEmail={ownerEmail}
+        salonCurrency={salonCurrency}
+        onComplete={async () => {
+          setIsSalonOnboardingOpen(false);
+          // Recargar datos actualizados con los servicios y colaboradoras creadas
+          try {
+            const tid = activeTenantObj?.id || getActiveTenantId();
+            const [apts, cls, stys, srvs, prods] = await Promise.all([
+              api.getAppointments(tid),
+              api.getClients(tid),
+              api.getStylists(tid),
+              api.getServices(tid),
+              api.getProducts(tid)
+            ]);
+            setAppointments(apts);
+            setClients(cls);
+            setStylists(stys);
+            setServices(srvs);
+            setProducts(prods);
+
+            const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+            if (activeTenantRaw) {
+              const activeT = JSON.parse(activeTenantRaw);
+              if (activeT.name) setSalonName(activeT.name);
+              if (activeT.currency) setSalonCurrency(activeT.currency);
+              if (activeT.phone) setSalonPhone(activeT.phone);
             }
+          } catch (err) {
+            console.error('Error reloading after onboarding:', err);
           }
         }}
       />
