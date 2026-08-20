@@ -41,18 +41,36 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     `href="${bookingUrl}"`
   );
 
-  // 3. Reemplazar enlaces <a> cuyo texto contenga 'Agendar Cita', 'Reservar Cita', 'Pedir Cita', etc.
-  // IMPORTANTE: Incluso si en el HTML original tenían enlace a WhatsApp ("wa.me" o similar), 
-  // si es un botón de agendamiento, se redirige al flujo de reserva online (/reservar/:slug).
-  // Excluimos explícitamente el botón flotante (wa-floating-button o similar con tooltip/chat).
+  // 3. Reemplazar enlaces <a> cuyo contenido o atributos indiquen agendamiento
+  // IMPORTANTE: Tanto el botón del Header / Menú Superior como el del Hero / Footer
+  // se transforman en enlaces directos a /reservar/:slug.
   processed = processed.replace(
-    /<a\s+([^>]*?)href=["']([^"']*)["']([^>]*?)>((?:(?!wa-floating)[\s\S])*?)(Agendar\s+Cita|Reservar\s+Cita|Pedir\s+Cita|Solicitar\s+Turno|Agendar\s+Online|Reservar\s+Turno|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita)((?:(?!wa-floating)[\s\S])*?)<\/a>/gi,
-    (match, beforeHref, oldHref, afterHref, textBefore, actionText, textAfter) => {
-      // Si es una clase flotante de WhatsApp, mantener WhatsApp
-      if (match.includes('wa-floating') || match.includes('btn-whatsapp-float')) {
-        return match;
+    /<a\b([^>]*?)>(.*?)<\/a>/gis,
+    (fullTag, attrs, innerHtml) => {
+      // Excluir explícitamente el botón flotante fijo de WhatsApp
+      if (attrs.includes('wa-floating') || attrs.includes('btn-whatsapp-float')) {
+        return fullTag;
       }
-      return `<a ${beforeHref}href="${bookingUrl}"${afterHref}>${textBefore}${actionText}${textAfter}</a>`;
+
+      // Si el texto interno o atributos contienen palabras clave de agendamiento
+      const isBookingButton = /(?:Agendar|Reservar|Pedir|Solicitar)\s+(?:Cita|Turno|Online)|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita|btn-header-book|btn-pill-magenta|vip-booking|btn-white-book/i.test(innerHtml) ||
+        /btn-header-book|btn-pill-magenta|btn-white-book/i.test(attrs);
+
+      if (isBookingButton) {
+        // Reemplazar o actualizar href
+        let newAttrs = attrs;
+        if (/href=["'][^"']*["']/i.test(newAttrs)) {
+          newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
+        } else {
+          newAttrs += ` href="${bookingUrl}"`;
+        }
+        // Remover target="_blank" si lo tenía para abrir en la misma app
+        newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
+
+        return `<a${newAttrs}>${innerHtml}</a>`;
+      }
+
+      return fullTag;
     }
   );
 
