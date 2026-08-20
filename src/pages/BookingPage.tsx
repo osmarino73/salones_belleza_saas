@@ -352,19 +352,29 @@ export const BookingPage: React.FC = () => {
                         : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                     }`}
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <strong className="text-sm sm:text-base text-white">{srv.name}</strong>
-                        {srv.requires_patch_test && (
-                          <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full">
-                            Test de Parche
-                          </span>
-                        )}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {srv.image_url && (
+                        <img
+                          src={srv.image_url}
+                          alt={srv.name}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-white/10 shrink-0"
+                          loading="lazy"
+                        />
+                      )}
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <strong className="text-sm sm:text-base text-white truncate">{srv.name}</strong>
+                          {srv.requires_patch_test && (
+                            <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full shrink-0">
+                              Test de Parche
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400 line-clamp-2">{srv.description}</p>
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" /> {srv.duration_minutes} minutos
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-400">{srv.description}</p>
-                      <span className="text-xs text-slate-500 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> {srv.duration_minutes} minutos
-                      </span>
                     </div>
 
                     <div className="text-right pl-4 shrink-0">

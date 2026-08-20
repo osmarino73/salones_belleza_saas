@@ -59,6 +59,7 @@ export interface Service {
   price_usd?: number;
   price?: number;
   price_cop?: number;
+  image_url?: string;
   requires_patch_test: boolean;
   description: string;
 }

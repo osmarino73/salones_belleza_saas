@@ -21,6 +21,8 @@ import {
 import { api } from '../lib/supabase';
 import { Service, Stylist, Tenant } from '../types';
 
+import { ServiceImagePicker } from './ServiceImagePicker';
+
 interface SalonOnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,6 +37,7 @@ interface NewServiceItem {
   category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
   duration_minutes: number;
   price: number;
+  image_url?: string;
 }
 
 interface NewStylistItem {
@@ -107,6 +110,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const [tempServiceCategory, setTempServiceCategory] = useState<'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa'>('color');
   const [tempServiceDuration, setTempServiceDuration] = useState(60);
   const [tempServicePrice, setTempServicePrice] = useState<number>(currency === 'COP' ? 90000 : 40);
+  const [tempServiceImage, setTempServiceImage] = useState<string>('');
 
   // Paso 3: Colaboradores Iniciales
   const [stylistsList, setStylistsList] = useState<NewStylistItem[]>([]);
@@ -132,10 +136,12 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         name: tempServiceName.trim(),
         category: tempServiceCategory,
         duration_minutes: Number(tempServiceDuration),
-        price: Number(tempServicePrice)
+        price: Number(tempServicePrice),
+        image_url: tempServiceImage || undefined
       }
     ]);
     setTempServiceName('');
+    setTempServiceImage('');
     setTempServicePrice(currency === 'COP' ? 60000 : 30);
   };
 
@@ -195,6 +201,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
           price: s.price,
           price_usd: currency === 'COP' ? Math.round(s.price / 4000) : s.price,
           price_cop: currency === 'COP' ? s.price : s.price * 4000,
+          image_url: s.image_url || undefined,
           requires_patch_test: false,
           description: 'Servicio profesional garantizado.'
         };
@@ -458,6 +465,15 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   />
                 </div>
 
+                <div className="sm:col-span-2">
+                  <ServiceImagePicker
+                    value={tempServiceImage}
+                    category={tempServiceCategory}
+                    onChange={(url) => setTempServiceImage(url)}
+                    label="Foto Ilustrativa (Banco de Fotos o Subir Propia)"
+                  />
+                </div>
+
                 <div className="sm:col-span-2 flex items-end gap-3">
                   <div className="flex-1">
                     <label className="block text-[11px] font-bold text-slate-400 mb-1 flex items-center gap-1">
@@ -495,17 +511,26 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                   {servicesList.map((srv, idx) => (
-                    <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
-                      <div>
-                        <strong className="text-white block font-bold">{srv.name}</strong>
-                        <span className="text-[11px] text-slate-400">
-                          {srv.duration_minutes} min • <span className="text-emerald-400 font-bold">${srv.price.toLocaleString()} {currency}</span>
-                        </span>
+                    <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {srv.image_url && (
+                          <img
+                            src={srv.image_url}
+                            alt={srv.name}
+                            className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <strong className="text-white block font-bold truncate">{srv.name}</strong>
+                          <span className="text-[11px] text-slate-400">
+                            {srv.duration_minutes} min • <span className="text-emerald-400 font-bold">${srv.price.toLocaleString()} {currency}</span>
+                          </span>
+                        </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveService(idx)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer transition-all"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 cursor-pointer transition-all shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

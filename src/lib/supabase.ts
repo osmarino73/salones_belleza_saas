@@ -782,7 +782,8 @@ export const api = {
             ...d,
             price: p,
             price_usd: p,
-            price_cop: p
+            price_cop: p,
+            image_url: d.image_url || d.photo_url || ''
           };
         }) as Service[];
       }
@@ -798,7 +799,8 @@ export const api = {
             ...d,
             price: p,
             price_usd: p,
-            price_cop: p
+            price_cop: p,
+            image_url: d.image_url || d.photo_url || ''
           };
         });
       }
@@ -814,7 +816,8 @@ export const api = {
       tenant_id: tid,
       price: priceValue,
       price_usd: priceValue,
-      price_cop: priceValue
+      price_cop: priceValue,
+      image_url: service.image_url || ''
     };
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase.from('services').insert([{
@@ -826,6 +829,7 @@ export const api = {
         duration_minutes: serviceWithTenant.duration_minutes,
         requires_patch_test: serviceWithTenant.requires_patch_test,
         description: serviceWithTenant.description,
+        image_url: serviceWithTenant.image_url || null,
         is_active: true
       }]).select().single();
       if (!error && data) {
@@ -834,7 +838,8 @@ export const api = {
           ...data,
           price: p,
           price_usd: p,
-          price_cop: p
+          price_cop: p,
+          image_url: data.image_url || serviceWithTenant.image_url
         } as Service;
       }
     }
@@ -850,7 +855,8 @@ export const api = {
       ...service,
       price: priceValue,
       price_usd: priceValue,
-      price_cop: priceValue
+      price_cop: priceValue,
+      image_url: service.image_url || ''
     };
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase.from('services').update({
@@ -859,7 +865,8 @@ export const api = {
         price: priceValue,
         duration_minutes: normalized.duration_minutes,
         requires_patch_test: normalized.requires_patch_test,
-        description: normalized.description
+        description: normalized.description,
+        image_url: normalized.image_url || null
       }).eq('id', service.id).select().single();
       if (!error && data) {
         const p = Number(data.price ?? priceValue);
@@ -867,7 +874,8 @@ export const api = {
           ...data,
           price: p,
           price_usd: p,
-          price_cop: p
+          price_cop: p,
+          image_url: data.image_url || normalized.image_url
         } as Service;
       }
     }

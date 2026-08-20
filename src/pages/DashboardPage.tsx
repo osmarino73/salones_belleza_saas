@@ -76,6 +76,7 @@ import { PosCashRegisterPage } from '../components/PosCashRegisterPage';
 import { LoyaltyReactivationPage } from '../components/LoyaltyReactivationPage';
 import { TimePickerSelect } from '../components/TimePickerSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
+import { ServiceImagePicker } from '../components/ServiceImagePicker';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -139,6 +140,7 @@ export const DashboardPage: React.FC = () => {
     category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
     duration_minutes: number;
     price_usd: number;
+    image_url: string;
     requires_patch_test: boolean;
     description: string;
   }>({
@@ -146,6 +148,7 @@ export const DashboardPage: React.FC = () => {
     category: 'color',
     duration_minutes: 60,
     price_usd: 40,
+    image_url: '',
     requires_patch_test: false,
     description: ''
   });
@@ -689,6 +692,7 @@ export const DashboardPage: React.FC = () => {
       category: 'color',
       duration_minutes: 60,
       price_usd: 45,
+      image_url: '',
       requires_patch_test: false,
       description: ''
     });
@@ -702,6 +706,7 @@ export const DashboardPage: React.FC = () => {
       category: srv.category,
       duration_minutes: srv.duration_minutes,
       price_usd: Number(srv.price_usd ?? srv.price ?? srv.price_cop ?? 40),
+      image_url: srv.image_url || '',
       requires_patch_test: srv.requires_patch_test,
       description: srv.description || ''
     });
@@ -719,24 +724,31 @@ export const DashboardPage: React.FC = () => {
         category: serviceForm.category,
         duration_minutes: Number(serviceForm.duration_minutes),
         price_usd: Number(serviceForm.price_usd),
+        image_url: serviceForm.image_url,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description
       };
       await api.updateService(updated);
       setServices(services.map(s => s.id === updated.id ? updated : s));
     } else {
+      const activeTid = activeTenantObj?.id || getActiveTenantId();
+      const generatedId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+        ? crypto.randomUUID() 
+        : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
+
       const newSrv: Service = {
-        id: `srv-${Date.now()}`,
-        tenant_id: 'ten-1',
+        id: generatedId,
+        tenant_id: activeTid,
         name: serviceForm.name,
         category: serviceForm.category,
         duration_minutes: Number(serviceForm.duration_minutes),
         price_usd: Number(serviceForm.price_usd),
+        image_url: serviceForm.image_url,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description
       };
-      await api.createService(newSrv);
-      setServices([newSrv, ...services]);
+      const created = await api.createService(newSrv);
+      setServices([created, ...services]);
     }
     setIsServiceModalOpen(false);
   };
@@ -3020,6 +3032,19 @@ export const DashboardPage: React.FC = () => {
                       }`}
                     >
                       <div>
+                        {/* Foto de Referencia si existe */}
+                        {srv.image_url && (
+                          <div className="w-full h-32 rounded-xl overflow-hidden mb-3 border border-white/10 relative group">
+                            <img
+                              src={srv.image_url}
+                              alt={srv.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          </div>
+                        )}
+
                         <div className="flex justify-between items-start mb-2">
                           <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20">
                             {srv.category}
@@ -4808,6 +4833,14 @@ export const DashboardPage: React.FC = () => {
                   required
                 />
               </div>
+
+              {/* Selector de Fotografía de Referencia (Stock CDN o Subida Propia) */}
+              <ServiceImagePicker
+                value={serviceForm.image_url}
+                category={serviceForm.category}
+                onChange={(url) => setServiceForm({ ...serviceForm, image_url: url })}
+                label="Fotografía Ilustrativa de Referencia"
+              />
 
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Descripción del Servicio</label>
