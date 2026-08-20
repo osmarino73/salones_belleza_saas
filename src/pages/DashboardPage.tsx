@@ -270,6 +270,7 @@ export const DashboardPage: React.FC = () => {
           const tenantFromEmail = await api.getTenantByUserEmail(currentEmail);
           if (tenantFromEmail) {
             targetTenantId = tenantFromEmail.id;
+            setActiveTenantObj(tenantFromEmail);
             if (tenantFromEmail.name) setSalonName(tenantFromEmail.name);
             if (tenantFromEmail.phone) setSalonPhone(tenantFromEmail.phone);
             if (tenantFromEmail.address) setSalonAddress(tenantFromEmail.address.replace(/^,\s*/, '').trim());
@@ -287,6 +288,7 @@ export const DashboardPage: React.FC = () => {
           try {
             const activeTenant = JSON.parse(activeTenantRaw);
             targetTenantId = activeTenant.id;
+            setActiveTenantObj(activeTenant);
             if (activeTenant.name) setSalonName(activeTenant.name);
             if (activeTenant.phone) setSalonPhone(activeTenant.phone);
             if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());

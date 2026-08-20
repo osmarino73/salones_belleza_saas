@@ -64,6 +64,36 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>(initialCurrency);
   const [businessHours, setBusinessHours] = useState(tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM');
 
+  // Sincronizar reactivamente cuando llega el tenant cargado
+  React.useEffect(() => {
+    if (tenant) {
+      if (tenant.name) setSalonName(tenant.name);
+      if (tenant.phone) {
+        setSalonPhone(tenant.phone);
+        setWaPhoneNumber(tenant.phone);
+      }
+      if (tenant.city) setSalonCity(tenant.city);
+      if (tenant.currency) setCurrency(tenant.currency);
+      if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
+    } else {
+      // Intentar leer de localStorage si tenant viene vacío
+      try {
+        const raw = localStorage.getItem('bf_tenant_active');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.name) setSalonName(parsed.name);
+          if (parsed.phone) {
+            setSalonPhone(parsed.phone);
+            setWaPhoneNumber(parsed.phone);
+          }
+          if (parsed.city) setSalonCity(parsed.city);
+          if (parsed.currency) setCurrency(parsed.currency);
+          if (parsed.business_hours?.summary) setBusinessHours(parsed.business_hours.summary);
+        }
+      } catch (e) {}
+    }
+  }, [tenant, isOpen]);
+
   // Paso 2: Servicios Iniciales
   const [servicesList, setServicesList] = useState<NewServiceItem[]>([
     {

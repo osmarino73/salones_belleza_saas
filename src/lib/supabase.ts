@@ -917,7 +917,17 @@ export const api = {
     const cleanEmail = email.toLowerCase().trim();
     if (supabase && isSupabaseConfigured) {
       try {
-        // 1. Buscar estilista/dueña asociada en la tabla stylists
+        // 1. Buscar directamente en la tabla tenants por owner_email
+        const { data: tenantDirect } = await supabase
+          .from('tenants')
+          .select('*')
+          .ilike('owner_email', cleanEmail)
+          .limit(1)
+          .maybeSingle();
+
+        if (tenantDirect) return tenantDirect;
+
+        // 2. Buscar estilista/dueña asociada en la tabla stylists
         const { data: styData } = await supabase
           .from('stylists')
           .select('tenant_id')
@@ -934,7 +944,7 @@ export const api = {
           if (tenantData) return tenantData;
         }
 
-        // 2. Si no es la cuenta demo de Sofía, buscar el último tenant creado
+        // 3. Si no es la cuenta demo de Sofía, buscar el último tenant creado
         if (cleanEmail !== 'sofia@studioglamour.co') {
           const { data: latestTenant } = await supabase
             .from('tenants')
