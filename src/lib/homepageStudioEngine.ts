@@ -396,13 +396,13 @@ export function compileStudioToHtml(state: HomepageStudioState): string {
     <!-- Location & Contact -->
     <section class="location-box">
       <div>
-        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 12px; color: #fff;">Visítanos en ${city}</h2>
+        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 12px; color: var(--text);">Visítanos en ${city}</h2>
         <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 24px;">Estamos ubicados en una zona accesible y confortable para brindarte la mejor experiencia de relajación.</p>
 
         <div class="info-item">
           <div class="info-icon">📍</div>
           <div>
-            <strong style="color: #fff; font-size: 0.95rem; display: block;">Dirección Oficial:</strong>
+            <strong style="color: var(--text); font-size: 0.95rem; display: block;">Dirección Oficial:</strong>
             <span style="color: var(--muted); font-size: 0.88rem;">${address || 'Consultar por WhatsApp'}, ${city}</span>
           </div>
         </div>
@@ -410,7 +410,7 @@ export function compileStudioToHtml(state: HomepageStudioState): string {
         <div class="info-item">
           <div class="info-icon">🕒</div>
           <div>
-            <strong style="color: #fff; font-size: 0.95rem; display: block;">Horario de Atención:</strong>
+            <strong style="color: var(--text); font-size: 0.95rem; display: block;">Horario de Atención:</strong>
             <span style="color: var(--muted); font-size: 0.88rem;">${scheduleSummary}</span>
           </div>
         </div>
@@ -418,7 +418,7 @@ export function compileStudioToHtml(state: HomepageStudioState): string {
         <div class="info-item">
           <div class="info-icon">📞</div>
           <div>
-            <strong style="color: #fff; font-size: 0.95rem; display: block;">Teléfono / WhatsApp:</strong>
+            <strong style="color: var(--text); font-size: 0.95rem; display: block;">Teléfono / WhatsApp:</strong>
             <span style="color: var(--muted); font-size: 0.88rem;">${phoneWhatsapp}</span>
           </div>
         </div>
@@ -429,8 +429,8 @@ export function compileStudioToHtml(state: HomepageStudioState): string {
         </a>` : ''}
       </div>
 
-      <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 30px; text-align: center;">
-        <h3 style="color: #fff; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">¿Lista para renovar tu look?</h3>
+      <div style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 30px; text-align: center;">
+        <h3 style="color: var(--text); font-size: 1.3rem; font-weight: 800; margin-bottom: 8px;">¿Lista para renovar tu look?</h3>
         <p style="color: var(--muted); font-size: 0.88rem; margin-bottom: 20px;">Escríbenos directamente y te asesoramos con el especialista adecuado para ti.</p>
         <a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${businessName}, quisiera consultar disponibilidad para esta semana.`)}" target="_blank" class="btn-wa" style="width: 100%; justify-content: center;">
           💬 Chatear con Recepción
