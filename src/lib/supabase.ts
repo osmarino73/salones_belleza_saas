@@ -943,18 +943,6 @@ export const api = {
             .maybeSingle();
           if (tenantData) return tenantData;
         }
-
-        // 3. Si no es la cuenta demo de Sofía, buscar el último tenant creado
-        if (cleanEmail !== 'sofia@studioglamour.co') {
-          const { data: latestTenant } = await supabase
-            .from('tenants')
-            .select('*')
-            .neq('id', '00000000-0000-0000-0000-000000000001')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (latestTenant) return latestTenant;
-        }
       } catch (e) {}
     }
     const saved = localStorage.getItem('bf_tenant_active');
@@ -1833,15 +1821,33 @@ export const api = {
         console.warn('Auth notice during tenant activation:', e);
       }
 
-      // 2. Insertar en tabla tenants
+      // 2. Insertar en tabla tenants con columnas reales de la BD
       try {
-        await supabase.from('tenants').insert([newTenant]);
+        const dbTenantPayload = {
+          id: newTenant.id,
+          name: newTenant.name,
+          slug: newTenant.slug,
+          phone: newTenant.phone,
+          whatsapp_number: newTenant.phone,
+          currency: newTenant.currency || 'COP',
+          plan_tier: 'pro_ia',
+          address: newTenant.address || 'Medellín',
+          city: newTenant.city || 'Medellín',
+          country: newTenant.country || 'Colombia',
+          business_hours: newTenant.business_hours || { summary: 'Lun a Sáb: 8:00 AM – 7:00 PM' },
+          is_active: true,
+          trial_ends_at: newTenant.trial_ends_at
+        };
+        const { error: insertTenantErr } = await supabase.from('tenants').insert([dbTenantPayload]);
+        if (insertTenantErr) {
+          console.warn('DB tenant insert notice:', insertTenantErr.message);
+        }
       } catch (e) {
-        console.warn('DB tenant insert notice:', e);
+        console.warn('DB tenant insert exception:', e);
       }
     }
 
-    // 3. Crear Dueña / Admin Stylist Profile (Perfil administrativo)
+    // 3. Crear Dueña / Admin Stylist Profile (Perfil administrativo con email para asociar tenant)
     const ownerStylist: Stylist = {
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'sty-owner-' + Date.now(),
       tenant_id: newTenant.id,
