@@ -89,47 +89,51 @@ function normalizeBusinessData(p) {
   } else if (digits.length > 8) {
     intPhone = `+57${digits}`;
   } else {
-    intPhone = `+57${digits || '3000000000'}`;
+    intPhone = digits ? `+57${digits}` : '';
   }
 
   const loc = parseLocation(p.address, p.plusCode);
+  const rawCat = p.category || 'Negocio Local';
+
+  let catKey = 'general';
+  const lowerCat = `${rawCat} ${name}`.toLowerCase();
+  if (/dent|odontol|ortodon/i.test(lowerCat)) catKey = 'dental';
+  else if (/barber|barba/i.test(lowerCat)) catKey = 'barberia';
+  else if (/spa|masaje/i.test(lowerCat)) catKey = 'spa';
+  else if (/nail|uña/i.test(lowerCat)) catKey = 'nails';
+  else if (/ceja|pestaña/i.test(lowerCat)) catKey = 'cejas_pestanas';
+  else if (/est[eé]tic|facial/i.test(lowerCat)) catKey = 'estetica';
+  else if (/peluquer|sal[oó]n/i.test(lowerCat)) catKey = 'salon';
+  else if (rawCat && rawCat.length > 1) catKey = rawCat.toLowerCase().trim().replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
   return {
     negocio: {
       nombre: name,
-      rubro: p.category || 'Spa, Centro de Masajes & Bienestar',
-      categoria: 'spa',
-      eslogan: `Look & Siente Lo Mejor de Ti en ${name}`,
-      calificacion: p.rating || '5.0',
-      resenas: p.reviews || '1',
+      rubro: rawCat,
+      categoria: catKey,
+      eslogan: `${name} — ${rawCat} en ${loc.ciudad}`,
+      calificacion: p.rating || 'No calificado',
+      resenas: p.reviews || '0',
       contacto: {
-        telefono_principal: phone || intPhone,
+        telefono_principal: phone || intPhone || 'No visible en Google Maps',
         whatsapp: {
           numero: intPhone,
-          link: `https://wa.me/${intPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${name}, quisiera cotizar una cita.`)}`
+          link: intPhone ? `https://wa.me/${intPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${name}, quisiera solicitar información.`)}` : ''
         }
       },
       ubicacion: {
-        direccion: p.address || '',
+        direccion: p.address || 'Dirección no visible en Google Maps',
         ciudad: loc.ciudad,
         departamento_pais: loc.departamento_pais,
         google_maps_url: p.googleMapsUrl || 'https://maps.google.com'
       },
-      horario_atencion: 'Lunes a Sábado: 8:00 AM – 7:00 PM',
+      horario_atencion: p.schedule || 'No especificado en Google Maps',
       sitio_web: p.website || '',
       sistema_reservas: {
         estado: p.bookingStatus || 'SIN RESERVAS'
       },
-      servicios: [
-        { titulo: 'Limpieza Facial Profunda Ultrasónica', descripcion: 'Higiene cutánea con espátula ultrasónica y fototerapia.', precio_cop: 95000, duracion_minutos: 60 },
-        { titulo: 'Masaje Relajante con Piedras Calientes', descripcion: 'Terapia geotermal con aceites aromáticos.', precio_cop: 120000, duracion_minutos: 60 },
-        { titulo: 'Exfoliación Corporal & Chocolaterapia', descripcion: 'Renovación epidérmica completa con envoltura de cacao.', precio_cop: 140000, duracion_minutos: 75 },
-        { titulo: 'Circuito Hidroterapia & Jacuzzi', descripcion: 'Sesión de relajación térmica con sauna y tina.', precio_cop: 80000, duracion_minutos: 45 }
-      ],
-      especialistas: [
-        { nombre: 'Elena Gómez', rol: 'Terapeuta Holística & Masajes', especialidades: ['masajes', 'corporal'] },
-        { nombre: 'Valeria Ríos', rol: 'Cosmiatra & Especialista en Piel', especialidades: ['facial', 'peeling'] }
-      ]
+      servicios: p.services || [],
+      especialistas: []
     }
   };
 }

@@ -436,151 +436,95 @@
     if (/nail|uña|manicur|pedicur|acrilic|polygel/i.test(combined)) return 'nails';
     if (/ceja|pestaña|brow|lash|microblad|laminad/i.test(combined)) return 'cejas_pestanas';
     if (/est[eé]tic|facial|corporal|dermo|peeling|laser|depila|cosmiatr/i.test(combined)) return 'estetica';
-    return 'salon';
+    if (/peluquer|sal[oó]n de belleza|hair|estilist|balayage|peinado/i.test(combined)) return 'salon';
+    
+    // Para cualquier otro sector (guardería, jardín infantil, restaurante, gimnasio, etc.):
+    if (categoryText && categoryText.trim().length > 1) {
+      return categoryText.toLowerCase().trim().replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+    return 'general';
   }
 
-  function getRubroName(catKey) {
+  function getRubroName(categoryText, catKey) {
+    if (categoryText && categoryText.trim().length > 1) {
+      return categoryText.trim();
+    }
     const map = {
-      salon: 'Salón de Belleza, Peluquería & Colorimetría',
-      barberia: 'Barbería & Grooming Masculino VIP',
-      spa: 'Spa, Centro de Masajes & Bienestar',
-      nails: 'Nails Bar, Manicura Rusa & Pedicura Spa',
-      cejas_pestanas: 'Estudio de Cejas, Pestañas & Mirada',
-      estetica: 'Centro de Estética Avanzada & Cuidado Facial',
-      dental: 'Clínica Odontológica & Estética Dental'
+      salon: 'Salón de Belleza & Peluquería',
+      barberia: 'Barbería & Peluquería Masculina',
+      spa: 'Spa & Centro de Masajes',
+      nails: 'Nails Bar & Manicura',
+      cejas_pestanas: 'Estudio de Cejas & Pestañas',
+      estetica: 'Centro de Estética',
+      dental: 'Clínica Odontológica'
     };
-    return map[catKey] || 'Salón de Belleza & Estética Integral';
+    return map[catKey] || 'Negocio Local';
   }
 
-  function generateSlogan(catKey, name) {
-    const map = {
-      salon: 'Look & Siente Lo Mejor de Ti con Estilismo de Alta Gama',
-      barberia: 'Cortes Clásicos, Barbas Impecables y Estilo de Alto Nivel',
-      spa: 'Tu Espacio de Paz, Desconexión y Belleza Holística',
-      nails: 'Diseños Exclusivos, Perfección y Cuidado Superior para tus Uñas',
-      cejas_pestanas: 'La Mirada que Cautiva con Técnicas de Precisión y Belleza Natural',
-      estetica: 'Tecnología y Cuidado Experto para Resaltar tu Belleza Natural',
-      dental: 'Tu Mejor Sonrisa con Tecnología de Vanguardia y Atención Humana'
-    };
-    return map[catKey] || `La Mejor Experiencia de Belleza y Estilo en ${name}`;
+  function generateSlogan(rubro, name, ciudad) {
+    if (name && ciudad) {
+      return `${name} — ${rubro} en ${ciudad}`;
+    }
+    return `${name} — ${rubro}`;
   }
 
-  function generateServicesForCategory(catKey) {
-    const servicesByCat = {
-      salon: [
-        { titulo: 'Cortes & Peinados de Vanguardia', descripcion: 'Diseño de corte personalizado, visagismo y cepillado profesional con acabado brillante.', precio_cop: 45000, duracion_minutos: 45 },
-        { titulo: 'Colorimetría & Balayage Europeo', descripcion: 'Iluminación, babylights, contouring y reconstrucción capilar profunda con Olaplex.', precio_cop: 180000, duracion_minutos: 120 },
-        { titulo: 'Keratina & Alisado Orgánico', descripcion: 'Alisado termoactivo libre de formol con brillo espejo y sedosidad duradera.', precio_cop: 160000, duracion_minutos: 90 },
-        { titulo: 'Tratamiento Reparador & Nutrición', descripcion: 'Hidratación intensiva con aminoácidos y sellado de puntas.', precio_cop: 85000, duracion_minutos: 45 }
-      ],
-      barberia: [
-        { titulo: 'Corte Clásico & Degradado (Fade)', descripcion: 'Corte de precisión a tijera y máquina con asesoría de estilo y peinado.', precio_cop: 30000, duracion_minutos: 35 },
-        { titulo: 'Ritual de Barba & Toalla Caliente', descripcion: 'Perfilado de barba a navaja, aceites esenciales hidratantes y vapor ozono.', precio_cop: 25000, duracion_minutos: 30 },
-        { titulo: 'Combo Caballero VIP (Corte + Barba)', descripcion: 'Experiencia completa de corte, arreglo de barba, toalla caliente y bebida de cortesía.', precio_cop: 50000, duracion_minutos: 55 },
-        { titulo: 'Limpieza Facial Express Masculina', descripcion: 'Exfoliación profunda, extracción de impurezas y mascarilla descongestiva.', precio_cop: 35000, duracion_minutos: 30 }
-      ],
-      spa: [
-        { titulo: 'Limpieza Facial Profunda Ultrasónica', descripcion: 'Higiene cutánea con espátula ultrasónica, vapor ozono, peeling suave y fototerapia.', precio_cop: 95000, duracion_minutos: 60 },
-        { titulo: 'Masaje Relajante con Piedras Calientes', descripcion: 'Terapia geotermal con aceites aromáticos para aliviar contracturas y estrés.', precio_cop: 120000, duracion_minutos: 60 },
-        { titulo: 'Exfoliación Corporal & Chocolaterapia', descripcion: 'Renovación epidérmica completa con envoltura de cacao nutritivo y regadera suiza.', precio_cop: 140000, duracion_minutos: 75 },
-        { titulo: 'Circuito Hidroterapia & Jacuzzi', descripcion: 'Sesión de relajación térmica con sauna finlandés y tina de hidromasaje.', precio_cop: 80000, duracion_minutos: 45 }
-      ],
-      nails: [
-        { titulo: 'Manicura Rusa & Semipermanente', descripcion: 'Técnica de cutícula combinada con torno y esmaltado de alta duración (+21 días).', precio_cop: 55000, duracion_minutos: 60 },
-        { titulo: 'Pedicura Spa & Exfoliación Podal', descripcion: 'Tratamiento completo con sales marinas, mascarilla hidratante y torno podológico.', precio_cop: 60000, duracion_minutos: 50 },
-        { titulo: 'Estructuras en Acrílico / Polygel', descripcion: 'Uñas esculpidas con molde o tips, encapsulados y arquitectura perfecta.', precio_cop: 110000, duracion_minutos: 90 },
-        { titulo: 'Diseño Nail Art & Cristales Swarovski', descripcion: 'Mano alzada, baby boomer, efectos cromados y pedrería de lujo.', precio_cop: 30000, duracion_minutos: 30 }
-      ],
-      cejas_pestanas: [
-        { titulo: 'Diseño de Cejas & Henna Brow', descripcion: 'Visagismo con hilo árabe y tintura orgánica con efecto sombreado natural.', precio_cop: 40000, duracion_minutos: 40 },
-        { titulo: 'Lifting de Pestañas & Laminado de Cejas', descripcion: 'Elevación y nutrición con keratina para pestañas y cejas peinadas fijas.', precio_cop: 80000, duracion_minutos: 60 },
-        { titulo: 'Extensiones Pelo a Pelo / Volumen Ruso', descripcion: 'Colocación milimétrica de fibras premium para una mirada impactante.', precio_cop: 120000, duracion_minutos: 90 },
-        { titulo: 'Micropigmentación Microblading VIP', descripcion: 'Diseño pelo a pelo semipermanente con pigmentos hipoalergénicos biocompatibles.', precio_cop: 280000, duracion_minutos: 120 }
-      ],
-      estetica: [
-        { titulo: 'Limpieza Facial Profunda & Hidropeel', descripcion: 'Extracción al vacío, infusión de sueros antioxidantes y máscara LED.', precio_cop: 95000, duracion_minutos: 60 },
-        { titulo: 'Radiofrecuencia Facial Anti-Edad', descripcion: 'Estimulación de colágeno y elastina para tensar la piel y definir el óvalo facial.', precio_cop: 130000, duracion_minutos: 60 },
-        { titulo: 'Depilación Láser Diodo Zona VIP', descripcion: 'Eliminación definitiva del vello con cabezal frío indoloro de última generación.', precio_cop: 110000, duracion_minutos: 45 },
-        { titulo: 'Moldeo Corporal & Drenaje Linfático', descripcion: 'Protocolo reductor con maderoterapia, vacumterapia y drenaje especializado.', precio_cop: 140000, duracion_minutos: 60 }
-      ],
-      dental: [
-        { titulo: 'Limpieza Dental con Ultrasonido & Profilaxis', descripcion: 'Eliminación de sarro, pulido dental y aplicación tópica de flúor preventivo.', precio_cop: 90000, duracion_minutos: 45 },
-        { titulo: 'Blanqueamiento Dental LED en Consultorio', descripcion: 'Aclaramiento dental de alta potencia hasta 4 tonos en una sola sesión.', precio_cop: 250000, duracion_minutos: 60 },
-        { titulo: 'Diseño de Sonrisa en Resina de Alta Estética', descripcion: 'Carillas directas microhíbridas con armonización dental personalizada.', precio_cop: 650000, duracion_minutos: 90 },
-        { titulo: 'Valoración Odontológica & Escáner Digital', descripcion: 'Diagnóstico integral con cámara intraoral y plan de tratamiento detallado.', precio_cop: 50000, duracion_minutos: 30 }
-      ]
-    };
-    return servicesByCat[catKey] || servicesByCat.salon;
-  }
+  // Extraer chips o etiquetas de servicios reales de la ficha de Google Maps si están presentes
+  function extractRealServicesFromDOM() {
+    const realServices = [];
+    const serviceElements = document.querySelectorAll(
+      'div.iP2tbe, div[aria-label*="Servicios" i] div.k77Iif, div[aria-label*="Services" i] div.k77Iif, div.G8Q6sf div.fontBodyMedium, div.m6QErb button.uEubGf'
+    );
+    
+    const seen = new Set();
+    serviceElements.forEach(el => {
+      const text = clean(el.textContent);
+      if (text && text.length > 2 && text.length < 80 && !seen.has(text.toLowerCase())) {
+        seen.add(text.toLowerCase());
+        if (!/^(todos|servicios|services|resumen|opiniones|fotos|acerca de|informaci[oó]n|llamar|c[oó]mo llegar|guardar|compartir)$/i.test(text)) {
+          realServices.push({
+            titulo: text,
+            descripcion: `Servicio ofrecido por el negocio según su ficha de Google Maps.`
+          });
+        }
+      }
+    });
 
-  function generateSpecialistsForCategory(catKey) {
-    const specialistsByCat = {
-      salon: [
-        { nombre: 'Emma Styles', rol: 'Master Colorista & Balayage', especialidades: ['color', 'keratina'] },
-        { nombre: 'Alex Carter', rol: 'Master Stylist & Cortes', especialidades: ['corte', 'peinado'] },
-        { nombre: 'Jessica Moore', rol: 'Especialista en Piel & Keratinas', especialidades: ['keratina', 'spa'] }
-      ],
-      barberia: [
-        { nombre: 'Carlos "Barber" Silva', rol: 'Master Barber & Fade Expert', especialidades: ['corte', 'barba'] },
-        { nombre: 'David Miller', rol: 'Especialista en Barba & Ritual Spa', especialidades: ['barba', 'facial'] }
-      ],
-      spa: [
-        { nombre: 'Elena Gómez', rol: 'Terapeuta Holística & Masajes', especialidades: ['masajes', 'corporal'] },
-        { nombre: 'Valeria Ríos', rol: 'Cosmiatra & Especialista en Piel', especialidades: ['facial', 'peeling'] }
-      ],
-      nails: [
-        { nombre: 'Mariana Nails', rol: 'Master Educator & Polygel', especialidades: ['acrilico', 'polygel'] },
-        { nombre: 'Sofia Díaz', rol: 'Especialista en Manicura Rusa & Nail Art', especialidades: ['semipermanente', 'nailart'] }
-      ],
-      cejas_pestanas: [
-        { nombre: 'Camila Brow', rol: 'Master Artist en Microblading', especialidades: ['cejas', 'microblading'] },
-        { nombre: 'Valentina Lashes', rol: 'Especialista en Mirada & Extensiones', especialidades: ['pestañas', 'lifting'] }
-      ],
-      estetica: [
-        { nombre: 'Dra. Marcela Restrepo', rol: 'Médica Estética & Cuidado Dermo-Facial', especialidades: ['facial', 'laser'] },
-        { nombre: 'Laura Montoya', rol: 'Cosmiatra & Tecnologías Corporales', especialidades: ['corporal', 'peeling'] }
-      ],
-      dental: [
-        { nombre: 'Dra. Laura Morales', rol: 'Especialista en Estética Dental', especialidades: ['estetica', 'blanqueamiento'] },
-        { nombre: 'Dr. Andrés Gómez', rol: 'Ortodoncista & Odontología Integral', especialidades: ['diagnostico', 'profilaxis'] }
-      ]
-    };
-    return specialistsByCat[catKey] || specialistsByCat.salon;
+    return realServices;
   }
 
   // =========================================================================
-  // 5. CONSTRUCTOR DEL ESQUEMA OFICIAL DATOS_NEGOCIO.json
+  // 5. CONSTRUCTOR DEL ESQUEMA OFICIAL DATOS_NEGOCIO.json (SOLO DATOS REALES)
   // =========================================================================
 
   function buildBusinessJsonObject(p) {
-    const catKey = detectCategoryKey(p.category, p.name);
-    const rubro = getRubroName(catKey);
-    const eslogan = generateSlogan(catKey, p.name);
+    const rawCategory = p.category || '';
+    const catKey = detectCategoryKey(rawCategory, p.name);
+    const rubro = getRubroName(rawCategory, catKey);
     const phoneData = normalizePhone(p.phone);
     const loc = parseLocation(p.address, p.plusCode);
-    const services = generateServicesForCategory(catKey);
-    const specialists = generateSpecialistsForCategory(catKey);
+    const eslogan = generateSlogan(rubro, p.name, loc.ciudad);
 
     const waNumber = phoneData.international.replace(/\D/g, '');
-    const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(`Hola ${p.name}, quisiera cotizar una cita.`)}`;
+    const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Hola ${p.name}, quisiera solicitar información.`)}` : '';
 
-    let horarioAtencion = 'Lunes a Sábado: 8:00 AM – 7:00 PM';
-    if (p.schedule) {
-      horarioAtencion = p.schedule;
-    }
+    const horarioAtencion = p.schedule || 'No especificado en Google Maps';
+
+    // Extraer únicamente servicios reales si existen en la ficha
+    const domServices = (typeof extractRealServicesFromDOM === 'function') ? extractRealServicesFromDOM() : [];
+    const realServices = (p.services && p.services.length > 0) ? p.services : domServices;
 
     return {
       negocio: {
         nombre: p.name || 'Negocio Local',
-        rubro,
+        rubro: rubro,
         categoria: catKey,
-        eslogan,
-        calificacion: p.rating || '5.0',
-        resenas: p.reviews || '1',
+        eslogan: eslogan,
+        calificacion: p.rating || 'No calificado',
+        resenas: p.reviews || '0',
         contacto: {
-          telefono_principal: phoneData.formatted || phoneData.international,
+          telefono_principal: phoneData.formatted || phoneData.international || 'No visible en Google Maps',
           whatsapp: {
-            numero: phoneData.international,
+            numero: phoneData.international || '',
             link: waLink
           }
         },
@@ -597,8 +541,8 @@
           oportunidad_saas: p.booking?.hasBookingSystem === false ? 'ALTA (Lead Calificado)' : 'MEDIA',
           motivo_auditoria: p.booking?.reason || 'Sin auditoría'
         },
-        servicios: services,
-        especialistas: specialists
+        servicios: realServices,
+        especialistas: []
       }
     };
   }

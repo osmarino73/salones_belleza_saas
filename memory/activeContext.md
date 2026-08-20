@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Local Homepage Studio (Diseño Web Guiado por Referencia Visual & Google Maps), Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
+- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Activación de Tenants B2B desde Superadmin (Solicitud de Email & Entrega de Credenciales por WhatsApp), Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -13,6 +13,13 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Flujo de Activación de Tenants B2B & Solicitud de Correo ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+  - **Eliminación de barras superpuestas**: Se eliminó el banner de reclamo de 14 días y los botones flotantes de `/sitio/:slug` para mantener la estética 100% pura y original del diseño.
+  - **Inyección no intrusiva de enlaces**: Se creó la skill `landing-html-injector` y el util `prospectHtmlInjector.ts` para conectar los botones nativos del HTML a `/reservar/:slug` y los botones de WhatsApp nativos con el número internacional del negocio.
+  - **Pitch de Prospección con Solicitud de Correo**: El mensaje inicial de WhatsApp solicita a la dueña su email para entregarle su acceso de administración.
+  - **Modal de Activación en Superadmin**: Botón `🔑 Activar Acceso` en cada prospecto. Permite ingresar el correo de la dueña, define una contraseña temporal (ej. `Kapa2026*`), moneda (COP) y días de prueba (14 días).
+  - **Migración Automática**: Al activar, se crea el usuario en `auth.users`, el negocio en `public.tenants`, los 4 servicios en `public.services`, las 3 especialistas en `public.stylists`, el perfil de la dueña administradora y marca el prospecto como `status: 'reclamado'`.
+  - **Entrega de Credenciales en 1 Clic**: Genera el mensaje de bienvenida formateado con URL de login, usuario, contraseña temporal y enlaces oficiales listo para enviar por WhatsApp a la dueña.
 - **Extractor Google Maps Prospector AI v2.0 con Exportador de `DATOS_NEGOCIO.json` ([`document/maps-reservation-prospector-v2/`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/document/maps-reservation-prospector-v2/))**:
   - **Capacidades Implementadas**:
     1. **Extracción y Normalización Integral de Metadatos**: Captura nombre, calificación, total de opiniones, rubro/categoría normalizada (`salon`, `barberia`, `spa`, `nails`, `cejas_pestanas`, `estetica`, `dental`), dirección, ciudad detectada, teléfono con formato internacional `+57...` y enlace directo de Google Maps (`google_maps_url`).
