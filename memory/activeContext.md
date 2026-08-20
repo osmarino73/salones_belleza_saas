@@ -13,6 +13,10 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Módulo de Gestión de Categorías Dinámicas & Servicios con Fotografías de Referencia ([`create_service_categories_table.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_service_categories_table.sql), [`ServiceImagePicker.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/ServiceImagePicker.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - **Categorías CRUD**: Pestaña dedicada en *"Equipo, Servicios & Stock"* para Crear, Editar y Eliminar categorías de servicios con iconos/emojis y slugs personalizados. Sincronizadas en la tabla `service_categories` de Supabase con RLS habilitado.
+  - **Banco de Imágenes & Subida Propia de Servicios**: Cada tratamiento cuenta con `ServiceImagePicker`, permitiendo seleccionar fotos WebP curadas del Stock CDN o cargar imágenes locales comprimidas en WebP.
+  - **Especialidades & WhatsApp `+57`**: Selector toggle multiselección de categorías para colaboradoras y prefijo `🇨🇴 +57` con input de 10 dígitos.
 - **Onboarding de Bienvenida para Nuevos Negocios & Activación Virgen ([`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
   - **Cuentas Vírgenes**: Al activar un negocio desde el Superadmin (`activateProspectAsTenant`), ya no se migran servicios ni colaboradoras ficticias. El negocio inicia en estado 100% virgen (con $0 facturación, 0 citas ficticias y solo el perfil administrativo de la dueña).
   - **Onboarding Wizard en 4 Pasos**: Se diseñó un asistente interactivo que se despliega automáticamente para nuevas cuentas:
