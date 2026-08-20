@@ -93,6 +93,27 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const [newCatNameOnboarding, setNewCatNameOnboarding] = useState('');
   const [newCatIconOnboarding, setNewCatIconOnboarding] = useState('✨');
 
+  // Cargar categorías existentes del salón al abrir
+  React.useEffect(() => {
+    async function fetchCats() {
+      if (!isOpen) return;
+      const tid = tenant?.id;
+      if (tid) {
+        try {
+          const dbCats = await api.getCategories(tid);
+          if (dbCats && dbCats.length > 0) {
+            setAvailableCategories(dbCats.map(c => ({
+              id: c.slug || c.id,
+              name: c.name,
+              icon: c.icon || '✨'
+            })));
+          }
+        } catch (e) {}
+      }
+    }
+    fetchCats();
+  }, [tenant, isOpen]);
+
   // Paso 2: Servicios Iniciales
   const [servicesList, setServicesList] = useState<NewServiceItem[]>([
     {
@@ -303,22 +324,31 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#121624] border border-orange-500/40 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl text-slate-100 space-y-6 my-8">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-300">
+      <div className="relative bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] border border-white/15 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] text-slate-100 space-y-6 my-8 overflow-hidden">
         
+        {/* Glow Decorativo de Fondo */}
+        <div className="absolute top-0 right-1/4 w-72 h-72 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
         {/* Header con Barra de Progreso */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black shadow-lg shadow-[#FF5A36]/30">
-                <Sparkles className="w-5 h-5" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black shadow-lg shadow-[#FF5A36]/30 ring-1 ring-white/20">
+                <Sparkles className="w-6 h-6 text-white animate-pulse" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-white flex items-center gap-2">
-                  ¡Bienvenida a BeautyFlow AI! 🎉
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FF5A36] bg-[#FF5A36]/10 px-2 py-0.5 rounded-full border border-[#FF5A36]/20">
+                    Setup Inicial • BeautyFlow AI
+                  </span>
+                </div>
+                <h2 className="text-xl font-black text-white tracking-tight mt-0.5">
+                  ¡Bienvenida a tu Plataforma! 🎉
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Configura tu negocio en solo 3 minutos para empezar a agendar citas.
+                  Configura los 4 pilares de tu negocio para activar tu agendamiento inteligente.
                 </p>
               </div>
             </div>
@@ -326,33 +356,35 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all border border-white/5"
               title="Cerrar y continuar luego"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Stepper Wizard Bar */}
+          {/* Stepper Wizard Bar Prémium */}
           <div className="grid grid-cols-4 gap-2 pt-2">
             {[
-              { num: 1, title: 'Tu Salón' },
-              { num: 2, title: 'Servicios' },
-              { num: 3, title: 'Equipo' },
-              { num: 4, title: 'WhatsApp (Opcional)' }
+              { num: 1, title: 'Tu Salón', icon: '🏢' },
+              { num: 2, title: 'Servicios', icon: '✂️' },
+              { num: 3, title: 'Equipo', icon: '👥' },
+              { num: 4, title: 'WhatsApp IA', icon: '🤖' }
             ].map((stepItem) => (
               <div
                 key={stepItem.num}
-                className={`p-2 rounded-xl border text-center transition-all ${
+                className={`p-2.5 rounded-2xl border text-center transition-all duration-300 relative overflow-hidden ${
                   currentStep === stepItem.num
-                    ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-white font-bold'
+                    ? 'bg-gradient-to-b from-[#FF5A36]/20 to-[#FF5A36]/5 border-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/20'
                     : currentStep > stepItem.num
-                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold'
-                    : 'bg-white/5 border-white/5 text-slate-500 font-medium'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-semibold'
+                    : 'bg-white/[0.02] border-white/5 text-slate-500 font-medium'
                 }`}
               >
-                <div className="text-[10px] uppercase tracking-wider block">Paso {stepItem.num}</div>
-                <div className="text-xs truncate">{stepItem.title}</div>
+                <div className="text-[10px] uppercase font-bold tracking-wider opacity-80 flex items-center justify-center gap-1">
+                  <span>{stepItem.icon}</span> Paso {stepItem.num}
+                </div>
+                <div className="text-xs font-bold truncate mt-0.5">{stepItem.title}</div>
               </div>
             ))}
           </div>
@@ -526,21 +558,38 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
                           if (!newCatNameOnboarding.trim()) return;
                           const cleanSlug = newCatNameOnboarding.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
+                          const iconVal = newCatIconOnboarding.trim() || '✨';
+                          const nameVal = newCatNameOnboarding.trim();
+                          const activeTid = tenant?.id || '00000000-0000-0000-0000-000000000001';
+
                           const newEntry = {
                             id: cleanSlug,
-                            name: newCatNameOnboarding.trim(),
-                            icon: newCatIconOnboarding.trim() || '✨'
+                            name: nameVal,
+                            icon: iconVal
                           };
-                          setAvailableCategories([...availableCategories, newEntry]);
+                          setAvailableCategories(prev => [...prev, newEntry]);
                           setTempServiceCategory(cleanSlug);
                           setNewCatNameOnboarding('');
                           setIsAddingNewCatOnboarding(false);
+
+                          // Guardar inmediatamente en Supabase / LocalStorage
+                          try {
+                            await api.createCategory({
+                              tenant_id: activeTid,
+                              name: nameVal,
+                              slug: cleanSlug,
+                              icon: iconVal,
+                              description: `Categoría ${nameVal}`
+                            });
+                          } catch (err) {
+                            console.warn('Error saving category:', err);
+                          }
                         }}
                         disabled={!newCatNameOnboarding.trim()}
-                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[10px] font-bold py-1 rounded-md cursor-pointer"
+                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[10px] font-bold py-1 rounded-md cursor-pointer shadow-sm"
                       >
                         ✓ Crear y Asignar
                       </button>
