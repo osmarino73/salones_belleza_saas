@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, Stylist, Service, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant } from '../types';
+import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -1522,13 +1523,15 @@ export const api = {
     const saved = localStorage.getItem('bf_prospect_sites_v1');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        inMemoryProspectSitesCache = parsed;
-        return parsed;
+        const parsed = JSON.parse(saved) as ProspectSite[];
+        const hasKapa = parsed.some(s => s.slug === 'kapa-spa');
+        const merged = hasKapa ? parsed : [KAPA_SPA_SITE_DATA, ...parsed];
+        inMemoryProspectSitesCache = merged;
+        return merged;
       } catch (e) {}
     }
 
-    // Datos Demo Iniciales (Studio Glamour Spa Poblado)
+    // Datos Demo Iniciales (Kapa Spa Apartadó & Studio Glamour Spa Poblado)
     const demoSite: ProspectSite = {
       id: 'ps-demo-101',
       slug: 'studio-glamour-spa',
@@ -1590,9 +1593,10 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    inMemoryProspectSitesCache = [demoSite];
-    safeSaveProspectSitesToLocalStorage([demoSite]);
-    return [demoSite];
+    const defaultSites = [KAPA_SPA_SITE_DATA, demoSite];
+    inMemoryProspectSitesCache = defaultSites;
+    safeSaveProspectSitesToLocalStorage(defaultSites);
+    return defaultSites;
   },
 
   async getProspectSiteBySlug(slug: string): Promise<ProspectSite | null> {

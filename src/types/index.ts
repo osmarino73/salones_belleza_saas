@@ -269,12 +269,14 @@ export interface BusinessServiceItem {
   descripcion: string;
   precio_cop?: number;
   duracion_minutos?: number;
+  [key: string]: any;
 }
 
 export interface BusinessSpecialistItem {
   nombre: string;
   rol: string;
   especialidades?: string[];
+  [key: string]: any;
 }
 
 export interface BusinessContactData {
@@ -283,6 +285,7 @@ export interface BusinessContactData {
     numero: string;
     link?: string;
   };
+  [key: string]: any;
 }
 
 export interface BusinessDataPayload {
@@ -294,10 +297,12 @@ export interface BusinessDataPayload {
     google_maps_url?: string;
     direccion?: string;
     ciudad?: string;
+    [key: string]: any;
   };
   horario_atencion?: string;
   servicios?: BusinessServiceItem[];
   especialistas?: BusinessSpecialistItem[];
+  [key: string]: any;
 }
 
 export interface ProspectSite {
