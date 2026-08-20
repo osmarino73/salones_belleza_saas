@@ -315,6 +315,51 @@ export const SuperadminDashboardPage: React.FC = () => {
     setJsonInputText(JSON.stringify(luxusJson, null, 2));
   };
 
+  // Carga del preset Kapa Spa (Apartadó)
+  const handleLoadKapaPreset = async () => {
+    const kapaJson = {
+      negocio: {
+        nombre: "Kapa Spa",
+        rubro: "Spa, Centro de Masajes & Bienestar",
+        categoria: "spa",
+        eslogan: "Tu Espacio de Paz, Desconexión y Belleza Holística",
+        calificacion: "5.0",
+        resenas: "1",
+        contacto: {
+          telefono_principal: "(+57) 324 451 9640",
+          telefono_raw: "+573244519640",
+          whatsapp: {
+            numero: "+573244519640",
+            link: "https://wa.me/573244519640?text=Hola%20Kapa%20Spa%2C%20quisiera%20cotizar%20una%20cita."
+          }
+        },
+        ubicacion: {
+          direccion: "Cra. 92 #97-10",
+          ciudad: "Apartadó",
+          departamento_pais: "Antioquia, Colombia",
+          google_maps_url: "https://www.google.com/maps/place/Kapa+Spa/@7.8837627,-76.6367651,16z"
+        },
+        horario_atencion: "Lunes a Sábado: 8:00 AM – 7:00 PM",
+        servicios: [
+          { titulo: "Limpieza Facial Profunda Ultrasónica", descripcion: "Higiene cutánea con espátula ultrasónica, vapor ozono y fototerapia.", precio_cop: 95000, duracion_minutos: 60 },
+          { titulo: "Masaje Relajante con Piedras Calientes", descripcion: "Terapia geotermal con aceites aromáticos para aliviar contracturas.", precio_cop: 120000, duracion_minutos: 60 },
+          { titulo: "Exfoliación Corporal & Chocolaterapia", descripcion: "Renovación epidérmica completa con envoltura de cacao nutritivo.", precio_cop: 140000, duracion_minutos: 75 },
+          { titulo: "Circuito Hidroterapia & Jacuzzi", descripcion: "Sesión de relajación térmica con sauna y tina de hidromasaje.", precio_cop: 80000, duracion_minutos: 45 }
+        ],
+        especialistas: [
+          { nombre: "Elena Gómez", rol: "Terapeuta Holística & Masajes" },
+          { nombre: "Valeria Ríos", rol: "Cosmiatra & Especialista en Piel" },
+          { nombre: "Camila Morales", rol: "Especialista en Hidroterapia & Spa" }
+        ]
+      }
+    };
+
+    setFileNameJson('DATOS_NEGOCIO.json (Kapa Spa - Apartadó)');
+    setFileNameHtml('kapa_spa_standalone.html');
+    parseAndApplyBusinessData(kapaJson);
+    setJsonInputText(JSON.stringify(kapaJson, null, 2));
+  };
+
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublishSite = async (e: React.FormEvent) => {
@@ -555,14 +600,24 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
                       <Sparkles className="w-4 h-4" />
                       <span>Ingesta Rápida por JSON / Formulario Manual</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleLoadLuxusPreset}
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-300 border border-pink-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                      <span>✨ Cargar Demo: Luxus Beauty Spa</span>
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={handleLoadKapaPreset}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>🌿 Cargar: Kapa Spa (Apartadó)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLoadLuxusPreset}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 text-pink-300 border border-pink-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                        <span>✨ Cargar: Luxus Beauty Spa</span>
+                      </button>
+                    </div>
                   </div>
                   <h2 className="text-xl font-black">Ingesta de Negocio & Sitio Web</h2>
                   <p className="text-xs text-slate-400">

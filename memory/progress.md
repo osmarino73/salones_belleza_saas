@@ -56,8 +56,10 @@
 - [x] **Selector de Hora Visual Interactivo (`TimePickerSelect.tsx`)**:
   - Reemplazo de inputs manuales de texto por selector con horarios frecuentes, cuadrícula de intervalos de 15 min y diales de precisión (Hora, Minuto, AM/PM).
 
-- [x] **Extractor Google Maps Prospector v2 (`document/maps-reservation-prospector-v2/`)**:
-  - Selectores 2026 actualizados para extracción de nombre, categoría, rating, reseñas, teléfono, dirección y sitio web con exportación CSV.
+- [x] **Extractor Google Maps Prospector AI v2.0 (`document/maps-reservation-prospector-v2/`)**:
+  - Extracción inteligente de metadatos de negocios en Google Maps 2026 (nombre, categoría normalizada, rating, reseñas, teléfono/WhatsApp `+57...`, dirección, ciudad, URL Maps y sitio web).
+  - Generador automático de **`DATOS_NEGOCIO.json`** enriquecido con eslogan persuasivo, catálogo de servicios con precios COP y equipo de especialistas por categoría.
+  - Botones de acción directa en el panel flotante y en el popup: `📋 Copiar JSON`, `📥 Descargar JSON` y `📦 Exportar Bundle JSON (Todos)` para alimentar instantáneamente el **Homepage Studio** y el **Superadmin Dashboard**.
 
 - [x] **Compresor y Subida Profesional de Imágenes WebP (`ImageUploadField.tsx` y `imageCompressor.ts`)**:
   - Compresión HTML5 Canvas del lado del cliente (>95% de reducción, fotos de 5MB pasan a ~25KB WebP a 400x400 px).

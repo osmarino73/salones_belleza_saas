@@ -25,16 +25,37 @@ function sanitizeSlug(text) {
     .replace(/^-+|-+$/g, '');
 }
 
-const CDN_FALLBACKS = {
-  hero: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80',
-  color: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80',
-  corte: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=800&q=80',
-  spa: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
-  nails: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
-  barber: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80'
+const CDN_IMAGE_MAP = {
+  // Spas & Masajes
+  hero_spa: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80',
+  service_facial: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80',
+  about_massage: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80',
+  service_jacuzzi: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=800&q=80',
+  hero_salon: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80',
+  hero_barber: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80',
+  hero_nails: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80',
+  // Especialistas
+  specialist_elena: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&q=80',
+  specialist_valeria: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80',
+  specialist_camila: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=500&q=80'
 };
 
-function buildStandaloneHtml(folderPath) {
+function getCdnUrlForImagePath(imgPath, category = 'spa') {
+  const lower = imgPath.toLowerCase();
+  for (const [key, url] of Object.entries(CDN_IMAGE_MAP)) {
+    if (lower.includes(key)) return url;
+  }
+  if (lower.includes('facial')) return CDN_IMAGE_MAP.service_facial;
+  if (lower.includes('massage') || lower.includes('masaje') || lower.includes('piedras')) return CDN_IMAGE_MAP.about_massage;
+  if (lower.includes('jacuzzi') || lower.includes('hidro')) return CDN_IMAGE_MAP.service_jacuzzi;
+  if (lower.includes('specialist') || lower.includes('terapeuta') || lower.includes('estilista')) return CDN_IMAGE_MAP.specialist_valeria;
+  if (category === 'spa') return CDN_IMAGE_MAP.hero_spa;
+  if (category === 'barberia') return CDN_IMAGE_MAP.hero_barber;
+  if (category === 'nails') return CDN_IMAGE_MAP.hero_nails;
+  return CDN_IMAGE_MAP.hero_salon;
+}
+
+function buildStandaloneHtml(folderPath, category = 'spa') {
   const indexHtmlPath = path.join(folderPath, 'index.html');
 
   if (!fs.existsSync(indexHtmlPath)) {
@@ -44,7 +65,7 @@ function buildStandaloneHtml(folderPath) {
   let html = fs.readFileSync(indexHtmlPath, 'utf8');
   const stylesPath = path.join(folderPath, 'styles.css');
 
-  // Inyectar CSS
+  // Inyectar CSS dentro del <style>
   if (fs.existsSync(stylesPath)) {
     const css = fs.readFileSync(stylesPath, 'utf8');
     if (html.includes('<link rel="stylesheet" href="styles.css">')) {
@@ -54,11 +75,21 @@ function buildStandaloneHtml(folderPath) {
     }
   }
 
-  // Reemplazar rutas locales o Base64 por imágenes CDN de muestra de alta gama
-  html = html.replace(/src=["']assets\/images\/[^"']+["']/gi, `src="${CDN_FALLBACKS.hero}"`);
-  html = html.replace(/url\(["']?assets\/images\/[^)"']+["']?\)/gi, `url("${CDN_FALLBACKS.hero}")`);
-  html = html.replace(/src=["']data:image\/[^"']+["']/gi, `src="${CDN_FALLBACKS.hero}"`);
-  html = html.replace(/url\(["']?data:image\/[^)"']+["']?\)/gi, `url("${CDN_FALLBACKS.hero}")`);
+  // Reemplazar rutas locales src="assets/images/..." con la URL CDN contextual exacta
+  html = html.replace(/src=["'](assets\/images\/[^"']+)["']/gi, (match, p1) => {
+    const cdnUrl = getCdnUrlForImagePath(p1, category);
+    return `src="${cdnUrl}"`;
+  });
+
+  // Reemplazar fondos CSS url("assets/images/...")
+  html = html.replace(/url\(["']?(assets\/images\/[^)"']+)["']?\)/gi, (match, p1) => {
+    const cdnUrl = getCdnUrlForImagePath(p1, category);
+    return `url("${cdnUrl}")`;
+  });
+
+  // Reemplazar cualquier Base64 residual pesado
+  html = html.replace(/src=["']data:image\/[^"']+["']/gi, `src="${CDN_IMAGE_MAP.hero_spa}"`);
+  html = html.replace(/url\(["']?data:image\/[^)"']+["']?\)/gi, `url("${CDN_IMAGE_MAP.hero_spa}")`);
 
   return html;
 }

@@ -1,22 +1,25 @@
-
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Maps Prospector</title>
+<title>Maps Prospector AI</title>
 <link rel="stylesheet" href="popup.css">
 </head>
 <body>
 <header>
-  <img src="icons/icon-32.png" alt="">
-  <div><strong>Maps Prospector</strong><small>Prospectos guardados</small></div>
+  <img src="icons/icon-32.png" alt="Icon">
+  <div>
+    <strong>Maps Prospector AI</strong>
+    <small>Extractor de DATOS_NEGOCIO.json para Homepage</small>
+  </div>
 </header>
 <div class="toolbar">
-  <button id="export">Exportar CSV</button>
-  <button id="clear">Vaciar lista</button>
+  <button id="export-json" class="btn-primary" title="Exportar paquete de archivos JSON para Homepage Studio">📦 Exportar JSON</button>
+  <button id="export" class="btn-secondary" title="Exportar tabla en CSV">📊 CSV</button>
+  <button id="clear" class="btn-danger" title="Borrar historial de prospectos">🗑️</button>
 </div>
-<div id="count"></div>
+<div id="count">0 prospectos guardados</div>
 <div id="list"></div>
 <script src="popup.js"></script>
 </body>

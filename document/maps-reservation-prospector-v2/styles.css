@@ -1,41 +1,255 @@
-
 #mrp-root {
   position: fixed;
   z-index: 2147483647;
   top: 14px;
   right: 14px;
-  width: 390px;
+  width: 410px;
   max-height: calc(100vh - 28px);
   overflow: hidden;
-  background: #fff;
-  color: #1f2937;
-  border: 1px solid #d9dee7;
-  border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.22);
-  font: 13px/1.4 Arial, sans-serif;
+  background: #0f1422;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55), 0 0 20px rgba(255, 90, 54, 0.12);
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-#mrp-root * { box-sizing: border-box; }
-.mrp-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #edf0f4; }
-.mrp-header strong { display:block; font-size:15px; }
-#mrp-status { display:block; color:#6b7280; font-size:11px; margin-top:2px; }
-#mrp-close { border:0; background:transparent; font-size:22px; cursor:pointer; color:#6b7280; }
-.mrp-toolbar { display:flex; gap:8px; padding:10px 14px; }
-.mrp-toolbar button, .mrp-save { border:0; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:600; }
-#mrp-scan { background:#1c56be; color:#fff; }
-#mrp-open { background:#eef3ff; color:#16479e; }
-#mrp-results { max-height:calc(100vh - 190px); overflow:auto; padding:0 10px 10px; }
-.mrp-row { padding:10px; margin-top:8px; border:1px solid #e5e7eb; border-radius:10px; background:#fafbfc; }
-.mrp-row-title { font-weight:700; margin-bottom:4px; }
-.mrp-row-data { color:#4b5563; font-size:12px; margin-top:2px; overflow-wrap:anywhere; }
-.mrp-row-data a { color:#1456c0; }
-.mrp-row-actions { margin-top:8px; }
-.mrp-save { background:#111827; color:white; width:100%; }
-.mrp-empty { padding:18px; color:#6b7280; text-align:center; }
-#mrp-note { border-top:1px solid #edf0f4; padding:8px 14px; color:#6b7280; font-size:10px; }
-.mrp-badge { position:absolute; right:8px; top:8px; z-index:5; padding:4px 7px; border-radius:999px; font:bold 10px Arial; box-shadow:0 1px 3px rgba(0,0,0,.15); }
-.mrp-no-booking { background:#fff3cd; color:#7a5600; }
-.mrp-booking { background:#dff6e8; color:#126b35; }
-.mrp-checking { background:#e7eefc; color:#234b91; }
-.mrp-review { background:#f3f4f6; color:#4b5563; }
-.mrp-row-data strong { color:#111827; }
-.mrp-row-data a { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+#mrp-root * {
+  box-sizing: border-box;
+}
+
+.mrp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #141926;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mrp-header strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 40%, #ff7e61 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#mrp-status {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+#mrp-close {
+  border: 0;
+  background: rgba(255, 255, 255, 0.05);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+#mrp-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.mrp-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #0b0e17;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mrp-toolbar button {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 11px;
+  transition: all 0.2s;
+  flex: 1;
+  text-align: center;
+}
+
+#mrp-scan {
+  background: linear-gradient(135deg, #FF5A36, #e11d48);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 90, 54, 0.3);
+}
+#mrp-scan:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+#mrp-export-bundle {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+#mrp-export-bundle:hover {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+#mrp-open {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#mrp-open:hover {
+  background: #334155;
+}
+
+#mrp-results {
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+  padding: 10px 14px;
+}
+
+#mrp-results::-webkit-scrollbar {
+  width: 5px;
+}
+#mrp-results::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.mrp-row {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: #141926;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s;
+}
+.mrp-row:hover {
+  border-color: rgba(255, 90, 54, 0.35);
+}
+
+.mrp-row-title {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.mrp-row-data {
+  color: #94a3b8;
+  font-size: 11.5px;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.mrp-row-data a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+.mrp-row-data a:hover {
+  text-decoration: underline;
+}
+.mrp-row-data strong {
+  color: #e2e8f0;
+}
+
+.mrp-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mrp-actions-grid button {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mrp-btn-copy-json {
+  background: #0284c7;
+  color: #ffffff;
+}
+.mrp-btn-copy-json:hover {
+  background: #0369a1;
+}
+
+.mrp-btn-dl-json {
+  background: #0f766e;
+  color: #ffffff;
+}
+.mrp-btn-dl-json:hover {
+  background: #115e59;
+}
+
+.mrp-btn-save {
+  background: #334155;
+  color: #f1f5f9;
+}
+.mrp-btn-save:hover {
+  background: #475569;
+}
+
+.mrp-empty {
+  padding: 24px 12px;
+  color: #94a3b8;
+  text-align: center;
+  font-size: 12px;
+}
+
+#mrp-note {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 14px;
+  color: #64748b;
+  font-size: 10px;
+  background: #0b0e17;
+}
+
+.mrp-badge {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 5;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font: bold 10px -apple-system, sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.mrp-no-booking {
+  background: #fef08a;
+  color: #854d0e;
+  border: 1px solid #eab308;
+}
+
+.mrp-booking {
+  background: #bbf7d0;
+  color: #166534;
+  border: 1px solid #22c55e;
+}
+
+.mrp-checking {
+  background: #bfdbfe;
+  color: #1e40af;
+  border: 1px solid #3b82f6;
+}
+
+.mrp-review {
+  background: #e2e8f0;
+  color: #475569;
+}

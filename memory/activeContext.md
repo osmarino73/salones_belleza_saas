@@ -13,6 +13,12 @@
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
 ## 📌 Decisiones & Ajustes Recientes
+- **Extractor Google Maps Prospector AI v2.0 con Exportador de `DATOS_NEGOCIO.json` ([`document/maps-reservation-prospector-v2/`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/document/maps-reservation-prospector-v2/))**:
+  - **Capacidades Implementadas**:
+    1. **Extracción y Normalización Integral de Metadatos**: Captura nombre, calificación, total de opiniones, rubro/categoría normalizada (`salon`, `barberia`, `spa`, `nails`, `cejas_pestanas`, `estetica`, `dental`), dirección, ciudad detectada, teléfono con formato internacional `+57...` y enlace directo de Google Maps (`google_maps_url`).
+    2. **Generación Automática de `DATOS_NEGOCIO.json`**: Crea al vuelo el JSON estructurado completo con eslogan persuasivo de alta gama, catálogo de 4 servicios especializados con precios en $ COP y duración, y equipo de especialistas con roles y áreas de especialidad.
+    3. **Botones de Acción en 1-Clic en Google Maps**: En cada tarjeta del panel flotante y del popup de la extensión se añadieron botones para `📋 Copiar JSON`, `📥 Descargar JSON` y `📦 Exportar Bundle JSON (Todos)`.
+    4. **Integración Directa con Homepage Studio**: El archivo `DATOS_NEGOCIO.json` extraído es 100% compatible para autocompletar en 1 segundo el **Local Homepage Studio** (`HomepageStudioModal.tsx`) y el **Superadmin Lead Hub** (`SuperadminDashboardPage.tsx`).
 - **Local Homepage Studio (Estudio Integral de Diseño Web B2B) ([`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`homepageStudioEngine.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/homepageStudioEngine.ts))**:
   - **Solución implementada**:
     1. **Subida de Imagen de Referencia**: Permite cargar una captura de pantalla de cualquier página web como modelo de diseño visual.
@@ -27,15 +33,16 @@
     1. **Biblioteca CDN Curada WebP**: Catálogo estructurado de imágenes de alta resolución (Hero de Salón, Spa, Barbería, Nails, Colorimetría, Balayage, Cortes, Keratinas, Limpieza Facial, Maquillaje y Avatares de Especialistas).
     2. **Optimizador Automático (`optimizeProspectHtml`)**: Reemplaza al vuelo cualquier cadena Base64 pesada o rutas locales rotas por URLs optimizadas CDN. Reducción de peso de **5.000 KB (5 MB) a solo ~12 KB - 39 KB (99.2% de reducción)**.
     3. **Modal de Galería Stock en Superadmin**: Selector visual interactivo con pestañas por categoría y botón de 1-clic para copiar enlaces CDN de muestra.
-- **Integración de Carpetas de Negocios y Generador Web (`DATOS_NEGOCIO.json` & Standalone HTML)**:
-  - **Problema resuelto**: Cada negocio generado por la herramienta externa se exporta como una carpeta (ej. `document/luxus_beauty_spa`) con `DATOS_NEGOCIO.json`, `index.html`, `styles.css` e imágenes Base64. El SaaS requería una forma automatizada de asimilar esta estructura sin configuraciones manuales.
-  - **Solución implementada**:
-    1. **Superadmin Ingest Hub ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
-       - Zona de carga para `DATOS_NEGOCIO.json` y archivos `.html`.
-       - Auto-rellenado instantáneo de Nombre, Teléfono/WhatsApp normalizado, Google Maps URL, Dirección, Ciudad, Slug y Categoría auto-detectada.
-       - Preset de 1-clic para cargar *Luxus Beauty Spa* de prueba inmediata.
-       - Tarjetas de previsualización visual de servicios y especialistas detectados.
-       - Generador de pitch de WhatsApp enriquecido mencionando los servicios específicos del negocio.
+- **Procesamiento de Carpetas Externas y Solución Anti-Base64 (Opción A Probada con Éxito en `kapa_spa`)**:
+  - **Problema resuelto**: Al exportar negocios desde el generador externo (`document/kapa_spa`), el script `build_standalone.js` convertía las imágenes locales en Base64 crudo dentro del HTML, inflando el archivo a **11.4 MB (11.414.045 bytes)**, lo que provocaba bloqueos de `localStorage` (`QuotaExceededError`) y colapso de rendimiento.
+  - **Solución implementada (Opción A)**:
+    1. Se actualizó el **Optimizador Semántico WebP CDN** en [`scripts/import_prospect_folder.js`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/import_prospect_folder.js) y en [`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts).
+    2. El optimizador reconoce las rutas de archivos de la carpeta (`service_facial.jpg`, `about_massage.jpg`, `service_jacuzzi.jpg`, `specialist_elena.jpg`, `specialist_valeria.jpg`, `specialist_camila.jpg`, `hero_spa.jpg`) y las mapea al vuelo a fotografías WebP CDN de alta definición.
+    3. **Resultado cuantitativo**: El tamaño del HTML de *Kapa Spa* se redujo de **11.4 MB (11.400 KB) a solo 63.6 KB (99.4% de reducción)**.
+    4. **Publicación y agendamiento listos**:
+       - URL del sitio público: `/sitio/kapa-spa`
+       - Portal de agendamiento dinámico: `/reservar/kapa-spa` (con los 4 servicios de spa y 3 terapeutas)
+       - Pitch de WhatsApp listo para prospección: `+573244519640`.
     2. **Portal de Reservas Dinámico ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
        - Al entrar a `/reservar/:slug`, si el slug pertenece a un sitio prospecto, carga automáticamente los servicios y especialistas reales del JSON (`negocio.servicios` y `negocio.especialistas`).
        - En la pantalla de éxito, incluye botón directo de confirmación hacia el WhatsApp del negocio.

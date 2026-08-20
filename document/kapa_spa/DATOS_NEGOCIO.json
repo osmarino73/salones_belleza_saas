@@ -1,0 +1,108 @@
+{
+  "negocio": {
+    "nombre": "Kapa Spa",
+    "rubro": "Spa, Centro de Masajes & Bienestar",
+    "categoria": "spa",
+    "eslogan": "Tu Espacio de Paz, Desconexión y Belleza Holística",
+    "calificacion": "5.0",
+    "resenas": "1",
+    "contacto": {
+      "telefono_principal": "(+57) 324 451 9640",
+      "telefono_raw": "+573244519640",
+      "whatsapp": {
+        "numero": "+573244519640",
+        "link": "https://wa.me/573244519640?text=Hola%20Kapa%20Spa%2C%20quisiera%20cotizar%20una%20cita."
+      }
+    },
+    "ubicacion": {
+      "direccion": "Cra. 92 #97-10",
+      "barrio_sector": "Centro",
+      "ciudad": "Apartadó",
+      "departamento_pais": "Antioquia, Colombia",
+      "google_maps_url": "https://www.google.com/maps/place/Kapa+Spa/@7.8837627,-76.6367651,16z/data=!4m10!1m2!2m1!1ssalones+de+bellezas+apartado!3m6!1s0x8e500dbef4c45b39:0xa05f0913345e6c14!8m2!3d7.8789526!4d-76.627017!15sChtzYWxvbmVzIGRlIGJlbGxlemEgYXBhcnRhZG-SAQxiZWF1dHlfc2Fsb27gAQA!16s%2Fg%2F11nnm2vwqk",
+      "coordenadas": {
+        "lat": 7.8789526,
+        "lng": -76.627017
+      }
+    },
+    "horario_atencion": "Lunes a Sábado: 8:00 AM – 7:00 PM",
+    "sitio_web": "https://kapaspa.com",
+    "sistema_reservas": {
+      "estado": "ACTIVO",
+      "canal_directo": "WhatsApp Directo"
+    },
+    "servicios": [
+      {
+        "id": "limpieza-facial",
+        "titulo": "Limpieza Facial Profunda Ultrasónica",
+        "descripcion": "Higiene cutánea con espátula ultrasónica, vapor ozono, peeling suave y fototerapia.",
+        "precio_cop": 95000,
+        "duracion_minutos": 60,
+        "destacado": true,
+        "imagen": "assets/images/service_facial.jpg"
+      },
+      {
+        "id": "masaje-piedras",
+        "titulo": "Masaje Relajante con Piedras Calientes",
+        "descripcion": "Terapia geotermal con aceites aromáticos para aliviar contracturas y estrés.",
+        "precio_cop": 120000,
+        "duracion_minutos": 60,
+        "destacado": true,
+        "imagen": "assets/images/about_massage.jpg"
+      },
+      {
+        "id": "exfoliacion-chocolaterapia",
+        "titulo": "Exfoliación Corporal & Chocolaterapia",
+        "descripcion": "Renovación epidérmica completa con envoltura de cacao nutritivo y regadera suiza.",
+        "precio_cop": 140000,
+        "duracion_minutos": 75,
+        "destacado": true,
+        "imagen": "assets/images/hero_spa.jpg"
+      },
+      {
+        "id": "circuito-hidroterapia",
+        "titulo": "Circuito Hidroterapia & Jacuzzi",
+        "descripcion": "Sesión de relajación térmica con sauna finlandés y tina de hidromasaje.",
+        "precio_cop": 80000,
+        "duracion_minutos": 45,
+        "destacado": true,
+        "imagen": "assets/images/service_jacuzzi.jpg"
+      }
+    ],
+    "especialistas": [
+      {
+        "nombre": "Elena Gómez",
+        "rol": "Terapeuta Holística & Masajes",
+        "bio": "Especialista en masajes descontracturantes, terapia geotermal con piedras volcánicas y aromaterapia.",
+        "especialidades": [
+          "Masajes Terapéuticos",
+          "Piedras Calientes",
+          "Aromaterapia"
+        ],
+        "foto": "assets/images/specialist_elena.jpg"
+      },
+      {
+        "nombre": "Valeria Ríos",
+        "rol": "Cosmiatra & Especialista en Piel",
+        "bio": "Experta en diagnóstico dermatocosmético, rejuvenecimiento facial y limpiezas ultrasónicas avanzadas.",
+        "especialidades": [
+          "Limpieza Facial",
+          "Peeling Suave",
+          "Fototerapia LED"
+        ],
+        "foto": "assets/images/specialist_valeria.jpg"
+      },
+      {
+        "nombre": "Camila Morales",
+        "rol": "Especialista en Hidroterapia & Spa",
+        "bio": "Certificada en circuitos de spa, envolturas de chocolaterapia y relajación hidrotermal.",
+        "especialidades": [
+          "Hidroterapia",
+          "Chocolaterapia",
+          "Exfoliación Corporal"
+        ],
+        "foto": "assets/images/specialist_camila.jpg"
+      }
+    ]
+  }
+}

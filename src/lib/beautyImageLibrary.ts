@@ -271,10 +271,66 @@ export function optimizeProspectHtml(html: string, category: string = 'salon'): 
 
   let optimized = html;
 
-  // 1. Reemplazar Base64 en src="..."
-  // Coincide con <img src="data:image/...;base64,..." ...>
+  const getUrlForTag = (tag: string) => {
+    const lower = tag.toLowerCase();
+    if (lower.includes('facial') || lower.includes('limpieza') || lower.includes('peeling')) {
+      return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('massage') || lower.includes('masaje') || lower.includes('piedras') || lower.includes('relajante')) {
+      return 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('jacuzzi') || lower.includes('hidro') || lower.includes('sauna') || lower.includes('circuito')) {
+      return 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('chocola') || lower.includes('cacao') || lower.includes('exfolia')) {
+      return 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('balayage') || lower.includes('color') || lower.includes('rubio') || lower.includes('mecha')) {
+      return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('corte') || lower.includes('bob') || lower.includes('brushing')) {
+      return 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('keratina') || lower.includes('liso') || lower.includes('alisado')) {
+      return 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('nail') || lower.includes('uñas') || lower.includes('manicura')) {
+      return 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80';
+    }
+    if (lower.includes('elena')) {
+      return 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&q=80';
+    }
+    if (lower.includes('valeria')) {
+      return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80';
+    }
+    if (lower.includes('camila')) {
+      return 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=500&q=80';
+    }
+    if (lower.includes('specialist') || lower.includes('terapeuta') || lower.includes('estilista')) {
+      return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80';
+    }
+    if (lower.includes('hero') || lower.includes('banner')) {
+      return getHeroImageForCategory(category);
+    }
+    return null;
+  };
+
+  // 1. Reemplazar rutas relativas específicas como assets/images/service_facial.jpg
+  optimized = optimized.replace(/src=["'](assets\/images\/[^"']+)["']/gi, (match, path) => {
+    const mapped = getUrlForTag(path);
+    if (mapped) return `src="${mapped}"`;
+    return `src="${getHeroImageForCategory(category)}"`;
+  });
+
+  optimized = optimized.replace(/url\(["']?(assets\/images\/[^)"']+)["']?\)/gi, (match, path) => {
+    const mapped = getUrlForTag(path);
+    if (mapped) return `url("${mapped}")`;
+    return `url("${getHeroImageForCategory(category)}")`;
+  });
+
+  // 2. Reemplazar Base64 en src="..."
   let imgIndex = 0;
-  optimized = optimized.replace(/src=["']data:image\/[^"']+["']/gi, (match) => {
+  optimized = optimized.replace(/src=["']data:image\/[^"']+["']/gi, () => {
     imgIndex++;
     if (imgIndex === 1) {
       return `src="${getHeroImageForCategory(category)}"`;
@@ -283,16 +339,9 @@ export function optimizeProspectHtml(html: string, category: string = 'salon'): 
     return `src="${sample.url}"`;
   });
 
-  // 2. Reemplazar Base64 en CSS background-image: url("data:image/...")
+  // 3. Reemplazar Base64 en CSS background-image
   optimized = optimized.replace(/url\(["']?data:image\/[^)"']+["']?\)/gi, () => {
     return `url("${getHeroImageForCategory(category)}")`;
-  });
-
-  // 3. Reemplazar rutas relativas rotas como assets/images/hero.jpg
-  optimized = optimized.replace(/src=["']assets\/images\/[^"']+["']/gi, (match) => {
-    imgIndex++;
-    const sample = BEAUTY_STOCK_LIBRARY[(imgIndex % BEAUTY_STOCK_LIBRARY.length)];
-    return `src="${sample.url}"`;
   });
 
   return optimized;
