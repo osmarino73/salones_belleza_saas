@@ -21,19 +21,43 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 1. Reemplazar enlaces y botones de agendamiento nativos (#reserva, #reservas, #agendar, etc.)
+  // 1. Inyectar regla CSS para que el sitio ingerido aísle su tipografía y no herede el color blanco de Tailwind body
+  const resetCss = `
+<style id="beautyflow-prospect-reset">
+  .prospect-site-wrapper { color: #1e293b; font-family: system-ui, -apple-system, sans-serif; }
+  .prospect-site-wrapper strong, .prospect-site-wrapper span, .prospect-site-wrapper p, .prospect-site-wrapper li, .prospect-site-wrapper h1, .prospect-site-wrapper h2, .prospect-site-wrapper h3, .prospect-site-wrapper h4 {
+    color: inherit;
+  }
+</style>
+`;
+  if (processed.includes('</head>')) {
+    processed = processed.replace('</head>', `${resetCss}</head>`);
+  } else {
+    processed = resetCss + processed;
+  }
+
+  // 2. Reemplazar enlaces y botones de agendamiento nativos (#reserva, #reservas, #agendar, etc.)
   processed = processed.replace(
-    /href=["'](#reserva|#reservas|#agendar|#cita|#citas)["']/gi,
+    /href=["'](#reserva|#reservas|#agendar|#cita|#citas|#reservar)["']/gi,
     `href="${bookingUrl}"`
   );
 
-  // 2. Reemplazar botones o enlaces que digan "Agendar Cita" o "Reservar Cita" que no tengan link externo
+  // 3. Reemplazar enlaces <a> cuyo texto contenga 'Agendar Cita', 'Reservar Cita', 'Pedir Cita', etc.
+  // IMPORTANTE: Incluso si en el HTML original tenían enlace a WhatsApp ("wa.me" o similar), 
+  // si es un botón de agendamiento, se redirige al flujo de reserva online (/reservar/:slug).
+  // Excluimos explícitamente el botón flotante (wa-floating-button o similar con tooltip/chat).
   processed = processed.replace(
-    /<a\s+([^>]*?)href=["'](#|javascript:void\(0\);?|#contacto)?["']([^>]*?)>(.*?)(Agendar\s+Cita|Reservar\s+Cita|Pedir\s+Cita|Solicitar\s+Turno|Agendar\s+Online)(.*?)<\/a>/gi,
-    `<a $1href="${bookingUrl}"$3>$4$5$6</a>`
+    /<a\s+([^>]*?)href=["']([^"']*)["']([^>]*?)>((?:(?!wa-floating)[\s\S])*?)(Agendar\s+Cita|Reservar\s+Cita|Pedir\s+Cita|Solicitar\s+Turno|Agendar\s+Online|Reservar\s+Turno|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita)((?:(?!wa-floating)[\s\S])*?)<\/a>/gi,
+    (match, beforeHref, oldHref, afterHref, textBefore, actionText, textAfter) => {
+      // Si es una clase flotante de WhatsApp, mantener WhatsApp
+      if (match.includes('wa-floating') || match.includes('btn-whatsapp-float')) {
+        return match;
+      }
+      return `<a ${beforeHref}href="${bookingUrl}"${afterHref}>${textBefore}${actionText}${textAfter}</a>`;
+    }
   );
 
-  // 3. Normalizar todos los enlaces de WhatsApp (wa.me o api.whatsapp.com) con el teléfono oficial del negocio
+  // 4. Normalizar todos los enlaces de WhatsApp restantes (wa.me o api.whatsapp.com) con el teléfono oficial del negocio
   processed = processed.replace(
     /https:\/\/(wa\.me|api\.whatsapp\.com\/send\?phone=)[/0-9]+/gi,
     `https://wa.me/${cleanPhone}`
