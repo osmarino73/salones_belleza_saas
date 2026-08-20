@@ -112,7 +112,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const [stylistsList, setStylistsList] = useState<NewStylistItem[]>([]);
   const [tempStylistName, setTempStylistName] = useState('');
   const [tempStylistPhoneRaw, setTempStylistPhoneRaw] = useState(''); // Solo 10 dígitos
-  const [tempStylistCategories, setTempStylistCategories] = useState<('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[]>(['color', 'corte']);
+  const [tempStylistCategories, setTempStylistCategories] = useState<string[]>(['color', 'corte']);
   const [tempStylistCommService, setTempStylistCommService] = useState(45);
   const [tempStylistCommRetail, setTempStylistCommRetail] = useState(10);
 
@@ -161,6 +161,9 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
       barberia: 'Barbería',
       spa: 'Spa Facial & Corporal'
     };
+    availableCategories.forEach(ac => {
+      categoryNamesMap[ac.id] = ac.name;
+    });
 
     const generatedSpecialty = tempStylistCategories.length > 0
       ? tempStylistCategories.map(c => categoryNamesMap[c] || c).join(', ')
@@ -186,12 +189,12 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     setStylistsList(stylistsList.filter((_, i) => i !== idx));
   };
 
-  const toggleCategory = (cat: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa') => {
-    if (tempStylistCategories.includes(cat)) {
+  const toggleCategory = (catId: string) => {
+    if (tempStylistCategories.includes(catId)) {
       if (tempStylistCategories.length === 1) return; // Mantener al menos una
-      setTempStylistCategories(tempStylistCategories.filter(c => c !== cat));
+      setTempStylistCategories(tempStylistCategories.filter(c => c !== catId));
     } else {
-      setTempStylistCategories([...tempStylistCategories, cat]);
+      setTempStylistCategories([...tempStylistCategories, catId]);
     }
   };
 
@@ -199,6 +202,19 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     setIsSubmitting(true);
     try {
       const activeTid = tenant?.id || '00000000-0000-0000-0000-000000000001';
+
+      // 0. Guardar categorías creadas en el Onboarding si son nuevas
+      for (const cat of availableCategories) {
+        if (!['color', 'corte', 'keratina', 'nails', 'barberia', 'spa'].includes(cat.id)) {
+          await api.createCategory({
+            tenant_id: activeTid,
+            name: cat.name,
+            slug: cat.id,
+            icon: cat.icon || '✨',
+            description: `Categoría ${cat.name}`
+          });
+        }
+      }
 
       // 1. Actualizar datos del tenant
       if (tenant) {
@@ -701,27 +717,20 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                     <span className="text-[10px] text-purple-400 font-normal">Selecciona una o varias</span>
                   </label>
                   <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: 'color', label: '🎨 Color & Balayage' },
-                      { id: 'corte', label: '✂️ Cortes & Peinados' },
-                      { id: 'keratina', label: '✨ Alisados & Keratinas' },
-                      { id: 'nails', label: '💅 Uñas & Manicura' },
-                      { id: 'barberia', label: '💈 Barbería & Barba' },
-                      { id: 'spa', label: '🧖‍♀️ Spa & Faciales' }
-                    ].map((cat) => {
-                      const isSelected = tempStylistCategories.includes(cat.id as any);
+                    {availableCategories.map((cat) => {
+                      const isSelected = tempStylistCategories.includes(cat.id);
                       return (
                         <button
                           key={cat.id}
                           type="button"
-                          onClick={() => toggleCategory(cat.id as any)}
+                          onClick={() => toggleCategory(cat.id)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                             isSelected
                               ? 'bg-purple-500/20 border-purple-400 text-purple-200 shadow-sm shadow-purple-500/20'
                               : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
                           }`}
                         >
-                          {cat.label} {isSelected && '✓'}
+                          {cat.icon} {cat.name} {isSelected && '✓'}
                         </button>
                       );
                     })}

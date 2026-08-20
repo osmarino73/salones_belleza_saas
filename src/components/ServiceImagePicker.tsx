@@ -230,6 +230,32 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
           {activeTab === 'upload' && (
             <div className="space-y-3 animate-in fade-in duration-150">
               
+              {/* Guía y Medidas Óptimas Recomendadas */}
+              <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-slate-300 space-y-1">
+                <div className="font-bold text-cyan-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Recomendaciones para la mejor visualización:</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 pt-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-cyan-400 font-bold">📐 Proporción:</span>
+                    <span>Cuadrada 1:1 o 4:3</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-cyan-400 font-bold">📏 Tamaño óptimo:</span>
+                    <span>800 x 800 px</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-cyan-400 font-bold">📁 Formatos:</span>
+                    <span>JPG, PNG o WebP</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-cyan-400 font-bold">⚡ Peso:</span>
+                    <span>Máx 10 MB (Auto-comprime)</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Drag & Drop Upload Zone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
@@ -247,10 +273,10 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
                 </div>
                 <div>
                   <strong className="text-xs font-bold text-white block">
-                    {isCompressing ? 'Optimizando imagen...' : 'Sube una foto desde tu equipo'}
+                    {isCompressing ? 'Optimizando y ajustando imagen...' : 'Selecciona una foto desde tu galería o cámara'}
                   </strong>
                   <span className="text-[10px] text-slate-400">
-                    PNG, JPG, WebP (Se comprime automáticamente)
+                    Se escala y comprime automáticamente a 800px WebP ultra-liviano
                   </span>
                 </div>
               </div>
