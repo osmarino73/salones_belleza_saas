@@ -21,12 +21,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 1. Inyectar regla CSS para que el sitio ingerido aísle su tipografía y no herede el color blanco de Tailwind body
+  // 1. Inyectar regla CSS suave solo para que el contenedor general no sea negro/blanco transparente, pero respetando 100% los estilos de botones, badges y gradientes del HTML
   const resetCss = `
 <style id="beautyflow-prospect-reset">
-  .prospect-site-wrapper { color: #1e293b; font-family: system-ui, -apple-system, sans-serif; }
-  .prospect-site-wrapper strong, .prospect-site-wrapper span, .prospect-site-wrapper p, .prospect-site-wrapper li, .prospect-site-wrapper h1, .prospect-site-wrapper h2, .prospect-site-wrapper h3, .prospect-site-wrapper h4 {
-    color: inherit;
+  .prospect-site-wrapper { 
+    background-color: var(--soft-pink-bg, #fbf2f6);
   }
 </style>
 `;

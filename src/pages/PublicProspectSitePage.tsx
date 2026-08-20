@@ -68,7 +68,7 @@ export const PublicProspectSitePage: React.FC = () => {
 
   return (
     <div 
-      className="w-full min-h-screen prospect-site-wrapper text-slate-800"
+      className="w-full min-h-screen prospect-site-wrapper"
       dangerouslySetInnerHTML={{ __html: renderedHtml }} 
     />
   );
