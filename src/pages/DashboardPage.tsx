@@ -148,6 +148,11 @@ export const DashboardPage: React.FC = () => {
     description: ''
   });
 
+  // Creación rápida de categoría al vuelo dentro del modal de servicio
+  const [isQuickCategoryOpen, setIsQuickCategoryOpen] = useState(false);
+  const [quickCategoryName, setQuickCategoryName] = useState('');
+  const [quickCategoryIcon, setQuickCategoryIcon] = useState('✨');
+
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceForm, setServiceForm] = useState<{
@@ -728,6 +733,25 @@ export const DashboardPage: React.FC = () => {
       description: srv.description || ''
     });
     setIsServiceModalOpen(true);
+  };
+
+  const handleCreateQuickCategory = async () => {
+    if (!quickCategoryName.trim()) return;
+    const activeTid = activeTenantObj?.id || getActiveTenantId();
+    const cleanSlug = quickCategoryName.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
+    const created = await api.createCategory({
+      tenant_id: activeTid,
+      name: quickCategoryName.trim(),
+      slug: cleanSlug,
+      icon: quickCategoryIcon.trim() || '✨',
+      description: `Categoría para ${quickCategoryName.trim()}`,
+      display_order: categories.length + 1
+    });
+    setCategories([...categories, created]);
+    setServiceForm({ ...serviceForm, category: created.slug });
+    setQuickCategoryName('');
+    setQuickCategoryIcon('✨');
+    setIsQuickCategoryOpen(false);
   };
 
   const handleSaveService = async (e: React.FormEvent) => {
@@ -4960,11 +4984,28 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Categoría *</label>
+                <div className="relative">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-slate-400 font-semibold">Categoría *</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickCategoryOpen(!isQuickCategoryOpen)}
+                      className="text-[11px] font-bold text-[#FF5A36] hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>{isQuickCategoryOpen ? 'Cerrar' : '+ Nueva'}</span>
+                    </button>
+                  </div>
+                  
                   <select
                     value={serviceForm.category}
-                    onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setIsQuickCategoryOpen(true);
+                      } else {
+                        setServiceForm({ ...serviceForm, category: e.target.value });
+                      }
+                    }}
                     className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
                       theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                     }`}
@@ -4974,7 +5015,44 @@ export const DashboardPage: React.FC = () => {
                         {cat.icon || '✨'} {cat.name}
                       </option>
                     ))}
+                    <option value="__NEW__">➕ + Crear Otra Categoría...</option>
                   </select>
+
+                  {/* Panel Flotante de Creación Rápida de Categoría */}
+                  {isQuickCategoryOpen && (
+                    <div className="absolute top-full left-0 right-0 z-20 mt-1 p-3 rounded-xl border shadow-xl bg-[#0E121B] border-[#FF5A36]/40 animate-fade-in space-y-2">
+                      <div className="text-[11px] font-bold text-[#FF5A36] flex items-center justify-between">
+                        <span>Nueva Categoría Rápida</span>
+                        <button type="button" onClick={() => setIsQuickCategoryOpen(false)} className="text-slate-400 hover:text-white">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="text"
+                          value={quickCategoryIcon}
+                          onChange={(e) => setQuickCategoryIcon(e.target.value)}
+                          placeholder="🎨"
+                          className="w-10 text-center border border-white/15 rounded-lg bg-black/40 text-sm focus:outline-none focus:border-[#FF5A36]"
+                        />
+                        <input
+                          type="text"
+                          value={quickCategoryName}
+                          onChange={(e) => setQuickCategoryName(e.target.value)}
+                          placeholder="ej. Depilación Láser, Pestañas"
+                          className="flex-1 px-2.5 py-1.5 border border-white/15 rounded-lg bg-black/40 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCreateQuickCategory}
+                        disabled={!quickCategoryName.trim()}
+                        className="w-full bg-[#FF5A36] hover:bg-[#E54E07] disabled:opacity-50 text-white text-[11px] font-bold py-1.5 rounded-lg transition-all cursor-pointer shadow-sm"
+                      >
+                        ✓ Crear y Asignar
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div>

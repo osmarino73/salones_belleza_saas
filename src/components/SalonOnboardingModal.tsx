@@ -34,7 +34,7 @@ interface SalonOnboardingModalProps {
 
 interface NewServiceItem {
   name: string;
-  category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
+  category: string;
   duration_minutes: number;
   price: number;
   image_url?: string;
@@ -44,7 +44,7 @@ interface NewStylistItem {
   name: string;
   phone: string;
   specialty: string;
-  categories: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
+  categories: string[];
   commission_service_pct: number;
   commission_retail_pct: number;
 }
@@ -64,24 +64,34 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   // Paso 1: Configuración de Negocio
   const [salonName, setSalonName] = useState(tenant?.name || 'Mi Salón de Belleza');
   const [salonPhone, setSalonPhone] = useState(tenant?.phone || '+57 300 000 0000');
+  const [salonAddress, setSalonAddress] = useState(tenant?.address || '');
   const [salonCity, setSalonCity] = useState(tenant?.city || 'Medellín');
-  const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>(
-    (tenant?.currency as any) || initialCurrency || 'COP'
-  );
-  const [businessHours, setBusinessHours] = useState(
-    tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM'
-  );
+  const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>((tenant?.currency as any) || initialCurrency || 'COP');
+  const [businessHours, setBusinessHours] = useState(tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM');
 
-  // Sincronizar campos cuando cargue el tenant real asíncronamente
   React.useEffect(() => {
     if (tenant) {
       if (tenant.name) setSalonName(tenant.name);
       if (tenant.phone) setSalonPhone(tenant.phone);
+      if (tenant.address) setSalonAddress(tenant.address);
       if (tenant.city) setSalonCity(tenant.city);
       if (tenant.currency) setCurrency(tenant.currency as any);
       if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
     }
   }, [tenant, isOpen]);
+
+  // Lista Dinámica de Categorías en el Onboarding
+  const [availableCategories, setAvailableCategories] = useState<{ id: string; name: string; icon: string }[]>([
+    { id: 'color', name: 'Colorimetría & Tintes', icon: '🎨' },
+    { id: 'corte', name: 'Cortes & Peinados', icon: '✂️' },
+    { id: 'keratina', name: 'Alisados & Keratinas', icon: '✨' },
+    { id: 'nails', name: 'Uñas & Manicura', icon: '💅' },
+    { id: 'barberia', name: 'Barbería & Barba', icon: '💈' },
+    { id: 'spa', name: 'Spa & Estética', icon: '🧖‍♀️' }
+  ]);
+  const [isAddingNewCatOnboarding, setIsAddingNewCatOnboarding] = useState(false);
+  const [newCatNameOnboarding, setNewCatNameOnboarding] = useState('');
+  const [newCatIconOnboarding, setNewCatIconOnboarding] = useState('✨');
 
   // Paso 2: Servicios Iniciales
   const [servicesList, setServicesList] = useState<NewServiceItem[]>([
@@ -93,7 +103,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     }
   ]);
   const [tempServiceName, setTempServiceName] = useState('');
-  const [tempServiceCategory, setTempServiceCategory] = useState<'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa'>('color');
+  const [tempServiceCategory, setTempServiceCategory] = useState<string>('color');
   const [tempServiceDuration, setTempServiceDuration] = useState(60);
   const [tempServicePrice, setTempServicePrice] = useState<number>(currency === 'COP' ? 90000 : 40);
   const [tempServiceImage, setTempServiceImage] = useState<string>('');
@@ -448,20 +458,78 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Categoría</label>
+                <div className="relative">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-[11px] font-bold text-slate-400">Categoría</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingNewCatOnboarding(!isAddingNewCatOnboarding)}
+                      className="text-[10px] font-bold text-orange-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <Plus className="w-2.5 h-2.5" />
+                      <span>{isAddingNewCatOnboarding ? 'Cerrar' : '+ Nueva'}</span>
+                    </button>
+                  </div>
                   <select
                     value={tempServiceCategory}
-                    onChange={(e) => setTempServiceCategory(e.target.value as any)}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setIsAddingNewCatOnboarding(true);
+                      } else {
+                        setTempServiceCategory(e.target.value);
+                      }
+                    }}
                     className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-cyan-400 text-xs font-semibold"
                   >
-                    <option value="color">Colorimetría & Tintes</option>
-                    <option value="corte">Cortes & Peinados</option>
-                    <option value="keratina">Alisados & Keratinas</option>
-                    <option value="nails">Uñas & Manicura</option>
-                    <option value="barberia">Barbería & Barba</option>
-                    <option value="spa">Spa & Estética</option>
+                    {availableCategories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.icon} {c.name}
+                      </option>
+                    ))}
+                    <option value="__NEW__">➕ + Crear Otra Categoría...</option>
                   </select>
+
+                  {/* Mini-panel creación rápida en Onboarding */}
+                  {isAddingNewCatOnboarding && (
+                    <div className="absolute top-full left-0 right-0 z-20 mt-1 p-2.5 rounded-xl border border-orange-500/40 bg-[#0E121B] shadow-xl space-y-1.5">
+                      <div className="flex gap-1">
+                        <input
+                          type="text"
+                          value={newCatIconOnboarding}
+                          onChange={(e) => setNewCatIconOnboarding(e.target.value)}
+                          placeholder="🎨"
+                          className="w-8 text-center bg-black/40 border border-white/15 rounded-lg text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={newCatNameOnboarding}
+                          onChange={(e) => setNewCatNameOnboarding(e.target.value)}
+                          placeholder="ej. Pestañas, Masajes"
+                          className="flex-1 bg-black/40 border border-white/15 rounded-lg px-2 py-1 text-[11px] text-white focus:outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newCatNameOnboarding.trim()) return;
+                          const cleanSlug = newCatNameOnboarding.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
+                          const newEntry = {
+                            id: cleanSlug,
+                            name: newCatNameOnboarding.trim(),
+                            icon: newCatIconOnboarding.trim() || '✨'
+                          };
+                          setAvailableCategories([...availableCategories, newEntry]);
+                          setTempServiceCategory(cleanSlug);
+                          setNewCatNameOnboarding('');
+                          setIsAddingNewCatOnboarding(false);
+                        }}
+                        disabled={!newCatNameOnboarding.trim()}
+                        className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[10px] font-bold py-1 rounded-md cursor-pointer"
+                      >
+                        ✓ Crear y Asignar
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div>
