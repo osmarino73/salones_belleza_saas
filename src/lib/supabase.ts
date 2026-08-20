@@ -1756,8 +1756,168 @@ export const api = {
       country: 'Colombia',
       is_active: true,
       plan: 'pro_ai',
+      owner_email: 'sofia@studioglamour.co',
+      currency: 'COP',
       created_at: '2026-08-15'
     }];
+  },
+
+  async activateProspectAsTenant(params: {
+    prospectId: string;
+    ownerEmail: string;
+    tempPassword?: string;
+    businessName?: string;
+    phoneWhatsapp?: string;
+    currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
+    trialDays?: number;
+  }): Promise<{ success: boolean; tenant: Tenant; tempPassword: string; error?: string }> {
+    const prospectSites = await this.getProspectSites();
+    const prospect = prospectSites.find(p => p.id === params.prospectId || p.slug === params.prospectId);
+
+    const bName = params.businessName || prospect?.business_name || 'Salón & Spa';
+    const wa = params.phoneWhatsapp || prospect?.phone_whatsapp || '+573000000000';
+    const cleanSlug = (prospect?.slug || bName.toLowerCase().replace(/[^a-z0-9]/g, '-')).replace(/^-+|-+$/g, '');
+    const tempPassword = params.tempPassword || (bName.replace(/\s+/g, '').slice(0, 5) + '2026*');
+    const tenantCurrency = params.currency || 'COP';
+
+    const generatedUUID = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
+
+    const trialDate = new Date();
+    trialDate.setDate(trialDate.getDate() + (params.trialDays || 14));
+
+    const newTenant: Tenant = {
+      id: generatedUUID,
+      name: bName,
+      slug: cleanSlug,
+      phone: wa,
+      address: prospect?.address || '',
+      city: prospect?.city || 'Medellín',
+      country: prospect?.country || 'Colombia',
+      is_active: true,
+      plan: 'pro_ai',
+      owner_email: params.ownerEmail.toLowerCase().trim(),
+      currency: tenantCurrency,
+      trial_ends_at: trialDate.toISOString(),
+      business_hours: { summary: prospect?.business_data?.horario_atencion || 'Lun a Sáb: 8:00 AM – 7:00 PM' },
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Crear en Supabase Auth
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.auth.signUp({
+          email: params.ownerEmail.toLowerCase().trim(),
+          password: tempPassword,
+          options: {
+            data: {
+              name: bName + ' (Admin)',
+              role: 'admin',
+              tenant_id: newTenant.id,
+              business_name: bName
+            }
+          }
+        });
+      } catch (e) {
+        console.warn('Auth notice during tenant activation:', e);
+      }
+
+      // 2. Insertar en tabla tenants
+      try {
+        await supabase.from('tenants').insert([newTenant]);
+      } catch (e) {
+        console.warn('DB tenant insert notice:', e);
+      }
+    }
+
+    // 3. Crear Dueña / Admin Stylist Profile
+    const ownerStylist: Stylist = {
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'sty-owner-' + Date.now(),
+      tenant_id: newTenant.id,
+      name: bName + ' (Dueña / Admin)',
+      email: params.ownerEmail.toLowerCase().trim(),
+      phone: wa,
+      specialty: 'Directora & Gestión General',
+      photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
+      role: 'admin',
+      is_owner: true,
+      attends_clients: true,
+      rating: 5.0,
+      reviews_count: 0,
+      commission_service_pct: 100,
+      commission_retail_pct: 100,
+      working_days: [1, 2, 3, 4, 5, 6],
+      service_categories: ['spa', 'corte'],
+      service_ids: [],
+      is_active: true
+    };
+    await this.createStylist(ownerStylist, tempPassword);
+
+    // 4. Migrar Especialistas reales de business_data
+    const specialists = prospect?.business_data?.especialistas || [];
+    for (let i = 0; i < specialists.length; i++) {
+      const esp = specialists[i];
+      const stylistId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sty-${Date.now()}-${i}`;
+      const newSty: Stylist = {
+        id: stylistId,
+        tenant_id: newTenant.id,
+        name: esp.nombre,
+        email: `${esp.nombre.toLowerCase().replace(/[^a-z0-9]/g, '')}@${cleanSlug}.co`,
+        phone: wa,
+        specialty: esp.rol || 'Especialista',
+        photo_url: esp.foto && !esp.foto.startsWith('assets/') ? esp.foto : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        role: 'colaborador',
+        is_owner: false,
+        attends_clients: true,
+        rating: 5.0,
+        reviews_count: 10,
+        commission_service_pct: 45,
+        commission_retail_pct: 10,
+        working_days: [1, 2, 3, 4, 5, 6],
+        service_categories: ['spa', 'corte'],
+        service_ids: [],
+        is_active: true
+      };
+      await this.createStylist(newSty, 'BeautyFlow2026*');
+    }
+
+    // 5. Migrar Servicios reales de business_data
+    const services = prospect?.business_data?.servicios || [];
+    for (let i = 0; i < services.length; i++) {
+      const srv = services[i];
+      const serviceId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `srv-${Date.now()}-${i}`;
+      const newSrv: Service = {
+        id: serviceId,
+        tenant_id: newTenant.id,
+        name: srv.titulo,
+        category: (prospect?.category === 'barberia' ? 'barberia' : prospect?.category === 'nails' ? 'nails' : 'spa'),
+        duration_minutes: srv.duracion_minutos || 60,
+        price_cop: srv.precio_cop || 90000,
+        price_usd: srv.precio_cop ? Math.round(srv.precio_cop / 4000) : 30,
+        price: srv.precio_cop || 90000,
+        requires_patch_test: false,
+        description: srv.descripcion || 'Servicio profesional garantizado.'
+      };
+      await this.createService(newSrv);
+    }
+
+    // 6. Actualizar prospect_sites como 'reclamado'
+    if (prospect) {
+      await this.updateProspectSite(prospect.id, {
+        status: 'reclamado',
+        claimed_tenant_id: newTenant.id
+      });
+    }
+
+    // 7. Guardar en localStorage para disponibilidad inmediata
+    localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
+
+    return {
+      success: true,
+      tenant: newTenant,
+      tempPassword
+    };
   }
 };
 

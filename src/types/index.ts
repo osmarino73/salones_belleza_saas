@@ -8,6 +8,10 @@ export interface Tenant {
   country: string;
   is_active: boolean;
   plan: 'basic' | 'pro_ai' | 'vip_360';
+  owner_email?: string;
+  currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
+  trial_ends_at?: string;
+  business_hours?: { summary?: string; open?: string; close?: string };
   created_at: string;
 }
 

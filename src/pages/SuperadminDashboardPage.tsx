@@ -37,7 +37,11 @@ import {
   RefreshCw,
   Image as ImageIcon,
   Check,
-  X
+  X,
+  Key,
+  Mail,
+  Lock,
+  UserCheck
 } from 'lucide-react';
 
 export const SuperadminDashboardPage: React.FC = () => {
@@ -75,6 +79,20 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [showGalleryModal, setShowGalleryModal] = useState(false);
   const [selectedGalleryCategory, setSelectedGalleryCategory] = useState<string>('todos');
   const [copiedImageUrl, setCopiedImageUrl] = useState<string | null>(null);
+
+  // Modal de Activación de Salón / Tenant (Solicitud de Correo & Credenciales)
+  const [activatingProspect, setActivatingProspect] = useState<ProspectSite | null>(null);
+  const [activationEmail, setActivationEmail] = useState('');
+  const [activationTempPass, setActivationTempPass] = useState('');
+  const [activationCurrency, setActivationCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
+  const [activationTrialDays, setActivationTrialDays] = useState(14);
+  const [isActivatingTenant, setIsActivatingTenant] = useState(false);
+  const [activationSuccessData, setActivationSuccessData] = useState<{
+    tenant: Tenant;
+    tempPass: string;
+    prospect: ProspectSite;
+  } | null>(null);
+  const [copiedCredentials, setCopiedCredentials] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -419,29 +437,103 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
   };
 
-  // Generar pitch de WhatsApp enriquecido
+  // Generar pitch de WhatsApp enriquecido pidiendo el correo para activación
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
     const servicesText = siteObj.business_data?.servicios && siteObj.business_data.servicios.length > 0
       ? ` para sus servicios de ${siteObj.business_data.servicios.slice(0, 2).map((s: any) => s.titulo).join(' y ')}`
       : '';
 
-    return `Hola ${siteObj.business_name}! 💖 Vimos su perfil en Google Maps y notamos que no tenían una página web oficial vinculada.
-
-Les creamos esta página web de regalo optimizada para posicionar en Google Maps${servicesText} y recibir citas online:
+    return `¡Hola ${siteObj.business_name}! 💖 Vimos su perfil en Google Maps y les diseñamos esta página web oficial de cortesía${servicesText}:
 👉 ${siteUrl}
 
-Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con catálogo interactivo. ¿Les gustaría que les ayudemos a activarla gratis?`;
+Cuenta con su catálogo de tratamientos, equipo de especialistas y sistema de agendamiento online directo.
+
+🔑 Para entregarte el acceso de administración total a tu plataforma (para que puedas ajustar fotos, servicios, colaboradoras y recibir reservas en vivo), respóndeme con tu correo electrónico y te activo tu cuenta en 1 minuto.`;
   };
 
-  const handleCopy = (text: string, type: 'link' | 'pitch') => {
+  // Manejador para abrir el Modal de Activación
+  const handleOpenActivationModal = (p: ProspectSite) => {
+    setActivatingProspect(p);
+    setActivationEmail('');
+    const cleanName = p.business_name.replace(/[^a-zA-Z]/g, '').slice(0, 5) || 'Salon';
+    setActivationTempPass(`${cleanName}2026*`);
+    setActivationCurrency('COP');
+    setActivationTrialDays(14);
+    setActivationSuccessData(null);
+    setCopiedCredentials(false);
+  };
+
+  // Ejecutar activación y migración de datos a Tenant
+  const handleExecuteActivation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activatingProspect || !activationEmail) {
+      alert('Por favor ingresa el correo electrónico del negocio.');
+      return;
+    }
+
+    setIsActivatingTenant(true);
+    try {
+      const res = await api.activateProspectAsTenant({
+        prospectId: activatingProspect.id,
+        ownerEmail: activationEmail,
+        tempPassword: activationTempPass,
+        businessName: activatingProspect.business_name,
+        phoneWhatsapp: activatingProspect.phone_whatsapp,
+        currency: activationCurrency,
+        trialDays: activationTrialDays
+      });
+
+      if (res.success) {
+        setActivationSuccessData({
+          tenant: res.tenant,
+          tempPass: res.tempPassword,
+          prospect: activatingProspect
+        });
+        await loadData();
+      } else {
+        alert('Error al activar el salón: ' + (res.error || 'Verifica los datos.'));
+      }
+    } catch (err) {
+      console.error('Error activating tenant:', err);
+      alert('Ocurrió un error inesperado al activar el tenant.');
+    } finally {
+      setIsActivatingTenant(false);
+    }
+  };
+
+  // Mensaje de bienvenida con credenciales para enviar por WhatsApp
+  const generateWelcomeCredentialsPitch = (data: { tenant: Tenant; tempPass: string; prospect: ProspectSite }) => {
+    const loginUrl = `${window.location.origin}/login`;
+    const siteUrl = `${window.location.origin}/sitio/${data.prospect.slug}`;
+    const bookingUrl = `${window.location.origin}/reservar/${data.prospect.slug}`;
+
+    return `¡Hola ${data.tenant.name}! 🎉 Ya activamos tu acceso de administración a tu plataforma BeautyFlow AI.
+
+🌐 Tu Panel de Administración:
+👉 ${loginUrl}
+
+👤 Usuario / Correo: ${data.tenant.owner_email}
+🔑 Contraseña Temporal: ${data.tempPass}
+
+✨ Enlaces Oficiales de tu Salón:
+🌐 Tu Página Web Oficial: ${siteUrl}
+📅 Tu Agendador de Citas: ${bookingUrl}
+
+Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de colaboradoras, cambiar las fotos de tu web y gestionar tu caja y agenda en tiempo real. ¡Muchos éxitos con tu negocio! 🚀`;
+  };
+
+  const handleCopy = (text: string, type: 'link' | 'pitch' | 'credentials') => {
     navigator.clipboard.writeText(text);
     if (type === 'link') {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
-    } else {
+    } else if (type === 'pitch') {
       setCopiedPitch(true);
       setTimeout(() => setCopiedPitch(false), 2500);
+    } else if (type === 'credentials') {
+      setCopiedCredentials(true);
+      setTimeout(() => setCopiedCredentials(false), 2500);
     }
   };
 
@@ -985,6 +1077,27 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
                     </a>
                   </div>
 
+                  {/* Botón de Activación si la dueña ya respondió con su correo */}
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                        <Key className="w-3.5 h-3.5" />
+                        ¿La dueña envió su correo?
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      Crea su cuenta SaaS con contraseña temporal y migra sus servicios y equipo automáticamente.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenActivationModal(createdSite)}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      <span>🔑 Activar Tenant & Generar Credenciales</span>
+                    </button>
+                  </div>
+
                   {/* Botón para crear otro */}
                   <button
                     type="button"
@@ -1159,6 +1272,21 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
                           {/* Acciones */}
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {/* Botón Activar Acceso Dueña */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenActivationModal(p)}
+                                className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all shadow-sm ${
+                                  p.status === 'reclamado' || p.status === 'cliente_pago'
+                                    ? 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                    : 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/40'
+                                }`}
+                                title="Activar cuenta SaaS para la dueña con su correo y contraseña temporal"
+                              >
+                                <Key className="w-3.5 h-3.5 text-amber-400" />
+                                <span>{p.status === 'reclamado' || p.status === 'cliente_pago' ? 'Ver Acceso' : 'Activar Acceso'}</span>
+                              </button>
+
                               <a
                                 href={`/sitio/${p.slug}`}
                                 target="_blank"
@@ -1443,6 +1571,217 @@ Cuenta con botón directo a su WhatsApp y sistema de reservas automáticas con c
           setCreatedSite(site);
         }}
       />
+
+      {/* =====================================================================
+          MODAL: ACTIVACIÓN DE SALÓN / TENANT (SOLICITUD DE EMAIL & CREDENCIALES)
+          ===================================================================== */}
+      {activatingProspect && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[#111624] border border-amber-500/40 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-8 text-slate-100">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">
+                    {activationSuccessData ? '🎉 ¡Salón Activado con Éxito!' : '🔑 Activar Salón & Crear Acceso Dueña'}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {activatingProspect.business_name} • {activatingProspect.phone_whatsapp}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActivatingProspect(null)}
+                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Vista 1: Formulario de Activación */}
+            {!activationSuccessData ? (
+              <form onSubmit={handleExecuteActivation} className="space-y-4">
+                
+                {/* Info Box */}
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    Ingresa el correo electrónico que te envió la dueña por WhatsApp. Se creará su cuenta en <strong>Supabase Auth</strong> y se migrarán automáticamente sus servicios y colaboradoras a su base de datos.
+                  </p>
+                </div>
+
+                {/* Email Input */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-[#FF5A36]" />
+                    <span>Correo Electrónico de la Dueña *</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={activationEmail}
+                    onChange={(e) => setActivationEmail(e.target.value)}
+                    placeholder="ej. dueña@kapaspa.com"
+                    className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-amber-400 text-xs font-medium"
+                  />
+                </div>
+
+                {/* Password Temporal & Currency */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                        Contraseña Temporal *
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const rand = Math.floor(1000 + Math.random() * 9000);
+                          const clean = activatingProspect.business_name.replace(/[^a-zA-Z]/g, '').slice(0, 4) || 'Spa';
+                          setActivationTempPass(`${clean}${rand}*`);
+                        }}
+                        className="text-[10px] text-amber-400 hover:underline flex items-center gap-0.5"
+                      >
+                        <RefreshCw className="w-2.5 h-2.5" /> Generar
+                      </button>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={activationTempPass}
+                      onChange={(e) => setActivationTempPass(e.target.value)}
+                      placeholder="Kapa2026*"
+                      className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-amber-400 font-mono text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">Moneda del Negocio</label>
+                    <select
+                      value={activationCurrency}
+                      onChange={(e) => setActivationCurrency(e.target.value as any)}
+                      className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-amber-400 text-xs font-bold"
+                    >
+                      <option value="COP">COP ($ Pesos Colombianos)</option>
+                      <option value="USD">USD ($ Dólares)</option>
+                      <option value="MXN">MXN ($ Pesos Mexicanos)</option>
+                      <option value="EUR">EUR (€ Euros)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Resumen de Migración */}
+                <div className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Elementos que se migrarán a su cuenta SaaS:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-emerald-400 font-bold block">
+                        ✓ {activatingProspect.business_data?.servicios?.length || 4} Servicios
+                      </span>
+                      <span className="text-[10px] text-slate-400">Precios y duraciones oficiales</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-blue-400 font-bold block">
+                        ✓ {activatingProspect.business_data?.especialistas?.length || 3} Especialistas
+                      </span>
+                      <span className="text-[10px] text-slate-400">Perfiles de colaboradoras</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botón Submit */}
+                <button
+                  type="submit"
+                  disabled={isActivatingTenant || !activationEmail}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 hover:opacity-95 text-white font-black text-sm shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
+                >
+                  {isActivatingTenant ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Key className="w-4 h-4" />
+                  )}
+                  <span>{isActivatingTenant ? 'Creando tenant y migrando catálogo...' : '🚀 Activar Salón & Entregar Credenciales'}</span>
+                </button>
+
+              </form>
+            ) : (
+              /* Vista 2: Credenciales Creadas & Enlace WhatsApp */
+              <div className="space-y-4 animate-in zoom-in-95 duration-200">
+                
+                {/* Credentials Card */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/40 space-y-3">
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider block">
+                    DATOS DE ACCESO GENERADOS
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                    <div className="p-2.5 rounded-xl bg-[#0A0D14] border border-white/10">
+                      <span className="text-[10px] text-slate-400 block">Usuario / Email:</span>
+                      <strong className="text-white select-all">{activationSuccessData.tenant.owner_email}</strong>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-[#0A0D14] border border-white/10">
+                      <span className="text-[10px] text-slate-400 block">Contraseña Temporal:</span>
+                      <strong className="text-emerald-400 select-all">{activationSuccessData.tempPass}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* WhatsApp Pitch Ready to Send */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                      <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                      <span>Mensaje de WhatsApp para la Dueña:</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(generateWelcomeCredentialsPitch(activationSuccessData), 'credentials')}
+                      className="text-[10px] text-emerald-400 hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedCredentials ? '✓ Copiado' : 'Copiar'}</span>
+                    </button>
+                  </div>
+
+                  <div className="bg-[#0A0D14] p-3 rounded-xl border border-white/10 text-[11px] text-slate-300 font-sans whitespace-pre-line leading-relaxed max-h-40 overflow-y-auto">
+                    {generateWelcomeCredentialsPitch(activationSuccessData)}
+                  </div>
+                </div>
+
+                {/* 1-Click WhatsApp Button */}
+                <a
+                  href={`https://wa.me/${activationSuccessData.tenant.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generateWelcomeCredentialsPitch(activationSuccessData))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <span>📲 Enviar Credenciales por WhatsApp a la Dueña</span>
+                </a>
+
+                {/* Close button */}
+                <button
+                  type="button"
+                  onClick={() => setActivatingProspect(null)}
+                  className="w-full py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white text-xs font-bold"
+                >
+                  Cerrar Ventana
+                </button>
+
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
