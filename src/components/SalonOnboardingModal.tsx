@@ -640,7 +640,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                       <strong className="text-white font-bold">{salonName} (Dueña / Admin)</strong>
                       <span className="text-[9px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded font-black">ADMIN</span>
                     </div>
-                    <span className="text-[11px] text-slate-400">Directora & Gestión General • 100% propio</span>
+                    <span className="text-[11px] text-slate-400">Directora & Gestión General • Solo administración</span>
                   </div>
                 </div>
 

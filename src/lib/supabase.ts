@@ -1858,7 +1858,7 @@ export const api = {
       photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
       role: 'admin',
       is_owner: true,
-      attends_clients: true,
+      attends_clients: false, // Por defecto 'Solo gestión administrativa, no se agendan citas a su nombre' (OFF)
       rating: 5.0,
       reviews_count: 0,
       commission_service_pct: 100,

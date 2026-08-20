@@ -481,11 +481,11 @@ export const DashboardPage: React.FC = () => {
       email: '',
       phone: '',
       password: 'BeautyFlow2026*',
-      specialty: 'Especialista Capilar',
+      specialty: 'Directora & Gestión',
       photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
       role: 'colaborador',
       is_owner: false,
-      attends_clients: true,
+      attends_clients: false, // Por defecto 'Solo gestión administrativa' en off
       commission_service_pct: 45,
       commission_retail_pct: 10,
       service_categories: ['color', 'corte'],
