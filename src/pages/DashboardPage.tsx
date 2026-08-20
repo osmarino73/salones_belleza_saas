@@ -66,7 +66,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
-import { Appointment, Client, Stylist, Service, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
+import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { SalonOnboardingModal } from '../components/SalonOnboardingModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
@@ -87,6 +87,7 @@ export const DashboardPage: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [stylists, setStylists] = useState<Stylist[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTenantObj, setActiveTenantObj] = useState<Tenant | null>(null);
   const [isSalonOnboardingOpen, setIsSalonOnboardingOpen] = useState(false);
@@ -99,7 +100,7 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Catalog & Team Sub-tab State
-  const [catalogSubTab, setCatalogSubTab] = useState<'stylists' | 'services' | 'products'>('stylists');
+  const [catalogSubTab, setCatalogSubTab] = useState<'stylists' | 'services' | 'categories' | 'products'>('stylists');
 
   const [isStylistModalOpen, setIsStylistModalOpen] = useState(false);
   const [editingStylist, setEditingStylist] = useState<Stylist | null>(null);
@@ -115,29 +116,43 @@ export const DashboardPage: React.FC = () => {
     attends_clients: boolean;
     commission_service_pct: number;
     commission_retail_pct: number;
-    service_categories: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
+    service_categories: string[];
     service_ids: string[];
   }>({
     name: '',
     email: '',
     phone: '',
-    password: '',
-    specialty: '',
-    photo_url: '',
+    password: 'BeautyFlow2026*',
+    specialty: 'Directora & Gestión',
+    photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     role: 'colaborador',
     is_owner: false,
-    attends_clients: true,
+    attends_clients: false,
     commission_service_pct: 45,
     commission_retail_pct: 10,
     service_categories: ['color', 'corte'],
     service_ids: []
   });
 
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ServiceCategory | null>(null);
+  const [categoryForm, setCategoryForm] = useState<{
+    name: string;
+    slug: string;
+    icon: string;
+    description: string;
+  }>({
+    name: '',
+    slug: '',
+    icon: '✨',
+    description: ''
+  });
+
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceForm, setServiceForm] = useState<{
     name: string;
-    category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
+    category: string;
     duration_minutes: number;
     price_usd: number;
     image_url: string;
@@ -310,11 +325,12 @@ export const DashboardPage: React.FC = () => {
         } catch (e) {}
       }
 
-      const [apts, cls, stys, srvs, prods, settings] = await Promise.all([
+      const [apts, cls, stys, srvs, cats, prods, settings] = await Promise.all([
         api.getAppointments(targetTenantId),
         api.getClients(targetTenantId),
         api.getStylists(targetTenantId),
         api.getServices(targetTenantId),
+        api.getCategories(targetTenantId),
         api.getProducts(targetTenantId),
         api.getTenantAISettings(targetTenantId)
       ]);
@@ -322,6 +338,7 @@ export const DashboardPage: React.FC = () => {
       setClients(cls);
       setStylists(stys);
       setServices(srvs);
+      setCategories(cats);
       setProducts(prods);
       setAiSettings(settings);
 
@@ -757,6 +774,80 @@ export const DashboardPage: React.FC = () => {
     if (confirm('¿Estás seguro de eliminar este servicio?')) {
       await api.deleteService(id);
       setServices(services.filter(s => s.id !== id));
+    }
+  };
+
+  // CATEGORY CRUD HANDLERS
+  const handleOpenNewCategory = () => {
+    setEditingCategory(null);
+    setCategoryForm({
+      name: '',
+      slug: '',
+      icon: '✨',
+      description: ''
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleEditCategory = (cat: ServiceCategory) => {
+    setEditingCategory(cat);
+    setCategoryForm({
+      name: cat.name,
+      slug: cat.slug,
+      icon: cat.icon || '✨',
+      description: cat.description || ''
+    });
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!categoryForm.name.trim()) return;
+
+    const activeTid = activeTenantObj?.id || getActiveTenantId();
+    const cleanSlug = (categoryForm.slug || categoryForm.name)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '-');
+
+    if (editingCategory) {
+      const updated: ServiceCategory = {
+        ...editingCategory,
+        name: categoryForm.name.trim(),
+        slug: cleanSlug,
+        icon: categoryForm.icon.trim() || '✨',
+        description: categoryForm.description.trim()
+      };
+      await api.updateCategory(updated);
+      setCategories(categories.map(c => c.id === updated.id ? updated : c));
+    } else {
+      const newCat = await api.createCategory({
+        tenant_id: activeTid,
+        name: categoryForm.name.trim(),
+        slug: cleanSlug,
+        icon: categoryForm.icon.trim() || '✨',
+        description: categoryForm.description.trim(),
+        display_order: categories.length + 1
+      });
+      setCategories([...categories, newCat]);
+    }
+    setIsCategoryModalOpen(false);
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    const cat = categories.find(c => c.id === id);
+    if (!cat) return;
+
+    // Verificar si hay servicios usándola
+    const servicesCount = services.filter(s => s.category === cat.slug || s.category === cat.id).length;
+    const confirmMsg = servicesCount > 0
+      ? `Hay ${servicesCount} servicio(s) asociados a "${cat.name}". ¿Deseas eliminarla de todas formas?`
+      : `¿Estás seguro de eliminar la categoría "${cat.name}"?`;
+
+    if (confirm(confirmMsg)) {
+      const activeTid = activeTenantObj?.id || getActiveTenantId();
+      await api.deleteCategory(id, activeTid);
+      setCategories(categories.filter(c => c.id !== id));
     }
   };
 
@@ -2809,6 +2900,19 @@ export const DashboardPage: React.FC = () => {
 
                 <button
                   type="button"
+                  onClick={() => setCatalogSubTab('categories')}
+                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                    catalogSubTab === 'categories'
+                      ? 'bg-[#FF5A36] text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Categorías ({categories.length})</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setCatalogSubTab('products')}
                   className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
                     catalogSubTab === 'products'
@@ -3096,7 +3200,80 @@ export const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* SUBTAB 3: PRODUCTOS & INVENTARIO */}
+            {/* SUBTAB 3: GESTIÓN DE CATEGORÍAS */}
+            {catalogSubTab === 'categories' && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-base font-bold">Categorías de Servicios</h3>
+                    <p className="text-xs text-slate-400">Organiza tus tratamientos, especialidades y filtros para el agendamiento público.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenNewCategory}
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" /> Nueva Categoría
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((cat) => {
+                    const servicesCount = services.filter(s => s.category === cat.slug || s.category === cat.id).length;
+                    return (
+                      <div
+                        key={cat.id}
+                        className={`rounded-2xl p-5 border flex flex-col justify-between transition-all ${
+                          theme === 'dark' ? 'bg-[#141926] border-white/10 hover:border-white/20' : 'bg-white border-black/5 hover:border-black/15 shadow-sm'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-10 h-10 rounded-xl bg-[#FF5A36]/10 border border-[#FF5A36]/20 flex items-center justify-center text-xl">
+                              {cat.icon || '✨'}
+                            </div>
+                            <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-400">
+                              {servicesCount} {servicesCount === 1 ? 'servicio' : 'servicios'}
+                            </span>
+                          </div>
+
+                          <strong className="text-sm font-bold text-white block mb-1">{cat.name}</strong>
+                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                            {cat.description || 'Categoría para clasificación de tratamientos en el catálogo y agendador.'}
+                          </p>
+
+                          <div className="text-[11px] font-mono text-slate-500 pb-3 border-b border-black/5 dark:border-white/10">
+                            Slug: <span className="text-purple-400 font-semibold">{cat.slug}</span>
+                          </div>
+                        </div>
+
+                        {/* Acciones */}
+                        <div className="pt-3 flex justify-end gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => handleEditCategory(cat)}
+                            className={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                              theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                            }`}
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-[#FF5A36]" /> Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="px-3 py-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* SUBTAB 4: PRODUCTOS & INVENTARIO */}
             {catalogSubTab === 'products' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -3989,24 +4166,19 @@ export const DashboardPage: React.FC = () => {
                   Categorías de Servicios que Realiza *
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                  {[
-                    { id: 'color', label: '🎨 Color & Tinte' },
-                    { id: 'corte', label: '✂️ Corte Capilar' },
-                    { id: 'keratina', label: '💆‍♀️ Keratinas' },
-                    { id: 'nails', label: '💅 Nails & Uñas' },
-                    { id: 'barberia', label: '💈 Barbería' },
-                    { id: 'spa', label: '🧖‍♀️ Spa & Faciales' }
-                  ].map((cat) => {
-                    const isSelected = (stylistForm.service_categories || []).includes(cat.id as any);
+                  {categories.map((cat) => {
+                    const isSelected = (stylistForm.service_categories || []).includes(cat.slug) || 
+                                       (stylistForm.service_categories || []).includes(cat.id);
                     return (
                       <button
                         key={cat.id}
                         type="button"
                         onClick={() => {
                           const current = stylistForm.service_categories || [];
+                          const targetKey = cat.slug || cat.id;
                           const updated = isSelected
-                            ? current.filter(c => c !== cat.id)
-                            : [...current, cat.id as any];
+                            ? current.filter(c => c !== cat.slug && c !== cat.id)
+                            : [...current, targetKey];
                           setStylistForm({ ...stylistForm, service_categories: updated });
                         }}
                         className={`text-[11px] font-bold p-2 rounded-xl border text-center transition-all cursor-pointer ${
@@ -4015,7 +4187,7 @@ export const DashboardPage: React.FC = () => {
                             : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-400 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-600'
                         }`}
                       >
-                        {cat.label}
+                        {cat.icon || '✨'} {cat.name}
                       </button>
                     );
                   })}
@@ -4792,17 +4964,16 @@ export const DashboardPage: React.FC = () => {
                   <label className="block text-slate-400 mb-1 font-semibold">Categoría *</label>
                   <select
                     value={serviceForm.category}
-                    onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value as any })}
+                    onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
                     className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
                       theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                     }`}
                   >
-                    <option value="color">Colorimetría</option>
-                    <option value="corte">Corte & Styling</option>
-                    <option value="keratina">Tratamientos / Keratinas</option>
-                    <option value="nails">Manicure & Uñas</option>
-                    <option value="barberia">Barbería</option>
-                    <option value="spa">Spa & Cejas</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.slug || cat.id}>
+                        {cat.icon || '✨'} {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -4888,6 +5059,109 @@ export const DashboardPage: React.FC = () => {
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{editingService ? 'Actualizar Servicio' : 'Guardar Servicio'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVA / EDITAR CATEGORÍA */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
+            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+          }`}>
+            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#FF5A36]" />
+                <h3 className="text-base font-bold">
+                  {editingCategory ? 'Editar Categoría' : 'Nueva Categoría de Servicios'}
+                </h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsCategoryModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
+              <div className="grid grid-cols-4 gap-2">
+                <div className="col-span-1">
+                  <label className="block text-slate-400 mb-1 font-semibold text-center">Icono / Emoji</label>
+                  <input
+                    type="text"
+                    value={categoryForm.icon}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
+                    placeholder="🎨"
+                    className={`w-full border rounded-xl p-2.5 text-center text-lg focus:outline-none focus:border-[#FF5A36] ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div className="col-span-3">
+                  <label className="block text-slate-400 mb-1 font-semibold">Nombre de la Categoría *</label>
+                  <input
+                    type="text"
+                    required
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm({ 
+                      ...categoryForm, 
+                      name: e.target.value,
+                      slug: !editingCategory ? e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-') : categoryForm.slug
+                    })}
+                    placeholder="Ej. Pestañas & Microblading"
+                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Identificador Slug (URL / Filtro)</label>
+                <input
+                  type="text"
+                  value={categoryForm.slug}
+                  onChange={(e) => setCategoryForm({ ...categoryForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-') })}
+                  placeholder="pestanas-microblading"
+                  className={`w-full border rounded-xl p-2.5 font-mono text-[11px] focus:outline-none focus:border-[#FF5A36] ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Descripción</label>
+                <textarea
+                  rows={2}
+                  value={categoryForm.description}
+                  onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                  placeholder="Servicios especializados en diseño de mirada, extensiones pelo a pelo y sombreado..."
+                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{editingCategory ? 'Actualizar Categoría' : 'Crear Categoría'}</span>
                 </button>
               </div>
             </form>

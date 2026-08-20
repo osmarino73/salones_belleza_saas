@@ -46,15 +46,27 @@ export interface Stylist {
   blocked_dates?: string[]; // ['2026-08-25', '2026-08-26']
   blocked_slots?: BlockedSlot[];
   service_ids?: string[]; // IDs de servicios específicos que atiende
-  service_categories?: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[]; // Categorías que domina
+  service_categories?: string[]; // Categorías que domina (slugs de ServiceCategory)
   is_active: boolean;
+}
+
+export interface ServiceCategory {
+  id: string;
+  tenant_id: string;
+  name: string;
+  slug: string;
+  icon?: string; // Emoji o icono (ej. '🎨', '✂️', '💅', '🧖‍♀️', '💈')
+  description?: string;
+  is_active: boolean;
+  display_order?: number;
+  created_at?: string;
 }
 
 export interface Service {
   id: string;
   tenant_id: string;
   name: string;
-  category: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
+  category: string; // 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa' o categoría personalizada
   duration_minutes: number;
   price_usd?: number;
   price?: number;

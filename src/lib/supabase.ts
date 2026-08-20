@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client, Stylist, Service, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant } from '../types';
+import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant } from '../types';
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -23,8 +23,73 @@ const STORAGE_KEYS = {
   CLIENTS: 'bf_clients_v1',
   STYLISTS: 'bf_stylists_v1',
   SERVICES: 'bf_services_v1',
+  CATEGORIES: 'bf_categories_v1',
   PRODUCTS: 'bf_products_v1'
 };
+
+// Categorías por Defecto para Salones de Belleza
+export const initialCategories: ServiceCategory[] = [
+  {
+    id: 'cat-color',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Colorimetría & Balayage',
+    slug: 'color',
+    icon: '🎨',
+    description: 'Tintes, mechas, balayage, decoloración y matizados.',
+    is_active: true,
+    display_order: 1
+  },
+  {
+    id: 'cat-corte',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Cortes & Peinados',
+    slug: 'corte',
+    icon: '✂️',
+    description: 'Corte damas, brushing, ondas, peinados para eventos.',
+    is_active: true,
+    display_order: 2
+  },
+  {
+    id: 'cat-keratina',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Alisados & Keratinas',
+    slug: 'keratina',
+    icon: '✨',
+    description: 'Tratamientos de keratina, botox capilar y aminoácidos.',
+    is_active: true,
+    display_order: 3
+  },
+  {
+    id: 'cat-nails',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Uñas & Manicura',
+    slug: 'nails',
+    icon: '💅',
+    description: 'Semipermanente, acrílicas, pedicura spa y nail art.',
+    is_active: true,
+    display_order: 4
+  },
+  {
+    id: 'cat-barberia',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Barbería & Barba',
+    slug: 'barberia',
+    icon: '💈',
+    description: 'Corte caballero, perfilado de barba y toalla caliente.',
+    is_active: true,
+    display_order: 5
+  },
+  {
+    id: 'cat-spa',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
+    name: 'Spa & Limpieza Facial',
+    slug: 'spa',
+    icon: '🧖‍♀️',
+    description: 'Faciales profundos, masajes relajantes, cejas y pestañas.',
+    is_active: true,
+    display_order: 6
+  }
+];
 
 // Initial Seed Data
 export const initialStylists: Stylist[] = [
@@ -892,6 +957,124 @@ export const api = {
     const current = await this.getServices();
     const updated = current.filter(s => s.id !== id);
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+  },
+
+  // ==========================================
+  // CATEGORIES CRUD
+  // ==========================================
+  async getCategories(tenantId?: string): Promise<ServiceCategory[]> {
+    const tid = tenantId || getActiveTenantId();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('service_categories')
+          .select('*')
+          .eq('tenant_id', tid)
+          .order('display_order', { ascending: true });
+        if (!error && data && data.length > 0) {
+          return data as ServiceCategory[];
+        }
+      } catch (e) {}
+    }
+
+    const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+    if (saved) {
+      try {
+        const list: ServiceCategory[] = JSON.parse(saved);
+        const filtered = list.filter(c => c.tenant_id === tid);
+        if (filtered.length > 0) return filtered;
+      } catch (e) {}
+    }
+
+    // Default categories iniciales adaptadas al tenant
+    const defaults = initialCategories.map(c => ({
+      ...c,
+      tenant_id: tid
+    }));
+    return defaults;
+  },
+
+  async createCategory(category: Partial<ServiceCategory>): Promise<ServiceCategory> {
+    const tid = category.tenant_id || getActiveTenantId();
+    const generatedUUID = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : 'cat-' + Date.now();
+
+    const cleanSlug = (category.slug || category.name || 'cat')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, '-');
+
+    const newCategory: ServiceCategory = {
+      id: category.id || generatedUUID,
+      tenant_id: tid,
+      name: category.name || 'Nueva Categoría',
+      slug: cleanSlug,
+      icon: category.icon || '✨',
+      description: category.description || '',
+      is_active: category.is_active !== false,
+      display_order: category.display_order || 99,
+      created_at: new Date().toISOString()
+    };
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('service_categories')
+          .insert([newCategory])
+          .select()
+          .single();
+        if (!error && data) {
+          return data as ServiceCategory;
+        }
+      } catch (e) {}
+    }
+
+    const current = await this.getCategories(tid);
+    const updated = [...current, newCategory];
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(updated));
+    return newCategory;
+  },
+
+  async updateCategory(category: ServiceCategory): Promise<ServiceCategory> {
+    const tid = category.tenant_id || getActiveTenantId();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('service_categories')
+          .update({
+            name: category.name,
+            slug: category.slug,
+            icon: category.icon,
+            description: category.description,
+            is_active: category.is_active,
+            display_order: category.display_order
+          })
+          .eq('id', category.id)
+          .select()
+          .single();
+        if (!error && data) {
+          return data as ServiceCategory;
+        }
+      } catch (e) {}
+    }
+
+    const current = await this.getCategories(tid);
+    const updated = current.map(c => c.id === category.id ? category : c);
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(updated));
+    return category;
+  },
+
+  async deleteCategory(id: string, tenantId?: string): Promise<void> {
+    const tid = tenantId || getActiveTenantId();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('service_categories').delete().eq('id', id);
+      } catch (e) {}
+    }
+    const current = await this.getCategories(tid);
+    const updated = current.filter(c => c.id !== id);
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(updated));
   },
 
   async getTenantBySlug(slug: string): Promise<any | null> {

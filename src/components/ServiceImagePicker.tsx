@@ -13,7 +13,7 @@ import { compressImage } from '../utils/imageCompressor';
 
 interface ServiceImagePickerProps {
   value?: string;
-  category?: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa';
+  category?: string;
   onChange: (url: string) => void;
   label?: string;
 }
