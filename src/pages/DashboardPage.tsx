@@ -3947,20 +3947,26 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">WhatsApp (10 dígitos)</label>
-                <input
-                  type="tel"
-                  maxLength={10}
-                  value={stylistForm.phone}
-                  onChange={(e) => {
-                    const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setStylistForm({ ...stylistForm, phone: clean });
-                  }}
-                  placeholder="3101234567"
-                  className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
+                <label className="block text-slate-400 mb-1 font-semibold">WhatsApp de la Colaboradora</label>
+                <div className={`flex items-center rounded-xl border focus-within:border-[#FF5A36] overflow-hidden ${
+                  theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F0F2F7] border-black/5'
+                }`}>
+                  <span className="px-3 py-2.5 bg-black/10 dark:bg-white/5 border-r border-black/5 dark:border-white/10 text-slate-400 font-bold text-xs shrink-0 flex items-center gap-1">
+                    🇨🇴 +57
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    value={stylistForm.phone ? stylistForm.phone.replace('+57', '').trim() : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setStylistForm({ ...stylistForm, phone: clean });
+                    }}
+                    placeholder="3101234567 (10 dígitos)"
+                    className="w-full bg-transparent px-3 py-2.5 font-mono focus:outline-none text-xs font-semibold"
+                  />
+                </div>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">Escribe los 10 dígitos de su celular</span>
               </div>
 
               <div>

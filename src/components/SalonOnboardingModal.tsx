@@ -44,6 +44,7 @@ interface NewStylistItem {
   name: string;
   phone: string;
   specialty: string;
+  categories: ('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[];
   commission_service_pct: number;
   commission_retail_pct: number;
 }
@@ -62,38 +63,23 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
 
   // Paso 1: Configuración de Negocio
   const [salonName, setSalonName] = useState(tenant?.name || 'Mi Salón de Belleza');
-  const [salonPhone, setSalonPhone] = useState(tenant?.phone || '');
+  const [salonPhone, setSalonPhone] = useState(tenant?.phone || '+57 300 000 0000');
   const [salonCity, setSalonCity] = useState(tenant?.city || 'Medellín');
-  const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>(initialCurrency);
-  const [businessHours, setBusinessHours] = useState(tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM');
+  const [currency, setCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>(
+    (tenant?.currency as any) || initialCurrency || 'COP'
+  );
+  const [businessHours, setBusinessHours] = useState(
+    tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM'
+  );
 
-  // Sincronizar reactivamente cuando llega el tenant cargado
+  // Sincronizar campos cuando cargue el tenant real asíncronamente
   React.useEffect(() => {
     if (tenant) {
       if (tenant.name) setSalonName(tenant.name);
-      if (tenant.phone) {
-        setSalonPhone(tenant.phone);
-        setWaPhoneNumber(tenant.phone);
-      }
+      if (tenant.phone) setSalonPhone(tenant.phone);
       if (tenant.city) setSalonCity(tenant.city);
-      if (tenant.currency) setCurrency(tenant.currency);
+      if (tenant.currency) setCurrency(tenant.currency as any);
       if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
-    } else {
-      // Intentar leer de localStorage si tenant viene vacío
-      try {
-        const raw = localStorage.getItem('bf_tenant_active');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.name) setSalonName(parsed.name);
-          if (parsed.phone) {
-            setSalonPhone(parsed.phone);
-            setWaPhoneNumber(parsed.phone);
-          }
-          if (parsed.city) setSalonCity(parsed.city);
-          if (parsed.currency) setCurrency(parsed.currency);
-          if (parsed.business_hours?.summary) setBusinessHours(parsed.business_hours.summary);
-        }
-      } catch (e) {}
     }
   }, [tenant, isOpen]);
 
@@ -115,8 +101,8 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   // Paso 3: Colaboradores Iniciales
   const [stylistsList, setStylistsList] = useState<NewStylistItem[]>([]);
   const [tempStylistName, setTempStylistName] = useState('');
-  const [tempStylistPhone, setTempStylistPhone] = useState('');
-  const [tempStylistSpecialty, setTempStylistSpecialty] = useState('Colorimetría & Estilismo');
+  const [tempStylistPhoneRaw, setTempStylistPhoneRaw] = useState(''); // Solo 10 dígitos
+  const [tempStylistCategories, setTempStylistCategories] = useState<('color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa')[]>(['color', 'corte']);
   const [tempStylistCommService, setTempStylistCommService] = useState(45);
   const [tempStylistCommRetail, setTempStylistCommRetail] = useState(10);
 
@@ -153,23 +139,50 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     e.preventDefault();
     if (!tempStylistName.trim()) return;
 
+    // Limpiar solo los 10 dígitos ingresados
+    const cleanDigits = tempStylistPhoneRaw.replace(/\D/g, '').slice(-10);
+    const formattedPhone = cleanDigits ? `+57 ${cleanDigits}` : '';
+
+    const categoryNamesMap: Record<string, string> = {
+      color: 'Colorimetría',
+      corte: 'Cortes & Peinados',
+      keratina: 'Alisados & Keratinas',
+      nails: 'Uñas & Manicura',
+      barberia: 'Barbería',
+      spa: 'Spa Facial & Corporal'
+    };
+
+    const generatedSpecialty = tempStylistCategories.length > 0
+      ? tempStylistCategories.map(c => categoryNamesMap[c] || c).join(', ')
+      : 'Estilista Integral';
+
     setStylistsList([
       ...stylistsList,
       {
         name: tempStylistName.trim(),
-        phone: tempStylistPhone.trim(),
-        specialty: tempStylistSpecialty.trim(),
+        phone: formattedPhone,
+        specialty: generatedSpecialty,
+        categories: tempStylistCategories.length > 0 ? tempStylistCategories : ['color', 'corte'],
         commission_service_pct: Number(tempStylistCommService),
         commission_retail_pct: Number(tempStylistCommRetail)
       }
     ]);
     setTempStylistName('');
-    setTempStylistPhone('');
-    setTempStylistSpecialty('Estilista');
+    setTempStylistPhoneRaw('');
+    setTempStylistCategories(['color', 'corte']);
   };
 
   const handleRemoveStylist = (idx: number) => {
     setStylistsList(stylistsList.filter((_, i) => i !== idx));
+  };
+
+  const toggleCategory = (cat: 'color' | 'corte' | 'keratina' | 'nails' | 'barberia' | 'spa') => {
+    if (tempStylistCategories.includes(cat)) {
+      if (tempStylistCategories.length === 1) return; // Mantener al menos una
+      setTempStylistCategories(tempStylistCategories.filter(c => c !== cat));
+    } else {
+      setTempStylistCategories([...tempStylistCategories, cat]);
+    }
   };
 
   const handleSaveAndFinish = async (skipWhatsApp: boolean = false) => {
@@ -228,7 +241,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
           commission_service_pct: st.commission_service_pct,
           commission_retail_pct: st.commission_retail_pct,
           working_days: [1, 2, 3, 4, 5, 6],
-          service_categories: ['color', 'corte', 'keratina', 'nails', 'barberia', 'spa'],
+          service_categories: st.categories || ['color', 'corte'],
           service_ids: [],
           is_active: true
         };
@@ -593,29 +606,61 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   />
                 </div>
 
+                {/* WhatsApp con prefijo fijo +57 */}
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">Especialidad / Rol</label>
-                  <input
-                    type="text"
-                    value={tempStylistSpecialty}
-                    onChange={(e) => setTempStylistSpecialty(e.target.value)}
-                    placeholder="ej. Colorista Master, Manicurista"
-                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-purple-400 text-xs font-semibold"
-                  />
+                  <label className="block text-[11px] font-bold text-slate-400 mb-1">WhatsApp de la Colaboradora *</label>
+                  <div className="flex items-center rounded-xl bg-[#121624] border border-white/15 focus-within:border-purple-400 overflow-hidden">
+                    <span className="px-3 py-2.5 bg-white/5 border-r border-white/10 text-white font-bold text-xs shrink-0 flex items-center gap-1">
+                      🇨🇴 +57
+                    </span>
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      value={tempStylistPhoneRaw}
+                      onChange={(e) => setTempStylistPhoneRaw(e.target.value.replace(/\D/g, ''))}
+                      placeholder="3120000000 (10 dígitos)"
+                      className="w-full bg-transparent px-3 py-2.5 text-white focus:outline-none text-xs font-semibold placeholder-slate-500"
+                    />
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-0.5 block">Solo escribe los 10 números de su celular</span>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-400 mb-1">WhatsApp de la Colaboradora</label>
-                  <input
-                    type="text"
-                    value={tempStylistPhone}
-                    onChange={(e) => setTempStylistPhone(e.target.value)}
-                    placeholder="+57 312 000 0000"
-                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-purple-400 text-xs font-semibold"
-                  />
+                {/* Selección Múltiple de Especialidades / Categorías */}
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label className="block text-[11px] font-bold text-slate-300 flex items-center justify-between">
+                    <span>Especialidad / Categorías que atiende *</span>
+                    <span className="text-[10px] text-purple-400 font-normal">Selecciona una o varias</span>
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: 'color', label: '🎨 Color & Balayage' },
+                      { id: 'corte', label: '✂️ Cortes & Peinados' },
+                      { id: 'keratina', label: '✨ Alisados & Keratinas' },
+                      { id: 'nails', label: '💅 Uñas & Manicura' },
+                      { id: 'barberia', label: '💈 Barbería & Barba' },
+                      { id: 'spa', label: '🧖‍♀️ Spa & Faciales' }
+                    ].map((cat) => {
+                      const isSelected = tempStylistCategories.includes(cat.id as any);
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.id as any)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                            isSelected
+                              ? 'bg-purple-500/20 border-purple-400 text-purple-200 shadow-sm shadow-purple-500/20'
+                              : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {cat.label} {isSelected && '✓'}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:col-span-2">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 mb-1">% Comis. Servicio</label>
                     <input
