@@ -2059,9 +2059,25 @@ export const api = {
       service_ids: [],
       is_active: true
     };
-    await this.createStylist(ownerStylist, tempPassword);
+    // 4. Precargar las categorías base oficiales para el salón
+    const defaultCategoriesToInsert = initialCategories.map((c, idx) => ({
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `cat-${newTenant.id.slice(0, 8)}-${idx}`,
+      tenant_id: newTenant.id,
+      name: c.name,
+      slug: c.slug,
+      icon: c.icon || '✨',
+      description: c.description || '',
+      display_order: idx + 1,
+      is_active: true
+    }));
 
-    // 4. Salón creado en estado virgen (0 colaboradores extra, 0 servicios precargados para configurar en onboarding)
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('service_categories').insert(defaultCategoriesToInsert);
+      } catch (e) {
+        console.warn('Notice seeding default categories in DB:', e);
+      }
+    }
 
     // 5. Actualizar prospect_sites como 'reclamado'
     if (prospect) {
@@ -2073,6 +2089,7 @@ export const api = {
 
     // 6. Guardar en localStorage para disponibilidad inmediata
     localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategoriesToInsert));
 
     return {
       success: true,
