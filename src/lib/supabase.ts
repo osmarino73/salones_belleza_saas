@@ -1419,6 +1419,7 @@ export const api = {
       }
 
       localStorage.setItem('bf_auth_user', JSON.stringify(loggedUser));
+      localStorage.removeItem('bf_tenant_active');
 
       // Sincronizar automáticamente el tenant perteneciente a este usuario
       try {
@@ -2059,6 +2060,8 @@ export const api = {
       service_ids: [],
       is_active: true
     };
+    await this.createStylist(ownerStylist, tempPassword);
+
     // 4. Precargar las categorías base oficiales para el salón
     const defaultCategoriesToInsert = initialCategories.map((c, idx) => ({
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `cat-${newTenant.id.slice(0, 8)}-${idx}`,

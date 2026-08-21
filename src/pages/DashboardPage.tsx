@@ -311,13 +311,16 @@ export const DashboardPage: React.FC = () => {
         if (activeTenantRaw) {
           try {
             const activeTenant = JSON.parse(activeTenantRaw);
-            targetTenantId = activeTenant.id;
-            setActiveTenantObj(activeTenant);
-            if (activeTenant.name) setSalonName(activeTenant.name);
-            if (activeTenant.phone) setSalonPhone(activeTenant.phone);
-            if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
-            if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
-            if (activeTenant.business_hours?.summary) setSalonHours(activeTenant.business_hours.summary);
+            // No heredar el ID del tenant demo para usuarios distintos
+            if (activeTenant.id !== '00000000-0000-0000-0000-000000000001' || currentEmail === 'sofia@studioglamour.co') {
+              targetTenantId = activeTenant.id;
+              setActiveTenantObj(activeTenant);
+              if (activeTenant.name) setSalonName(activeTenant.name);
+              if (activeTenant.phone) setSalonPhone(activeTenant.phone);
+              if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
+              if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
+              if (activeTenant.business_hours?.summary) setSalonHours(activeTenant.business_hours.summary);
+            }
           } catch (e) {
             console.warn('Error parsing active tenant:', e);
           }
