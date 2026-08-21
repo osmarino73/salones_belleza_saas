@@ -30,7 +30,8 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
     category === 'nails' ? 'nails' :
     category === 'corte' ? 'cortes' :
     category === 'keratina' ? 'keratina' :
-    category === 'spa' ? 'spa_facial' : 'color'
+    (category?.toLowerCase().includes('pesta') || category?.toLowerCase().includes('lash')) ? 'pestanas' :
+    category === 'spa' ? 'spa_facial' : 'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [urlInput, setUrlInput] = useState('');
@@ -40,6 +41,7 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
   // Filtrar categorías del stock
   const stockCategories = [
     { id: 'all', label: 'Todas' },
+    { id: 'pestanas', label: 'Pestañas & Cejas' },
     { id: 'color', label: 'Color & Balayage' },
     { id: 'cortes', label: 'Cortes & Peinados' },
     { id: 'keratina', label: 'Alisados & Keratinas' },

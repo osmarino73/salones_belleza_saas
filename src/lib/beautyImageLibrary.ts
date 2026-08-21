@@ -164,6 +164,31 @@ export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
   },
 
   // ==========================================
+  // PESTAÑAS, CEJAS & MIRADA
+  // ==========================================
+  {
+    id: 'lashes-volumen-ruso',
+    category: 'pestanas' as any,
+    title: 'Extensiones de Pestañas Volumen Ruso & Efecto Foxy',
+    url: 'https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80',
+    tags: ['pestanas', 'pestañas', 'volumen ruso', 'extensiones', 'mirada', 'lashes']
+  },
+  {
+    id: 'lashes-pelo-a-pelo',
+    category: 'pestanas' as any,
+    title: 'Pestañas Pelo a Pelo Clásicas & Lifting con Keratina',
+    url: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80',
+    tags: ['pestanas', 'pestañas', 'pelo a pelo', 'lifting', 'laminado', 'lashes']
+  },
+  {
+    id: 'brows-microblading',
+    category: 'pestanas' as any,
+    title: 'Diseño de Cejas con Henna & Microblading Pelo a Pelo',
+    url: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=800&q=80',
+    tags: ['cejas', 'microblading', 'henna', 'perfilado', 'brows']
+  },
+
+  // ==========================================
   // MAQUILLAJE PROFESIONAL & NOVIAS
   // ==========================================
   {

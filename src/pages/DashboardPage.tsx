@@ -78,6 +78,7 @@ import { LoyaltyReactivationPage } from '../components/LoyaltyReactivationPage';
 import { TimePickerSelect } from '../components/TimePickerSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { ServiceImagePicker } from '../components/ServiceImagePicker';
+import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -773,6 +774,8 @@ export const DashboardPage: React.FC = () => {
     e.preventDefault();
     if (!serviceForm.name.trim()) return;
 
+    const finalImage = serviceForm.image_url?.trim() || getSuggestedImageForService(serviceForm.name, serviceForm.category);
+
     if (editingService) {
       const updated: Service = {
         ...editingService,
@@ -780,7 +783,7 @@ export const DashboardPage: React.FC = () => {
         category: serviceForm.category,
         duration_minutes: Number(serviceForm.duration_minutes),
         price_usd: Number(serviceForm.price_usd),
-        image_url: serviceForm.image_url,
+        image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description
       };
@@ -788,23 +791,19 @@ export const DashboardPage: React.FC = () => {
       setServices(services.map(s => s.id === updated.id ? updated : s));
     } else {
       const activeTid = activeTenantObj?.id || getActiveTenantId();
-      const generatedId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-        ? crypto.randomUUID() 
-        : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
-
       const newSrv: Service = {
-        id: generatedId,
+        id: `srv-${Date.now()}`,
         tenant_id: activeTid,
         name: serviceForm.name,
         category: serviceForm.category,
         duration_minutes: Number(serviceForm.duration_minutes),
         price_usd: Number(serviceForm.price_usd),
-        image_url: serviceForm.image_url,
+        image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description
       };
-      const created = await api.createService(newSrv);
-      setServices([created, ...services]);
+      const saved = await api.createService(newSrv);
+      setServices([saved, ...services]);
     }
     setIsServiceModalOpen(false);
   };

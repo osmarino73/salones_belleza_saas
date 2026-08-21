@@ -22,6 +22,7 @@ import { api } from '../lib/supabase';
 import { Service, Stylist, Tenant } from '../types';
 
 import { ServiceImagePicker } from './ServiceImagePicker';
+import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
 
 interface SalonOnboardingModalProps {
   isOpen: boolean;
@@ -178,6 +179,9 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     e.preventDefault();
     if (!tempServiceName.trim()) return;
 
+    // Asignar imagen manual o auto-sugerir imagen ilustrativa de stock
+    const finalImage = tempServiceImage.trim() || getSuggestedImageForService(tempServiceName, tempServiceCategory);
+
     setServicesList([
       ...servicesList,
       {
@@ -185,7 +189,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         category: tempServiceCategory,
         duration_minutes: Number(tempServiceDuration),
         price: Number(tempServicePrice),
-        image_url: tempServiceImage || undefined
+        image_url: finalImage
       }
     ]);
     setTempServiceName('');
