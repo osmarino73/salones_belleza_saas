@@ -1185,6 +1185,7 @@ export const api = {
             direccion: tenant.address || currentBData.direccion,
             hero_image_url: tenant.hero_image_url || currentBData.hero_image_url,
             primary_color: tenant.primary_color || currentBData.primary_color,
+            show_team_section: tenant.show_team_section !== undefined ? tenant.show_team_section : currentBData.show_team_section,
             logo_icon: tenant.logo_icon || currentBData.logo_icon,
             hero_eyebrow: tenant.hero_eyebrow || currentBData.hero_eyebrow,
             slogan: tenant.slogan || currentBData.slogan,

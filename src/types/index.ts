@@ -19,6 +19,7 @@ export interface Tenant {
   title_accent?: string; // Subtítulo fucsia (ej. 'Centro de Estética')
   subtitle?: string; // Párrafo descriptivo de servicios
   primary_color?: string; // Color hexadecimal principal de la marca (ej. '#d92672')
+  show_team_section?: boolean; // Controla si se muestra u oculta la sección Nosotros/Equipo en la web
   created_at: string;
 }
 
@@ -43,6 +44,7 @@ export interface Stylist {
   role?: 'admin' | 'colaborador';
   is_owner?: boolean;
   attends_clients?: boolean; // True si atiende clientes y aparece en reservas
+  show_on_web?: boolean; // True si se muestra en la página web pública (hasta 4 max)
   specialty: string;
   photo_url: string;
   rating: number;

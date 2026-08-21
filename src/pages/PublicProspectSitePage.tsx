@@ -10,6 +10,7 @@ export const PublicProspectSitePage: React.FC = () => {
   const [site, setSite] = useState<ProspectSite | null>(null);
   const [tenant, setTenant] = useState<any | null>(null);
   const [liveServices, setLiveServices] = useState<any[]>([]);
+  const [liveStylists, setLiveStylists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export const PublicProspectSitePage: React.FC = () => {
         // Actualizar título de la pestaña para Google SEO
         document.title = `${found.business_name} | Sitio Oficial`;
 
-        // Cargar tenant y servicios reales si el salón ya tiene tenant o por su slug
+        // Cargar tenant, servicios y estilistas reales si el salón ya tiene tenant o por su slug
         try {
           let tid = found.claimed_tenant_id;
           let tenantData = null;
@@ -44,13 +45,19 @@ export const PublicProspectSitePage: React.FC = () => {
           }
 
           if (tid) {
-            const dbServices = await api.getServices(tid);
+            const [dbServices, dbStylists] = await Promise.all([
+              api.getServices(tid),
+              api.getStylists(tid)
+            ]);
             if (dbServices && dbServices.length > 0) {
               setLiveServices(dbServices);
             }
+            if (dbStylists && dbStylists.length > 0) {
+              setLiveStylists(dbStylists);
+            }
           }
         } catch (e) {
-          console.warn('Error loading live services for site:', e);
+          console.warn('Error loading live services or stylists for site:', e);
         }
       }
       setLoading(false);
@@ -58,24 +65,30 @@ export const PublicProspectSitePage: React.FC = () => {
     loadSite();
   }, [slug]);
 
-  // Inyectar enlaces de agendamiento (/reservar/:slug), WhatsApp y catálogo vivo en el HTML nativo
+  // Inyectar enlaces de agendamiento (/reservar/:slug), WhatsApp, catálogo vivo y equipo en el HTML nativo
   const renderedHtml = useMemo(() => {
     if (!site?.raw_html) return '';
     const bData = (site as any).business_data || {};
+    const showTeam = tenant?.show_team_section !== undefined 
+      ? tenant.show_team_section 
+      : (bData.show_team_section !== undefined ? bData.show_team_section : true);
+
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
       primaryColor: tenant?.primary_color || bData.primary_color || undefined,
+      showTeamSection: showTeam,
       heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
       logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
       heroEyebrow: tenant?.hero_eyebrow || bData.hero_eyebrow || undefined,
       slogan: tenant?.slogan || bData.slogan || undefined,
       titleAccent: tenant?.title_accent || bData.title_accent || undefined,
       subtitle: tenant?.subtitle || bData.subtitle || undefined,
-      liveServices: liveServices.length > 0 ? liveServices : undefined
+      liveServices: liveServices.length > 0 ? liveServices : undefined,
+      liveStylists: liveStylists.length > 0 ? liveStylists : undefined
     });
-  }, [site, liveServices, tenant]);
+  }, [site, liveServices, liveStylists, tenant]);
 
   if (loading) {
     return (

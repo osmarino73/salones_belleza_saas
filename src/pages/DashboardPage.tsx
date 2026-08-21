@@ -118,6 +118,7 @@ export const DashboardPage: React.FC = () => {
     role: 'admin' | 'colaborador';
     is_owner: boolean;
     attends_clients: boolean;
+    show_on_web: boolean;
     commission_service_pct: number;
     commission_retail_pct: number;
     service_categories: string[];
@@ -132,6 +133,7 @@ export const DashboardPage: React.FC = () => {
     role: 'colaborador',
     is_owner: false,
     attends_clients: false,
+    show_on_web: true,
     commission_service_pct: 45,
     commission_retail_pct: 10,
     service_categories: ['color', 'corte'],
@@ -181,9 +183,19 @@ export const DashboardPage: React.FC = () => {
 
   // Personalización del Sitio Web Público
   const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
-  const [websiteForm, setWebsiteForm] = useState({
+  const [websiteForm, setWebsiteForm] = useState<{
+    hero_image_url: string;
+    primary_color: string;
+    show_team_section: boolean;
+    logo_icon: string;
+    hero_eyebrow: string;
+    slogan: string;
+    title_accent: string;
+    subtitle: string;
+  }>({
     hero_image_url: '',
     primary_color: '#d92672',
+    show_team_section: true,
     logo_icon: '🪄',
     hero_eyebrow: 'Bienvenidas a ❤️',
     slogan: 'Sandra Color´s',
@@ -543,6 +555,7 @@ export const DashboardPage: React.FC = () => {
       role: 'colaborador',
       is_owner: false,
       attends_clients: false, // Por defecto 'Solo gestión administrativa' en off
+      show_on_web: true,
       commission_service_pct: 45,
       commission_retail_pct: 10,
       service_categories: ['color', 'corte'],
@@ -563,6 +576,7 @@ export const DashboardPage: React.FC = () => {
       role: sty.role || (sty.is_owner ? 'admin' : 'colaborador'),
       is_owner: sty.is_owner || sty.role === 'admin' || false,
       attends_clients: sty.attends_clients !== false,
+      show_on_web: sty.show_on_web !== false,
       commission_service_pct: sty.commission_service_pct || 45,
       commission_retail_pct: sty.commission_retail_pct || 10,
       service_categories: sty.service_categories || ['color', 'corte'],
@@ -586,6 +600,7 @@ export const DashboardPage: React.FC = () => {
         role: stylistForm.role,
         is_owner: stylistForm.is_owner,
         attends_clients: stylistForm.attends_clients,
+        show_on_web: stylistForm.show_on_web,
         commission_service_pct: Number(stylistForm.commission_service_pct),
         commission_retail_pct: Number(stylistForm.commission_retail_pct),
         service_categories: stylistForm.service_categories,
@@ -605,6 +620,7 @@ export const DashboardPage: React.FC = () => {
         role: stylistForm.role,
         is_owner: stylistForm.is_owner,
         attends_clients: stylistForm.attends_clients,
+        show_on_web: stylistForm.show_on_web,
         rating: 5.0,
         reviews_count: 0,
         commission_service_pct: Number(stylistForm.commission_service_pct),
@@ -1249,6 +1265,7 @@ export const DashboardPage: React.FC = () => {
                         setWebsiteForm({
                           hero_image_url: activeTenantObj.hero_image_url || '',
                           primary_color: activeTenantObj.primary_color || '#d92672',
+                          show_team_section: activeTenantObj.show_team_section !== false,
                           logo_icon: activeTenantObj.logo_icon || '🪄',
                           hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
                           slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
@@ -4224,6 +4241,26 @@ export const DashboardPage: React.FC = () => {
                     <div className="w-4 h-4 rounded-full bg-white shadow-md" />
                   </button>
                 </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  <div>
+                    <strong className="text-pink-400 text-xs block flex items-center gap-1">
+                      ⭐ ¿Mostrar en la Portada Web?
+                    </strong>
+                    <span className="text-[10px] text-slate-400">
+                      {stylistForm.show_on_web ? 'Visible en la sección "Equipo de Especialistas" de la web (hasta 4 max).' : 'Oculto de la portada web (solo disponible en reservas internas).'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStylistForm({ ...stylistForm, show_on_web: !stylistForm.show_on_web })}
+                    className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer ${
+                      stylistForm.show_on_web ? 'bg-pink-500 justify-end' : 'bg-slate-700 justify-start'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -5584,6 +5621,7 @@ export const DashboardPage: React.FC = () => {
                 ...activeTenantObj,
                 hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
                 primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
+                show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
                 logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
                 hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
                 slogan: websiteForm.slogan || activeTenantObj.slogan,
@@ -5598,7 +5636,7 @@ export const DashboardPage: React.FC = () => {
                 console.warn('Error saving website config in Supabase:', err);
               }
               setIsWebsiteCustomizerOpen(false);
-              alert('✨ ¡Portada, colores y textos de tu sitio web actualizados con éxito!');
+              alert('✨ ¡Portada, colores, equipo y textos de tu sitio web actualizados con éxito!');
             }} className="space-y-4 text-xs">
 
               {/* Selector de Fotografía de Cabecera (Hero) */}
@@ -5608,6 +5646,29 @@ export const DashboardPage: React.FC = () => {
                 onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
                 label="1. Fotografía Principal del Header (Portada)"
               />
+
+              {/* Switch de Visibilidad de la Sección Nosotros / Equipo */}
+              <div className="p-3.5 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-between">
+                <div>
+                  <strong className="text-white text-xs block flex items-center gap-1.5">
+                    👥 Mostrar Sección "Equipo de Especialistas" en la Web
+                  </strong>
+                  <span className="text-[10px] text-slate-400">
+                    {websiteForm.show_team_section !== false 
+                      ? 'Visible en la página web con hasta 4 colaboradoras destacadas.' 
+                      : 'Oculta completamente la sección de Nosotros y su enlace del menú.'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWebsiteForm({ ...websiteForm, show_team_section: websiteForm.show_team_section === false ? true : false })}
+                  className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
+                    websiteForm.show_team_section !== false ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
+                  }`}
+                >
+                  <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                </button>
+              </div>
 
               {/* Selector de Color de Marca Primario */}
               <div className="p-3.5 rounded-2xl border border-white/10 bg-white/5 space-y-2">

@@ -12,6 +12,7 @@ export interface InjectProspectOptions {
   phoneWhatsapp: string;
   currency?: string;
   primaryColor?: string;
+  showTeamSection?: boolean;
   heroImageUrl?: string;
   logoIcon?: string;
   heroEyebrow?: string;
@@ -35,6 +36,7 @@ export interface InjectProspectOptions {
     specialty?: string;
     photo_url?: string;
     rating?: number;
+    show_on_web?: boolean;
   }>;
 }
 
@@ -47,6 +49,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     phoneWhatsapp,
     currency = 'COP',
     primaryColor,
+    showTeamSection = true,
     heroImageUrl,
     logoIcon,
     heroEyebrow,
@@ -205,6 +208,52 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         servicesGridRegex,
         `$1\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</section>`
       );
+    }
+  }
+
+  // 2.5 Inyección y Control de Visibilidad de la Sección de Equipo / Especialistas
+  const teamSectionRegex = /(<section\b[^>]*?(?:id=["'](?:nosotros|equipo)["']|class=["'][^"']*(?:team-section|stylists-section|nosotros-section)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
+  
+  if (!showTeamSection) {
+    // Si la administradora decidió ocultar la sección de Nosotros
+    processed = processed.replace(teamSectionRegex, '');
+    // Ocultar también el enlace "Nosotros" en el menú de navegación si existe
+    processed = processed.replace(/<li\b[^>]*>\s*<a\b[^>]*href=["']#(?:nosotros|equipo)["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, '');
+  } else if (liveStylists && liveStylists.length > 0) {
+    // Filtrar colaboradoras marcadas para mostrar en la web (show_on_web !== false) y limitar a un máximo de 4
+    const webStylists = liveStylists.filter(s => s.show_on_web !== false).slice(0, 4);
+
+    if (webStylists.length > 0) {
+      const teamGridRegex = /(<div\b[^>]*class=["'][^"']*(?:team-grid|stylists-grid|team-container|grid-team)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>)/i;
+
+      if (teamGridRegex.test(processed)) {
+        const liveTeamCardsHtml = webStylists.map((sty) => {
+          const avatarUrl = sty.photo_url || 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=500&q=80';
+          const stylistBookingLink = `${bookingUrl}?stylistId=${sty.id}`;
+          const ratingStars = '⭐'.repeat(Math.round(sty.rating || 5));
+
+          return `
+          <!-- Card de Especialista Dinámica -->
+          <div class="team-card">
+            <div class="team-photo-box" style="position: relative; width: 110px; height: 110px; margin: 0 auto 16px;">
+              <img src="${avatarUrl}" alt="${sty.name}" class="team-avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+            </div>
+            <div class="team-info">
+              <h3 class="team-name" style="font-size: 18px; font-weight: 800; margin-bottom: 4px;">${sty.name}</h3>
+              <span class="team-role" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 8px;">${sty.specialty || 'Especialista en Belleza'}</span>
+              <div class="team-rating" style="font-size: 11px; margin-bottom: 12px;">${ratingStars} (${(sty.rating || 5).toFixed(1)})</div>
+              <a href="${stylistBookingLink}" class="btn-team-book" style="display: inline-block; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 999px; text-decoration: none;">
+                Agendar Cita
+              </a>
+            </div>
+          </div>`;
+        }).join('\n');
+
+        processed = processed.replace(
+          teamGridRegex,
+          `$1\n${liveTeamCardsHtml}\n</div>\n</div>\n</section>`
+        );
+      }
     }
   }
 
