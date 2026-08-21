@@ -61,16 +61,17 @@ export const PublicProspectSitePage: React.FC = () => {
   // Inyectar enlaces de agendamiento (/reservar/:slug), WhatsApp y catálogo vivo en el HTML nativo
   const renderedHtml = useMemo(() => {
     if (!site?.raw_html) return '';
+    const bData = (site as any).business_data || {};
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
-      heroImageUrl: tenant?.hero_image_url || undefined,
-      logoIcon: tenant?.logo_icon || undefined,
-      heroEyebrow: tenant?.hero_eyebrow || undefined,
-      slogan: tenant?.slogan || undefined,
-      titleAccent: tenant?.title_accent || undefined,
-      subtitle: tenant?.subtitle || undefined,
+      heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
+      logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
+      heroEyebrow: tenant?.hero_eyebrow || bData.hero_eyebrow || undefined,
+      slogan: tenant?.slogan || bData.slogan || undefined,
+      titleAccent: tenant?.title_accent || bData.title_accent || undefined,
+      subtitle: tenant?.subtitle || bData.subtitle || undefined,
       liveServices: liveServices.length > 0 ? liveServices : undefined
     });
   }, [site, liveServices, tenant]);

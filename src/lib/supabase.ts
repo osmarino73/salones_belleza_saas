@@ -1159,11 +1159,38 @@ export const api = {
         if (tenant.country) payload.country = tenant.country;
         if (tenant.currency) payload.currency = tenant.currency;
         if (tenant.business_hours) payload.business_hours = tenant.business_hours;
+        if (tenant.hero_image_url) payload.logo_url = tenant.hero_image_url;
         
         await supabase
           .from('tenants')
           .update(payload)
           .eq('id', tenant.id);
+
+        // Actualizar simultáneamente prospect_sites para que la web pública lo lea de inmediato
+        const { data: prospect } = await supabase
+          .from('prospect_sites')
+          .select('*')
+          .or(`claimed_tenant_id.eq.${tenant.id},slug.eq.${tenant.slug}`)
+          .limit(1)
+          .maybeSingle();
+
+        if (prospect) {
+          const currentBData = prospect.business_data || {};
+          const updatedBData = {
+            ...currentBData,
+            hero_image_url: tenant.hero_image_url || currentBData.hero_image_url,
+            logo_icon: tenant.logo_icon || currentBData.logo_icon,
+            hero_eyebrow: tenant.hero_eyebrow || currentBData.hero_eyebrow,
+            slogan: tenant.slogan || currentBData.slogan,
+            title_accent: tenant.title_accent || currentBData.title_accent,
+            subtitle: tenant.subtitle || currentBData.subtitle
+          };
+
+          await supabase
+            .from('prospect_sites')
+            .update({ business_data: updatedBData })
+            .eq('id', prospect.id);
+        }
       } catch (e) {
         console.warn('Notice updating tenant in Supabase:', e);
       }

@@ -73,11 +73,16 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = resetCss + processed;
   }
 
-  // 1.1 Inyección Dinámica de Icono/Logo de Cabecera
+  // 1.1 Inyección Dinámica de Icono/Logo de Cabecera (Emoji o Imagen URL / Base64)
   if (logoIcon) {
+    const isImg = logoIcon.startsWith('http') || logoIcon.startsWith('data:image/');
+    const iconInnerHtml = isImg
+      ? `<img src="${logoIcon}" alt="Logo" style="width: 28px; height: 28px; object-fit: contain; border-radius: 6px;" />`
+      : `<span style="font-size: 22px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">${logoIcon}</span>`;
+
     processed = processed.replace(
       /(<div\b[^>]*class=["'][^"']*logo-silhouette-box[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i,
-      `$1<span style="font-size: 22px; display: inline-flex; align-items: center; justify-content: center;">${logoIcon}</span>$3`
+      `$1${iconInnerHtml}$3`
     );
   }
 

@@ -65,7 +65,8 @@ import {
   CalendarCheck,
   ExternalLink,
   Wallet,
-  Palette
+  Palette,
+  Upload
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
@@ -5603,13 +5604,13 @@ export const DashboardPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-1">
                   <label className="block text-slate-400 mb-1 font-semibold">2. Icono / Logo Navbar</label>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {['🪄', '✨', '✂️', '👑', '💅', '🧖‍♀️'].map((ic) => (
                       <button
                         key={ic}
                         type="button"
                         onClick={() => setWebsiteForm({ ...websiteForm, logo_icon: ic })}
-                        className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all ${
+                        className={`w-8 h-8 rounded-xl border text-sm flex items-center justify-center transition-all ${
                           websiteForm.logo_icon === ic
                             ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-sm'
                             : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
@@ -5618,6 +5619,31 @@ export const DashboardPage: React.FC = () => {
                         {ic}
                       </button>
                     ))}
+
+                    <label className={`w-8 h-8 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${
+                      websiteForm.logo_icon && (websiteForm.logo_icon.startsWith('http') || websiteForm.logo_icon.startsWith('data:image/'))
+                        ? 'bg-[#FF5A36] text-white border-[#FF5A36]'
+                        : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-400 hover:text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`} title="Subir logo propio (PNG / JPG / WebP)">
+                      <Upload className="w-3.5 h-3.5" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (uploadEvt) => {
+                              if (uploadEvt.target?.result) {
+                                setWebsiteForm({ ...websiteForm, logo_icon: uploadEvt.target.result as string });
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                 </div>
 
