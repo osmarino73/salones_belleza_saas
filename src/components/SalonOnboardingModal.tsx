@@ -70,15 +70,46 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const [businessHours, setBusinessHours] = useState(tenant?.business_hours?.summary || 'Lun a Sáb: 8:00 AM – 7:00 PM');
 
   React.useEffect(() => {
-    if (tenant) {
-      if (tenant.name) setSalonName(tenant.name);
-      if (tenant.phone) setSalonPhone(tenant.phone);
-      if (tenant.address) setSalonAddress(tenant.address);
-      if (tenant.city) setSalonCity(tenant.city);
-      if (tenant.currency) setCurrency(tenant.currency as any);
-      if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
+    async function loadInitialData() {
+      if (tenant && tenant.id !== '00000000-0000-0000-0000-000000000001') {
+        if (tenant.name) setSalonName(tenant.name);
+        if (tenant.phone) setSalonPhone(tenant.phone);
+        if (tenant.address) setSalonAddress(tenant.address);
+        if (tenant.city) setSalonCity(tenant.city);
+        if (tenant.currency) setCurrency(tenant.currency as any);
+        if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
+      } else if (ownerEmail && ownerEmail.toLowerCase().includes('indiiclub')) {
+        // Precargar automáticamente los datos de prospección de Sandra Color's
+        try {
+          const prospects = await api.getProspectSites();
+          const sandra = prospects.find(p => p.business_name?.toLowerCase().includes('sandra'));
+          if (sandra) {
+            setSalonName(sandra.business_name);
+            if (sandra.phone_whatsapp) {
+              setSalonPhone(sandra.phone_whatsapp);
+              setWaPhoneNumber(sandra.phone_whatsapp);
+            }
+            if (sandra.city) setSalonCity(sandra.city);
+            if (sandra.address) setSalonAddress(sandra.address);
+            if (sandra.business_data?.horario_atencion) setBusinessHours(sandra.business_data.horario_atencion);
+            
+            // Precargar servicios si la lista está vacía o con el servicio por defecto
+            if (sandra.business_data?.servicios && sandra.business_data.servicios.length > 0) {
+              const loadedServices = sandra.business_data.servicios.map((s: any) => ({
+                name: s.nombre || s.titulo,
+                category: 'color',
+                duration_minutes: s.duracion_minutos || 60,
+                price: s.precio_cop || 90000,
+                image_url: s.img || s.imagen || ''
+              }));
+              setServicesList(loadedServices);
+            }
+          }
+        } catch (e) {}
+      }
     }
-  }, [tenant, isOpen]);
+    loadInitialData();
+  }, [tenant, isOpen, ownerEmail]);
 
   // Lista Dinámica de Categorías en el Onboarding
   const [availableCategories, setAvailableCategories] = useState<{ id: string; name: string; icon: string }[]>([
@@ -98,7 +129,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     async function fetchCats() {
       if (!isOpen) return;
       const tid = tenant?.id;
-      if (tid) {
+      if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
         try {
           const dbCats = await api.getCategories(tid);
           if (dbCats && dbCats.length > 0) {
