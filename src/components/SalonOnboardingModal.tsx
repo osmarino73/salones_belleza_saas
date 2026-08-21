@@ -79,24 +79,45 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         if (tenant.city) setSalonCity(tenant.city);
         if (tenant.currency) setCurrency(tenant.currency as any);
         if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
-      } else if (ownerEmail && ownerEmail.toLowerCase().includes('indiiclub')) {
-        // Precargar automáticamente los datos de prospección de Sandra Color's
+
+        // Precargar servicios del prospecto si existen
         try {
           const prospects = await api.getProspectSites();
-          const sandra = prospects.find(p => p.business_name?.toLowerCase().includes('sandra'));
-          if (sandra) {
-            setSalonName(sandra.business_name);
-            if (sandra.phone_whatsapp) {
-              setSalonPhone(sandra.phone_whatsapp);
-              setWaPhoneNumber(sandra.phone_whatsapp);
+          const pSite = prospects.find(p => p.claimed_tenant_id === tenant.id || p.slug === tenant.slug || (p.business_name && tenant.name && p.business_name.toLowerCase().includes(tenant.name.toLowerCase())));
+          if (pSite?.business_data?.servicios && pSite.business_data.servicios.length > 0) {
+            const loadedServices = pSite.business_data.servicios.map((s: any) => ({
+              name: s.nombre || s.titulo,
+              category: 'color',
+              duration_minutes: s.duracion_minutos || 60,
+              price: s.precio_cop || 90000,
+              image_url: s.img || s.imagen || ''
+            }));
+            setServicesList(loadedServices);
+          }
+        } catch (e) {}
+      } else {
+        // Si es un onboarding inicial de prospecto (ej. Sandra, Cris, Kapa)
+        try {
+          const prospects = await api.getProspectSites();
+          let targetProspect = null;
+          if (ownerEmail) {
+            targetProspect = prospects.find(p => p.claimed_tenant_id && p.claimed_tenant_id === tenant?.id);
+          }
+          if (!targetProspect && prospects.length > 0) {
+            targetProspect = prospects[0]; // Tomar el primer prospecto activo
+          }
+          if (targetProspect) {
+            setSalonName(targetProspect.business_name);
+            if (targetProspect.phone_whatsapp) {
+              setSalonPhone(targetProspect.phone_whatsapp);
+              setWaPhoneNumber(targetProspect.phone_whatsapp);
             }
-            if (sandra.city) setSalonCity(sandra.city);
-            if (sandra.address) setSalonAddress(sandra.address);
-            if (sandra.business_data?.horario_atencion) setBusinessHours(sandra.business_data.horario_atencion);
+            if (targetProspect.city) setSalonCity(targetProspect.city);
+            if (targetProspect.address) setSalonAddress(targetProspect.address);
+            if (targetProspect.business_data?.horario_atencion) setBusinessHours(targetProspect.business_data.horario_atencion);
             
-            // Precargar servicios si la lista está vacía o con el servicio por defecto
-            if (sandra.business_data?.servicios && sandra.business_data.servicios.length > 0) {
-              const loadedServices = sandra.business_data.servicios.map((s: any) => ({
+            if (targetProspect.business_data?.servicios && targetProspect.business_data.servicios.length > 0) {
+              const loadedServices = targetProspect.business_data.servicios.map((s: any) => ({
                 name: s.nombre || s.titulo,
                 category: 'color',
                 duration_minutes: s.duracion_minutos || 60,
