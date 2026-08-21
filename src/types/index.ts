@@ -18,6 +18,7 @@ export interface Tenant {
   slogan?: string; // Nombre o título principal
   title_accent?: string; // Subtítulo fucsia (ej. 'Centro de Estética')
   subtitle?: string; // Párrafo descriptivo de servicios
+  primary_color?: string; // Color hexadecimal principal de la marca (ej. '#d92672')
   created_at: string;
 }
 

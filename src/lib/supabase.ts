@@ -1184,6 +1184,7 @@ export const api = {
             whatsapp: tenant.phone || currentBData.whatsapp,
             direccion: tenant.address || currentBData.direccion,
             hero_image_url: tenant.hero_image_url || currentBData.hero_image_url,
+            primary_color: tenant.primary_color || currentBData.primary_color,
             logo_icon: tenant.logo_icon || currentBData.logo_icon,
             hero_eyebrow: tenant.hero_eyebrow || currentBData.hero_eyebrow,
             slogan: tenant.slogan || currentBData.slogan,

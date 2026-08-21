@@ -11,6 +11,7 @@ export interface InjectProspectOptions {
   businessName: string;
   phoneWhatsapp: string;
   currency?: string;
+  primaryColor?: string;
   heroImageUrl?: string;
   logoIcon?: string;
   heroEyebrow?: string;
@@ -45,6 +46,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     businessName,
     phoneWhatsapp,
     currency = 'COP',
+    primaryColor,
     heroImageUrl,
     logoIcon,
     heroEyebrow,
@@ -59,12 +61,39 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 1. Inyectar regla CSS suave solo para que el contenedor general no sea negro/blanco transparente, pero respetando 100% los estilos de botones, badges y gradientes del HTML
+  // 1. Inyectar regla CSS suave y personalizador de Color Primario de Marca
+  const brandColorCss = primaryColor ? `
+  :root {
+    --primary: ${primaryColor} !important;
+    --primary-color: ${primaryColor} !important;
+    --btn-primary: ${primaryColor} !important;
+    --brand-magenta: ${primaryColor} !important;
+    --magenta-deep: ${primaryColor} !important;
+    --pink-accent: ${primaryColor} !important;
+  }
+  .btn-pill-magenta, .btn-header-book, .price-pill-btn, .card-num-badge, .logo-silhouette-box {
+    background: ${primaryColor} !important;
+    border-color: ${primaryColor} !important;
+    box-shadow: 0 8px 24px ${primaryColor}40 !important;
+  }
+  .magenta-accent, .hero-script-eyebrow, .card-service-title, h1 span, .pink-divider-dash {
+    color: ${primaryColor} !important;
+  }
+  .pink-divider-dash {
+    background-color: ${primaryColor} !important;
+  }
+  .btn-pill-outline {
+    border-color: ${primaryColor} !important;
+    color: ${primaryColor} !important;
+  }
+` : '';
+
   const resetCss = `
 <style id="beautyflow-prospect-reset">
   .prospect-site-wrapper { 
     background-color: var(--soft-pink-bg, #fbf2f6);
   }
+  ${brandColorCss}
 </style>
 `;
   if (processed.includes('</head>')) {

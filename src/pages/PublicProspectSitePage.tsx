@@ -66,6 +66,7 @@ export const PublicProspectSitePage: React.FC = () => {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
+      primaryColor: tenant?.primary_color || bData.primary_color || undefined,
       heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
       logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
       heroEyebrow: tenant?.hero_eyebrow || bData.hero_eyebrow || undefined,
