@@ -64,64 +64,21 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 1. Inyectar regla CSS suave y personalizador de Color Primario de Marca
-  const brandColorCss = primaryColor ? `
-  :root {
-    --primary: ${primaryColor} !important;
-    --primary-color: ${primaryColor} !important;
-    --btn-primary: ${primaryColor} !important;
-    --magenta-primary: ${primaryColor} !important;
-    --brand-magenta: ${primaryColor} !important;
-    --magenta-deep: ${primaryColor} !important;
-    --magenta-hover: ${primaryColor} !important;
-    --pink-accent: ${primaryColor} !important;
-  }
-  .btn-pill-magenta, .btn-header-book, .price-pill-btn, .card-num-badge, .logo-silhouette-box {
-    background: ${primaryColor} !important;
-    border-color: ${primaryColor} !important;
-    box-shadow: 0 8px 24px ${primaryColor}40 !important;
-  }
-  .nav-links a:hover, .nav-links a.active, .active, .magenta-accent, .hero-script-eyebrow, .card-service-title, h1 span, .footer-contact-list i, .hours-schedule i, .flourish-line, .glow-footer i {
-    color: ${primaryColor} !important;
-  }
-  .pink-divider-dash, .footer-col .fa-clock {
-    background-color: ${primaryColor} !important;
-    color: ${primaryColor} !important;
-  }
-  .btn-pill-outline {
-    border-color: ${primaryColor} !important;
-    color: ${primaryColor} !important;
-  }
-  .vip-booking-card a.btn-white-book, .footer-vip-box a {
-    color: ${primaryColor} !important;
-  }
-  .hero-floating-pill strong {
-    color: var(--deep-navy, #190d2e) !important;
-    display: block !important;
-    font-size: 0.88rem !important;
-    font-weight: 800 !important;
-  }
-  .hero-floating-pill span {
-    color: #64748b !important;
-  }
-` : `
-  .hero-floating-pill strong {
-    color: var(--deep-navy, #190d2e) !important;
-    display: block !important;
-    font-size: 0.88rem !important;
-    font-weight: 800 !important;
-  }
-  .hero-floating-pill span {
-    color: #64748b !important;
-  }
-`;
-
+  // 1. Inyectar regla CSS suave solo para que el contenedor general no sea negro/blanco transparente
   const resetCss = `
 <style id="beautyflow-prospect-reset">
   .prospect-site-wrapper { 
     background-color: var(--soft-pink-bg, #fbf2f6);
   }
-  ${brandColorCss}
+  .hero-floating-pill strong {
+    color: var(--deep-navy, #190d2e) !important;
+    display: block !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+  }
+  .hero-floating-pill span {
+    color: #64748b !important;
+  }
 </style>
 `;
   if (processed.includes('</head>')) {
@@ -154,7 +111,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
   if (heroImageUrl) {
     processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*model-image-frame[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
       `$1${heroImageUrl}$3`
     );
   }

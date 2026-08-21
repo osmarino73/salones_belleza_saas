@@ -5670,55 +5670,9 @@ export const DashboardPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Selector de Color de Marca Primario */}
-              <div className="p-3.5 rounded-2xl border border-white/10 bg-white/5 space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-slate-300 font-bold flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: websiteForm.primary_color || '#d92672' }}></span>
-                    <span>2. Color Principal de tu Marca (Botones & Acentos)</span>
-                  </label>
-                  <span className="font-mono text-[11px] font-bold text-[#FF5A36]">{websiteForm.primary_color || '#d92672'}</span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {[
-                    { color: '#d92672', label: 'Rose Gold / Fucsia' },
-                    { color: '#8b5cf6', label: 'Púrpura / Spa' },
-                    { color: '#d97706', label: 'Luxury Gold' },
-                    { color: '#2563eb', label: 'Azul Barber' },
-                    { color: '#059669', label: 'Verde Esmeralda' },
-                    { color: '#FF5A36', label: 'Coral Sunset' }
-                  ].map((p) => (
-                    <button
-                      key={p.color}
-                      type="button"
-                      onClick={() => setWebsiteForm({ ...websiteForm, primary_color: p.color })}
-                      className={`px-2.5 py-1.5 rounded-xl border flex items-center gap-1.5 transition-all text-[11px] font-bold cursor-pointer ${
-                        websiteForm.primary_color === p.color
-                          ? 'border-white bg-white/20 text-white shadow-sm'
-                          : 'border-white/10 text-slate-400 hover:text-white hover:border-white/20'
-                      }`}
-                    >
-                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
-                      <span>{p.label}</span>
-                    </button>
-                  ))}
-
-                  <label className="px-2.5 py-1.5 rounded-xl border border-white/10 hover:border-white/20 flex items-center gap-1.5 cursor-pointer text-[11px] font-bold text-slate-400 hover:text-white" title="Elegir color personalizado">
-                    <span>Gotero</span>
-                    <input
-                      type="color"
-                      value={websiteForm.primary_color || '#d92672'}
-                      onChange={(e) => setWebsiteForm({ ...websiteForm, primary_color: e.target.value })}
-                      className="w-4 h-4 rounded cursor-pointer border-0 p-0 bg-transparent"
-                    />
-                  </label>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-1">
-                  <label className="block text-slate-400 mb-1 font-semibold">3. Icono / Logo Navbar</label>
+                  <label className="block text-slate-400 mb-1 font-semibold">2. Icono / Logo Navbar</label>
                   <div className="flex flex-wrap items-center gap-1.5">
                     {['🪄', '✨', '✂️', '👑', '💅', '🧖‍♀️'].map((ic) => (
                       <button
