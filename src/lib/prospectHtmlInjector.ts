@@ -55,7 +55,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
   if (liveServices && liveServices.length > 0) {
-    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>|<\/section>)/i;
+    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/section>)/i;
     
     if (servicesGridRegex.test(processed)) {
       const liveCardsHtml = liveServices.map((srv, idx) => {
@@ -68,32 +68,28 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         const serviceBookingLink = `${bookingUrl}?serviceId=${srv.id}`;
 
         return `
-        <div class="service-card" style="display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.06); transition: transform 0.3s ease;">
-          <div style="position: relative; height: 200px; width: 100%; overflow: hidden;">
-            <img src="${serviceImg}" alt="${srv.name}" style="width: 100%; height: 100%; object-fit: cover;" />
-            <span style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.7); color: #fff; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; backdrop-filter: blur(4px);">
-              ${srv.duration_minutes || 60} min
-            </span>
+        <!-- Card ${numStr} Dinámica -->
+        <div class="glow-service-card">
+          <div class="card-photo-box">
+            <span class="card-num-badge">${numStr}</span>
+            <img src="${serviceImg}" alt="${srv.name}">
           </div>
-          <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="card-info-body">
+            <h3 class="card-service-title">${srv.name}</h3>
+            <div class="pink-divider-dash"></div>
+            <p class="card-service-desc">${srv.description || 'Tratamiento profesional garantizado de alta gama con asesoría personalizada.'}</p>
             <div>
-              <span style="font-size: 11px; font-weight: 800; color: #d92672; text-transform: uppercase; letter-spacing: 0.5px;">#${numStr} • Servicio</span>
-              <h3 style="font-size: 18px; font-weight: 900; color: #1e1b4b; margin: 4px 0 8px 0; line-height: 1.25;">${srv.name}</h3>
-              <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.5;">${srv.description || 'Tratamiento profesional de alta gama con productos prémium garantizados.'}</p>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid #f1f5f9;">
-              <span style="font-size: 16px; font-weight: 900; color: #0f172a;">${formattedPrice}</span>
-              <a href="${serviceBookingLink}" style="background: linear-gradient(135deg, #d92672 0%, #be185d 100%); color: #fff; text-decoration: none; font-size: 12px; font-weight: 800; padding: 8px 18px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgba(217,38,114,0.35);">
-                Agendar
+              <a href="${serviceBookingLink}" class="price-pill-btn" style="text-decoration: none; display: inline-block;">
+                ${formattedPrice} • Agendar
               </a>
             </div>
           </div>
         </div>`;
-      }).join('');
+      }).join('\n');
 
       processed = processed.replace(
         servicesGridRegex,
-        `$1\n${liveCardsHtml}\n</div>\n$3`
+        `$1\n${liveCardsHtml}\n</div>\n</section>`
       );
     }
   }

@@ -25,8 +25,18 @@ export const PublicProspectSitePage: React.FC = () => {
 
         // Cargar servicios reales si el salón ya tiene tenant o por su slug
         try {
-          const tenantObj = await api.getTenantBySlug(slug);
-          const tid = tenantObj?.id || found.claimed_tenant_id;
+          let tid = found.claimed_tenant_id;
+          if (!tid) {
+            const tenantObj = await api.getTenantBySlug(slug);
+            tid = tenantObj?.id;
+          }
+          if (!tid && found.business_name) {
+            // Intentar por coincidencia de nombre si no fue por slug directo
+            const allTenants = await api.getAllTenants();
+            const matchedTenant = allTenants.find((t: any) => t.name?.toLowerCase().trim() === found.business_name?.toLowerCase().trim());
+            if (matchedTenant) tid = matchedTenant.id;
+          }
+
           if (tid) {
             const dbServices = await api.getServices(tid);
             if (dbServices && dbServices.length > 0) {
