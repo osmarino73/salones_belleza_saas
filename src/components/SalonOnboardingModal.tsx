@@ -598,7 +598,13 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                           const cleanSlug = newCatNameOnboarding.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
                           const iconVal = newCatIconOnboarding.trim() || '✨';
                           const nameVal = newCatNameOnboarding.trim();
-                          const activeTid = tenant?.id || '00000000-0000-0000-0000-000000000001';
+                          
+                          // Obtener el ID real del salón aislado
+                          const activeTid = (tenant?.id && tenant.id !== '00000000-0000-0000-0000-000000000001')
+                            ? tenant.id
+                            : (ownerEmail && ownerEmail !== 'sofia@studioglamour.co')
+                            ? `tenant-${ownerEmail.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+                            : '00000000-0000-0000-0000-000000000001';
 
                           const newEntry = {
                             id: cleanSlug,
@@ -610,7 +616,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                           setNewCatNameOnboarding('');
                           setIsAddingNewCatOnboarding(false);
 
-                          // Guardar inmediatamente en Supabase / LocalStorage
+                          // Guardar inmediatamente en Supabase / LocalStorage vinculado al tenant real
                           try {
                             await api.createCategory({
                               tenant_id: activeTid,
