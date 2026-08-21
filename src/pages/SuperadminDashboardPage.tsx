@@ -432,6 +432,15 @@ export const SuperadminDashboardPage: React.FC = () => {
     }
   };
 
+  const handleDeleteTenant = async (id: string, name: string) => {
+    if (confirm(`⚠️ ¿Estás seguro de eliminar el salón "${name}"?\n\nEsta acción borrará en cascada todas sus citas, colaboradoras, servicios, inventario y liberará su sitio web público.`)) {
+      await api.deleteTenantCascade(id);
+      setTenants(tenants.filter(t => t.id !== id));
+      alert(`✅ El salón "${name}" y todos sus datos asociados fueron eliminados.`);
+      loadData();
+    }
+  };
+
   const handleUpdateStatus = async (id: string, newStatus: ProspectSite['status']) => {
     await api.updateProspectSite(id, { status: newStatus });
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
@@ -1420,6 +1429,15 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                         <ArrowUpRight className="w-3.5 h-3.5" />
                         <span>Entrar a Dashboard</span>
                       </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTenant(t.id, t.name)}
+                        className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold transition-all flex items-center justify-center cursor-pointer"
+                        title="Borrar salón y todos sus datos en 1 clic"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}

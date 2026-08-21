@@ -1209,6 +1209,50 @@ export const api = {
     return tenant as Tenant;
   },
 
+  async deleteTenantCascade(tenantId: string): Promise<boolean> {
+    if (!tenantId) return false;
+    if (supabase && isSupabaseConfigured) {
+      try {
+        // Borrado en cascada de registros dependientes
+        await supabase.from('appointments').delete().eq('tenant_id', tenantId);
+        await supabase.from('color_formulas').delete().eq('tenant_id', tenantId);
+        await supabase.from('services').delete().eq('tenant_id', tenantId);
+        await supabase.from('service_categories').delete().eq('tenant_id', tenantId);
+        await supabase.from('products').delete().eq('tenant_id', tenantId);
+        await supabase.from('clients').delete().eq('tenant_id', tenantId);
+        await supabase.from('stylists').delete().eq('tenant_id', tenantId);
+        await supabase.from('tenant_ai_settings').delete().eq('tenant_id', tenantId);
+
+        // Desvincular de prospect_sites si estaba reclamado
+        await supabase.from('prospect_sites').update({
+          status: 'pending',
+          claimed_tenant_id: null
+        }).eq('claimed_tenant_id', tenantId);
+
+        // Borrar el tenant principal
+        const { error } = await supabase.from('tenants').delete().eq('id', tenantId);
+        if (error) {
+          console.warn('Error deleting tenant in Supabase:', error);
+        }
+      } catch (e) {
+        console.warn('Error in deleteTenantCascade:', e);
+      }
+    }
+
+    // Limpiar localStorage si era el activo
+    const saved = localStorage.getItem('bf_tenant_active');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.id === tenantId) {
+          localStorage.removeItem('bf_tenant_active');
+        }
+      } catch (e) {}
+    }
+
+    return true;
+  },
+
   // PRODUCTS
   async getProducts(tenantId?: string): Promise<Product[]> {
     const tid = tenantId || getActiveTenantId();
