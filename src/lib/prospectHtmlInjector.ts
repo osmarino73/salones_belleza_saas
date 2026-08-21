@@ -67,8 +67,10 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --primary: ${primaryColor} !important;
     --primary-color: ${primaryColor} !important;
     --btn-primary: ${primaryColor} !important;
+    --magenta-primary: ${primaryColor} !important;
     --brand-magenta: ${primaryColor} !important;
     --magenta-deep: ${primaryColor} !important;
+    --magenta-hover: ${primaryColor} !important;
     --pink-accent: ${primaryColor} !important;
   }
   .btn-pill-magenta, .btn-header-book, .price-pill-btn, .card-num-badge, .logo-silhouette-box {
@@ -76,14 +78,18 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     border-color: ${primaryColor} !important;
     box-shadow: 0 8px 24px ${primaryColor}40 !important;
   }
-  .magenta-accent, .hero-script-eyebrow, .card-service-title, h1 span, .pink-divider-dash {
+  .nav-links a:hover, .nav-links a.active, .active, .magenta-accent, .hero-script-eyebrow, .card-service-title, h1 span, .footer-contact-list i, .hours-schedule i, .flourish-line, .glow-footer i {
     color: ${primaryColor} !important;
   }
-  .pink-divider-dash {
+  .pink-divider-dash, .footer-col .fa-clock {
     background-color: ${primaryColor} !important;
+    color: ${primaryColor} !important;
   }
   .btn-pill-outline {
     border-color: ${primaryColor} !important;
+    color: ${primaryColor} !important;
+  }
+  .vip-booking-card a.btn-white-book, .footer-vip-box a {
     color: ${primaryColor} !important;
   }
 ` : '';
