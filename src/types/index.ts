@@ -12,6 +12,9 @@ export interface Tenant {
   currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
   trial_ends_at?: string;
   business_hours?: { summary?: string; open?: string; close?: string };
+  hero_image_url?: string;
+  slogan?: string;
+  subtitle?: string;
   created_at: string;
 }
 
@@ -74,6 +77,7 @@ export interface Service {
   image_url?: string;
   requires_patch_test: boolean;
   description: string;
+  is_featured?: boolean;
 }
 
 export interface Product {

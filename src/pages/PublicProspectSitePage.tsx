@@ -8,6 +8,7 @@ import { injectProspectLinks } from '../lib/prospectHtmlInjector';
 export const PublicProspectSitePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [site, setSite] = useState<ProspectSite | null>(null);
+  const [tenant, setTenant] = useState<any | null>(null);
   const [liveServices, setLiveServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,18 +24,23 @@ export const PublicProspectSitePage: React.FC = () => {
         // Actualizar título de la pestaña para Google SEO
         document.title = `${found.business_name} | Sitio Oficial`;
 
-        // Cargar servicios reales si el salón ya tiene tenant o por su slug
+        // Cargar tenant y servicios reales si el salón ya tiene tenant o por su slug
         try {
           let tid = found.claimed_tenant_id;
+          let tenantData = null;
           if (!tid) {
-            const tenantObj = await api.getTenantBySlug(slug);
-            tid = tenantObj?.id;
+            tenantData = await api.getTenantBySlug(slug);
+            tid = tenantData?.id;
           }
           if (!tid && found.business_name) {
             // Intentar por coincidencia de nombre si no fue por slug directo
             const allTenants = await api.getAllTenants();
-            const matchedTenant = allTenants.find((t: any) => t.name?.toLowerCase().trim() === found.business_name?.toLowerCase().trim());
-            if (matchedTenant) tid = matchedTenant.id;
+            tenantData = allTenants.find((t: any) => t.name?.toLowerCase().trim() === found.business_name?.toLowerCase().trim());
+            if (tenantData) tid = tenantData.id;
+          }
+
+          if (tenantData) {
+            setTenant(tenantData);
           }
 
           if (tid) {
@@ -59,9 +65,12 @@ export const PublicProspectSitePage: React.FC = () => {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
+      heroImageUrl: tenant?.hero_image_url || undefined,
+      slogan: tenant?.slogan || undefined,
+      subtitle: tenant?.subtitle || undefined,
       liveServices: liveServices.length > 0 ? liveServices : undefined
     });
-  }, [site, liveServices]);
+  }, [site, liveServices, tenant]);
 
   if (loading) {
     return (

@@ -1147,6 +1147,31 @@ export const api = {
     return null;
   },
 
+  async updateTenant(tenant: Partial<Tenant>): Promise<Tenant> {
+    if (!tenant.id) throw new Error('Tenant ID is required for update');
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const payload: any = {};
+        if (tenant.name) payload.name = tenant.name;
+        if (tenant.phone) payload.phone = tenant.phone;
+        if (tenant.address) payload.address = tenant.address;
+        if (tenant.city) payload.city = tenant.city;
+        if (tenant.country) payload.country = tenant.country;
+        if (tenant.currency) payload.currency = tenant.currency;
+        if (tenant.business_hours) payload.business_hours = tenant.business_hours;
+        
+        await supabase
+          .from('tenants')
+          .update(payload)
+          .eq('id', tenant.id);
+      } catch (e) {
+        console.warn('Notice updating tenant in Supabase:', e);
+      }
+    }
+    localStorage.setItem('bf_tenant_active', JSON.stringify(tenant));
+    return tenant as Tenant;
+  },
+
   // PRODUCTS
   async getProducts(tenantId?: string): Promise<Product[]> {
     const tid = tenantId || getActiveTenantId();

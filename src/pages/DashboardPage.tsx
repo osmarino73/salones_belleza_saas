@@ -64,7 +64,8 @@ import {
   Briefcase,
   CalendarCheck,
   ExternalLink,
-  Wallet
+  Wallet,
+  Palette
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
@@ -165,6 +166,7 @@ export const DashboardPage: React.FC = () => {
     image_url: string;
     requires_patch_test: boolean;
     description: string;
+    is_featured: boolean;
   }>({
     name: '',
     category: 'color',
@@ -172,7 +174,16 @@ export const DashboardPage: React.FC = () => {
     price_usd: 40,
     image_url: '',
     requires_patch_test: false,
-    description: ''
+    description: '',
+    is_featured: true
+  });
+
+  // Personalización del Sitio Web Público
+  const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
+  const [websiteForm, setWebsiteForm] = useState({
+    hero_image_url: '',
+    slogan: '',
+    subtitle: ''
   });
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -732,7 +743,8 @@ export const DashboardPage: React.FC = () => {
       price_usd: 45,
       image_url: '',
       requires_patch_test: false,
-      description: ''
+      description: '',
+      is_featured: true
     });
     setIsServiceModalOpen(true);
   };
@@ -746,7 +758,8 @@ export const DashboardPage: React.FC = () => {
       price_usd: Number(srv.price_usd ?? srv.price ?? srv.price_cop ?? 40),
       image_url: srv.image_url || '',
       requires_patch_test: srv.requires_patch_test,
-      description: srv.description || ''
+      description: srv.description || '',
+      is_featured: srv.is_featured !== false
     });
     setIsServiceModalOpen(true);
   };
@@ -785,7 +798,8 @@ export const DashboardPage: React.FC = () => {
         price_usd: Number(serviceForm.price_usd),
         image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
-        description: serviceForm.description
+        description: serviceForm.description,
+        is_featured: serviceForm.is_featured !== false
       };
       await api.updateService(updated);
       setServices(services.map(s => s.id === updated.id ? updated : s));
@@ -800,7 +814,8 @@ export const DashboardPage: React.FC = () => {
         price_usd: Number(serviceForm.price_usd),
         image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
-        description: serviceForm.description
+        description: serviceForm.description,
+        is_featured: serviceForm.is_featured !== false
       };
       const saved = await api.createService(newSrv);
       setServices([saved, ...services]);
@@ -1220,6 +1235,27 @@ export const DashboardPage: React.FC = () => {
                   >
                     <Bot className="w-4 h-4 text-[#FF5A36]" />
                     <span>Configuración Agente IA</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeTenantObj) {
+                        setWebsiteForm({
+                          hero_image_url: activeTenantObj.hero_image_url || '',
+                          slogan: activeTenantObj.slogan || '',
+                          subtitle: activeTenantObj.subtitle || ''
+                        });
+                      }
+                      setIsWebsiteCustomizerOpen(true);
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                      theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <Palette className="w-4 h-4 text-pink-400" />
+                    <span>Personalizar Página Web (Portada)</span>
                   </button>
 
                   <button
@@ -5185,17 +5221,33 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="srv_patch_test"
-                  checked={serviceForm.requires_patch_test}
-                  onChange={(e) => setServiceForm({ ...serviceForm, requires_patch_test: e.target.checked })}
-                  className="rounded text-[#FF5A36] focus:ring-[#FF5A36]"
-                />
-                <label htmlFor="srv_patch_test" className="text-slate-400 text-xs cursor-pointer select-none">
-                  Requiere prueba de parche previa por seguridad
-                </label>
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="srv_is_featured"
+                    checked={serviceForm.is_featured}
+                    onChange={(e) => setServiceForm({ ...serviceForm, is_featured: e.target.checked })}
+                    className="rounded text-amber-500 focus:ring-amber-500"
+                  />
+                  <label htmlFor="srv_is_featured" className="text-xs font-bold text-amber-400 cursor-pointer select-none flex items-center gap-1.5">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    <span>Mostrar como Servicio Destacado en la Portada Web</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="srv_patch_test"
+                    checked={serviceForm.requires_patch_test}
+                    onChange={(e) => setServiceForm({ ...serviceForm, requires_patch_test: e.target.checked })}
+                    className="rounded text-[#FF5A36] focus:ring-[#FF5A36]"
+                  />
+                  <label htmlFor="srv_patch_test" className="text-slate-400 text-xs cursor-pointer select-none">
+                    Requiere prueba de parche previa por seguridad
+                  </label>
+                </div>
               </div>
 
               <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
@@ -5482,6 +5534,116 @@ export const DashboardPage: React.FC = () => {
                   <Save className="w-3.5 h-3.5" />
                   <span>{editingProduct ? 'Actualizar Producto' : 'Guardar Producto'}</span>
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PERSONALIZAR PÁGINA WEB & PORTADA */}
+      {isWebsiteCustomizerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className={`border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 shadow-2xl space-y-4 animate-fade-in ${
+            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+          }`}>
+            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+              <div className="flex items-center gap-2">
+                <Palette className="w-5 h-5 text-pink-400" />
+                <div>
+                  <h3 className="text-base font-black">Personalizar Portada de tu Página Web</h3>
+                  <span className="text-[11px] text-slate-400">Actualiza la foto principal del Header y los textos de bienvenida</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsWebsiteCustomizerOpen(false)} 
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!activeTenantObj) return;
+              const updatedTenant: Tenant = {
+                ...activeTenantObj,
+                hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
+                slogan: websiteForm.slogan || activeTenantObj.slogan,
+                subtitle: websiteForm.subtitle || activeTenantObj.subtitle
+              };
+              setActiveTenantObj(updatedTenant);
+              localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+              try {
+                await api.updateTenant(updatedTenant);
+              } catch (err) {
+                console.warn('Error saving website config in Supabase:', err);
+              }
+              setIsWebsiteCustomizerOpen(false);
+              alert('✨ ¡Portada de tu sitio web actualizada con éxito!');
+            }} className="space-y-4 text-xs">
+
+              {/* Selector de Fotografía de Cabecera (Hero) */}
+              <ServiceImagePicker
+                value={websiteForm.hero_image_url}
+                category="color"
+                onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
+                label="Fotografía Principal del Header (Portada)"
+              />
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Titular / Eslogan Principal *</label>
+                <input
+                  type="text"
+                  value={websiteForm.slogan}
+                  onChange={(e) => setWebsiteForm({ ...websiteForm, slogan: e.target.value })}
+                  placeholder="Ej. Realza tu belleza con expertos en colorimetría en Apartadó"
+                  className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Subtítulo / Mensaje de Bienvenida</label>
+                <textarea
+                  rows={2}
+                  value={websiteForm.subtitle}
+                  onChange={(e) => setWebsiteForm({ ...websiteForm, subtitle: e.target.value })}
+                  placeholder="Ej. Descubre técnicas francesas de balayage, keratina orgánica y spa capilar."
+                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  }`}
+                />
+              </div>
+
+              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-between items-center">
+                <a
+                  href={`/sitio/${activeTenantObj?.slug || 'sandra-color-s'}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-cyan-400 hover:underline flex items-center gap-1 font-bold text-[11px]"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Ver mi Página Web</span>
+                </a>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsWebsiteCustomizerOpen(false)}
+                    className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Guardar Portada</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

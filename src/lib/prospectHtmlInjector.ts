@@ -11,6 +11,9 @@ export interface InjectProspectOptions {
   businessName: string;
   phoneWhatsapp: string;
   currency?: string;
+  heroImageUrl?: string;
+  slogan?: string;
+  subtitle?: string;
   liveServices?: Array<{
     id: string;
     name: string;
@@ -20,6 +23,7 @@ export interface InjectProspectOptions {
     price_usd?: number;
     duration_minutes?: number;
     image_url?: string;
+    is_featured?: boolean;
   }>;
   liveStylists?: Array<{
     id: string;
@@ -33,7 +37,7 @@ export interface InjectProspectOptions {
 export function injectProspectLinks(html: string, options: InjectProspectOptions): string {
   if (!html) return '';
 
-  const { slug, businessName, phoneWhatsapp, currency = 'COP', liveServices, liveStylists } = options;
+  const { slug, businessName, phoneWhatsapp, currency = 'COP', heroImageUrl, slogan, subtitle, liveServices, liveStylists } = options;
   const cleanPhone = phoneWhatsapp.replace(/\D/g, '') || '573000000000';
   const bookingUrl = `/reservar/${slug}`;
 
@@ -53,12 +57,39 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = resetCss + processed;
   }
 
+  // 1.1 Inyección Dinámica de Foto Principal del Hero / Header
+  if (heroImageUrl) {
+    // Reemplazar la imagen del marco principal del Hero
+    processed = processed.replace(
+      /(<div\b[^>]*class=["'][^"']*model-image-frame[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+      `$1${heroImageUrl}$3`
+    );
+  }
+
+  // 1.2 Inyección Dinámica de Eslogan / Subtítulo si la dueña los personalizó
+  if (slogan) {
+    processed = processed.replace(
+      /(<h1\b[^>]*class=["'][^"']*hero-main-title[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
+      `$1${slogan}$3`
+    );
+  }
+  if (subtitle) {
+    processed = processed.replace(
+      /(<p\b[^>]*class=["'][^"']*hero-subtitle[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,
+      `$1${subtitle}$3`
+    );
+  }
+
   // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
   if (liveServices && liveServices.length > 0) {
     const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/section>)/i;
     
     if (servicesGridRegex.test(processed)) {
-      const liveCardsHtml = liveServices.map((srv, idx) => {
+      // Priorizar los marcados como destacados (is_featured !== false) y limitar a un máximo de 6 para la portada
+      const featuredServices = liveServices.filter(s => s.is_featured !== false);
+      const displayServices = (featuredServices.length > 0 ? featuredServices : liveServices).slice(0, 6);
+
+      const liveCardsHtml = displayServices.map((srv, idx) => {
         const numStr = String(idx + 1).padStart(2, '0');
         const priceNum = srv.price_cop ?? srv.price ?? srv.price_usd ?? 0;
         const formattedPrice = currency === 'COP'
@@ -87,9 +118,17 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         </div>`;
       }).join('\n');
 
+      // Botón "Ver Catálogo Completo" si hay más servicios
+      const viewAllButtonHtml = liveServices.length > displayServices.length ? `
+      <div style="text-align: center; margin-top: 28px; width: 100%;">
+        <a href="${bookingUrl}" class="btn-pill-magenta" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 999px; box-shadow: 0 8px 24px rgba(217,38,114,0.35);">
+          ✨ Ver Todos los Servicios (${liveServices.length}) & Reservar Online
+        </a>
+      </div>` : '';
+
       processed = processed.replace(
         servicesGridRegex,
-        `$1\n${liveCardsHtml}\n</div>\n</section>`
+        `$1\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</section>`
       );
     }
   }
