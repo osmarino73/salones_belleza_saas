@@ -66,7 +66,10 @@ export const PublicProspectSitePage: React.FC = () => {
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
       heroImageUrl: tenant?.hero_image_url || undefined,
+      logoIcon: tenant?.logo_icon || undefined,
+      heroEyebrow: tenant?.hero_eyebrow || undefined,
       slogan: tenant?.slogan || undefined,
+      titleAccent: tenant?.title_accent || undefined,
       subtitle: tenant?.subtitle || undefined,
       liveServices: liveServices.length > 0 ? liveServices : undefined
     });

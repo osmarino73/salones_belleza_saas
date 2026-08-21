@@ -12,7 +12,10 @@ export interface InjectProspectOptions {
   phoneWhatsapp: string;
   currency?: string;
   heroImageUrl?: string;
+  logoIcon?: string;
+  heroEyebrow?: string;
   slogan?: string;
+  titleAccent?: string;
   subtitle?: string;
   liveServices?: Array<{
     id: string;
@@ -37,7 +40,20 @@ export interface InjectProspectOptions {
 export function injectProspectLinks(html: string, options: InjectProspectOptions): string {
   if (!html) return '';
 
-  const { slug, businessName, phoneWhatsapp, currency = 'COP', heroImageUrl, slogan, subtitle, liveServices, liveStylists } = options;
+  const {
+    slug,
+    businessName,
+    phoneWhatsapp,
+    currency = 'COP',
+    heroImageUrl,
+    logoIcon,
+    heroEyebrow,
+    slogan,
+    titleAccent,
+    subtitle,
+    liveServices,
+    liveStylists
+  } = options;
   const cleanPhone = phoneWhatsapp.replace(/\D/g, '') || '573000000000';
   const bookingUrl = `/reservar/${slug}`;
 
@@ -57,22 +73,41 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = resetCss + processed;
   }
 
-  // 1.1 Inyección Dinámica de Foto Principal del Hero / Header
+  // 1.1 Inyección Dinámica de Icono/Logo de Cabecera
+  if (logoIcon) {
+    processed = processed.replace(
+      /(<div\b[^>]*class=["'][^"']*logo-silhouette-box[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i,
+      `$1<span style="font-size: 22px; display: inline-flex; align-items: center; justify-content: center;">${logoIcon}</span>$3`
+    );
+  }
+
+  // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow)
+  if (heroEyebrow) {
+    processed = processed.replace(
+      /(<div\b[^>]*class=["'][^"']*hero-script-eyebrow[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i,
+      `$1${heroEyebrow}$3`
+    );
+  }
+
+  // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
   if (heroImageUrl) {
-    // Reemplazar la imagen del marco principal del Hero
     processed = processed.replace(
       /(<div\b[^>]*class=["'][^"']*model-image-frame[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
       `$1${heroImageUrl}$3`
     );
   }
 
-  // 1.2 Inyección Dinámica de Eslogan / Subtítulo si la dueña los personalizó
-  if (slogan) {
+  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia
+  if (slogan || titleAccent) {
+    const mainTitleName = slogan || businessName;
+    const accentText = titleAccent ? `<span class="magenta-accent">${titleAccent}</span>` : '';
     processed = processed.replace(
       /(<h1\b[^>]*class=["'][^"']*hero-main-title[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
-      `$1${slogan}$3`
+      `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
     );
   }
+
+  // 1.5 Inyección Dinámica de Subtítulo Descriptivo
   if (subtitle) {
     processed = processed.replace(
       /(<p\b[^>]*class=["'][^"']*hero-subtitle[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,

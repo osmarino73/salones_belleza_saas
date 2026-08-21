@@ -182,8 +182,11 @@ export const DashboardPage: React.FC = () => {
   const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
   const [websiteForm, setWebsiteForm] = useState({
     hero_image_url: '',
-    slogan: '',
-    subtitle: ''
+    logo_icon: '🪄',
+    hero_eyebrow: 'Bienvenidas a ❤️',
+    slogan: 'Sandra Color´s',
+    title_accent: 'Centro de Estética',
+    subtitle: 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
   });
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -1243,8 +1246,11 @@ export const DashboardPage: React.FC = () => {
                       if (activeTenantObj) {
                         setWebsiteForm({
                           hero_image_url: activeTenantObj.hero_image_url || '',
-                          slogan: activeTenantObj.slogan || '',
-                          subtitle: activeTenantObj.subtitle || ''
+                          logo_icon: activeTenantObj.logo_icon || '🪄',
+                          hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
+                          slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
+                          title_accent: activeTenantObj.title_accent || 'Centro de Estética',
+                          subtitle: activeTenantObj.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
                         });
                       }
                       setIsWebsiteCustomizerOpen(true);
@@ -5569,7 +5575,10 @@ export const DashboardPage: React.FC = () => {
               const updatedTenant: Tenant = {
                 ...activeTenantObj,
                 hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
+                logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
+                hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
                 slogan: websiteForm.slogan || activeTenantObj.slogan,
+                title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
                 subtitle: websiteForm.subtitle || activeTenantObj.subtitle
               };
               setActiveTenantObj(updatedTenant);
@@ -5580,7 +5589,7 @@ export const DashboardPage: React.FC = () => {
                 console.warn('Error saving website config in Supabase:', err);
               }
               setIsWebsiteCustomizerOpen(false);
-              alert('✨ ¡Portada de tu sitio web actualizada con éxito!');
+              alert('✨ ¡Portada y textos de tu sitio web actualizados con éxito!');
             }} className="space-y-4 text-xs">
 
               {/* Selector de Fotografía de Cabecera (Hero) */}
@@ -5588,30 +5597,80 @@ export const DashboardPage: React.FC = () => {
                 value={websiteForm.hero_image_url}
                 category="color"
                 onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
-                label="Fotografía Principal del Header (Portada)"
+                label="1. Fotografía Principal del Header (Portada)"
               />
 
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Titular / Eslogan Principal *</label>
-                <input
-                  type="text"
-                  value={websiteForm.slogan}
-                  onChange={(e) => setWebsiteForm({ ...websiteForm, slogan: e.target.value })}
-                  placeholder="Ej. Realza tu belleza con expertos en colorimetría en Apartadó"
-                  className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-1">
+                  <label className="block text-slate-400 mb-1 font-semibold">2. Icono / Logo Navbar</label>
+                  <div className="flex items-center gap-1.5">
+                    {['🪄', '✨', '✂️', '👑', '💅', '🧖‍♀️'].map((ic) => (
+                      <button
+                        key={ic}
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, logo_icon: ic })}
+                        className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all ${
+                          websiteForm.logo_icon === ic
+                            ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-sm'
+                            : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-400 mb-1 font-semibold">3. Saludo Superior (Eyebrow)</label>
+                  <input
+                    type="text"
+                    value={websiteForm.hero_eyebrow}
+                    onChange={(e) => setWebsiteForm({ ...websiteForm, hero_eyebrow: e.target.value })}
+                    placeholder="Ej. Bienvenidas a ❤️"
+                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">4. Nombre Principal del Salón *</label>
+                  <input
+                    type="text"
+                    value={websiteForm.slogan}
+                    onChange={(e) => setWebsiteForm({ ...websiteForm, slogan: e.target.value })}
+                    placeholder="Ej. Sandra Color´s"
+                    className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">5. Especialidad / Acento Fucsia</label>
+                  <input
+                    type="text"
+                    value={websiteForm.title_accent}
+                    onChange={(e) => setWebsiteForm({ ...websiteForm, title_accent: e.target.value })}
+                    placeholder="Ej. Centro de Estética"
+                    className={`w-full border rounded-xl p-2.5 font-bold text-pink-400 focus:outline-none focus:border-[#FF5A36] ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Subtítulo / Mensaje de Bienvenida</label>
+                <label className="block text-slate-400 mb-1 font-semibold">6. Subtítulo / Propuesta de Valor (Párrafo)</label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={websiteForm.subtitle}
                   onChange={(e) => setWebsiteForm({ ...websiteForm, subtitle: e.target.value })}
-                  placeholder="Ej. Descubre técnicas francesas de balayage, keratina orgánica y spa capilar."
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                  placeholder="Ej. Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó."
+                  className={`w-full border rounded-xl p-2.5 leading-relaxed focus:outline-none focus:border-[#FF5A36] ${
                     theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                   }`}
                 />

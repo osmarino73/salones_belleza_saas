@@ -13,8 +13,11 @@ export interface Tenant {
   trial_ends_at?: string;
   business_hours?: { summary?: string; open?: string; close?: string };
   hero_image_url?: string;
-  slogan?: string;
-  subtitle?: string;
+  logo_icon?: string; // Emoji o icono (ej. '✨', '✂️', '🪄', '👑', '💅', '🧖‍♀️')
+  hero_eyebrow?: string; // Saludo superior (ej. 'Bienvenidas a ❤️')
+  slogan?: string; // Nombre o título principal
+  title_accent?: string; // Subtítulo fucsia (ej. 'Centro de Estética')
+  subtitle?: string; // Párrafo descriptivo de servicios
   created_at: string;
 }
 
