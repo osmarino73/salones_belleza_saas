@@ -222,7 +222,11 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   const handleSaveAndFinish = async (skipWhatsApp: boolean = false) => {
     setIsSubmitting(true);
     try {
-      const activeTid = tenant?.id || '00000000-0000-0000-0000-000000000001';
+      const activeTid = (tenant?.id && tenant.id !== '00000000-0000-0000-0000-000000000001')
+        ? tenant.id
+        : (ownerEmail && ownerEmail !== 'sofia@studioglamour.co')
+        ? `tenant-${ownerEmail.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+        : '00000000-0000-0000-0000-000000000001';
 
       // 0. Guardar categorías creadas en el Onboarding si son nuevas
       for (const cat of availableCategories) {

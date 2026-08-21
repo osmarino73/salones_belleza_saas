@@ -190,12 +190,12 @@ export const DashboardPage: React.FC = () => {
   // Profile Submenu & Business Modal States
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isBusinessSettingsModalOpen, setIsBusinessSettingsModalOpen] = useState(false);
-  const [ownerName, setOwnerName] = useState('Sofía Restrepo');
-  const [ownerEmail, setOwnerEmail] = useState('sofia@studioglamour.co');
-  const [salonName, setSalonName] = useState('Studio Glamour Spa');
-  const [salonPhone, setSalonPhone] = useState('+57 300 123 4567');
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
+  const [salonName, setSalonName] = useState('Mi Salón');
+  const [salonPhone, setSalonPhone] = useState('+57 300 000 0000');
   const [salonCurrency, setSalonCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
-  const [salonAddress, setSalonAddress] = useState('Calle 10 # 43E-22, El Poblado');
+  const [salonAddress, setSalonAddress] = useState('');
   const [salonHours, setSalonHours] = useState('Lun - Sáb: 08:00 AM - 08:00 PM');
 
   const formatCurrency = (amount: number | undefined | null, currency: string = salonCurrency || 'COP') => {
@@ -327,10 +327,21 @@ export const DashboardPage: React.FC = () => {
         }
       }
 
+      // Si sigue sin targetTenantId y es un usuario específico, generar un namespace limpio
+      if (!targetTenantId && currentEmail && currentEmail !== 'sofia@studioglamour.co') {
+        targetTenantId = `tenant-${currentEmail.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+      }
+
       if (targetTenantId) {
         try {
           const rawT = localStorage.getItem('bf_tenant_active');
-          if (rawT) setActiveTenantObj(JSON.parse(rawT));
+          if (rawT) {
+            const parsed = JSON.parse(rawT);
+            if (parsed.id !== '00000000-0000-0000-0000-000000000001' || currentEmail === 'sofia@studioglamour.co') {
+              setActiveTenantObj(parsed);
+              if (parsed.name) setSalonName(parsed.name);
+            }
+          }
         } catch (e) {}
       }
 

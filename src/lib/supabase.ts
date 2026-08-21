@@ -95,7 +95,7 @@ export const initialCategories: ServiceCategory[] = [
 export const initialStylists: Stylist[] = [
   {
     id: 'sty-1',
-    tenant_id: 'ten-1',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     name: 'Sofía Restrepo',
     email: 'sofia@studioglamour.co',
     phone: '3101234567',
@@ -112,7 +112,7 @@ export const initialStylists: Stylist[] = [
   },
   {
     id: 'sty-2',
-    tenant_id: 'ten-1',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     name: 'Carlos Morales',
     email: 'carlos@vargasbarber.co',
     phone: '3009876543',
@@ -129,7 +129,7 @@ export const initialStylists: Stylist[] = [
   },
   {
     id: 'sty-3',
-    tenant_id: 'ten-1',
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     name: 'Laura Valencia',
     email: 'laura@valeriacolor.co',
     phone: '3205557890',
