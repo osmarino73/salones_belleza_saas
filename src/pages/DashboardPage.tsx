@@ -3887,13 +3887,13 @@ export const DashboardPage: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
               e.preventDefault();
               try {
                 const activeTenantRaw = localStorage.getItem('bf_tenant_active');
                 if (activeTenantRaw) {
                   const activeTenant = JSON.parse(activeTenantRaw);
-                  const updated = {
+                  const updated: Tenant = {
                     ...activeTenant,
                     name: salonName,
                     phone: salonPhone,
@@ -3904,10 +3904,15 @@ export const DashboardPage: React.FC = () => {
                       summary: salonHours
                     }
                   };
+                  setActiveTenantObj(updated);
                   localStorage.setItem('bf_tenant_active', JSON.stringify(updated));
+                  await api.updateTenant(updated);
                 }
-              } catch (err) {}
+              } catch (err) {
+                console.warn('Error saving business settings:', err);
+              }
               setIsBusinessSettingsModalOpen(false);
+              alert('✨ ¡Datos de tu negocio y teléfono de WhatsApp actualizados con éxito!');
             }} className="space-y-4 text-xs">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nombre Comercial del Salón *</label>

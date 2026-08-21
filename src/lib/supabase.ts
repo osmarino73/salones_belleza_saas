@@ -1176,8 +1176,13 @@ export const api = {
 
         if (prospect) {
           const currentBData = prospect.business_data || {};
+          const cleanPhone = (tenant.phone || '').replace(/\D/g, '');
           const updatedBData = {
             ...currentBData,
+            nombre: tenant.name || currentBData.nombre,
+            telefono: tenant.phone || currentBData.telefono,
+            whatsapp: tenant.phone || currentBData.whatsapp,
+            direccion: tenant.address || currentBData.direccion,
             hero_image_url: tenant.hero_image_url || currentBData.hero_image_url,
             logo_icon: tenant.logo_icon || currentBData.logo_icon,
             hero_eyebrow: tenant.hero_eyebrow || currentBData.hero_eyebrow,
@@ -1186,9 +1191,14 @@ export const api = {
             subtitle: tenant.subtitle || currentBData.subtitle
           };
 
+          const prospectPayload: any = { business_data: updatedBData };
+          if (cleanPhone) prospectPayload.phone_whatsapp = cleanPhone;
+          if (tenant.name) prospectPayload.business_name = tenant.name;
+          if (tenant.address) prospectPayload.address = tenant.address;
+
           await supabase
             .from('prospect_sites')
-            .update({ business_data: updatedBData })
+            .update(prospectPayload)
             .eq('id', prospect.id);
         }
       } catch (e) {

@@ -212,9 +212,9 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     }
   );
 
-  // 5. Normalizar todos los enlaces de WhatsApp restantes (wa.me o api.whatsapp.com) con el teléfono oficial del negocio
+  // 5. Normalizar todos los enlaces de WhatsApp (wa.me o api.whatsapp.com) con el teléfono oficial del negocio
   processed = processed.replace(
-    /https:\/\/(wa\.me|api\.whatsapp\.com\/send\?phone=)[/0-9]+/gi,
+    /https:\/\/(?:wa\.me|api\.whatsapp\.com\/send\?phone=)[/0-9]+/gi,
     `https://wa.me/${cleanPhone}`
   );
 
@@ -222,6 +222,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     /href=["']https:\/\/wa\.me\/\??text=/gi,
     `href="https://wa.me/${cleanPhone}?text=`
   );
+
+  // 6. Actualizar textos de teléfono visibles en el pie de página o barra de contacto
+  if (cleanPhone && cleanPhone.length >= 10) {
+    const formattedTel = cleanPhone.startsWith('57') && cleanPhone.length === 12
+      ? `(+57) ${cleanPhone.slice(2, 5)} ${cleanPhone.slice(5, 8)} ${cleanPhone.slice(8)}`
+      : cleanPhone;
+    
+    // Reemplazar patrones de teléfonos antiguos por el nuevo número del negocio
+    processed = processed.replace(
+      /(?:\(\+57\)\s*\d{3}\s*\d{3}\s*\d{4}|\+57\s*\d{3}\s*\d{3}\s*\d{4})/g,
+      formattedTel
+    );
+  }
 
   return processed;
 }
