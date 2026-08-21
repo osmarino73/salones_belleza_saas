@@ -1261,14 +1261,19 @@ export const DashboardPage: React.FC = () => {
                   </Link>
 
                   <div className="pt-1 border-t border-black/5 dark:border-white/10">
-                    <Link
-                      to="/login"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                      className="w-full text-left text-xs font-bold px-3 py-2.5 rounded-xl flex items-center gap-2.5 text-red-500 hover:bg-red-500/10 transition-all"
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsProfileMenuOpen(false);
+                        await api.auth.signOut();
+                        localStorage.clear();
+                        navigate('/login');
+                      }}
+                      className="w-full text-left text-xs font-bold px-3 py-2.5 rounded-xl flex items-center gap-2.5 text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                     >
                       <LogOut className="w-4 h-4 text-red-500" />
                       <span>Cerrar Sesión</span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </>
