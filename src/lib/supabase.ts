@@ -598,6 +598,7 @@ export const api = {
       const list: Stylist[] = JSON.parse(saved);
       const filtered = list.filter(s => s.tenant_id === tid);
       if (filtered.length > 0) return filtered;
+      if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
     return tid === '00000000-0000-0000-0000-000000000001' ? initialStylists : [];
   },
@@ -869,6 +870,7 @@ export const api = {
           };
         });
       }
+      if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
     return tid === '00000000-0000-0000-0000-000000000001' ? initialServices : [];
   },
@@ -1161,6 +1163,7 @@ export const api = {
       const list: Product[] = JSON.parse(saved);
       const filtered = list.filter(p => p.tenant_id === tid);
       if (filtered.length > 0) return filtered;
+      if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
     return tid === '00000000-0000-0000-0000-000000000001' ? initialProducts : [];
   },
