@@ -95,7 +95,26 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .vip-booking-card a.btn-white-book, .footer-vip-box a {
     color: ${primaryColor} !important;
   }
-` : '';
+  .hero-floating-pill strong {
+    color: var(--deep-navy, #190d2e) !important;
+    display: block !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+  }
+  .hero-floating-pill span {
+    color: #64748b !important;
+  }
+` : `
+  .hero-floating-pill strong {
+    color: var(--deep-navy, #190d2e) !important;
+    display: block !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+  }
+  .hero-floating-pill span {
+    color: #64748b !important;
+  }
+`;
 
   const resetCss = `
 <style id="beautyflow-prospect-reset">
