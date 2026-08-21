@@ -8,6 +8,7 @@ import { injectProspectLinks } from '../lib/prospectHtmlInjector';
 export const PublicProspectSitePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [site, setSite] = useState<ProspectSite | null>(null);
+  const [liveServices, setLiveServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,21 +22,36 @@ export const PublicProspectSitePage: React.FC = () => {
         
         // Actualizar título de la pestaña para Google SEO
         document.title = `${found.business_name} | Sitio Oficial`;
+
+        // Cargar servicios reales si el salón ya tiene tenant o por su slug
+        try {
+          const tenantObj = await api.getTenantBySlug(slug);
+          const tid = tenantObj?.id || found.claimed_tenant_id;
+          if (tid) {
+            const dbServices = await api.getServices(tid);
+            if (dbServices && dbServices.length > 0) {
+              setLiveServices(dbServices);
+            }
+          }
+        } catch (e) {
+          console.warn('Error loading live services for site:', e);
+        }
       }
       setLoading(false);
     }
     loadSite();
   }, [slug]);
 
-  // Inyectar enlaces de agendamiento (/reservar/:slug) y WhatsApp en el HTML nativo
+  // Inyectar enlaces de agendamiento (/reservar/:slug), WhatsApp y catálogo vivo en el HTML nativo
   const renderedHtml = useMemo(() => {
     if (!site?.raw_html) return '';
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
-      phoneWhatsapp: site.phone_whatsapp
+      phoneWhatsapp: site.phone_whatsapp,
+      liveServices: liveServices.length > 0 ? liveServices : undefined
     });
-  }, [site]);
+  }, [site, liveServices]);
 
   if (loading) {
     return (

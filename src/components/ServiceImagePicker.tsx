@@ -202,8 +202,8 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
                 />
               </div>
 
-              {/* Grid of Stock Photos */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+              {/* Grid of Stock Photos con Custom Scrollbar */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-56 overflow-y-auto custom-scrollbar pr-1.5">
                 {filteredStock.map((img) => (
                   <button
                     key={img.id}

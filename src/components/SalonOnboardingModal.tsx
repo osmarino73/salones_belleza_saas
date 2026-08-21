@@ -363,8 +363,8 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-300">
-      <div className="relative bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] border border-white/15 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] text-slate-100 space-y-6 my-8 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-start justify-center p-4 sm:p-6 pt-10 sm:pt-16 overflow-y-auto custom-scrollbar animate-in fade-in duration-300">
+      <div className="relative bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] border border-white/15 rounded-3xl max-w-4xl w-full p-6 sm:p-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] text-slate-100 space-y-6 mb-12 overflow-hidden">
         
         {/* Glow Decorativo de Fondo */}
         <div className="absolute top-0 right-1/4 w-72 h-72 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -700,7 +700,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   Aún no has agregado servicios. Escribe uno arriba para crearlo.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-1.5">
                   {servicesList.map((srv, idx) => (
                     <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
