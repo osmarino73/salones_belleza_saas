@@ -644,9 +644,10 @@ export const DashboardPage: React.FC = () => {
       alert('La cuenta principal de Administradora / Dueña no puede ser eliminada.');
       return;
     }
-    if (confirm('¿Estás seguro de eliminar este profesional?')) {
-      await api.deleteStylist(id);
-      setStylists(stylists.filter(s => s.id !== id));
+    if (confirm('¿Estás seguro de eliminar este profesional del equipo?')) {
+      const tid = activeTenantObj?.id || getActiveTenantId();
+      setStylists(prev => prev.filter(s => s.id !== id));
+      await api.deleteStylist(id, tid);
     }
   };
 
@@ -718,15 +719,13 @@ export const DashboardPage: React.FC = () => {
 
   const handleOwnerRemoveBlockedSlot = async (slotId: string, dateStr: string) => {
     if (!selectedStylistForAvailability) return;
-
     const currentSlots = selectedStylistForAvailability.blocked_slots || [];
     const currentDates = selectedStylistForAvailability.blocked_dates || [];
 
     const updatedSlots = currentSlots.filter(s => s.id !== slotId);
-    const dateStillHasSlots = updatedSlots.some(s => s.date === dateStr);
-    const updatedDates = dateStillHasSlots
-      ? currentDates
-      : currentDates.filter(d => d !== dateStr);
+    // Si ya no quedan slots en esa fecha, desbloquearla de blocked_dates
+    const hasMoreSlotsOnDate = updatedSlots.some(s => s.date === dateStr);
+    const updatedDates = hasMoreSlotsOnDate ? currentDates : currentDates.filter(d => d !== dateStr);
 
     const updatedStylist: Stylist = {
       ...selectedStylistForAvailability,
@@ -756,14 +755,14 @@ export const DashboardPage: React.FC = () => {
     await api.updateStylist(updatedStylist);
   };
 
-  // SERVICE CRUD HANDLERS
+  // SERVICES CRUD HANDLERS
   const handleOpenNewService = () => {
     setEditingService(null);
     setServiceForm({
       name: '',
-      category: 'color',
-      duration_minutes: 60,
-      price_usd: 45,
+      category: categories[0]?.slug || 'color',
+      duration_minutes: 45,
+      price_usd: 30,
       image_url: '',
       requires_patch_test: false,
       description: '',
@@ -778,9 +777,9 @@ export const DashboardPage: React.FC = () => {
       name: srv.name,
       category: srv.category,
       duration_minutes: srv.duration_minutes,
-      price_usd: Number(srv.price_usd ?? srv.price ?? srv.price_cop ?? 40),
+      price_usd: srv.price_usd || srv.price || 0,
       image_url: srv.image_url || '',
-      requires_patch_test: srv.requires_patch_test,
+      requires_patch_test: srv.requires_patch_test || false,
       description: srv.description || '',
       is_featured: srv.is_featured !== false
     });
@@ -810,7 +809,8 @@ export const DashboardPage: React.FC = () => {
     e.preventDefault();
     if (!serviceForm.name.trim()) return;
 
-    const finalImage = serviceForm.image_url?.trim() || getSuggestedImageForService(serviceForm.name, serviceForm.category);
+    // Si no seleccionó imagen, sugerir una de la librería según la categoría
+    const finalImage = serviceForm.image_url || getSuggestedImageForService(serviceForm.name, serviceForm.category);
 
     if (editingService) {
       const updated: Service = {
@@ -848,8 +848,9 @@ export const DashboardPage: React.FC = () => {
 
   const handleDeleteService = async (id: string) => {
     if (confirm('¿Estás seguro de eliminar este servicio?')) {
-      await api.deleteService(id);
-      setServices(services.filter(s => s.id !== id));
+      const tid = activeTenantObj?.id || getActiveTenantId();
+      setServices(prev => prev.filter(s => s.id !== id));
+      await api.deleteService(id, tid);
     }
   };
 

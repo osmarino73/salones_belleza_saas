@@ -800,17 +800,22 @@ export const api = {
     return localMapped;
   },
 
-  async deleteStylist(id: string): Promise<void> {
-    const tid = getActiveTenantId();
+  async deleteStylist(id: string, tenantId?: string): Promise<void> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
       try {
         const { error } = await supabase.from('stylists').delete().eq('id', id);
         if (error) console.error('Error deleting stylist in Supabase:', error.message);
       } catch (e) {}
     }
-    const current = await this.getStylists(tid);
-    const updated = current.filter(s => s.id !== id);
-    localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+    const saved = localStorage.getItem(STORAGE_KEYS.STYLISTS);
+    if (saved) {
+      try {
+        const all: Stylist[] = JSON.parse(saved);
+        const updated = all.filter(s => s.id !== id);
+        localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+      } catch (e) {}
+    }
   },
 
   async uploadAvatar(blob: Blob, fileName: string): Promise<string | null> {
@@ -958,19 +963,27 @@ export const api = {
         } as Service;
       }
     }
-    const current = await this.getServices();
+    const current = await this.getServices(service.tenant_id);
     const updated = current.map(s => s.id === service.id ? normalized : s);
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
     return normalized;
   },
 
-  async deleteService(id: string): Promise<void> {
+  async deleteService(id: string, tenantId?: string): Promise<void> {
+    const tid = tenantId || getActiveTenantId();
     if (supabase && isSupabaseConfigured) {
-      await supabase.from('services').delete().eq('id', id);
+      try {
+        await supabase.from('services').delete().eq('id', id);
+      } catch (e) {}
     }
-    const current = await this.getServices();
-    const updated = current.filter(s => s.id !== id);
-    localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+    const saved = localStorage.getItem(STORAGE_KEYS.SERVICES);
+    if (saved) {
+      try {
+        const all: Service[] = JSON.parse(saved);
+        const updated = all.filter(s => s.id !== id);
+        localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+      } catch (e) {}
+    }
   },
 
   // ==========================================
