@@ -3388,7 +3388,8 @@ export const DashboardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDeleteService(srv.id)}
-                          className="px-3 py-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all"
+                          className="px-3 py-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all cursor-pointer hover:border-red-500/40"
+                          title="Eliminar este servicio"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>

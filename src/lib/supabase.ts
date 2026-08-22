@@ -980,6 +980,7 @@ export const api = {
     if (saved) {
       try {
         const all: Service[] = JSON.parse(saved);
+        // Borrar por ID y limpiar registros huérfanos con el mismo ID
         const updated = all.filter(s => s.id !== id);
         localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
       } catch (e) {}
