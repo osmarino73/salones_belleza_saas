@@ -64,6 +64,8 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [slug, setSlug] = useState('');
   const [category, setCategory] = useState<'salon' | 'barberia' | 'spa' | 'estetica' | 'nails'>('salon');
   const [rawHtml, setRawHtml] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState<string>('');
+  const [fileNameHeroImg, setFileNameHeroImg] = useState<string>('');
   const [businessData, setBusinessData] = useState<any | null>(null);
   const [jsonInputText, setJsonInputText] = useState('');
   const [showJsonPaste, setShowJsonPaste] = useState(false);
@@ -293,6 +295,21 @@ export const SuperadminDashboardPage: React.FC = () => {
     reader.readAsText(file);
   };
 
+  // Carga de Fotografía Principal del Hero (JPG, PNG, WebP)
+  const handleHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileNameHeroImg(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setHeroImageUrl(base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Carga del preset Luxus Beauty Spa
   const handleLoadLuxusPreset = async () => {
     const luxusJson = {
@@ -391,7 +408,20 @@ export const SuperadminDashboardPage: React.FC = () => {
 
     try {
       // Si no hay rawHtml, generarlo automáticamente con el template de lujo
-      const finalHtml = rawHtml.trim() || generateStandaloneHtmlFromBusinessData(businessData || { nombre: businessName });
+      let finalHtml = rawHtml.trim() || generateStandaloneHtmlFromBusinessData(businessData || { nombre: businessName });
+
+      // Si se cargó una foto específica de Hero (heroImageUrl), reemplazarla en el HTML
+      if (heroImageUrl) {
+        finalHtml = finalHtml.replace(
+          /(<div\b[^>]*class=["'][^"']*(?:hero-bg-cover|hero-main-img-box|model-image-frame|hero-image-box)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+          `$1${heroImageUrl}$3`
+        );
+      }
+
+      const updatedBusinessData = {
+        ...(businessData || {}),
+        hero_image_url: heroImageUrl || businessData?.hero_image_url || undefined
+      };
 
       const siteData: Partial<ProspectSite> = {
         business_name: businessName,
@@ -403,7 +433,7 @@ export const SuperadminDashboardPage: React.FC = () => {
         slug: slug || businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         category,
         raw_html: finalHtml,
-        business_data: businessData,
+        business_data: updatedBusinessData,
         status: 'prospecto'
       };
 
@@ -744,17 +774,17 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Cargar DATOS_NEGOCIO.json */}
                     <label className="border border-dashed border-white/20 hover:border-[#FF5A36]/60 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-[#FF5A36]/5 group">
                       <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-[#FF5A36]/20 flex items-center justify-center text-[#FF5A36] mb-1.5 transition-colors">
                         <Building2 className="w-4 h-4" />
                       </div>
                       <span className="text-xs font-bold text-white group-hover:text-[#FF5A36]">
-                        {fileNameJson ? `✓ ${fileNameJson}` : '1. Cargar DATOS_NEGOCIO.json'}
+                        {fileNameJson ? `✓ ${fileNameJson}` : '1. DATOS_NEGOCIO.json'}
                       </span>
                       <span className="text-[10px] text-slate-400 mt-0.5">
-                        {fileNameJson ? 'Datos del negocio cargados' : 'Haz clic para seleccionar archivo'}
+                        {fileNameJson ? 'Datos cargados' : 'Cargar archivo JSON'}
                       </span>
                       <input
                         type="file"
@@ -770,15 +800,34 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                         <Globe className="w-4 h-4" />
                       </div>
                       <span className="text-xs font-bold text-white group-hover:text-emerald-400">
-                        {fileNameHtml ? `✓ ${fileNameHtml}` : '2. Cargar Sitio Web (.html)'}
+                        {fileNameHtml ? `✓ ${fileNameHtml}` : '2. Sitio Web (.html)'}
                       </span>
                       <span className="text-[10px] text-slate-400 mt-0.5">
-                        {fileNameHtml ? 'HTML standalone listo' : 'index.html o standalone.html'}
+                        {fileNameHtml ? 'HTML listo' : 'index.html'}
                       </span>
                       <input
                         type="file"
                         accept=".html,text/html"
                         onChange={handleHtmlFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {/* Cargar Fotografía del Hero / Portada */}
+                    <label className="border border-dashed border-white/20 hover:border-pink-500/60 rounded-xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-pink-500/5 group">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 group-hover:bg-pink-500/20 flex items-center justify-center text-pink-400 mb-1.5 transition-colors">
+                        <ImageIcon className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-white group-hover:text-pink-400">
+                        {fileNameHeroImg ? `✓ ${fileNameHeroImg}` : '3. Foto Hero (Opcional)'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">
+                        {fileNameHeroImg ? 'Foto optimizada lista' : 'modelo1.webp / JPG / PNG'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHeroImageUpload}
                         className="hidden"
                       />
                     </label>
