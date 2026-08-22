@@ -79,6 +79,46 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .hero-floating-pill span {
     color: #64748b !important;
   }
+
+  /* OPTIMIZACIÓN MÓVIL HERO (OPCIÓN A: FOTO NÍTIDA Y VIBRANTE) */
+  @media (max-width: 768px) {
+    .hero-fullwidth-section {
+      padding-top: 24px !important;
+      padding-bottom: 40px !important;
+      min-height: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .hero-bg-cover {
+      position: relative !important;
+      width: 100% !important;
+      height: 320px !important;
+      margin-top: 24px !important;
+      border-radius: 24px !important;
+      overflow: hidden !important;
+      box-shadow: 0 12px 32px rgba(225, 29, 72, 0.15) !important;
+      order: 2 !important;
+    }
+    .hero-bg-img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center top !important;
+      opacity: 1 !important;
+      display: block !important;
+    }
+    .hero-bg-overlay {
+      background: linear-gradient(180deg, transparent 60%, rgba(24, 21, 40, 0.3) 100%) !important;
+    }
+    .hero-content-wrapper {
+      order: 1 !important;
+      position: relative !important;
+      z-index: 5 !important;
+    }
+  }
 </style>
 `;
   if (processed.includes('</head>')) {
