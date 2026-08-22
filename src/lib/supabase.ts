@@ -854,7 +854,8 @@ export const api = {
             price: p,
             price_usd: p,
             price_cop: p,
-            image_url: d.image_url || d.photo_url || ''
+            image_url: d.image_url || d.photo_url || '',
+            is_featured: d.is_featured !== false
           };
         }) as Service[];
       }
@@ -874,7 +875,8 @@ export const api = {
               price: p,
               price_usd: p,
               price_cop: p,
-              image_url: d.image_url || d.photo_url || ''
+              image_url: d.image_url || d.photo_url || '',
+              is_featured: d.is_featured !== false
             });
           }
         });
@@ -894,7 +896,8 @@ export const api = {
       price: priceValue,
       price_usd: priceValue,
       price_cop: priceValue,
-      image_url: service.image_url || ''
+      image_url: service.image_url || '',
+      is_featured: service.is_featured !== false
     };
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase.from('services').insert([{
@@ -907,6 +910,7 @@ export const api = {
         requires_patch_test: serviceWithTenant.requires_patch_test,
         description: serviceWithTenant.description,
         image_url: serviceWithTenant.image_url || null,
+        is_featured: serviceWithTenant.is_featured,
         is_active: true
       }]).select().single();
       if (!error && data) {
@@ -916,7 +920,8 @@ export const api = {
           price: p,
           price_usd: p,
           price_cop: p,
-          image_url: data.image_url || serviceWithTenant.image_url
+          image_url: data.image_url || serviceWithTenant.image_url,
+          is_featured: data.is_featured !== false
         } as Service;
       }
     }
@@ -940,7 +945,8 @@ export const api = {
       price: priceValue,
       price_usd: priceValue,
       price_cop: priceValue,
-      image_url: service.image_url || ''
+      image_url: service.image_url || '',
+      is_featured: service.is_featured !== false
     };
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase.from('services').update({
@@ -950,7 +956,8 @@ export const api = {
         duration_minutes: normalized.duration_minutes,
         requires_patch_test: normalized.requires_patch_test,
         description: normalized.description,
-        image_url: normalized.image_url || null
+        image_url: normalized.image_url || null,
+        is_featured: normalized.is_featured
       }).eq('id', service.id).select().single();
       if (!error && data) {
         const p = Number(data.price ?? priceValue);
@@ -959,7 +966,8 @@ export const api = {
           price: p,
           price_usd: p,
           price_cop: p,
-          image_url: data.image_url || normalized.image_url
+          image_url: data.image_url || normalized.image_url,
+          is_featured: data.is_featured !== false
         } as Service;
       }
     }

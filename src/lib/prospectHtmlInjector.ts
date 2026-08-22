@@ -80,6 +80,30 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     color: #64748b !important;
   }
 
+  /* NORMALIZACIÓN UNIVERSAL 1:1 PARA TODAS LAS FOTOS DE SERVICIOS */
+  .glow-service-card .card-photo-box,
+  .glow-service-card .card-photo-box img,
+  .services-four-grid .card-photo-box img,
+  .services-grid .card-photo-box img,
+  .services-four-grid img,
+  .services-grid img,
+  .servicios-grid img,
+  .grid-services img {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+    border-radius: 12px !important;
+  }
+  .glow-service-card .card-photo-box {
+    position: relative !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 14px !important;
+    margin-bottom: 12px !important;
+  }
+
   /* OPTIMIZACIÓN MÓVIL HERO (OPCIÓN A: FOTO NÍTIDA Y VIBRANTE) */
   @media (max-width: 768px) {
     .hero-fullwidth-section {
@@ -179,9 +203,10 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/section>)/i;
     
     if (servicesGridRegex.test(processed)) {
-      // Priorizar los marcados como destacados (is_featured !== false) y limitar a un máximo de 6 para la portada
-      const featuredServices = liveServices.filter(s => s.is_featured !== false);
-      const displayServices = (featuredServices.length > 0 ? featuredServices : liveServices).slice(0, 6);
+      // Filtrar únicamente los marcados como destacados para la portada web (is_featured === true o !== false por defecto)
+      const featuredServices = liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined));
+      // Si todos fueron desmarcados o no hay destacados, mostrar los que queden con is_featured activo
+      const displayServices = (featuredServices.length > 0 ? featuredServices : []).slice(0, 6);
 
       const liveCardsHtml = displayServices.map((srv, idx) => {
         const numStr = String(idx + 1).padStart(2, '0');
@@ -195,9 +220,9 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         return `
         <!-- Card ${numStr} Dinámica -->
         <div class="glow-service-card">
-          <div class="card-photo-box">
+          <div class="card-photo-box" style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 14px; margin-bottom: 12px; position: relative;">
             <span class="card-num-badge">${numStr}</span>
-            <img src="${serviceImg}" alt="${srv.name}">
+            <img src="${serviceImg}" alt="${srv.name}" style="width: 100%; height: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: center; display: block; border-radius: 14px;">
           </div>
           <div class="card-info-body">
             <h3 class="card-service-title">${srv.name}</h3>

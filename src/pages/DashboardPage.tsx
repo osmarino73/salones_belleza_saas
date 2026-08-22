@@ -822,7 +822,7 @@ export const DashboardPage: React.FC = () => {
         image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description,
-        is_featured: serviceForm.is_featured !== false
+        is_featured: !!serviceForm.is_featured
       };
       await api.updateService(updated);
       setServices(services.map(s => s.id === updated.id ? updated : s));
@@ -838,7 +838,7 @@ export const DashboardPage: React.FC = () => {
         image_url: finalImage,
         requires_patch_test: serviceForm.requires_patch_test,
         description: serviceForm.description,
-        is_featured: serviceForm.is_featured !== false
+        is_featured: !!serviceForm.is_featured
       };
       const saved = await api.createService(newSrv);
       setServices([saved, ...services]);

@@ -12,6 +12,9 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+- **Normalización Universal de Imágenes 1:1 en Sitios Web ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`landing-html-injector`])**:
+  - **Relación de Aspecto Uniforme**: Todas las tarjetas de servicios y galerías inyectadas ahora aplican forzosamente `aspect-ratio: 1 / 1; object-fit: cover; border-radius: 14px;`, eliminando discrepancias de altura entre fotos verticales y horizontales.
+  - **Catálogo Ampliado de Barbería & Barba ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts))**: 10 nuevas fotos de alta resolución para afeitados tradicionales con toalla caliente, mid fade, skin fade, perfilado de barba con navaja, cortes infantiles y hair tattoo.
 - **Módulo de Mi Plan & Suscripción en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
   - **Badge de Plan Dinámico en Menú de Perfil**: Muestra el nivel actual del salón (ej. *📈 Crecimiento ($120k)*) con sus colores y estilos de acuerdo a `plan_tier`.
   - **Ventana Modal de Suscripción**: Botón *"👑 Mi Plan & Suscripción (30 Días)"* que despliega el estado de la cuenta, días restantes para renovación, resumen de la escalera de valor de 6 planes en $ COP y botón de contacto directo por WhatsApp para upgrades.
