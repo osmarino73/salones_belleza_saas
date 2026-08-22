@@ -6003,109 +6003,136 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS */}
+      {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS (DARK MODE NATIVO Y NÍTIDO) */}
       {isPlanModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className={`border rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-2xl space-y-6 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-amber-500/40 text-white' : 'bg-white border-amber-500/40 text-slate-900'
-          }`}>
-            <div className="flex justify-between items-center border-b pb-4 border-black/5 dark:border-white/10">
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6">
+          <div className="border border-white/15 bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] text-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] space-y-6 animate-fade-in relative">
+            
+            {/* Header del Modal */}
+            <div className="flex justify-between items-center border-b pb-4 border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#FF5A36] text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
-                  <Crown className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#FF5A36] text-white flex items-center justify-center shadow-lg shadow-[#FF5A36]/30 shrink-0">
+                  <Crown className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-black">Mi Plan SaaS & Suscripción</h3>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-black uppercase">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg font-black text-white tracking-tight">Mi Plan SaaS & Suscripción</h3>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
                       Plan Actual: {activeTenantObj?.plan_tier ? activeTenantObj.plan_tier.toUpperCase() : 'CRECIMIENTO'}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400">Gestiona la suscripción y módulos activos de tu salón</span>
+                  <span className="text-xs text-slate-400">Gestiona los módulos activos, facturación y días restantes de tu salón</span>
                 </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsPlanModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all border border-white/10 shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Tarjeta de Estado Actual */}
+            {/* Tarjeta de Estado Actual de la Suscripción */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-pink-500/10 border border-amber-500/30 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <span className="text-[11px] text-slate-400 block font-semibold">Plan Activo</span>
-                <strong className="text-base text-amber-300 font-extrabold flex items-center gap-1.5 mt-0.5">
-                  <span>📈 Plan Crecimiento</span>
+              <div className="space-y-0.5">
+                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Plan Activo</span>
+                <strong className="text-base text-amber-300 font-extrabold flex items-center gap-1.5">
+                  📈 Plan Crecimiento ⭐
                 </strong>
-                <span className="text-[11px] text-slate-400 mt-0.5 block">$120.000 COP / mes</span>
+                <span className="text-xs text-slate-300 block font-semibold">$120.000 COP / mes</span>
               </div>
 
-              <div>
-                <span className="text-[11px] text-slate-400 block font-semibold">Estado de la Cuenta</span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded-full mt-1">
+              <div className="space-y-1">
+                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Estado de tu Cuenta</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-sm">
                   ● Mes 1 de Regalo Activo
                 </span>
+                <span className="text-[10px] text-slate-400 block">Cuota inicial de $50k cancelada</span>
               </div>
 
-              <div>
-                <span className="text-[11px] text-slate-400 block font-semibold">Días Restantes</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xl font-black text-white">30 Días</span>
-                  <span className="text-[10px] text-slate-400">para renovación</span>
+              <div className="space-y-0.5">
+                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Vigencia Restante</span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-white">30</span>
+                  <span className="text-xs font-bold text-amber-400">Días restantes</span>
                 </div>
+                <span className="text-[10px] text-slate-400 block">Sin cobros automáticos ni sorpresas</span>
               </div>
             </div>
 
-            {/* Matriz de Planes & Escalera de Valor */}
+            {/* Escalera Oficial Completa de Planes SaaS (6 Planes) */}
             <div className="space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
-                Planes Disponibles en Colombia ($ COP)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <span>📊 Escalera Completa de Planes en Colombia ($ COP)</span>
+                </h4>
+                <span className="text-[10px] text-slate-400">Precios en Pesos Colombianos</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                 
-                {/* Plan Inicio */}
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                {/* 0. Plan Gratuito */}
+                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2 hover:border-white/20 transition-all">
                   <div className="flex justify-between items-center">
-                    <strong className="text-white font-bold">🚀 Plan Inicio</strong>
-                    <span className="text-blue-400 font-black">$50k/mes</span>
+                    <strong className="text-slate-200 font-bold">🌐 Plan Gratuito</strong>
+                    <span className="text-slate-400 font-black text-xs">$0 / mes</span>
                   </div>
-                  <ul className="text-slate-400 space-y-1 text-[11px]">
-                    <li>✓ Agendador interactivo online</li>
-                    <li>✓ Hasta 4 colaboradores</li>
-                    <li>✓ Página web oficial</li>
-                  </ul>
+                  <p className="text-[11px] text-slate-400 leading-snug">Web vitrina de por vida con fotos, catálogo y botón directo a WhatsApp.</p>
+                  <span className="text-[10px] text-slate-500 block font-mono">Sin agendador online</span>
                 </div>
 
-                {/* Plan Crecimiento (Actual) */}
-                <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/50 space-y-2 relative">
-                  <span className="absolute -top-2.5 right-3 bg-amber-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full">
-                    TU PLAN ACTUAL
+                {/* 1. Plan Inicio */}
+                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-blue-500/30 space-y-2 hover:border-blue-500/50 transition-all">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-blue-300 font-bold">🚀 Plan Inicio</strong>
+                    <span className="text-blue-400 font-black text-xs">$50.000 / mes</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-snug">Agendador online interactivo + hasta 4 colaboradores con agenda individual.</p>
+                  <span className="text-[10px] text-blue-400/80 block font-semibold">Ideal para salones pequeños</span>
+                </div>
+
+                {/* 2. Plan Crecimiento (ACTUAL) */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/60 space-y-2 relative shadow-lg shadow-amber-500/10">
+                  <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-500 to-[#FF5A36] text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                    TU PLAN ACTUAL ⭐
                   </span>
                   <div className="flex justify-between items-center">
                     <strong className="text-amber-300 font-bold">📈 Plan Crecimiento</strong>
-                    <span className="text-amber-300 font-black">$120k/mes</span>
+                    <span className="text-amber-300 font-black text-xs">$120.000 / mes</span>
                   </div>
-                  <ul className="text-slate-300 space-y-1 text-[11px]">
-                    <li>✓ Colaboradoras ilimitadas</li>
-                    <li>✓ App Móvil para estilistas</li>
-                    <li>✓ Caja POS y comisiones</li>
-                  </ul>
+                  <p className="text-[11px] text-slate-200 leading-snug">Colaboradoras ilimitadas + App móvil para estilistas + Caja POS y comisiones.</p>
+                  <span className="text-[10px] text-amber-400 block font-bold">✓ Incluido en tu primer mes</span>
                 </div>
 
-                {/* Plan Pro IA */}
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                {/* 3. Plan Pro Flow IA */}
+                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-purple-500/30 space-y-2 hover:border-purple-500/50 transition-all">
                   <div className="flex justify-between items-center">
-                    <strong className="text-purple-300 font-bold">🤖 Plan Pro IA</strong>
-                    <span className="text-purple-400 font-black">$240k/mes</span>
+                    <strong className="text-purple-300 font-bold">🤖 Pro Flow IA</strong>
+                    <span className="text-purple-400 font-black text-xs">$240.000 / mes</span>
                   </div>
-                  <ul className="text-slate-400 space-y-1 text-[11px]">
-                    <li>✓ Flowy IA WhatsApp 24/7</li>
-                    <li>✓ Bandeja Omnicanal (IG/FB)</li>
-                    <li>✓ Recordatorios anti-plantón</li>
-                  </ul>
+                  <p className="text-[11px] text-slate-300 leading-snug">Agente Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal + Recordatorios 2h antes.</p>
+                  <span className="text-[10px] text-purple-400 block font-semibold">Cero citas perdidas</span>
+                </div>
+
+                {/* 4. Plan Escala & Tráfico */}
+                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-emerald-500/30 space-y-2 hover:border-emerald-500/50 transition-all">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-emerald-300 font-bold">🎯 Plan Escala</strong>
+                    <span className="text-emerald-400 font-black text-xs">$720.000 / mes</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-snug">Embudos de ofertas flash + Pauta Meta Ads + Radar reactivación (+35 días).</p>
+                  <span className="text-[10px] text-emerald-400 block font-semibold">Atracción masiva de clientas</span>
+                </div>
+
+                {/* 5. Plan Agencia Partner VIP */}
+                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-pink-500/30 space-y-2 hover:border-pink-500/50 transition-all">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-pink-300 font-bold">👑 Agencia Partner VIP</strong>
+                    <span className="text-pink-400 font-black text-xs">$1.440.000 / mes</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-snug">Servicio Llave en Mano: equipo dedicado, dominio propio y consultoría semanal.</p>
+                  <span className="text-[10px] text-pink-400 block font-semibold">Acompañamiento total</span>
                 </div>
 
               </div>
@@ -6114,19 +6141,20 @@ export const DashboardPage: React.FC = () => {
             {/* Footer de Renovación / Upgrade */}
             <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <div>
-                <strong className="text-white block font-bold">¿Deseas renovar o subir a Flowy IA WhatsApp?</strong>
-                <span className="text-slate-400 text-[11px]">Escríbenos a soporte para activar tu asistente virtual o renovar tu mensualidad.</span>
+                <strong className="text-white block font-bold">¿Deseas renovar tu mes o subir a Flowy IA WhatsApp?</strong>
+                <span className="text-slate-400 text-[11px]">Escríbenos directamente por WhatsApp para activar tu asistente virtual o renovar tu suscripción.</span>
               </div>
               <a
                 href="https://wa.me/573000000000?text=Hola%20BeautyFlow,%20deseo%20consultar%20sobre%20mi%20plan%20o%20renovaci%C3%B3n"
                 target="_blank"
                 rel="noreferrer"
-                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black flex items-center gap-2 shadow-md shadow-emerald-500/20 shrink-0"
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 shrink-0 cursor-pointer transition-all hover:scale-[1.02]"
               >
                 <MessageSquare className="w-4 h-4" />
-                <span>Contactar Asesor VIP</span>
+                <span>Contactar Asesor por WhatsApp</span>
               </a>
             </div>
+
           </div>
         </div>
       )}
