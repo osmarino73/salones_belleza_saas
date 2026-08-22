@@ -146,21 +146,77 @@ export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
   },
 
   // ==========================================
-  // BARBERÍA MASCULINA & FADE
+  // BARBERÍA MASCULINA, FADE & CUIDADO DE BARBA
   // ==========================================
   {
     id: 'barber-fade-beard',
     category: 'barberia',
     title: 'Mid Fade con Ritual de Barba y Toalla Caliente',
     url: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80',
-    tags: ['fade', 'barba', 'corte hombre', 'degradado', 'navaja']
+    tags: ['fade', 'barba', 'corte hombre', 'degradado', 'navaja', 'ritual']
   },
   {
     id: 'barber-styling',
     category: 'barberia',
-    title: 'Corte Ejecutivo & Pompadour con Pomada',
+    title: 'Corte Ejecutivo & Pompadour Clásico con Pomada',
     url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80',
-    tags: ['pompadour', 'corte masculino', 'barberia', 'estilo']
+    tags: ['pompadour', 'corte masculino', 'barberia', 'estilo', 'clasico']
+  },
+  {
+    id: 'barber-beard-trim',
+    category: 'barberia',
+    title: 'Perfilado de Barba con Navaja & Óleo Hidratante',
+    url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80',
+    tags: ['barba', 'perfilado', 'navaja', 'barberia', 'lineas', 'arreglo de barba']
+  },
+  {
+    id: 'barber-hot-towel',
+    category: 'barberia',
+    title: 'Afeitado Tradicional con Toalla Caliente & Espuma',
+    url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80',
+    tags: ['afeitado', 'toalla caliente', 'spa masculino', 'barberia', 'relax']
+  },
+  {
+    id: 'barber-skin-fade',
+    category: 'barberia',
+    title: 'Skin Fade / High Fade Cero Pulido & Textura Superior',
+    url: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=800&q=80',
+    tags: ['skin fade', 'cero', 'high fade', 'degradado', 'corte urbano']
+  },
+  {
+    id: 'barber-taper-fade',
+    category: 'barberia',
+    title: 'Low Taper Fade con Diseño y Marcado de Patillas',
+    url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&w=800&q=80',
+    tags: ['taper fade', 'low fade', 'patillas', 'diseño', 'barberia moderna']
+  },
+  {
+    id: 'barber-hair-tattoo',
+    category: 'barberia',
+    title: 'Hair Tattoo & Diseños / Líneas Artísticas en Degradado',
+    url: 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=800&q=80',
+    tags: ['hair tattoo', 'diseño', 'lineas', 'tribal', 'barberia urbana']
+  },
+  {
+    id: 'barber-kids-cut',
+    category: 'barberia',
+    title: 'Corte Infantil & Kids con Estilo y Paciencia',
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    tags: ['kids', 'ninos', 'infantil', 'corte nino', 'barberia']
+  },
+  {
+    id: 'barber-spa-hairwash',
+    category: 'barberia',
+    title: 'Lavado Spa Capilar con Masaje & Exfoliación de Cuero Cabelludo',
+    url: 'https://images.unsplash.com/photo-1516914943479-89db7d9ae7f2?auto=format&fit=crop&w=800&q=80',
+    tags: ['lavado', 'spa capilar', 'exfoliacion', 'masaje capilar', 'cuero cabelludo']
+  },
+  {
+    id: 'barber-beard-dye',
+    category: 'barberia',
+    title: 'Pigmentación & Tinte de Barba Efecto Sombreado Natural',
+    url: 'https://images.unsplash.com/photo-1567894340315-735d7c361db0?auto=format&fit=crop&w=800&q=80',
+    tags: ['pigmentacion', 'tinte barba', 'sombreado', 'barba poblada', 'color hombre']
   },
 
   // ==========================================
@@ -248,6 +304,27 @@ export function getHeroImageForCategory(category: string = 'salon'): string {
 export function getSuggestedImageForService(title: string = '', categoryHint?: string): string {
   const t = (title + ' ' + (categoryHint || '')).toLowerCase();
 
+  // 1. Barbería y Barba Específicos
+  if (t.includes('toalla caliente') || t.includes('afeitad') || t.includes('shave')) {
+    return 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('barba') || t.includes('beard') || t.includes('perfilad')) {
+    return 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('fade') || t.includes('degradad') || t.includes('taper') || t.includes('skin')) {
+    return 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('tattoo') || t.includes('diseño') || t.includes('linea')) {
+    return 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('infantil') || t.includes('kid') || t.includes('niño')) {
+    return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('barber') || t.includes('caballero') || t.includes('hombre')) {
+    return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80';
+  }
+
+  // 2. Colorimetría y Cabello Femenino
   if (t.includes('color') || t.includes('balayage') || t.includes('mechas') || t.includes('tinte') || t.includes('rubio')) {
     return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80';
   }
@@ -259,9 +336,6 @@ export function getSuggestedImageForService(title: string = '', categoryHint?: s
   }
   if (t.includes('facial') || t.includes('spa') || t.includes('masaje') || t.includes('limpieza') || t.includes('piel') || t.includes('peeling')) {
     return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
-  }
-  if (t.includes('barber') || t.includes('fade') || t.includes('barba') || t.includes('afeitad')) {
-    return 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80';
   }
   if (t.includes('maquillaje') || t.includes('makeup') || t.includes('novia') || t.includes('pestaña') || t.includes('ceja')) {
     return 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=80';
