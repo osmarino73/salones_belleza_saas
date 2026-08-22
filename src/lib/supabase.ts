@@ -2133,6 +2133,42 @@ export const api = {
     return true;
   },
 
+  async updateTenantSettings(tenantId: string, updates: Partial<Tenant>): Promise<Tenant | null> {
+    const updatePayload: any = { ...updates };
+    delete updatePayload.id;
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('tenants')
+          .update(updatePayload)
+          .eq('id', tenantId)
+          .select()
+          .single();
+        if (error) console.error('Error updating tenant settings in Supabase:', error.message);
+        if (data) {
+          localStorage.setItem('bf_tenant_active', JSON.stringify(data));
+          return data as Tenant;
+        }
+      } catch (e) {
+        console.warn('Exception updating tenant settings:', e);
+      }
+    }
+
+    // Fallback LocalStorage
+    const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+    if (activeTenantRaw) {
+      try {
+        const parsed = JSON.parse(activeTenantRaw);
+        const merged = { ...parsed, ...updates };
+        localStorage.setItem('bf_tenant_active', JSON.stringify(merged));
+        return merged as Tenant;
+      } catch (e) {}
+    }
+
+    return null;
+  },
+
   async activateProspectAsTenant(params: {
     prospectId: string;
     ownerEmail: string;

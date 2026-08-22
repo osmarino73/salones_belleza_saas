@@ -5804,6 +5804,168 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
+      {/* MODAL CONFIGURACIÓN GENERAL DEL NEGOCIO & HORARIOS */}
+      {isBusinessSettingsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className={`border rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-2xl space-y-5 animate-fade-in ${
+            theme === 'dark' ? 'bg-[#141926] border-emerald-500/40 text-white' : 'bg-white border-emerald-500/40 text-slate-900'
+          }`}>
+            <div className="flex justify-between items-center border-b pb-3.5 border-black/5 dark:border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black">Configuración del Salón & Horarios</h3>
+                  <span className="text-[11px] text-slate-400">Datos públicos para clientas y agendamiento</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsBusinessSettingsModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const tid = activeTenantObj?.id || getActiveTenantId();
+              if (!tid) return;
+
+              const updates: Partial<Tenant> = {
+                name: salonName,
+                phone: salonPhone,
+                address: salonAddress,
+                currency: salonCurrency,
+                business_hours: { summary: salonHours }
+              };
+
+              const res = await api.updateTenantSettings(tid, updates);
+              if (res) {
+                setActiveTenantObj(res);
+              }
+              setIsBusinessSettingsModalOpen(false);
+            }} className="space-y-4 text-xs">
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Estos datos actualizan automáticamente tu página web pública y los mensajes de confirmación por WhatsApp.</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-400 mb-1 font-bold">Nombre Comercial del Salón *</label>
+                  <input
+                    type="text"
+                    required
+                    value={salonName}
+                    onChange={(e) => setSalonName(e.target.value)}
+                    placeholder="ej. Sandra Color's / Luxus Spa"
+                    className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-emerald-400 ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-bold">WhatsApp Oficial de Contacto *</label>
+                  <input
+                    type="text"
+                    required
+                    value={salonPhone}
+                    onChange={(e) => setSalonPhone(e.target.value)}
+                    placeholder="+57 300 000 0000"
+                    className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-emerald-400 ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-bold">Moneda Principal</label>
+                  <select
+                    value={salonCurrency}
+                    onChange={(e) => setSalonCurrency(e.target.value as any)}
+                    className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-emerald-400 cursor-pointer ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  >
+                    <option value="COP">🇨🇴 COP ($ Pesos Colombianos)</option>
+                    <option value="USD">🇺🇸 USD ($ Dólares)</option>
+                    <option value="MXN">🇲🇽 MXN ($ Pesos Mexicanos)</option>
+                    <option value="EUR">🇪🇺 EUR (€ Euros)</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-400 mb-1 font-bold">Dirección Física del Local</label>
+                  <input
+                    type="text"
+                    value={salonAddress}
+                    onChange={(e) => setSalonAddress(e.target.value)}
+                    placeholder="ej. Calle 10 # 43E-22, Medellín"
+                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-emerald-400 ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-400 font-bold">🕒 Horarios de Atención al Público *</label>
+                    <div className="flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSalonHours('Lun a Sáb: 8:00 AM – 7:00 PM')}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold"
+                      >
+                        Estándar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSalonHours('Lun a Dom: 9:00 AM – 8:00 PM')}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold"
+                      >
+                        Todos los días
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={salonHours}
+                    onChange={(e) => setSalonHours(e.target.value)}
+                    placeholder="ej. Lun a Sáb: 8:00 AM – 7:00 PM | Dom: Cerrado"
+                    className={`w-full border rounded-xl p-2.5 font-semibold focus:outline-none focus:border-emerald-400 ${
+                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                    }`}
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">Este horario se mostrará en el pie de página y en tu portal de reservas</span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBusinessSettingsModalOpen(false)}
+                  className="px-4 py-2.5 rounded-full text-slate-400 hover:text-white font-bold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-2.5 rounded-full shadow-md shadow-emerald-500/30 flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.01]"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Guardar Horarios y Datos</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* MODAL ONBOARDING INICIAL PARA NUEVOS SALONES (BIENVENIDA GUIADA) */}
       <SalonOnboardingModal
         isOpen={isSalonOnboardingOpen}

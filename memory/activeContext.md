@@ -12,6 +12,9 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+- **Configuración del Negocio & Horarios en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+  - **Modal Dedicado en Menú de Perfil**: Al pulsar sobre el avatar del administrador ➔ *"🏢 Configuración del Negocio"*, se abre una ventana para editar en cualquier momento el **Nombre Comercial**, **WhatsApp Oficial**, **Moneda**, **Dirección Física** y los **Horarios de Atención Semanales** con botones de presets rápidos (*Estándar*, *Todos los días*).
+  - **Persistencia en Supabase & LocalStorage**: Creado método `api.updateTenantSettings` que sincroniza los cambios inmediatamente con la web pública del salón y el portal de reservas.
 - **Limpieza de Pantalla de Login para Producción B2B ([`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
   - **Eliminación de Accesos Rápidos Demo**: Se retiraron los botones de prueba (`Superadmin`, `Dueña`, `Barbero`, `Nails`) para que la pantalla sea 100% limpia, sobria y profesional para los clientes reales.
   - **Inputs Limpios**: Campos de correo/WhatsApp y contraseña inicializados en blanco con placeholders elegantes (`dueña@misalon.co`, `••••••••••••`).

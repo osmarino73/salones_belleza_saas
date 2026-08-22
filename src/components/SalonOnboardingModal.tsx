@@ -114,7 +114,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             }
             if (targetProspect.city) setSalonCity(targetProspect.city);
             if (targetProspect.address) setSalonAddress(targetProspect.address);
-            if (targetProspect.business_data?.horario_atencion) setBusinessHours(targetProspect.business_data.horario_atencion);
+            setBusinessHours(targetProspect.business_data?.horario_atencion || 'Lun a Sáb: 8:00 AM – 7:00 PM');
             
             if (targetProspect.business_data?.servicios && targetProspect.business_data.servicios.length > 0) {
               const loadedServices = targetProspect.business_data.servicios.map((s: any) => ({
