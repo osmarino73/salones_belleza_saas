@@ -859,16 +859,21 @@ export const api = {
       const list: any[] = JSON.parse(saved);
       const filtered = list.filter(s => s.tenant_id === tid);
       if (filtered.length > 0) {
-        return filtered.map((d: any) => {
-          const p = Number(d.price ?? d.price_usd ?? d.price_cop ?? 0);
-          return {
-            ...d,
-            price: p,
-            price_usd: p,
-            price_cop: p,
-            image_url: d.image_url || d.photo_url || ''
-          };
+        const uniqueMap = new Map<string, any>();
+        filtered.forEach((d: any) => {
+          const key = (d.name || '').toLowerCase().trim();
+          if (!uniqueMap.has(key)) {
+            const p = Number(d.price ?? d.price_usd ?? d.price_cop ?? 0);
+            uniqueMap.set(key, {
+              ...d,
+              price: p,
+              price_usd: p,
+              price_cop: p,
+              image_url: d.image_url || d.photo_url || ''
+            });
+          }
         });
+        return Array.from(uniqueMap.values());
       }
       if (tid !== '00000000-0000-0000-0000-000000000001') return [];
     }
@@ -911,7 +916,14 @@ export const api = {
       }
     }
     const current = await this.getServices(tid);
-    const updated = [serviceWithTenant, ...current];
+    // Evitar duplicados por nombre en el mismo tenant
+    const existingIndex = current.findIndex(s => s.name?.toLowerCase().trim() === serviceWithTenant.name?.toLowerCase().trim());
+    let updated: Service[];
+    if (existingIndex >= 0) {
+      updated = current.map((s, idx) => idx === existingIndex ? serviceWithTenant : s);
+    } else {
+      updated = [serviceWithTenant, ...current];
+    }
     localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
     return serviceWithTenant;
   },
