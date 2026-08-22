@@ -111,7 +111,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
   if (heroImageUrl) {
     processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
       `$1${heroImageUrl}$3`
     );
   }
