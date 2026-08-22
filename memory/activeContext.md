@@ -12,7 +12,34 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
-## 📌 Decisiones & Ajustes Recientes
+- **Limpieza de Pantalla de Login para Producción B2B ([`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
+  - **Eliminación de Accesos Rápidos Demo**: Se retiraron los botones de prueba (`Superadmin`, `Dueña`, `Barbero`, `Nails`) para que la pantalla sea 100% limpia, sobria y profesional para los clientes reales.
+  - **Inputs Limpios**: Campos de correo/WhatsApp y contraseña inicializados en blanco con placeholders elegantes (`dueña@misalon.co`, `••••••••••••`).
+- **Onboarding Guiado & Pedagógico para Dueñas de Salón ([`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx))**:
+  - **Experiencia de Bienvenida Cálida**: Lenguaje amigable y pedagógico con explicaciones tipo *"¿Para qué usamos estos datos?"* en cada paso.
+  - **Barra de Progreso Dinámica**: Indicador porcentual con glow (25% ➔ 50% ➔ 75% ➔ 100%) para guiar a la dueña sin frustración.
+  - **Paso 1 (Identidad)**: Nombre comercial, WhatsApp de confirmaciones, ciudad y moneda principal.
+  - **Paso 2 (Servicios)**: Formulario dinámico con fotos WebP en 1 clic (`ServiceImagePicker`) y precios en $ COP.
+  - **Paso 3 (Equipo & Comisiones)**: Registro de estilistas con WhatsApp `🇨🇴 +57`, selección de especialidades y aclaración de que **no se requiere correo electrónico de las colaboradoras**.
+  - **Paso 4 (Resumen & Activación)**: Tarjeta de resumen visual con conteo de servicios, equipo listo y botón directo para abrir el Dashboard.
+- **Estrategia Comercial de Prospección & Escalera de Valor de 6 Planes en $ COP ([`DATOS_NEGOCIO.json`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/DATOS_NEGOCIO.json), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`update_tenant_plans_and_subscriptions.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/update_tenant_plans_and_subscriptions.sql))**:
+  - **Migración SQL Ejecutada en Supabase**: Columnas en `public.tenants` activas (`plan_tier`, `subscription_status`, `trial_ends_at`, `subscription_price_cop`, `max_stylists`, etc.).
+  - **Anclaje Psicológico de Alto Impacto ($680.000 COP ➔ $50.000 COP Setup)**:
+    - Valor regular de desarrollo web + agendador + POS: **$680.000 COP**.
+    - La Página Web se entrega **100% GRATIS de por vida** (Plan Gratuito $0) para ganar confianza.
+    - Cuota única de activación de **$50.000 COP** (vía Nequi/Daviplata) para entregar el sistema completo listo para operar.
+    - **Regalo en Mes 1**: Incluye **30 días completos en el Plan Crecimiento ($120.000 COP/mes)** con colaboradores ilimitados, caja registradora POS y App Web privada para colaboradoras.
+  - **Escalera Oficial de Planes SaaS (Colombia $ COP)**:
+    1. **Plan Gratuito ($0 COP/mes)**: Web de lujo de por vida + botón WhatsApp (sin agendador interactivo).
+    2. **Plan Inicio ($50.000 COP/mes)**: Sistema de reservas online (`/reservar/:slug`) + hasta 4 colaboradores con agenda propia.
+    3. **Plan Crecimiento ($120.000 COP/mes)**: Colaboradores ilimitados + Caja POS + Liquidación de comisiones + App móvil de colaboradoras (`/colaborador/:id`).
+    4. **Plan Pro Flow IA ($240.000 COP/mes)**: Agente virtual Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal (IG Direct / Messenger) + Recordatorios 24h/2h.
+    5. **Plan Escala & Tráfico ($720.000 COP/mes)**: Embudos de ofertas flash + Gestión de pauta publicitaria Meta Ads + Radar de reactivación inactivas (+35 días).
+    6. **Plan Agencia Partner VIP ($1.440.000 COP/mes)**: Servicio Llave en Mano + Equipo dedicado + Dominio propio + Consultoría estratégica mensual.
+  - **Generador de Pitch en Superadmin & Control de Planes**: Genera mensajes con el anclaje de $680.000 COP y la activación a $50.000 COP, con selector interactivo de planes y botón de renovación `+30 Días` en el Superadmin.
+    5. **Plan Escala & Tráfico ($720.000 COP/mes)**: Embudos de ofertas flash + Gestión de pauta publicitaria Meta Ads + Radar de reactivación inactivas (+35 días).
+    6. **Plan Agencia Partner VIP ($1.440.000 COP/mes)**: Servicio Llave en Mano + Equipo dedicado + Dominio propio + Consultoría estratégica mensual.
+  - **Generador de Pitch en Superadmin**: Actualizado para generar en 1 clic el mensaje de prospección con el anclaje de $680.000 COP y la activación a $50.000 COP con 30 días de prueba.
 - **Estandarización de Hero Fullwidth & Renderizado Móvil de Alto Impacto ([`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/landing-html-injector/SKILL.md), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - **Estructura Universal de Hero**: Soporte para la clase `<div class="hero-bg-cover"><img class="hero-bg-img" src="..." /><div class="hero-bg-overlay"></div></div>` que ocupa el 70% derecho en escritorio con degradado suave.
   - **Opción A en Móviles (Tarjeta Visual Radiante al 100%)**: En celulares (`@media (max-width: 768px)`), el inyector extrae la fotografía del fondo tenue y la presenta como una tarjeta visual elegante (`border-radius: 24px`, sombra suave de elevación, brillo y saturación al 100%) justo debajo de los botones de agendamiento para máxima claridad y estética de lujo.

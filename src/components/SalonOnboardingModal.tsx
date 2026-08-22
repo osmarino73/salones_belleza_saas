@@ -395,20 +395,29 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black shadow-lg shadow-[#FF5A36]/30 ring-1 ring-white/20">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black shadow-lg shadow-[#FF5A36]/30 ring-1 ring-white/20 shrink-0">
                 <Sparkles className="w-6 h-6 text-white animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FF5A36] bg-[#FF5A36]/10 px-2 py-0.5 rounded-full border border-[#FF5A36]/20">
-                    Setup Inicial • BeautyFlow AI
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#FF5A36] bg-[#FF5A36]/10 px-2.5 py-0.5 rounded-full border border-[#FF5A36]/20">
+                    Setup Inicial Guiado • BeautyFlow AI
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Paso {currentStep} de 4 ({currentStep === 1 ? '25%' : currentStep === 2 ? '50%' : currentStep === 3 ? '75%' : '100%'})
                   </span>
                 </div>
                 <h2 className="text-xl font-black text-white tracking-tight mt-0.5">
-                  ¡Bienvenida a tu Plataforma! 🎉
+                  {currentStep === 1 && '🏢 Identidad & Ubicación de tu Salón'}
+                  {currentStep === 2 && '✂️ Tu Catálogo de Servicios & Precios'}
+                  {currentStep === 3 && '👥 Tu Equipo de Colaboradoras & Comisiones'}
+                  {currentStep === 4 && '🤖 Asistente de WhatsApp IA & Finalización'}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Configura los 4 pilares de tu negocio para activar tu agendamiento inteligente.
+                  {currentStep === 1 && 'Personaliza el nombre, contacto y horarios que verán tus clientas en tu página web.'}
+                  {currentStep === 2 && 'Agrega los tratamientos que ofreces para que tus clientas puedan reservar solas.'}
+                  {currentStep === 3 && 'Registra a tus colaboradoras para organizar sus agendas y liquidar comisiones en automático.'}
+                  {currentStep === 4 && 'Revisa el resumen de tu plataforma y activa tu agendador interactivo.'}
                 </p>
               </div>
             </div>
@@ -423,17 +432,25 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             </button>
           </div>
 
+          {/* Barra de Progreso Lineal con Glow */}
+          <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
+            <div 
+              className="bg-gradient-to-r from-amber-500 via-[#FF5A36] to-pink-500 h-full rounded-full transition-all duration-500 shadow-sm shadow-[#FF5A36]/50"
+              style={{ width: `${(currentStep / 4) * 100}%` }}
+            />
+          </div>
+
           {/* Stepper Wizard Bar Prémium */}
-          <div className="grid grid-cols-4 gap-2 pt-2">
+          <div className="grid grid-cols-4 gap-2 pt-1">
             {[
               { num: 1, title: 'Tu Salón', icon: '🏢' },
               { num: 2, title: 'Servicios', icon: '✂️' },
               { num: 3, title: 'Equipo', icon: '👥' },
-              { num: 4, title: 'WhatsApp IA', icon: '🤖' }
+              { num: 4, title: 'Listo & IA', icon: '🚀' }
             ].map((stepItem) => (
               <div
                 key={stepItem.num}
-                className={`p-2.5 rounded-2xl border text-center transition-all duration-300 relative overflow-hidden ${
+                className={`p-2 rounded-2xl border text-center transition-all duration-300 relative overflow-hidden ${
                   currentStep === stepItem.num
                     ? 'bg-gradient-to-b from-[#FF5A36]/20 to-[#FF5A36]/5 border-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/20'
                     : currentStep > stepItem.num
@@ -455,73 +472,99 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             ========================================================================= */}
         {currentStep === 1 && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3 text-xs text-slate-300">
-              <Building2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" />
-              <span>Verifica los datos generales de tu salón. Podrás cambiarlos en cualquier momento desde Ajustes.</span>
+            {/* Tarjeta Didáctica */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border border-amber-500/20 flex items-start gap-3 text-xs text-slate-300">
+              <Building2 className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-amber-300 block font-bold mb-0.5">💡 ¿Para qué usamos estos datos?</strong>
+                <span>Esta información se mostrará en la cabecera de tu página web oficial y en el mensaje de confirmación que reciben tus clientas al agendar.</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Nombre del Salón / Spa *</label>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Nombre Comercial de tu Salón / Spa *
+                </label>
                 <input
                   type="text"
                   required
                   value={salonName}
                   onChange={(e) => setSalonName(e.target.value)}
-                  placeholder="ej. Sandra Color's"
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold"
+                  placeholder="ej. Sandra Color's, Luxus Beauty Spa, Barbería Don Mario"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold placeholder:text-slate-600"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">El nombre que conocen tus clientas en tu ciudad</span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Teléfono / WhatsApp de Contacto</label>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  WhatsApp de Contacto Oficial *
+                </label>
                 <input
                   type="text"
                   value={salonPhone}
                   onChange={(e) => setSalonPhone(e.target.value)}
                   placeholder="+57 300 000 0000"
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold placeholder:text-slate-600"
                 />
+                <span className="text-[10px] text-slate-500 mt-1 block">Aquí te llegarán las confirmaciones y notificaciones</span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Ciudad o Ubicación</label>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">Ciudad o Municipio *</label>
                 <input
                   type="text"
                   value={salonCity}
                   onChange={(e) => setSalonCity(e.target.value)}
-                  placeholder="ej. Medellín, Colombia"
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold"
+                  placeholder="ej. Medellín, Bogotá, Cali, Barranquilla, Envigado"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold placeholder:text-slate-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">Dirección Física (Opcional)</label>
+                <input
+                  type="text"
+                  value={salonAddress}
+                  onChange={(e) => setSalonAddress(e.target.value)}
+                  placeholder="ej. Calle 10 # 43E-22, Barrio El Poblado"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold placeholder:text-slate-600"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1">
                   <DollarSign className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Moneda Principal de Cobro</span>
+                  <span>Moneda Principal de tu Negocio</span>
                 </label>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as any)}
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-bold"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-bold cursor-pointer"
                 >
-                  <option value="COP">COP ($ Pesos Colombianos)</option>
-                  <option value="USD">USD ($ Dólares)</option>
-                  <option value="MXN">MXN ($ Pesos Mexicanos)</option>
-                  <option value="EUR">EUR (€ Euros)</option>
+                  <option value="COP">🇨🇴 COP ($ Pesos Colombianos)</option>
+                  <option value="USD">🇺🇸 USD ($ Dólares)</option>
+                  <option value="MXN">🇲🇽 MXN ($ Pesos Mexicanos)</option>
+                  <option value="EUR">🇪🇺 EUR (€ Euros)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">Horarios de Atención</label>
+                <input
+                  type="text"
+                  value={businessHours}
+                  onChange={(e) => setBusinessHours(e.target.value)}
+                  placeholder="ej. Lun a Sáb: 8:00 AM – 7:00 PM"
+                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold placeholder:text-slate-600"
+                />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">Horarios de Atención</label>
-              <input
-                type="text"
-                value={businessHours}
-                onChange={(e) => setBusinessHours(e.target.value)}
-                placeholder="ej. Lun a Sáb: 8:00 AM – 7:00 PM"
-                className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold"
-              />
+            {/* Tip Pro */}
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs text-slate-400">
+              <span>✨ Podrás modificar cualquiera de estos datos en cualquier momento desde tu panel de Ajustes.</span>
             </div>
 
             <div className="pt-3 flex justify-end">
@@ -531,7 +574,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                 disabled={!salonName.trim()}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
               >
-                <span>Siguiente: Tus Servicios</span>
+                <span>Siguiente: Tus Servicios & Precios</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -543,16 +586,23 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             ========================================================================= */}
         {currentStep === 2 && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3 text-xs text-slate-300">
-              <Scissors className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-              <span>Agrega los servicios principales que ofreces en tu salón para que tus clientas puedan agendarlos.</span>
+            {/* Tarjeta Didáctica */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-transparent border border-cyan-500/20 flex items-start gap-3 text-xs text-slate-300">
+              <Scissors className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-cyan-300 block font-bold mb-0.5">💡 ¿Cómo funciona tu Catálogo de Servicios?</strong>
+                <span>Cada tratamiento que agregues aquí tendrá su propio botón de agendamiento online. Tus clientas podrán ver la duración, el precio exacto y las fotos de muestra.</span>
+              </div>
             </div>
 
             {/* Formulario Rápido de Servicio */}
             <form onSubmit={handleAddService} className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-3">
-              <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider block">
-                + Agregar Nuevo Servicio
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider block">
+                  + Agregar Nuevo Servicio a tu Menú
+                </span>
+                <span className="text-[10px] text-slate-400">Precios en {currency}</span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <label className="block text-[11px] font-bold text-slate-400 mb-1">Nombre del Servicio *</label>
@@ -780,18 +830,23 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             ========================================================================= */}
         {currentStep === 3 && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3 text-xs text-slate-300">
-              <Users className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-              <span>
-                Agrega a tus especialistas o colaboradoras con sus porcentajes de comisión para liquidar sus pagos automáticamente.
-              </span>
+            {/* Tarjeta Didáctica */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-transparent border border-purple-500/20 flex items-start gap-3 text-xs text-slate-300">
+              <Users className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-purple-300 block font-bold mb-0.5">💡 Cero enredos en las quincenas</strong>
+                <span>Al registrar a tus estilistas con su % de comisión, el sistema calculará automáticamente sus pagos al cobrar cada cita en recepción. Además, cada colaboradora tendrá su propia App móvil para ver sus turnos del día.</span>
+              </div>
             </div>
 
             {/* Formulario Rápido de Colaborador */}
             <form onSubmit={handleAddStylist} className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-3">
-              <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider block">
-                + Agregar Colaboradora / Estilista
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider block">
+                  + Agregar Colaboradora / Estilista a tu Equipo
+                </span>
+                <span className="text-[10px] text-emerald-400 font-bold">✨ No se requiere correo electrónico</span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-400 mb-1">Nombre Completo *</label>
@@ -950,46 +1005,76 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         )}
 
         {/* =========================================================================
-            PASO 4: CONEXIÓN WHATSAPP IA (OPCIONAL)
+            PASO 4: CONEXIÓN WHATSAPP IA & FINALIZACIÓN
             ========================================================================= */}
         {currentStep === 4 && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 border border-emerald-500/30 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
-                <MessageCircle className="w-4 h-4" />
-                <span>Atención Automática por WhatsApp con IA (Opcional)</span>
+            {/* Tarjeta Didáctica */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/20 flex items-start gap-3 text-xs text-slate-300">
+              <Sparkles className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-emerald-300 block font-bold mb-0.5">🎉 ¡Todo listo para comenzar a operar!</strong>
+                <span>Hemos organizado tu catálogo y tu equipo. Opcionalmente puedes asignarle un nombre a tu asistente virtual de WhatsApp para recordatorios automáticos.</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Tu agente virtual podrá atender dudas de tarifas, agendar citas en tu calendario y enviar recordatorios automáticos 2 horas antes de cada cita para evitar plantones.
-              </p>
             </div>
 
-            <div className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                  <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Número de WhatsApp para tu Asistente Virtual</span>
-                </label>
-                <input
-                  type="text"
-                  value={waPhoneNumber}
-                  onChange={(e) => setWaPhoneNumber(e.target.value)}
-                  placeholder="+57 300 123 4567"
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
-                />
+            {/* Resumen Visual del Salón Configurado */}
+            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-3">
+              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
+                📋 Resumen de tu Plataforma Lista:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
+                  <span className="text-slate-400 text-[10px] block">🏢 Salón Configurado</span>
+                  <strong className="text-white font-bold block truncate">{salonName}</strong>
+                  <span className="text-[10px] text-emerald-400 font-semibold">{salonCity} ({currency})</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
+                  <span className="text-slate-400 text-[10px] block">✂️ Menú de Servicios</span>
+                  <strong className="text-white font-bold block">{servicesList.length} Tratamientos</strong>
+                  <span className="text-[10px] text-cyan-300 font-semibold">Listos con fotos y precios</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
+                  <span className="text-slate-400 text-[10px] block">👥 Equipo de Trabajo</span>
+                  <strong className="text-white font-bold block">{stylistsList.length + 1} Profesionales</strong>
+                  <span className="text-[10px] text-purple-300 font-semibold">Con agendas y comisiones</span>
+                </div>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  Nombre de tu Asistente Virtual de Belleza
-                </label>
-                <input
-                  type="text"
-                  value={agentName}
-                  onChange={(e) => setAgentName(e.target.value)}
-                  placeholder="Flowy"
-                  className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
-                />
+            {/* Configuración Opcional del Asistente */}
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+              <span className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
+                <span>🤖 Asistente Virtual de WhatsApp (Opcional)</span>
+                <span className="text-[10px] text-slate-400">Puedes configurarlo ahora o después</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>WhatsApp del Negocio</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={waPhoneNumber}
+                    onChange={(e) => setWaPhoneNumber(e.target.value)}
+                    placeholder="+57 300 123 4567"
+                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 mb-1.5">
+                    Nombre del Asistente Virtual
+                  </label>
+                  <input
+                    type="text"
+                    value={agentName}
+                    onChange={(e) => setAgentName(e.target.value)}
+                    placeholder="Flowy"
+                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1011,7 +1096,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   onClick={() => handleSaveAndFinish(true)}
                   className="flex-1 sm:flex-initial px-4 py-3 rounded-xl border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
                 >
-                  Omitir este paso y finalizar
+                  Omitir IA y Finalizar
                 </button>
 
                 {/* Botón Guardar con WhatsApp */}
@@ -1019,14 +1104,14 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleSaveAndFinish(false)}
-                  className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
+                  className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-[#FF5A36] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <CheckCircle2 className="w-4 h-4" />
                   )}
-                  <span>{isSubmitting ? 'Guardando...' : 'Completar Onboarding'}</span>
+                  <span>{isSubmitting ? 'Guardando Plataforma...' : '✨ Abrir Mi Dashboard'}</span>
                 </button>
               </div>
             </div>

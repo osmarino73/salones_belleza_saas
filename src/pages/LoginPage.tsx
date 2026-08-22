@@ -5,24 +5,10 @@ import { api } from '../lib/supabase';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('sofia@studioglamour.co');
-  const [password, setPassword] = useState('BeautyFlow2026*');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'superadmin' | 'dueña' | 'estilista' | 'nails'>('dueña');
-
-  const demoAccounts = {
-    superadmin: { email: 'osmarino73@yahoo.es', pass: 'BeautyFlow2026*' },
-    dueña: { email: 'sofia@studioglamour.co', pass: 'BeautyFlow2026*' },
-    estilista: { email: 'carlos@vargasbarber.co', pass: 'BarberFlow2026*' },
-    nails: { email: 'laura@valeriacolor.co', pass: 'NailsFlow2026*' }
-  };
-
-  const handleSelectRole = (role: 'superadmin' | 'dueña' | 'estilista' | 'nails') => {
-    setSelectedRole(role);
-    setEmail(demoAccounts[role].email);
-    setPassword(demoAccounts[role].pass);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,11 +50,6 @@ export const LoginPage: React.FC = () => {
           }
         }
       } catch (err) {}
-
-      // 3. Fallback a selector demo
-      if (!isCollaborator && (selectedRole === 'estilista' || selectedRole === 'nails')) {
-        isCollaborator = true;
-      }
 
       setTimeout(() => {
         setLoading(false);
@@ -134,59 +115,6 @@ export const LoginPage: React.FC = () => {
             <p className="text-sm text-slate-400">Ingresa tus credenciales para acceder a tu panel.</p>
           </div>
 
-          {/* Quick Demo Role Selector */}
-          <div className="bg-white/[0.03] border border-dashed border-orange-500/40 rounded-xl p-3.5 mb-6">
-            <div className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span>⚡ Acceso Rápido de Prueba:</span>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => handleSelectRole('superadmin')}
-                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
-                  selectedRole === 'superadmin'
-                    ? 'bg-gradient-to-r from-amber-500 to-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                    : 'bg-dark-900 text-amber-300 border border-amber-500/30 hover:border-amber-500'
-                }`}
-              >
-                👑 Superadmin (osmarino73)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectRole('dueña')}
-                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
-                  selectedRole === 'dueña'
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                    : 'bg-dark-900 text-slate-300 border border-white/10 hover:border-orange-500'
-                }`}
-              >
-                👑 Dueña (Sofía)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectRole('estilista')}
-                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
-                  selectedRole === 'estilista'
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                    : 'bg-dark-900 text-slate-300 border border-white/10 hover:border-orange-500'
-                }`}
-              >
-                ✂️ Barbero (Carlos)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectRole('nails')}
-                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition-all ${
-                  selectedRole === 'nails'
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                    : 'bg-dark-900 text-slate-300 border border-white/10 hover:border-orange-500'
-                }`}
-              >
-                💅 Nails (Laura)
-              </button>
-            </div>
-          </div>
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -199,7 +127,8 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-dark-900 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  placeholder="ej. dueña@misalon.co o usuario@beautyflow.app"
+                  className="w-full bg-dark-900 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 placeholder:text-slate-600"
                   required
                 />
               </div>
@@ -215,7 +144,8 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-dark-900 border border-white/10 rounded-lg py-2.5 pl-10 pr-10 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                  placeholder="••••••••••••"
+                  className="w-full bg-dark-900 border border-white/10 rounded-lg py-2.5 pl-10 pr-10 text-white text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 placeholder:text-slate-600"
                   required
                 />
                 <button

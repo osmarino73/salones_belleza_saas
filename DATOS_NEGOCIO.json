@@ -1,7 +1,7 @@
 {
   "nombre_agencia": "BeautyFlow AI",
   "slogan": "La plataforma inteligente 360° para Salones de Belleza, Spas y Barberías",
-  "propuesta_valor": "Te regalamos el diseño completo de la Página Web de tu Salón y activamos tu Agente de WhatsApp IA con Agendamiento 24/7, Recordatorios Anti-Plantones y CRM Especializado.",
+  "propuesta_valor": "Te entregamos la Página Web de tu Salón 100% GRATIS de por vida. Por solo $50.000 COP de activación (valor regular $680.000 COP), activas tu sistema de reservas online, caja POS y app de colaboradoras con 1 mes incluido en el Plan Crecimiento.",
   "contacto": {
     "telefono": "+57 300 900 8000",
     "whatsapp": "+57 300 900 8000",
@@ -10,95 +10,148 @@
     "horario_atencion": "Atención automatizada por IA las 24 Horas"
   },
   "oferta_caballo_troya": {
-    "titulo": "¡Tu Página Web Profesional 100% GRATIS!",
-    "descripcion": "Diseñamos e instalamos el sitio web de tu salón sin costo alguno. Solo activas el motor de agendamiento y el bot de WhatsApp con una prueba gratuita de 14 días sin tarjeta de crédito.",
+    "titulo": "¡Tu Página Web Profesional 100% GRATIS de por vida!",
+    "valor_regular_anclaje": "$680.000 COP",
+    "costo_activacion": "$50.000 COP",
+    "plan_primer_mes_incluido": "Plan Crecimiento ($120.000 COP/mes)",
+    "descripcion": "Diseñamos e instalamos el sitio web de tu salón sin costo alguno. Por solo $50.000 COP de activación única, te configuramos tu catálogo completo y te regalamos 1 mes en el Plan Crecimiento con reservas online, caja POS y app móvil para tus colaboradoras.",
     "incluye_gratis": [
-      "Diseño web moderno 100% responsivo para móviles",
+      "Página Web de Lujo 100% responsiva para móviles",
       "Optimización para Google Maps y SEO Local",
-      "Catálogo interactivo de servicios con fotos",
-      "Integración de botón flotante de WhatsApp",
-      "Dominio y certificado de seguridad SSL"
+      "Catálogo interactivo de servicios con fotos de referencia",
+      "Botón directo a WhatsApp del salón",
+      "Alojamiento y certificado de seguridad SSL gratis de por vida"
     ]
   },
   "modulos_sistema": [
     {
-      "id": "whatsapp_ai",
-      "titulo": "Agente IA en WhatsApp 24/7",
-      "descripcion": "Responde mensajes a cualquier hora, aclara precios, servicios y agenda citas de forma totalmente conversacional en tiempo real."
+      "id": "agendamiento",
+      "titulo": "Agendamiento Online Inteligente",
+      "descripcion": "Calendario por estilista y servicio. Previene choques de agenda y permite a tus clientes reservar en 3 clics desde Instagram o WhatsApp."
     },
     {
-      "id": "agendamiento",
-      "titulo": "Agendamiento Inteligente",
-      "descripcion": "Calendario por estilista y servicio. Previene choques de agenda y permite a tus clientes reservar en 3 clics."
+      "id": "app_colaboradores",
+      "titulo": "App Móvil para Colaboradoras",
+      "descripcion": "Portal privado para que cada estilista consulte su agenda del día, historial de fichas técnicas y comisiones en vivo desde su celular."
+    },
+    {
+      "id": "pos_comisiones",
+      "titulo": "POS & Liquidación de Comisiones",
+      "descripcion": "Facturación en recepción, medios de pago (Efectivo, Nequi, Tarjetas), arqueo de caja y liquidación automática de comisiones."
+    },
+    {
+      "id": "whatsapp_ai",
+      "titulo": "Agente IA en WhatsApp 24/7 (Flowy)",
+      "descripcion": "Responde mensajes a cualquier hora, aclara precios, servicios y agenda citas de forma totalmente conversacional en tiempo real."
     },
     {
       "id": "anti_noshow",
       "titulo": "Recordatorios Anti-Plantones",
-      "descripcion": "Recordatorios automáticos por WhatsApp y Email 24h y 2h antes de la cita. Reduce las inasistencias en un 80%."
+      "descripcion": "Recordatorios automáticos por WhatsApp 24h y 2h antes de la cita. Reduce las inasistencias en más de un 40%."
     },
     {
-      "id": "crm_belleza",
-      "titulo": "CRM Ficha Técnica de Tinte",
-      "descripcion": "Guarda fórmulas de color, historial de decoloración, preferencias del cliente y fotos de Antes/Después."
-    },
-    {
-      "id": "pos_comisiones",
-      "titulo": "POS & Comisiones de Estilistas",
-      "descripcion": "Facturación en recepción, venta de productos fisicos y liquidación automática de comisiones para tu equipo."
-    },
-    {
-      "id": "marketing_retencion",
-      "titulo": "Re-atracción de Clientes",
-      "descripcion": "Mensajes automáticos cuando un cliente cumple 30 días sin retocar su cabello y solicitudes de reseñas en Google Maps."
+      "id": "embudos_fidelizacion",
+      "titulo": "Embudos de Captación & Pauta Meta Ads",
+      "descripcion": "Campañas de atracción de clientas nuevas y radar de reactivación de clientas inactivas (+35 días)."
     }
   ],
   "planes_suscripcion": [
     {
-      "nombre": "Plan Básico",
-      "precio_mensual": "$39 USD",
+      "nivel": 0,
+      "nombre": "Plan Gratuito (Free for Life)",
+      "precio_mensual": "$0 COP",
       "periodo": "/mes",
       "destacado": false,
-      "publico": "1 a 2 Estilistas o Barberos",
+      "publico": "Todo salón que busca presencia digital en Google Maps",
       "caracteristicas": [
-        "Web Profesional de Regalo",
-        "Agendamiento Web en Línea",
-        "Confirmaciones por Email",
-        "CRM Ficha de Clientes",
-        "Hasta 2 Agendas de Estilistas",
-        "Soporte por Email"
+        "Página Web de Lujo Gratis de por vida",
+        "Diseño Glassmorphism para Móvil y Desktop",
+        "Catálogo informativo de servicios con fotos",
+        "Dirección, Horarios y Mapa Google Maps",
+        "Botón directo a WhatsApp del salón",
+        "Alojamiento y SSL de por vida"
       ]
     },
     {
-      "nombre": "Plan PRO IA",
-      "precio_mensual": "$89 USD",
+      "nivel": 1,
+      "nombre": "Plan Inicio",
+      "precio_mensual": "$50.000 COP",
+      "periodo": "/mes",
+      "destacado": false,
+      "publico": "Salones pequeños y barberías (1 a 4 personas)",
+      "caracteristicas": [
+        "Todo lo del Plan Gratuito",
+        "Botón y Sistema de Reservas Online (/reservar)",
+        "Hasta 4 Colaboradores con agenda propia",
+        "Catálogo de servicios y precios dinámicos",
+        "Panel de administración web",
+        "Notificaciones de confirmación a WhatsApp"
+      ]
+    },
+    {
+      "nivel": 2,
+      "nombre": "Plan Crecimiento",
+      "precio_mensual": "$120.000 COP",
       "periodo": "/mes",
       "destacado": true,
-      "etiqueta_destacado": "MÁS POPULAR",
-      "publico": "Salones Medianos (3 a 6 Estilistas)",
+      "etiqueta_destacado": "INCLUIDO EN MES 1 ($50k SETUP)",
+      "publico": "Salones y Spas con equipo (4 a 10 personas)",
       "caracteristicas": [
-        "Todo lo del Plan Básico",
-        "Agente IA en WhatsApp 24/7",
-        "Recordatorios WhatsApp Anti-Plantón",
-        "Ficha Técnica de Tintes & Fórmulas",
-        "Cobro Opcional de Señas/Anticipos",
-        "Encuesta de Satisfacción + Google Maps",
-        "Hasta 6 Agendas de Estilistas"
+        "Todo lo del Plan Inicio",
+        "Colaboradores / Especialistas ILIMITADOS",
+        "App Web Móvil para cada Colaboradora",
+        "Módulo de Caja POS Completo (Nequi, Efectivo, Datafono)",
+        "Liquidación Automática de Comisiones (% servicio / % retail)",
+        "Arqueo y Cierre de Caja (Reporte Z)",
+        "Control de Inventario y Productos Retail"
       ]
     },
     {
-      "nombre": "Plan VIP 360°",
-      "precio_mensual": "$149 USD",
+      "nivel": 3,
+      "nombre": "Plan Pro Flow (IA)",
+      "precio_mensual": "$240.000 COP",
       "periodo": "/mes",
       "destacado": false,
-      "publico": "Salones Grandes, Spas & Multi-Sede",
+      "publico": "Salones con alto volumen de chats en WhatsApp e Instagram",
       "caracteristicas": [
-        "Todo lo del Plan PRO IA",
-        "Estilistas e Agendas Ilimitadas",
-        "Módulo POS de Recepción & Inventario",
-        "Liquidación de Comisiones de Estilistas",
-        "Portal Móvil para cada Estilista",
-        "Campañas Automáticas de Re-atracción",
-        "Soporte Prioritario VIP"
+        "Todo lo del Plan Crecimiento",
+        "Agente Virtual Flowy IA 24/7 en WhatsApp",
+        "Bandeja Omnicanal (WhatsApp + Instagram DMs + Messenger)",
+        "Recordatorios Automáticos Anti-Plantón 24h y 2h antes",
+        "Pausar IA / Control Humano en 1 clic",
+        "Centro de Plantillas WhatsApp HSM Oficiales"
+      ]
+    },
+    {
+      "nivel": 4,
+      "nombre": "Plan Escala & Tráfico",
+      "precio_mensual": "$720.000 COP",
+      "periodo": "/mes",
+      "destacado": false,
+      "publico": "Salones que quieren llenar sillones con clientas nuevas",
+      "caracteristicas": [
+        "Todo lo del Plan Pro (IA)",
+        "Embudos de Captación de Alta Conversión",
+        "Gestión de Pauta Publicitaria Meta Ads (Instagram/Facebook)",
+        "Motor de Fidelización (Radar inactivas +35 días)",
+        "Generador Automático de Reseñas en Google Maps",
+        "Campañas de Marketing Masivo por WhatsApp"
+      ]
+    },
+    {
+      "nivel": 5,
+      "nombre": "Plan Agencia Partner VIP",
+      "precio_mensual": "$1.440.000 COP",
+      "periodo": "/mes",
+      "destacado": false,
+      "publico": "Cadenas, Spas de lujo y salones que buscan servicio Llave en Mano",
+      "caracteristicas": [
+        "Todo lo del Plan Escala",
+        "Equipo de Desarrollo y Diseño Dedicado",
+        "Dominio Web Propio (.com o .co) incluido",
+        "Consultoría Mensual de KPIs y Rentabilidad",
+        "Branding y piezas gráficas mensuales",
+        "Soporte Prioritario VIP 24/7 con línea directa"
       ]
     }
   ],

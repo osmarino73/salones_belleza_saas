@@ -1,3 +1,20 @@
+export type PlanTier = 'free' | 'inicio' | 'crecimiento' | 'pro_ia' | 'escala' | 'agencia';
+
+export interface PlanFeatureConfig {
+  id: PlanTier;
+  name: string;
+  price_cop: number;
+  max_stylists: number;
+  has_booking_online: boolean;
+  has_stylist_app: boolean;
+  has_pos_cash_register: boolean;
+  has_commission_liquidation: boolean;
+  has_whatsapp_ai: boolean;
+  has_omnichannel: boolean;
+  has_meta_ads_funnels: boolean;
+  has_dedicated_support: boolean;
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -8,9 +25,18 @@ export interface Tenant {
   country: string;
   is_active: boolean;
   plan: 'basic' | 'pro_ai' | 'vip_360';
+  plan_tier?: PlanTier;
+  subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled';
+  subscription_price_cop?: number;
+  trial_started_at?: string;
+  trial_ends_at?: string;
+  max_stylists?: number;
+  has_pos_access?: boolean;
+  has_ai_whatsapp?: boolean;
+  has_omnichannel?: boolean;
+  has_meta_ads?: boolean;
   owner_email?: string;
   currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
-  trial_ends_at?: string;
   business_hours?: { summary?: string; open?: string; close?: string };
   hero_image_url?: string;
   logo_icon?: string; // Emoji o icono (ej. '✨', '✂️', '🪄', '👑', '💅', '🧖‍♀️')

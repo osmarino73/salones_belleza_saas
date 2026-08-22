@@ -1,4 +1,9 @@
-# Progreso del Proyecto BeautyFlow AI
+- [x] **Gestión y Control de 6 Planes SaaS en Base de Datos & Superadmin ([`update_tenant_plans_and_subscriptions.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/update_tenant_plans_and_subscriptions.sql), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+  - **Script SQL de Migración**: Columnas en `public.tenants` (`plan_tier`, `subscription_status`, `trial_started_at`, `trial_ends_at`, `subscription_price_cop`, `max_stylists`, `has_pos_access`, `has_ai_whatsapp`, `has_omnichannel`, `has_meta_ads`).
+  - **Tipos TypeScript**: Definición de `PlanTier` (`'free' | 'inicio' | 'crecimiento' | 'pro_ia' | 'escala' | 'agencia'`) y `PlanFeatureConfig`.
+  - **Activación 30 Días**: `activateProspectAsTenant` asigna por defecto el **Plan Crecimiento ($120.000 COP)** por 30 días con acceso a POS, comisiones y app móvil de colaboradoras.
+  - **Control en Superadmin**: Selector interactivo de planes en la tabla de tenants con insignias de color, contador en vivo de días restantes de prueba y botón `+30 Días` para renovar la suscripción.
+  - **Estrategia & Documento**: [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md) y [`DATOS_NEGOCIO.json`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/DATOS_NEGOCIO.json) con anclaje de $680.000 COP a $50.000 COP.
 
 - [x] **Ingesta Inteligente de Carpetas & Generador Web (`DATOS_NEGOCIO.json`)**:
   - **Superadmin Lead Hub (`SuperadminDashboardPage.tsx`)**: Carga por drag & drop o selector de `DATOS_NEGOCIO.json` y `.html`, con preset de 1-clic para *Luxus Beauty Spa*, auto-completado de campos, visualización previa en tarjetas de servicios y especialistas, y generador de pitch personalizado para WhatsApp.

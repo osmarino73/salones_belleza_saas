@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/supabase';
-import { ProspectSite, Tenant } from '../types';
+import { ProspectSite, Tenant, PlanTier } from '../types';
 import {
   BEAUTY_STOCK_LIBRARY,
   StockImageItem,
@@ -476,19 +476,35 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
   };
 
-  // Generar pitch de WhatsApp enriquecido pidiendo el correo para activación
+  // Generar pitch de WhatsApp con Anclaje $680.000 COP -> Activación $50.000 COP + 1 Mes Plan Crecimiento
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
     const servicesText = siteObj.business_data?.servicios && siteObj.business_data.servicios.length > 0
       ? ` para sus servicios de ${siteObj.business_data.servicios.slice(0, 2).map((s: any) => s.titulo).join(' y ')}`
       : '';
 
-    return `¡Hola ${siteObj.business_name}! 💖 Vimos su perfil en Google Maps y les diseñamos esta página web oficial de cortesía${servicesText}:
+    return `¡Hola ${siteObj.business_name}! 👋 Estuvimos viendo su salón en Google Maps y les preparamos un regalo especial para su negocio:
+
+🌐 Su Página Web Profesional (100% Gratis de por vida):
 👉 ${siteUrl}
 
-Cuenta con su catálogo de tratamientos, equipo de especialistas y sistema de agendamiento online directo.
+(Pueden compartirla con sus clientas para mostrar fotos${servicesText}, dirección y horarios sin costo alguno).
 
-🔑 Para entregarte el acceso de administración total a tu plataforma (para que puedas ajustar fotos, servicios, colaboradoras y recibir reservas en vivo), respóndeme con tu correo electrónico y te activo tu cuenta en 1 minuto.`;
+✨ Oportunidad de Digitalización Local:
+El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
+
+🎁 Por un aporte único de activación de solo $50.000 COP (Nequi / Daviplata), reciben:
+1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
+2. ✅ Configuración total de su Catálogo de Servicios y Especialistas.
+3. ✅ 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
+   - 📅 Botón de reservas online para clientas (/reservar).
+   - 👥 Colaboradoras / Especialistas ilimitadas.
+   - 📱 App móvil para que cada estilista vea su agenda y comisiones.
+   - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
+
+A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse solo con su web gratis sin permanencias.
+
+¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo me confirman su correo y les entrego sus accesos 📲`;
   };
 
   // Manejador para abrir el Modal de Activación
@@ -498,7 +514,7 @@ Cuenta con su catálogo de tratamientos, equipo de especialistas y sistema de ag
     const cleanName = p.business_name.replace(/[^a-zA-Z]/g, '').slice(0, 5) || 'Salon';
     setActivationTempPass(`${cleanName}2026*`);
     setActivationCurrency('COP');
-    setActivationTrialDays(14);
+    setActivationTrialDays(30);
     setActivationSuccessData(null);
     setCopiedCredentials(false);
   };
@@ -1442,54 +1458,109 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
               </div>
 
               <div className="divide-y divide-white/5 text-xs">
-                {tenants.map((t) => (
-                  <div key={t.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black text-sm">
-                        {t.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <strong className="text-sm font-bold text-white">{t.name}</strong>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                            {t.plan || 'pro_ai'}
+                {tenants.map((t) => {
+                  const currentPlan = (t.plan_tier || 'crecimiento') as PlanTier;
+                  const daysLeft = t.trial_ends_at 
+                    ? Math.max(0, Math.ceil((new Date(t.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                    : 30;
+
+                  return (
+                    <div key={t.id} className="py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white font-black text-sm shrink-0 shadow-md shadow-[#FF5A36]/20">
+                          {t.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-sm font-bold text-white">{t.name}</strong>
+                            <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                              currentPlan === 'crecimiento' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                              currentPlan === 'pro_ia' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' :
+                              currentPlan === 'escala' ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' :
+                              currentPlan === 'agencia' ? 'bg-pink-500/20 text-pink-300 border-pink-500/40' :
+                              'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                            }`}>
+                              {currentPlan === 'free' ? '🌐 Gratis ($0)' :
+                               currentPlan === 'inicio' ? '🌱 Inicio ($50k)' :
+                               currentPlan === 'crecimiento' ? '📈 Crecimiento ($120k)' :
+                               currentPlan === 'pro_ia' ? '🤖 Pro Flow IA ($240k)' :
+                               currentPlan === 'escala' ? '🎯 Escala ($720k)' : '👑 Agencia VIP ($1.44M)'}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                              ⏳ {daysLeft} días restantes
+                            </span>
+                          </div>
+                          <span className="text-slate-400 text-[11px] block mt-0.5">
+                            {t.phone} • {t.address || t.city || 'Medellín, Colombia'} • <span className="text-slate-300">{t.owner_email || 'dueña@salon.com'}</span>
                           </span>
                         </div>
-                        <span className="text-slate-400 text-[11px]">
-                          {t.phone} • {t.address || t.city || 'Medellín, Colombia'}
-                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 flex-wrap self-end lg:self-center">
+                        {/* Selector Rápido de Plan */}
+                        <div className="flex items-center gap-1.5 bg-[#0A0D14] border border-white/15 rounded-xl px-2.5 py-1">
+                          <span className="text-[10px] text-slate-400 font-bold">Plan:</span>
+                          <select
+                            value={currentPlan}
+                            onChange={async (e) => {
+                              const newPlan = e.target.value as PlanTier;
+                              await api.updateTenantPlan(t.id, { plan_tier: newPlan });
+                              await loadData();
+                            }}
+                            className="bg-transparent text-white font-bold text-[11px] focus:outline-none cursor-pointer"
+                          >
+                            <option value="free" className="bg-[#121624]">🌐 Gratis ($0)</option>
+                            <option value="inicio" className="bg-[#121624]">🌱 Inicio ($50.000 COP)</option>
+                            <option value="crecimiento" className="bg-[#121624]">📈 Crecimiento ($120.000 COP)</option>
+                            <option value="pro_ia" className="bg-[#121624]">🤖 Pro Flow IA ($240.000 COP)</option>
+                            <option value="escala" className="bg-[#121624]">🎯 Escala ($720.000 COP)</option>
+                            <option value="agencia" className="bg-[#121624]">👑 Agencia VIP ($1.440.000 COP)</option>
+                          </select>
+                        </div>
+
+                        {/* Extender 30 Días */}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await api.updateTenantPlan(t.id, { plan_tier: currentPlan, trial_days_to_add: 30, subscription_status: 'active' });
+                            alert(`✅ Se renovaron 30 días de suscripción para ${t.name}.`);
+                            await loadData();
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/10 text-emerald-300 font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer"
+                          title="Extender 30 días adicionales de suscripción"
+                        >
+                          <span>+30 Días</span>
+                        </button>
+
+                        <Link
+                          to={`/reservar/${t.slug}`}
+                          target="_blank"
+                          className="px-3 py-1.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 hover:text-white font-bold text-[11px] flex items-center gap-1 transition-all"
+                        >
+                          <Calendar className="w-3.5 h-3.5 text-[#FF5A36]" />
+                          <span>Agendador</span>
+                        </Link>
+
+                        <Link
+                          to="/dashboard"
+                          className="px-3 py-1.5 rounded-xl bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-[11px] flex items-center gap-1 shadow-md shadow-[#FF5A36]/20 transition-all"
+                        >
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                          <span>Dashboard</span>
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTenant(t.id, t.name)}
+                          className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold transition-all flex items-center justify-center cursor-pointer"
+                          title="Borrar salón y todos sus datos en 1 clic"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                      <Link
-                        to={`/reservar/${t.slug}`}
-                        target="_blank"
-                        className="px-3 py-1.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 hover:text-white font-bold text-[11px] flex items-center gap-1"
-                      >
-                        <Calendar className="w-3.5 h-3.5 text-[#FF5A36]" />
-                        <span>Agendador</span>
-                      </Link>
-
-                      <Link
-                        to="/dashboard"
-                        className="px-3 py-1.5 rounded-xl bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-[11px] flex items-center gap-1 shadow-md shadow-[#FF5A36]/20"
-                      >
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                        <span>Entrar a Dashboard</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTenant(t.id, t.name)}
-                        className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold transition-all flex items-center justify-center cursor-pointer"
-                        title="Borrar salón y todos sus datos en 1 clic"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

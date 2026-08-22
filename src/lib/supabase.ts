@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant } from '../types';
+import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier } from '../types';
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -2057,10 +2057,80 @@ export const api = {
       country: 'Colombia',
       is_active: true,
       plan: 'pro_ai',
-      owner_email: 'sofia@studioglamour.co',
+      plan_tier: 'crecimiento',
+      subscription_status: 'trial',
       currency: 'COP',
       created_at: '2026-08-15'
     }];
+  },
+
+  async updateTenantPlan(tenantId: string, params: {
+    plan_tier: PlanTier;
+    subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled';
+    trial_days_to_add?: number;
+  }): Promise<boolean> {
+    const priceMap: Record<PlanTier, number> = {
+      free: 0,
+      inicio: 50000,
+      crecimiento: 120000,
+      pro_ia: 240000,
+      escala: 720000,
+      agencia: 1440000
+    };
+
+    const maxStylistsMap: Record<PlanTier, number> = {
+      free: 0,
+      inicio: 4,
+      crecimiento: 999,
+      pro_ia: 999,
+      escala: 999,
+      agencia: 999
+    };
+
+    const updatePayload: any = {
+      plan_tier: params.plan_tier,
+      subscription_price_cop: priceMap[params.plan_tier],
+      max_stylists: maxStylistsMap[params.plan_tier],
+      has_pos_access: params.plan_tier !== 'free' && params.plan_tier !== 'inicio',
+      has_ai_whatsapp: ['pro_ia', 'escala', 'agencia'].includes(params.plan_tier),
+      has_omnichannel: ['pro_ia', 'escala', 'agencia'].includes(params.plan_tier),
+      has_meta_ads: ['escala', 'agencia'].includes(params.plan_tier)
+    };
+
+    if (params.subscription_status) {
+      updatePayload.subscription_status = params.subscription_status;
+    }
+
+    if (params.trial_days_to_add) {
+      const newTrial = new Date();
+      newTrial.setDate(newTrial.getDate() + params.trial_days_to_add);
+      updatePayload.trial_ends_at = newTrial.toISOString();
+    }
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('tenants')
+          .update(updatePayload)
+          .eq('id', tenantId);
+        if (error) console.error('Error updating tenant plan in Supabase:', error.message);
+      } catch (e) {
+        console.warn('Exception updating tenant plan:', e);
+      }
+    }
+
+    // Actualizar en localStorage si es el tenant activo
+    const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+    if (activeTenantRaw) {
+      try {
+        const parsed = JSON.parse(activeTenantRaw);
+        if (parsed.id === tenantId) {
+          localStorage.setItem('bf_tenant_active', JSON.stringify({ ...parsed, ...updatePayload }));
+        }
+      } catch (e) {}
+    }
+
+    return true;
   },
 
   async activateProspectAsTenant(params: {
@@ -2086,7 +2156,7 @@ export const api = {
       : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
 
     const trialDate = new Date();
-    trialDate.setDate(trialDate.getDate() + (params.trialDays || 14));
+    trialDate.setDate(trialDate.getDate() + (params.trialDays || 30));
 
     const newTenant: Tenant = {
       id: generatedUUID,
@@ -2098,8 +2168,17 @@ export const api = {
       country: prospect?.country || 'Colombia',
       is_active: true,
       plan: 'pro_ai',
+      plan_tier: 'crecimiento',
+      subscription_status: 'trial',
+      subscription_price_cop: 120000,
+      max_stylists: 999,
+      has_pos_access: true,
+      has_ai_whatsapp: false,
+      has_omnichannel: false,
+      has_meta_ads: false,
       owner_email: params.ownerEmail.toLowerCase().trim(),
       currency: tenantCurrency,
+      trial_started_at: new Date().toISOString(),
       trial_ends_at: trialDate.toISOString(),
       business_hours: { summary: prospect?.business_data?.horario_atencion || 'Lun a Sáb: 8:00 AM – 7:00 PM' },
       created_at: new Date().toISOString()
@@ -2133,12 +2212,20 @@ export const api = {
           phone: newTenant.phone,
           whatsapp_number: newTenant.phone,
           currency: newTenant.currency || 'COP',
-          plan_tier: 'pro_ia',
+          plan_tier: 'crecimiento',
+          subscription_status: 'trial',
+          subscription_price_cop: 120000,
+          max_stylists: 999,
+          has_pos_access: true,
+          has_ai_whatsapp: false,
+          has_omnichannel: false,
+          has_meta_ads: false,
           address: newTenant.address || 'Medellín',
           city: newTenant.city || 'Medellín',
           country: newTenant.country || 'Colombia',
           business_hours: newTenant.business_hours || { summary: 'Lun a Sáb: 8:00 AM – 7:00 PM' },
           is_active: true,
+          trial_started_at: newTenant.trial_started_at,
           trial_ends_at: newTenant.trial_ends_at
         };
         const { error: insertTenantErr } = await supabase.from('tenants').insert([dbTenantPayload]);
