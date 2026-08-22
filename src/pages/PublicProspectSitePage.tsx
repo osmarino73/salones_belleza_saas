@@ -25,35 +25,24 @@ export const PublicProspectSitePage: React.FC = () => {
         // Actualizar título de la pestaña para Google SEO
         document.title = `${found.business_name} | Sitio Oficial`;
 
-        // Cargar tenant, servicios y estilistas reales si el salón ya tiene tenant o por su slug
+        // Cargar tenant, servicios y estilistas reales solo si el salón ya fue reclamado (es un tenant real activo)
         try {
-          let tid = found.claimed_tenant_id;
+          const tid = found.claimed_tenant_id;
           let tenantData = null;
-          if (!tid) {
+          if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
             tenantData = await api.getTenantBySlug(slug);
-            tid = tenantData?.id;
-          }
-          if (!tid && found.business_name) {
-            // Intentar por coincidencia de nombre si no fue por slug directo
-            const allTenants = await api.getAllTenants();
-            tenantData = allTenants.find((t: any) => t.name?.toLowerCase().trim() === found.business_name?.toLowerCase().trim());
-            if (tenantData) tid = tenantData.id;
-          }
-
-          if (tenantData) {
-            setTenant(tenantData);
-          }
-
-          if (tid) {
-            const [dbServices, dbStylists] = await Promise.all([
-              api.getServices(tid),
-              api.getStylists(tid)
-            ]);
-            if (dbServices && dbServices.length > 0) {
-              setLiveServices(dbServices);
-            }
-            if (dbStylists && dbStylists.length > 0) {
-              setLiveStylists(dbStylists);
+            if (tenantData) {
+              setTenant(tenantData);
+              const [dbServices, dbStylists] = await Promise.all([
+                api.getServices(tid),
+                api.getStylists(tid)
+              ]);
+              if (dbServices && dbServices.length > 0) {
+                setLiveServices(dbServices);
+              }
+              if (dbStylists && dbStylists.length > 0) {
+                setLiveStylists(dbStylists);
+              }
             }
           }
         } catch (e) {
