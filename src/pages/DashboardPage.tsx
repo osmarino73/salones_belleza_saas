@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Scissors,
   Sparkles,
+  Crown,
   Calendar,
   Users,
   DollarSign,
@@ -219,6 +220,7 @@ export const DashboardPage: React.FC = () => {
   // Profile Submenu & Business Modal States
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isBusinessSettingsModalOpen, setIsBusinessSettingsModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [salonName, setSalonName] = useState('Mi Salón');
@@ -1186,14 +1188,49 @@ export const DashboardPage: React.FC = () => {
                   <div className="px-3 py-2.5 border-b border-black/5 dark:border-white/10">
                     <div className="flex items-center justify-between">
                       <strong className="text-xs font-bold block">{ownerName}</strong>
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20 uppercase">
-                        Plan Pro IA
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${
+                        activeTenantObj?.plan_tier === 'crecimiento'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10'
+                          : activeTenantObj?.plan_tier === 'inicio'
+                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                          : activeTenantObj?.plan_tier === 'pro_ia'
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                          : activeTenantObj?.plan_tier === 'escala'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          : activeTenantObj?.plan_tier === 'agencia'
+                          ? 'bg-pink-500/20 text-pink-300 border-pink-500/40'
+                          : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                      }`}>
+                        {activeTenantObj?.plan_tier === 'crecimiento' ? '📈 Crecimiento ($120k)' :
+                         activeTenantObj?.plan_tier === 'inicio' ? '🚀 Inicio ($50k)' :
+                         activeTenantObj?.plan_tier === 'pro_ia' ? '🤖 Pro Flow IA ($240k)' :
+                         activeTenantObj?.plan_tier === 'escala' ? '🎯 Escala ($720k)' :
+                         activeTenantObj?.plan_tier === 'agencia' ? '👑 Agencia VIP ($1.4M)' : '🌐 Plan Gratis ($0)'}
                       </span>
                     </div>
                     <span className="text-[11px] text-slate-400 block truncate">{ownerEmail}</span>
                   </div>
 
                   {/* Menu Items */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPlanModalOpen(true);
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                      theme === 'dark' ? 'hover:bg-white/5 text-amber-300 font-bold bg-amber-500/5' : 'hover:bg-amber-50 text-amber-700 font-bold'
+                    }`}
+                  >
+                    <Crown className="w-4 h-4 text-amber-400" />
+                    <div className="flex items-center justify-between w-full">
+                      <span>Mi Plan & Suscripción</span>
+                      <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-black">
+                        30 Días
+                      </span>
+                    </div>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -5962,6 +5999,134 @@ export const DashboardPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS */}
+      {isPlanModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className={`border rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-2xl space-y-6 animate-fade-in ${
+            theme === 'dark' ? 'bg-[#141926] border-amber-500/40 text-white' : 'bg-white border-amber-500/40 text-slate-900'
+          }`}>
+            <div className="flex justify-between items-center border-b pb-4 border-black/5 dark:border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#FF5A36] text-white flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <Crown className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-black">Mi Plan SaaS & Suscripción</h3>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-black uppercase">
+                      Plan Actual: {activeTenantObj?.plan_tier ? activeTenantObj.plan_tier.toUpperCase() : 'CRECIMIENTO'}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-400">Gestiona la suscripción y módulos activos de tu salón</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsPlanModalOpen(false)} 
+                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tarjeta de Estado Actual */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-pink-500/10 border border-amber-500/30 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <span className="text-[11px] text-slate-400 block font-semibold">Plan Activo</span>
+                <strong className="text-base text-amber-300 font-extrabold flex items-center gap-1.5 mt-0.5">
+                  <span>📈 Plan Crecimiento</span>
+                </strong>
+                <span className="text-[11px] text-slate-400 mt-0.5 block">$120.000 COP / mes</span>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-slate-400 block font-semibold">Estado de la Cuenta</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded-full mt-1">
+                  ● Mes 1 de Regalo Activo
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-slate-400 block font-semibold">Días Restantes</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xl font-black text-white">30 Días</span>
+                  <span className="text-[10px] text-slate-400">para renovación</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Matriz de Planes & Escalera de Valor */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Planes Disponibles en Colombia ($ COP)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                
+                {/* Plan Inicio */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-white font-bold">🚀 Plan Inicio</strong>
+                    <span className="text-blue-400 font-black">$50k/mes</span>
+                  </div>
+                  <ul className="text-slate-400 space-y-1 text-[11px]">
+                    <li>✓ Agendador interactivo online</li>
+                    <li>✓ Hasta 4 colaboradores</li>
+                    <li>✓ Página web oficial</li>
+                  </ul>
+                </div>
+
+                {/* Plan Crecimiento (Actual) */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/50 space-y-2 relative">
+                  <span className="absolute -top-2.5 right-3 bg-amber-500 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-full">
+                    TU PLAN ACTUAL
+                  </span>
+                  <div className="flex justify-between items-center">
+                    <strong className="text-amber-300 font-bold">📈 Plan Crecimiento</strong>
+                    <span className="text-amber-300 font-black">$120k/mes</span>
+                  </div>
+                  <ul className="text-slate-300 space-y-1 text-[11px]">
+                    <li>✓ Colaboradoras ilimitadas</li>
+                    <li>✓ App Móvil para estilistas</li>
+                    <li>✓ Caja POS y comisiones</li>
+                  </ul>
+                </div>
+
+                {/* Plan Pro IA */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <strong className="text-purple-300 font-bold">🤖 Plan Pro IA</strong>
+                    <span className="text-purple-400 font-black">$240k/mes</span>
+                  </div>
+                  <ul className="text-slate-400 space-y-1 text-[11px]">
+                    <li>✓ Flowy IA WhatsApp 24/7</li>
+                    <li>✓ Bandeja Omnicanal (IG/FB)</li>
+                    <li>✓ Recordatorios anti-plantón</li>
+                  </ul>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Footer de Renovación / Upgrade */}
+            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div>
+                <strong className="text-white block font-bold">¿Deseas renovar o subir a Flowy IA WhatsApp?</strong>
+                <span className="text-slate-400 text-[11px]">Escríbenos a soporte para activar tu asistente virtual o renovar tu mensualidad.</span>
+              </div>
+              <a
+                href="https://wa.me/573000000000?text=Hola%20BeautyFlow,%20deseo%20consultar%20sobre%20mi%20plan%20o%20renovaci%C3%B3n"
+                target="_blank"
+                rel="noreferrer"
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black flex items-center gap-2 shadow-md shadow-emerald-500/20 shrink-0"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Contactar Asesor VIP</span>
+              </a>
+            </div>
           </div>
         </div>
       )}

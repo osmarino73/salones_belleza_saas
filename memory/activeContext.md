@@ -12,6 +12,9 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+- **Módulo de Mi Plan & Suscripción en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - **Badge de Plan Dinámico en Menú de Perfil**: Muestra el nivel actual del salón (ej. *📈 Crecimiento ($120k)*) con sus colores y estilos de acuerdo a `plan_tier`.
+  - **Ventana Modal de Suscripción**: Botón *"👑 Mi Plan & Suscripción (30 Días)"* que despliega el estado de la cuenta, días restantes para renovación, resumen de la escalera de valor de 6 planes en $ COP y botón de contacto directo por WhatsApp para upgrades.
 - **Configuración del Negocio & Horarios en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
   - **Modal Dedicado en Menú de Perfil**: Al pulsar sobre el avatar del administrador ➔ *"🏢 Configuración del Negocio"*, se abre una ventana para editar en cualquier momento el **Nombre Comercial**, **WhatsApp Oficial**, **Moneda**, **Dirección Física** y los **Horarios de Atención Semanales** con botones de presets rápidos (*Estándar*, *Todos los días*).
   - **Persistencia en Supabase & LocalStorage**: Creado método `api.updateTenantSettings` que sincroniza los cambios inmediatamente con la web pública del salón y el portal de reservas.
