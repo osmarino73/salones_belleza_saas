@@ -6202,148 +6202,157 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {/* Tarjeta Visual Imprimible tipo Acrílico de Salón */}
-            <div id="printable-qr-card" className="bg-gradient-to-b from-[#0E121B] to-[#0A0D14] border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 text-center space-y-3 shadow-xl shadow-emerald-500/10 relative overflow-hidden">
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                  Reserva Online en 30 Segundos
-                </span>
-                <h4 className="text-base sm:text-lg font-extrabold text-white mt-1">{salonName}</h4>
-                <p className="text-[10px] text-slate-400">Escanea con la cámara de tu celular</p>
-              </div>
+            {(() => {
+              const currentSlug = activeTenantObj?.slug || salonName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'mi-salon';
+              const baseUrl = window.location.origin ? window.location.origin : 'https://belleza2027.netlify.app';
+              const bookingUrl = `${baseUrl}/reservar/${currentSlug}`;
 
-              {/* Imagen del Código QR Oficial */}
-              <div className="bg-white p-3 rounded-2xl inline-block shadow-2xl border-4 border-slate-900">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-                    window.location.origin ? `${window.location.origin}/reservas` : 'https://belleza2027.netlify.app/reservas'
-                  )}&color=0e121b&bgcolor=ffffff&margin=1`}
-                  alt={`Código QR de Reservas para ${salonName}`}
-                  className="w-36 h-36 sm:w-40 sm:h-40 object-contain mx-auto"
-                />
-              </div>
+              return (
+                <>
+                  <div id="printable-qr-card" className="bg-gradient-to-b from-[#0E121B] to-[#0A0D14] border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 text-center space-y-3 shadow-xl shadow-emerald-500/10 relative overflow-hidden">
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        Reserva Online en 30 Segundos
+                      </span>
+                      <h4 className="text-base sm:text-lg font-extrabold text-white mt-1">{salonName}</h4>
+                      <p className="text-[10px] text-slate-400">Escanea con la cámara de tu celular</p>
+                    </div>
 
-              <div className="text-[10px] text-slate-400 flex items-center justify-center gap-1 font-medium">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>Sin filas ni esperas telefónicas</span>
-              </div>
-            </div>
+                    {/* Imagen del Código QR Oficial */}
+                    <div className="bg-white p-3 rounded-2xl inline-block shadow-2xl border-4 border-slate-900">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(bookingUrl)}&color=0e121b&bgcolor=ffffff&margin=1`}
+                        alt={`Código QR de Reservas para ${salonName}`}
+                        className="w-36 h-36 sm:w-40 sm:h-40 object-contain mx-auto"
+                      />
+                    </div>
 
-            {/* Acciones Rápidas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  // Crear un Canvas HD para componer el afiche completo imprimible
-                  const canvas = document.createElement('canvas');
-                  canvas.width = 1200;
-                  canvas.height = 1600;
-                  const ctx = canvas.getContext('2d');
-                  if (!ctx) return;
+                    <div className="text-[10px] text-slate-400 flex items-center justify-center gap-1 font-medium">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>Sin filas ni esperas telefónicas</span>
+                    </div>
 
-                  // 1. Fondo elegante oscuro con degradado
-                  const bgGrad = ctx.createLinearGradient(0, 0, 1200, 1600);
-                  bgGrad.addColorStop(0, '#0E121B');
-                  bgGrad.addColorStop(0.5, '#161B2B');
-                  bgGrad.addColorStop(1, '#0A0D14');
-                  ctx.fillStyle = bgGrad;
-                  ctx.fillRect(0, 0, 1200, 1600);
+                    <div className="text-[10px] text-emerald-400 font-mono bg-emerald-500/10 py-1 px-2 rounded-lg border border-emerald-500/20 truncate">
+                      {bookingUrl}
+                    </div>
+                  </div>
 
-                  // 2. Borde exterior esmeralda / neón
-                  ctx.strokeStyle = '#10B981';
-                  ctx.lineWidth = 16;
-                  ctx.strokeRect(40, 40, 1120, 1520);
+                  {/* Acciones Rápidas */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Crear un Canvas HD para componer el afiche completo imprimible
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 1200;
+                        canvas.height = 1600;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return;
 
-                  // 3. Badge superior: "RESERVA ONLINE EN 30 SEGUNDOS"
-                  ctx.fillStyle = '#064E3B';
-                  ctx.beginPath();
-                  ctx.roundRect(300, 130, 600, 70, 35);
-                  ctx.fill();
-                  ctx.strokeStyle = '#34D399';
-                  ctx.lineWidth = 4;
-                  ctx.stroke();
+                        // 1. Fondo elegante oscuro con degradado
+                        const bgGrad = ctx.createLinearGradient(0, 0, 1200, 1600);
+                        bgGrad.addColorStop(0, '#0E121B');
+                        bgGrad.addColorStop(0.5, '#161B2B');
+                        bgGrad.addColorStop(1, '#0A0D14');
+                        ctx.fillStyle = bgGrad;
+                        ctx.fillRect(0, 0, 1200, 1600);
 
-                  ctx.fillStyle = '#6EE7B7';
-                  ctx.font = 'bold 26px sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.fillText('✨ RESERVA ONLINE EN 30 SEGUNDOS', 600, 175);
+                        // 2. Borde exterior esmeralda / neón
+                        ctx.strokeStyle = '#10B981';
+                        ctx.lineWidth = 16;
+                        ctx.strokeRect(40, 40, 1120, 1520);
 
-                  // 4. Nombre del Salón
-                  ctx.fillStyle = '#FFFFFF';
-                  ctx.font = '900 68px sans-serif';
-                  ctx.fillText(salonName || 'Mi Salón de Belleza', 600, 290);
+                        // 3. Badge superior: "RESERVA ONLINE EN 30 SEGUNDOS"
+                        ctx.fillStyle = '#064E3B';
+                        ctx.beginPath();
+                        ctx.roundRect(300, 130, 600, 70, 35);
+                        ctx.fill();
+                        ctx.strokeStyle = '#34D399';
+                        ctx.lineWidth = 4;
+                        ctx.stroke();
 
-                  // 5. Subtítulo instructivo
-                  ctx.fillStyle = '#94A3B8';
-                  ctx.font = '500 34px sans-serif';
-                  ctx.fillText('Escanea este código con la cámara de tu celular', 600, 360);
+                        ctx.fillStyle = '#6EE7B7';
+                        ctx.font = 'bold 26px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('✨ RESERVA ONLINE EN 30 SEGUNDOS', 600, 175);
 
-                  // 6. Cargar y dibujar el Código QR en alta definición
-                  const qrImg = new Image();
-                  qrImg.crossOrigin = 'anonymous';
-                  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(
-                    window.location.origin ? `${window.location.origin}/reservas` : 'https://belleza2027.netlify.app/reservas'
-                  )}&color=0e121b&bgcolor=ffffff&margin=2`;
+                        // 4. Nombre del Salón
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.font = '900 68px sans-serif';
+                        ctx.fillText(salonName || 'Mi Salón de Belleza', 600, 290);
 
-                  qrImg.onload = () => {
-                    // Marco blanco con sombra para el QR
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.beginPath();
-                    ctx.roundRect(250, 440, 700, 700, 40);
-                    ctx.fill();
+                        // 5. Subtítulo instructivo
+                        ctx.fillStyle = '#94A3B8';
+                        ctx.font = '500 34px sans-serif';
+                        ctx.fillText('Escanea este código con la cámara de tu celular', 600, 360);
 
-                    // Dibujar imagen del QR
-                    ctx.drawImage(qrImg, 270, 460, 660, 660);
+                        // 6. Cargar y dibujar el Código QR en alta definición
+                        const qrImg = new Image();
+                        qrImg.crossOrigin = 'anonymous';
+                        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=${encodeURIComponent(bookingUrl)}&color=0e121b&bgcolor=ffffff&margin=2`;
 
-                    // 7. Pie de Afiche / Beneficios
-                    ctx.fillStyle = '#F59E0B';
-                    ctx.font = 'bold 36px sans-serif';
-                    ctx.fillText('⭐ Agenda en el horario que prefieras', 600, 1240);
+                        qrImg.onload = () => {
+                          // Marco blanco con sombra para el QR
+                          ctx.fillStyle = '#FFFFFF';
+                          ctx.beginPath();
+                          ctx.roundRect(250, 440, 700, 700, 40);
+                          ctx.fill();
 
-                    ctx.fillStyle = '#E2E8F0';
-                    ctx.font = 'bold 32px sans-serif';
-                    ctx.fillText('⚡ Sin filas, sin llamadas, confirmación directa a tu WhatsApp', 600, 1310);
+                          // Dibujar imagen del QR
+                          ctx.drawImage(qrImg, 270, 460, 660, 660);
 
-                    // Línea decorativa
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(200, 1380);
-                    ctx.lineTo(1000, 1380);
-                    ctx.stroke();
+                          // 7. Pie de Afiche / Beneficios
+                          ctx.fillStyle = '#F59E0B';
+                          ctx.font = 'bold 36px sans-serif';
+                          ctx.fillText('⭐ Agenda en el horario que prefieras', 600, 1240);
 
-                    // Crédito inferior
-                    ctx.fillStyle = '#64748B';
-                    ctx.font = '500 24px sans-serif';
-                    ctx.fillText('Tecnología Kowy.app • Sistema Oficial de Reservas', 600, 1440);
+                          ctx.fillStyle = '#E2E8F0';
+                          ctx.font = 'bold 32px sans-serif';
+                          ctx.fillText('⚡ Sin filas, sin llamadas, confirmación directa a tu WhatsApp', 600, 1310);
 
-                    // Descargar automáticamente la imagen
-                    const link = document.createElement('a');
-                    link.download = `Afiche_QR_Reservas_${salonName.replace(/\s+/g, '_')}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                  };
+                          // Línea decorativa
+                          ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                          ctx.lineWidth = 2;
+                          ctx.beginPath();
+                          ctx.moveTo(200, 1380);
+                          ctx.lineTo(1000, 1380);
+                          ctx.stroke();
 
-                  qrImg.src = qrUrl;
-                }}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-500/20 cursor-pointer transition-all hover:scale-[1.02]"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar Afiche Completo HD</span>
-              </button>
+                          // Crédito inferior
+                          ctx.fillStyle = '#64748B';
+                          ctx.font = '500 24px sans-serif';
+                          ctx.fillText('Tecnología Kowy.app • Sistema Oficial de Reservas', 600, 1440);
 
-              <button
-                type="button"
-                onClick={() => {
-                  const url = window.location.origin ? `${window.location.origin}/reservas` : 'https://belleza2027.netlify.app/reservas';
-                  navigator.clipboard.writeText(url);
-                  alert('¡Enlace de reservas copiado al portapapeles! 📋');
-                }}
-                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs border border-white/10 transition-all cursor-pointer"
-              >
-                <Share2 className="w-4 h-4 text-emerald-400" />
-                <span>Copiar Enlace Directo</span>
-              </button>
-            </div>
+                          // Descargar automáticamente la imagen
+                          const link = document.createElement('a');
+                          link.download = `Afiche_QR_Reservas_${salonName.replace(/\s+/g, '_')}.png`;
+                          link.href = canvas.toDataURL('image/png');
+                          link.click();
+                        };
+
+                        qrImg.src = qrUrl;
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-500/20 cursor-pointer transition-all hover:scale-[1.02]"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Descargar Afiche Completo HD</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(bookingUrl);
+                        alert(`¡Enlace de reservas copiado al portapapeles! 📋\n${bookingUrl}`);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs border border-white/10 transition-all cursor-pointer"
+                    >
+                      <Share2 className="w-4 h-4 text-emerald-400" />
+                      <span>Copiar Enlace Directo</span>
+                    </button>
+                  </div>
+                </>
+              );
+            })()}
 
           </div>
         </div>
