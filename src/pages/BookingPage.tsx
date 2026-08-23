@@ -453,10 +453,27 @@ export const BookingPage: React.FC = () => {
             </div>
 
             {services.length === 0 ? (
-              <div className="text-center py-10 text-slate-400 bg-white/[0.02] border border-white/5 rounded-xl">
-                <Scissors className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#FF5A36]" />
-                <p className="text-sm font-semibold text-white">No hay servicios disponibles en este momento.</p>
-                <p className="text-xs text-slate-400 mt-1">Por favor comunícate directamente con el salón.</p>
+              <div className="text-center py-12 px-4 bg-white/[0.02] border border-white/10 rounded-3xl space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                  <Scissors className="w-7 h-7" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-extrabold text-white">Catálogo de Servicios en Preparación</h3>
+                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                    {salonName} está actualizando su lista de servicios y tarifas. Mientras tanto, puedes solicitar tu cita directamente por WhatsApp.
+                  </p>
+                </div>
+                {salonPhone && (
+                  <a
+                    href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${salonName}! Deseo consultar la disponibilidad de citas y servicios.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black px-5 py-3 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all hover:scale-[1.02]"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Contactar por WhatsApp al Salón</span>
+                  </a>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-2.5">
@@ -511,19 +528,22 @@ export const BookingPage: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-4 flex justify-between items-center border-t border-white/10">
-              <div className="text-xs text-slate-400">
-                Total: <strong className="text-white text-sm font-black">{formatCurrency(totalRawPrice, salonCurrency)}</strong> ({totalDuration} min)
+            {services.length > 0 && (
+              <div className="pt-4 flex justify-between items-center border-t border-white/10">
+                <div className="text-xs text-slate-400">
+                  Total: <strong className="text-white text-sm font-black">{formatCurrency(totalRawPrice, salonCurrency)}</strong> ({totalDuration} min)
+                </div>
+                <button
+                  type="button"
+                  disabled={selectedServices.length === 0}
+                  onClick={() => setStep(2)}
+                  className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>Continuar a Especialista</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer"
-              >
-                <span>Continuar a Especialista</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            )}
           </div>
         )}
 
