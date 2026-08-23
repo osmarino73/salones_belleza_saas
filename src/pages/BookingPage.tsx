@@ -139,74 +139,132 @@ export const BookingPage: React.FC = () => {
 
   useEffect(() => {
     async function loadBookingData() {
-      let targetTenantId: string | undefined = undefined;
-      const activeTenantRaw = localStorage.getItem('bf_tenant_active');
-      if (activeTenantRaw) {
-        try {
-          const tenant = JSON.parse(activeTenantRaw);
-          if (tenant.name) setSalonName(tenant.name);
-          if (tenant.phone) setSalonPhone(tenant.phone);
-          if (tenant.address) setSalonAddress(tenant.address);
-          if (tenant.currency) setSalonCurrency(tenant.currency);
-          if (tenant.id) targetTenantId = tenant.id;
-        } catch (e) {}
-      }
+      let resolvedTenant: any = null;
+      let tid: string | undefined = undefined;
+
+      // 1. Si viene un slug en la URL (/reservar/:salonSlug)
       if (salonSlug) {
         try {
-          const prospectSite = await api.getProspectSiteBySlug(salonSlug);
-          if (prospectSite) {
-            if (prospectSite.business_name) setSalonName(prospectSite.business_name);
-            if (prospectSite.phone_whatsapp) setSalonPhone(prospectSite.phone_whatsapp);
-            setSalonCurrency('COP');
-            if (prospectSite.business_data?.servicios && prospectSite.business_data.servicios.length > 0) {
-              const mappedSrvs: Service[] = prospectSite.business_data.servicios.map((s: any, idx: number) => ({
-                id: `ps-srv-${idx + 1}`,
-                tenant_id: prospectSite.id,
-                name: s.titulo,
-                category: 'corte',
-                duration_minutes: s.duracion_minutos || 60,
-                price: s.precio_cop || 65000,
-                price_cop: s.precio_cop || 65000,
-                price_usd: s.precio_cop || 65000,
-                requires_patch_test: false,
-                description: s.descripcion || `${s.titulo} profesional`
-              }));
-              setServices(mappedSrvs);
-              setSelectedServices([mappedSrvs[0]]);
+          // A. Buscar tenant oficial en base de datos por slug
+          resolvedTenant = await api.getTenantBySlug(salonSlug);
+
+          // B. Si no se encuentra como tenant directo, buscar en prospect_sites
+          if (!resolvedTenant) {
+            const prospectSite = await api.getProspectSiteBySlug(salonSlug);
+            if (prospectSite) {
+              if (prospectSite.claimed_tenant_id) {
+                const claimed = await api.getTenantBySlug(prospectSite.slug);
+                if (claimed) resolvedTenant = claimed;
+              }
+              if (!resolvedTenant) {
+                resolvedTenant = {
+                  id: prospectSite.id,
+                  name: prospectSite.business_name,
+                  phone: prospectSite.phone_whatsapp,
+                  address: prospectSite.address,
+                  currency: 'COP',
+                  prospectData: prospectSite.business_data
+                };
+              }
             }
-            if (prospectSite.business_data?.especialistas && prospectSite.business_data.especialistas.length > 0) {
-              const mappedStys: Stylist[] = prospectSite.business_data.especialistas.map((esp: any, idx: number) => ({
-                id: `ps-sty-${idx + 1}`,
-                tenant_id: prospectSite.id,
-                name: esp.nombre,
-                specialty: esp.rol || 'Stylist',
-                photo_url: '',
-                rating: 5.0,
-                reviews_count: 15 + idx * 5,
-                commission_service_pct: 45,
-                commission_retail_pct: 10,
-                working_days: [1, 2, 3, 4, 5, 6],
-                attends_clients: true,
-                is_active: true
-              }));
-              setStylists(mappedStys);
-              setSelectedStylist(mappedStys[0]);
-            }
-            return;
           }
         } catch (err) {}
       }
-      try {
-        const tid = targetTenantId || getActiveTenantId();
-        const [srvList, styList, aptList] = await Promise.all([
-          api.getServices(tid),
-          api.getStylists(tid),
-          api.getAppointments(tid)
-        ]);
-        if (srvList.length > 0) { setServices(srvList); setSelectedServices([srvList[0]]); }
-        if (styList.length > 0) { setStylists(styList); setSelectedStylist(styList[0]); }
-        if (aptList.length > 0) { setExistingAppointments(aptList); }
-      } catch (err) {}
+
+      // 2. Fallback a tenant activo en sesión solo si no había slug en la URL
+      if (!resolvedTenant && !salonSlug) {
+        const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+        if (activeTenantRaw) {
+          try {
+            resolvedTenant = JSON.parse(activeTenantRaw);
+          } catch (e) {}
+        }
+      }
+
+      // 3. Aplicar datos del negocio encontrado
+      if (resolvedTenant) {
+        tid = resolvedTenant.id;
+        if (resolvedTenant.name) setSalonName(resolvedTenant.name);
+        if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
+        if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
+        if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
+
+        // Si es un prospecto con servicios estructurados
+        if (resolvedTenant.prospectData?.servicios && resolvedTenant.prospectData.servicios.length > 0) {
+          const mappedSrvs: Service[] = resolvedTenant.prospectData.servicios.map((s: any, idx: number) => {
+            const srvName = s.nombre || s.titulo || 'Servicio Profesional';
+            return {
+              id: `ps-srv-${idx + 1}`,
+              tenant_id: tid || 'prospect',
+              name: srvName,
+              category: s.categoria || 'Servicio',
+              duration_minutes: Number(s.duracion_minutos || 60),
+              price: Number(s.precio_cop || s.precio || 0),
+              price_cop: Number(s.precio_cop || s.precio || 0),
+              price_usd: Number(s.precio_cop || s.precio || 0),
+              requires_patch_test: false,
+              description: s.descripcion || `Tratamiento de ${srvName}`
+            };
+          });
+          setServices(mappedSrvs);
+          if (mappedSrvs.length > 0) setSelectedServices([mappedSrvs[0]]);
+        }
+
+        if (resolvedTenant.prospectData?.especialistas && resolvedTenant.prospectData.especialistas.length > 0) {
+          const mappedStys: Stylist[] = resolvedTenant.prospectData.especialistas.map((esp: any, idx: number) => ({
+            id: `ps-sty-${idx + 1}`,
+            tenant_id: tid || 'prospect',
+            name: esp.nombre || 'Especialista',
+            specialty: esp.rol || esp.especialidad || 'Master Stylist',
+            photo_url: esp.foto || esp.photo_url || '',
+            rating: 5.0,
+            reviews_count: 20 + idx * 5,
+            commission_service_pct: 45,
+            commission_retail_pct: 10,
+            working_days: [1, 2, 3, 4, 5, 6],
+            attends_clients: true,
+            is_active: true
+          }));
+          setStylists(mappedStys);
+          if (mappedStys.length > 0) setSelectedStylist(mappedStys[0]);
+        }
+      }
+
+      // 4. Si el tenant tiene servicios y estilistas registrados en la BD, cargarlos exclusivamente para su tenant_id
+      if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
+        try {
+          const [srvList, styList, aptList] = await Promise.all([
+            api.getServices(tid),
+            api.getStylists(tid),
+            api.getAppointments(tid)
+          ]);
+          if (srvList && srvList.length > 0) {
+            setServices(srvList);
+            setSelectedServices([srvList[0]]);
+          } else if (!resolvedTenant?.prospectData?.servicios) {
+            setServices([]);
+            setSelectedServices([]);
+          }
+
+          if (styList && styList.length > 0) {
+            setStylists(styList);
+            setSelectedStylist(styList[0]);
+          } else if (!resolvedTenant?.prospectData?.especialistas) {
+            setStylists([]);
+            setSelectedStylist(null);
+          }
+
+          if (aptList && aptList.length > 0) {
+            setExistingAppointments(aptList);
+          }
+        } catch (err) {}
+      } else if (!resolvedTenant) {
+        // Si no existe el negocio, dejar listas vacías sin cargar datos demo
+        setServices([]);
+        setSelectedServices([]);
+        setStylists([]);
+        setSelectedStylist(null);
+      }
     }
     loadBookingData();
   }, [salonSlug]);
