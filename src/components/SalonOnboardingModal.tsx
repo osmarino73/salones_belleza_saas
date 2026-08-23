@@ -58,8 +58,8 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
   salonCurrency: initialCurrency = 'COP',
   onComplete
 }) => {
-  // Pasos: 1. Negocio, 2. Servicios, 3. Colaboradores, 4. WhatsApp (Opcional)
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  // Pasos: 1. Negocio, 2. Servicios, 3. Colaboradores & Finalizar
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Paso 1: Configuración de Negocio
@@ -429,23 +429,21 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[#FF5A36] bg-[#FF5A36]/10 px-2.5 py-0.5 rounded-full border border-[#FF5A36]/20">
-                    Setup Inicial Guiado • BeautyFlow AI
+                    Setup Inicial Guiado • Kowy.app
                   </span>
                   <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Paso {currentStep} de 4 ({currentStep === 1 ? '25%' : currentStep === 2 ? '50%' : currentStep === 3 ? '75%' : '100%'})
+                    Paso {currentStep} de 3 ({currentStep === 1 ? '33%' : currentStep === 2 ? '66%' : '100%'})
                   </span>
                 </div>
                 <h2 className="text-xl font-black text-white tracking-tight mt-0.5">
                   {currentStep === 1 && '🏢 Identidad & Ubicación de tu Salón'}
                   {currentStep === 2 && '✂️ Tu Catálogo de Servicios & Precios'}
-                  {currentStep === 3 && '👥 Tu Equipo de Colaboradoras & Comisiones'}
-                  {currentStep === 4 && '🤖 Asistente de WhatsApp IA & Finalización'}
+                  {currentStep === 3 && '👥 Tu Equipo de Colaboradores & Finalizar'}
                 </h2>
                 <p className="text-xs text-slate-400">
                   {currentStep === 1 && 'Personaliza el nombre, contacto y horarios que verán tus clientas en tu página web.'}
                   {currentStep === 2 && 'Agrega los tratamientos que ofreces para que tus clientas puedan reservar solas.'}
-                  {currentStep === 3 && 'Registra a tus colaboradoras para organizar sus agendas y liquidar comisiones en automático.'}
-                  {currentStep === 4 && 'Revisa el resumen de tu plataforma y activa tu agendador interactivo.'}
+                  {currentStep === 3 && 'Registra a tus colaboradoras para organizar sus agendas y habilitar tu sistema.'}
                 </p>
               </div>
             </div>
@@ -464,17 +462,16 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div 
               className="bg-gradient-to-r from-amber-500 via-[#FF5A36] to-pink-500 h-full rounded-full transition-all duration-500 shadow-sm shadow-[#FF5A36]/50"
-              style={{ width: `${(currentStep / 4) * 100}%` }}
+              style={{ width: `${(currentStep / 3) * 100}%` }}
             />
           </div>
 
-          {/* Stepper Wizard Bar Prémium */}
-          <div className="grid grid-cols-4 gap-2 pt-1">
+          {/* Stepper Wizard Bar Prémium (3 Pasos) */}
+          <div className="grid grid-cols-3 gap-2 pt-1">
             {[
               { num: 1, title: 'Tu Salón', icon: '🏢' },
               { num: 2, title: 'Servicios', icon: '✂️' },
-              { num: 3, title: 'Equipo', icon: '👥' },
-              { num: 4, title: 'Listo & IA', icon: '🚀' }
+              { num: 3, title: 'Equipo & Guardar', icon: '👥' }
             ].map((stepItem) => (
               <div
                 key={stepItem.num}
@@ -1010,138 +1007,29 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
               </div>
             </div>
 
-            {/* Botones de Navegación */}
-            <div className="pt-3 flex justify-between">
+            {/* Botones de Navegación y Finalización en Paso 3 */}
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setCurrentStep(2)}
-                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <ChevronLeft className="w-4 h-4" /> Anterior
               </button>
 
               <button
                 type="button"
-                onClick={() => setCurrentStep(4)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all hover:scale-[1.01]"
+                disabled={isSubmitting}
+                onClick={() => handleSaveAndFinish(true)}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-[#FF5A36] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
               >
-                <span>Siguiente: WhatsApp IA (Opcional)</span>
-                <ChevronRight className="w-4 h-4" />
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
+                <span>{isSubmitting ? 'Guardando Plataforma...' : '✨ Finalizar y Abrir Mi Dashboard'}</span>
               </button>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            PASO 4: CONEXIÓN WHATSAPP IA & FINALIZACIÓN
-            ========================================================================= */}
-        {currentStep === 4 && (
-          <div className="space-y-5 animate-in fade-in duration-200">
-            {/* Tarjeta Didáctica */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/20 flex items-start gap-3 text-xs text-slate-300">
-              <Sparkles className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <strong className="text-emerald-300 block font-bold mb-0.5">🎉 ¡Todo listo para comenzar a operar!</strong>
-                <span>Hemos organizado tu catálogo y tu equipo. Opcionalmente puedes asignarle un nombre a tu asistente virtual de WhatsApp para recordatorios automáticos.</span>
-              </div>
-            </div>
-
-            {/* Resumen Visual del Salón Configurado */}
-            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-3">
-              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
-                📋 Resumen de tu Plataforma Lista:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] block">🏢 Salón Configurado</span>
-                  <strong className="text-white font-bold block truncate">{salonName}</strong>
-                  <span className="text-[10px] text-emerald-400 font-semibold">{salonCity} ({currency})</span>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] block">✂️ Menú de Servicios</span>
-                  <strong className="text-white font-bold block">{servicesList.length} Tratamientos</strong>
-                  <span className="text-[10px] text-cyan-300 font-semibold">Listos con fotos y precios</span>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-0.5">
-                  <span className="text-slate-400 text-[10px] block">👥 Equipo de Trabajo</span>
-                  <strong className="text-white font-bold block">{stylistsList.length + 1} Profesionales</strong>
-                  <span className="text-[10px] text-purple-300 font-semibold">Con agendas y comisiones</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Configuración Opcional del Asistente */}
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-              <span className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
-                <span>🤖 Asistente Virtual de WhatsApp (Opcional)</span>
-                <span className="text-[10px] text-slate-400">Puedes configurarlo ahora o después</span>
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>WhatsApp del Negocio</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={waPhoneNumber}
-                    onChange={(e) => setWaPhoneNumber(e.target.value)}
-                    placeholder="+57 300 123 4567"
-                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 mb-1.5">
-                    Nombre del Asistente Virtual
-                  </label>
-                  <input
-                    type="text"
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                    placeholder="Flowy"
-                    className="w-full bg-[#121624] border border-white/15 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-400 text-xs font-semibold"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Opciones de Acción */}
-            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(3)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" /> Anterior
-              </button>
-
-              <div className="w-full sm:w-auto flex items-center gap-2">
-                {/* Botón Omitir */}
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => handleSaveAndFinish(true)}
-                  className="flex-1 sm:flex-initial px-4 py-3 rounded-xl border border-white/15 hover:border-white/30 bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
-                >
-                  Omitir IA y Finalizar
-                </button>
-
-                {/* Botón Guardar con WhatsApp */}
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => handleSaveAndFinish(false)}
-                  className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-[#FF5A36] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4" />
-                  )}
-                  <span>{isSubmitting ? 'Guardando Plataforma...' : '✨ Abrir Mi Dashboard'}</span>
-                </button>
-              </div>
             </div>
           </div>
         )}

@@ -316,10 +316,17 @@ export const DashboardPage: React.FC = () => {
       if (authUserRaw) {
         try {
           const authUser = JSON.parse(authUserRaw);
-          if (authUser.user_metadata?.name) setOwnerName(authUser.user_metadata.name);
+          if (authUser.user_metadata?.name && !authUser.user_metadata.name.includes('@')) {
+            setOwnerName(authUser.user_metadata.name);
+          }
           if (authUser.email) {
             setOwnerEmail(authUser.email);
             currentEmail = authUser.email;
+            if (!ownerName) {
+              const cleanPrefix = authUser.email.split('@')[0].replace(/[._-]/g, ' ');
+              const formattedName = cleanPrefix.charAt(0).toUpperCase() + cleanPrefix.slice(1);
+              setOwnerName(formattedName);
+            }
           }
         } catch (e) {}
       }
@@ -331,7 +338,15 @@ export const DashboardPage: React.FC = () => {
           if (tenantFromEmail) {
             targetTenantId = tenantFromEmail.id;
             setActiveTenantObj(tenantFromEmail);
-            if (tenantFromEmail.name) setSalonName(tenantFromEmail.name);
+            if (tenantFromEmail.name) {
+              setSalonName(tenantFromEmail.name);
+              // Si el usuario no tiene nombre configurado, usar el nombre del salón o dueña
+              if (tenantFromEmail.owner_name) {
+                setOwnerName(tenantFromEmail.owner_name);
+              } else if (!ownerName || ownerName.toLowerCase() === 'owner') {
+                setOwnerName(tenantFromEmail.name);
+              }
+            }
             if (tenantFromEmail.phone) setSalonPhone(tenantFromEmail.phone);
             if (tenantFromEmail.address) setSalonAddress(tenantFromEmail.address.replace(/^,\s*/, '').trim());
             if (tenantFromEmail.currency) setSalonCurrency(tenantFromEmail.currency);
