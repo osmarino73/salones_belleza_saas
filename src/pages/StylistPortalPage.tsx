@@ -176,8 +176,8 @@ export const StylistPortalPage: React.FC = () => {
   };
 
   // Commission Calculations (100% reales basadas en las citas efectivamente COBRADAS)
-  const serviceCommissionPct = Number(currentStylist.commission_service_pct || 45);
-  const retailCommissionPct = Number(currentStylist.commission_retail_pct || 10);
+  const serviceCommissionPct = Number(currentStylist.commission_service_pct ?? 45);
+  const retailCommissionPct = Number(currentStylist.commission_retail_pct ?? 10);
 
   // Citas efectivamente cobradas en caja hoy
   const todayStr = new Date().toISOString().split('T')[0];

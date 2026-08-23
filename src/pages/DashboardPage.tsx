@@ -599,8 +599,8 @@ export const DashboardPage: React.FC = () => {
       is_owner: sty.is_owner || sty.role === 'admin' || false,
       attends_clients: sty.attends_clients !== false,
       show_on_web: sty.show_on_web !== false,
-      commission_service_pct: sty.commission_service_pct || 45,
-      commission_retail_pct: sty.commission_retail_pct || 10,
+      commission_service_pct: sty.commission_service_pct ?? 45,
+      commission_retail_pct: sty.commission_retail_pct ?? 10,
       service_categories: sty.service_categories || ['color', 'corte'],
       service_ids: sty.service_ids || []
     });
@@ -3239,13 +3239,13 @@ export const DashboardPage: React.FC = () => {
                             theme === 'dark' ? 'bg-[#1A2133] border-white/5' : 'bg-[#F9FAFC] border-black/5'
                           }`}>
                             <span className="text-[10px] text-slate-400 block">Comisión Servicios</span>
-                            <strong className="text-sm font-bold text-[#FF5A36]">{sty.commission_service_pct || 45}%</strong>
+                            <strong className="text-sm font-bold text-[#FF5A36]">{sty.commission_service_pct ?? 45}%</strong>
                           </div>
                           <div className={`p-2.5 rounded-xl border ${
                             theme === 'dark' ? 'bg-[#1A2133] border-white/5' : 'bg-[#F9FAFC] border-black/5'
                           }`}>
                             <span className="text-[10px] text-slate-400 block">Comisión Retail</span>
-                            <strong className="text-sm font-bold text-emerald-500">{sty.commission_retail_pct || 10}%</strong>
+                            <strong className="text-sm font-bold text-emerald-500">{sty.commission_retail_pct ?? 10}%</strong>
                           </div>
                         </div>
 

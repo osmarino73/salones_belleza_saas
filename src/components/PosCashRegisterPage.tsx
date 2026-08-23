@@ -529,8 +529,8 @@ export const PosCashRegisterPage: React.FC<PosCashRegisterPageProps> = ({
 
     const defaultStylist = stylists[0] || { name: ownerName, commission_service_pct: 50, commission_retail_pct: 10 };
     const commPct = type === 'service' 
-      ? (defaultStylist.commission_service_pct || 50) 
-      : (defaultStylist.commission_retail_pct || 10);
+      ? (defaultStylist.commission_service_pct ?? 50) 
+      : (defaultStylist.commission_retail_pct ?? 10);
 
     const price = type === 'service' 
       ? ((item as Service).price_usd || 45000) 
