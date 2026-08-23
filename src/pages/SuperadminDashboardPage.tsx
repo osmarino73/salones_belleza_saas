@@ -609,9 +609,11 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
           ===================================================================== */}
       <header className="sticky top-0 z-50 bg-[#0E121B]/95 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-[#FF5A36] to-pink-500 flex items-center justify-center text-white shadow-lg shadow-[#FF5A36]/30">
-            <Crown className="w-5 h-5" />
-          </div>
+          <img
+            src="/kowy-logo.jpg"
+            alt="Kowy Logo"
+            className="w-10 h-10 rounded-2xl shadow-lg shadow-[#FF5A36]/30 border border-white/15 object-cover"
+          />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base font-black tracking-tight text-white">Kowy<span className="text-[#FF5A36]">.app</span></h1>

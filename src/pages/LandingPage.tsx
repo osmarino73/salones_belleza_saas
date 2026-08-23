@@ -58,10 +58,12 @@ export const LandingPage: React.FC = () => {
       {/* Main Navbar */}
       <header className="sticky top-0 z-50 bg-dark-800/95 backdrop-blur-md border-b border-white/10 py-3.5">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2 text-xl font-extrabold text-white">
-            <div className="w-8 h-8 bg-gradient-to-tr from-[#FF5A36] to-pink-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-orange-500/40">
-              <Scissors className="w-4 h-4" />
-            </div>
+          <Link to="/" className="flex items-center gap-2.5 text-xl font-black text-white">
+            <img
+              src="/kowy-logo.jpg"
+              alt="Kowy Logo"
+              className="w-9 h-9 rounded-xl shadow-lg shadow-[#FF5A36]/30 border border-white/15 object-cover"
+            />
             <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
@@ -397,8 +399,12 @@ export const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-black/90 border-t border-white/10 py-10 text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2 text-white font-extrabold text-base">
-            <Scissors className="w-4 h-4 text-[#FF5A36]" />
+          <div className="flex items-center gap-2.5 text-white font-black text-base">
+            <img
+              src="/kowy-logo.jpg"
+              alt="Kowy Logo"
+              className="w-6 h-6 rounded-lg object-cover"
+            />
             <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </div>
           <div>© 2026 Kowy.app • La Plataforma Todo-en-Uno para Salones, Barberías y Spas</div>
