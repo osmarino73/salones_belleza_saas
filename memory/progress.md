@@ -1,3 +1,28 @@
+- [x] **Rebranding Integral a Kowy (`kowy.app`) & Favicon / Logo Oficial**:
+  - Actualización de toda la plataforma a la marca Kowy y dominio `kowy.app`.
+  - Isotipo 3D 'K' en coral-neón a magenta con destello de IA sobre fondo obsidiana `#090B10`, sin marcos blancos.
+
+- [x] **Renovación de Landing Page B2B con Planes en COP & Oferta de Activación**:
+  - Escalera oficial de 6 planes: $0 Gratuito, $50k Inicio, $120k Crecimiento (Regalo Mes 1), $240k Pro Flow IA, $720k Escala, $1.44M VIP.
+  - Anclaje de alto valor ($680.000 COP regular ➔ $50.000 COP activación única por Nequi/Daviplata con 30 días de Crecimiento).
+
+- [x] **Generador de QR Dinámico por Slug & Afiche HD Imprimible**:
+  - QR vinculado a `https://kowy.app/reservar/:slug` y botón para copiar enlace directo.
+  - Afiche Canvas HD (1200x1600 px) con diseño de acrílico y créditos de `Tecnología Kowy.app`.
+
+- [x] **Rediseño Minimalista del Aviso de Configuración Inicial**:
+  - Pill banner sobrio con contraste óptimo en modo claro y oscuro, indicadores limpios y botones compactos.
+
+- [x] **Aislamiento Multi-Tenant & Onboarding en 3 Pasos**:
+  - Eliminación de fallbacks cruzados (`prospects[0]`) y corrección de horario `[object Object]`.
+  - Onboarding simplificado a 3 pasos (1. Tu Salón, 2. Servicios, 3. Equipo y Finalizar).
+  - Resolución inteligente del nombre real de la dueña o del salón en el saludo.
+
+- [x] **Protección en Agendador sin Servicios**:
+  - Bloqueo del botón de continuar si no hay servicios seleccionados.
+  - Tarjeta *"Catálogo en Preparación"* con botón directo a WhatsApp si el catálogo está vacío.
+  - Eliminación de servicios ficticios y especialistas demo en negocios de clientes reales.
+
 - [x] **Gestión y Control de 6 Planes SaaS en Base de Datos & Superadmin ([`update_tenant_plans_and_subscriptions.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/update_tenant_plans_and_subscriptions.sql), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - **Script SQL de Migración**: Columnas en `public.tenants` (`plan_tier`, `subscription_status`, `trial_started_at`, `trial_ends_at`, `subscription_price_cop`, `max_stylists`, `has_pos_access`, `has_ai_whatsapp`, `has_omnichannel`, `has_meta_ads`).
   - **Tipos TypeScript**: Definición de `PlanTier` (`'free' | 'inicio' | 'crecimiento' | 'pro_ia' | 'escala' | 'agencia'`) y `PlanFeatureConfig`.

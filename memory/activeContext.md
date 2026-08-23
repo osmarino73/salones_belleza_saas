@@ -1,8 +1,8 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
+- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles por Slug, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal, Biblioteca Multimedia CDN WebP y Onboarding Guiado en 3 Pasos.
 - **Marca y Dominio Oficial**: **`Kowy`** (`kowy.app`)
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
-- **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
+- **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservar/:slug](https://belleza2027.netlify.app/reservar/:slug)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
 
 ## 🎯 Foco para la Próxima Sesión & Roadmap Futuro
@@ -13,48 +13,45 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
-- **Landing Page B2B Kowy ([`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
-  - **Escalera de Valor Oficial en COP**: Presenta los 4 planes principales (**$0 Gratuito de por vida**, **$50.000 Plan Inicio**, **$120.000 Plan Crecimiento ⭐ Regalo Mes 1**, **$240.000 Plan Pro Flow IA**) más acceso a los planes superiores **Escala ($720k)** y **Agencia VIP ($1.44M)**.
-  - **Oferta de Activación de Alto Impacto (Anclaje $680.000 ➔ $50.000 COP)**: Formulario de captura que ofrece la web personalizada lista en 48 horas con el Plan Crecimiento de regalo durante los primeros 30 días.
-  - **Logo Oficial de Kowy sin Marco**: Icono en alta definición integrado en la barra de navegación y pie de página.
-- **Kit de Código QR Imprimible para Reservas en el Salón ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
-  - **Generador de QR Dinámico por Salón**: Botón *"📲 Mi Código QR de Reservas"* en la cabecera del Dashboard que abre una ventana con diseño de acrílico premium listo para colocar en recepción, espejos o puerta del local.
-  - **Descarga de Imagen PNG en Alta Resolución (1000x1000 px)**: Permite descargar el código en 1 clic para imprimir afiches o tarjetas de presentación.
-  - **Copia de Enlace Directo**: Botón para copiar la URL de agendamiento (`/reservas`) y compartirla en historias de Instagram o estados de WhatsApp.
-- **Página de Reservas de Alta Conversión & Multi-Servicio ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
-  - **Bloqueo Inteligente de Horarios Ocupados (Anti-Colisiones)**: Consulta las citas activas del salón y bloquea visualmente los turnos (`🔒 Ocupado`, tachado y deshabilitado) tanto si el cliente escoge un especialista específico como si todos los capacitados están ocupados a esa misma hora, calculando con exactitud la duración del tratamiento.
-  - **Bloqueo de Horarios Pasados en Tiempo Real**: Si el cliente reserva para "Hoy", los turnos anteriores a la hora actual se inhabilitan automáticamente.
-  - **Carrusel Táctil de 14 Días**: Selector horizontal dinámico con tarjetas para tocar en 1 toque (*Hoy*, *Mañana*, *Días de la semana*) más buscador de fechas alternativo.
-  - **WhatsApp Prioritario en Paso 4**: El campo de WhatsApp se ubica de primero para reconocimiento inmediato del cliente, seguido de Nombre y Correo Electrónico opcional para copia digital de la cita.
-  - **Carrito Multi-Servicio & Upselling**: Permite seleccionar y combinar múltiples servicios en la misma cita con cálculo automático de duración acumulada y total en COP.
-  - **Segmentación Visual de Horarios**: Filtros por turnos (*Todos*, *☀️ Mañana*, *🌤️ Tarde*, *🌙 Noche*) para seleccionar horas rápidamente.
-  - **Cupones de Descuento & Promociones**: Soporte interactivo para códigos promocionales (ej. `BEAUTY10`, `VIP20`) con recálculo dinámico.
-  - **Integración con Google Calendar & Recordatorios**: Botón directo en el comprobante para agendar automáticamente la cita con alertas en el calendario de Google / Celular.
-  - **Sticky Footer Móvil**: Barra flotante inferior para continuar fluidamente entre pasos en pantallas pequeñas.
-  - **Auto-Completado de Clientes**: Recuerda nombre, WhatsApp y correo para agilizar reservas recurrentes.
-- **Comprobante Digital & Notificación por WhatsApp en Agendador Online ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
-  - **Tarjeta Voucher en Pantalla Final**: Al completar la reserva, la clienta ve un comprobante moderno con nombre, teléfono, servicios, especialista, fecha, hora y precio.
-  - **Botón de Envío Inmediato**: Enlace directo a WhatsApp formateado con emojis y todos los datos listos para notificar al salón y guardar la cita en el chat de la clienta.
-- **Normalización Universal de Imágenes 1:1 en Sitios Web ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`landing-html-injector`])**:
-  - **Relación de Aspecto Uniforme**: Todas las tarjetas de servicios y galerías inyectadas ahora aplican forzosamente `aspect-ratio: 1 / 1; object-fit: cover; border-radius: 14px;`, eliminando discrepancias de altura entre fotos verticales y horizontales.
-  - **Catálogo Ampliado de Barbería & Barba ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts))**: 10 nuevas fotos de alta resolución para afeitados tradicionales con toalla caliente, mid fade, skin fade, perfilado de barba con navaja, cortes infantiles y hair tattoo.
-- **Módulo de Mi Plan & Suscripción en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
-  - **Badge de Plan Dinámico en Menú de Perfil**: Muestra el nivel actual del salón (ej. *📈 Crecimiento ($120k)*) con sus colores y estilos de acuerdo a `plan_tier`.
-  - **Ventana Modal de Suscripción**: Botón *"👑 Mi Plan & Suscripción (30 Días)"* que despliega el estado de la cuenta, días restantes para renovación, resumen de la escalera de valor de 6 planes en $ COP y botón de contacto directo por WhatsApp para upgrades.
-- **Configuración del Negocio & Horarios en el Dashboard ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
-  - **Modal Dedicado en Menú de Perfil**: Al pulsar sobre el avatar del administrador ➔ *"🏢 Configuración del Negocio"*, se abre una ventana para editar en cualquier momento el **Nombre Comercial**, **WhatsApp Oficial**, **Moneda**, **Dirección Física** y los **Horarios de Atención Semanales** con botones de presets rápidos (*Estándar*, *Todos los días*).
-  - **Persistencia en Supabase & LocalStorage**: Creado método `api.updateTenantSettings` que sincroniza los cambios inmediatamente con la web pública del salón y el portal de reservas.
-- **Limpieza de Pantalla de Login para Producción B2B ([`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
-  - **Eliminación de Accesos Rápidos Demo**: Se retiraron los botones de prueba (`Superadmin`, `Dueña`, `Barbero`, `Nails`) para que la pantalla sea 100% limpia, sobria y profesional para los clientes reales.
-  - **Inputs Limpios**: Campos de correo/WhatsApp y contraseña inicializados en blanco con placeholders elegantes (`dueña@misalon.co`, `••••••••••••`).
-- **Onboarding Guiado & Pedagógico para Dueñas de Salón ([`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx))**:
-  - **Experiencia de Bienvenida Cálida**: Lenguaje amigable y pedagógico con explicaciones tipo *"¿Para qué usamos estos datos?"* en cada paso.
-  - **Barra de Progreso Dinámica**: Indicador porcentual con glow (25% ➔ 50% ➔ 75% ➔ 100%) para guiar a la dueña sin frustración.
-  - **Paso 1 (Identidad)**: Nombre comercial, WhatsApp de confirmaciones, ciudad y moneda principal.
-  - **Paso 2 (Servicios)**: Formulario dinámico con fotos WebP en 1 clic (`ServiceImagePicker`) y precios en $ COP.
-  - **Paso 3 (Equipo & Comisiones)**: Registro de estilistas con WhatsApp `🇨🇴 +57`, selección de especialidades y aclaración de que **no se requiere correo electrónico de las colaboradoras**.
-  - **Paso 4 (Resumen & Activación)**: Tarjeta de resumen visual con conteo de servicios, equipo listo y botón directo para abrir el Dashboard.
-- **Estrategia Comercial de Prospección & Escalera de Valor de 6 Planes en $ COP ([`DATOS_NEGOCIO.json`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/DATOS_NEGOCIO.json), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`update_tenant_plans_and_subscriptions.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/update_tenant_plans_and_subscriptions.sql))**:
+---
+
+## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
+
+1. **Rebranding Completo a Kowy (`kowy.app`) & Nuevo Isotipo Oficial**:
+   - Transición definitiva del nombre de marca a **Kowy** con el dominio oficial **`kowy.app`**.
+   - Generación del isotipo 3D con la letra **'K'** en degradado coral-neón a magenta con destello de IA sobre fondo obsidiana `#090B10`.
+   - Favicon (`/public/favicon.jpg`) y Logo Oficial (`/public/kowy-logo.jpg`) integrados limpiamente sin marcos blancos ni bordes extraños en `index.html`, Landing Page, Login, Dashboard y Superadmin.
+
+2. **Landing Page B2B Renovada con Escalera Oficial en COP ([`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
+   - **Escalera de Planes en Pesos Colombianos**:
+     - 🌐 **Plan Gratuito ($0 COP / mes de por vida)**: Vitrina digital en Google Maps, fotos y botón directo a WhatsApp.
+     - 🚀 **Plan Inicio ($50.000 COP / mes)**: Agendador interactivo online (`/reservar/:slug`) y hasta 4 colaboradores.
+     - 📈 **Plan Crecimiento ($120.000 COP / mes) ⭐ [REGALO EN TU MES 1]**: Colaboradores ilimitados, App móvil de colaboradoras (`/colaborador`), Caja POS y comisiones automáticas.
+     - 🤖 **Plan Pro Flow IA ($240.000 COP / mes)**: Asistente Kowy IA en WhatsApp 24/7, bandeja omnicanal y recordatorios anti-plantón.
+     - 🎯 **Banner Planes Superiores**: Acceso directo al **Plan Escala ($720k)** con Meta Ads y **Plan Agencia VIP ($1.44M)**.
+   - **Oferta de Activación de Alto Impacto (Anclaje $680.000 ➔ $50.000 COP)**: Formulario de captura que ofrece la web lista en 48 horas con 30 días de Plan Crecimiento de regalo por un aporte único de $50.000 COP por Nequi/Daviplata.
+
+3. **Código QR y Afiche Imprimible HD Vinculados al Slug Único ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+   - El generador de código QR y el botón `📋 Copiar Enlace Directo` ahora detectan el slug único del salón (ej. `/reservar/sandra-color-s`) garantizando que al escanear cargue inmediatamente el catálogo del negocio respectivo.
+   - El afiche Canvas HD (1200x1600 px) estampa el QR con la URL personalizada del salón y los créditos de `Tecnología Kowy.app`.
+
+4. **Rediseño Minimalista del Aviso de Configuración Inicial ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+   - Rediseño a un pill banner sobrio, elegante y con contraste nítido en modo claro y oscuro, con indicadores limpios de servicios/colaboradores y botones de setup compactos.
+
+5. **Aislamiento Estricto Multi-Tenant & Corrección de Cruce de Datos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx))**:
+   - Eliminado el fallback arbitrario (`prospects[0]`) que provocaba que se precargaran datos de *Crismar Barbershop* en cuentas de otros negocios.
+   - Normalización del campo `business_hours` para extraer texto legible limpio y evitar errores tipo `"[object Object]"`.
+   - Validación estricta en `api.getTenantByUserEmail` para nunca devolver un tenant ajeno guardado en localStorage.
+
+6. **Onboarding Simplificado a 3 Pasos Directos & Nombre Real de la Dueña ([`SalonOnboardingModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SalonOnboardingModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+   - Se eliminó el paso 4 innecesario de WhatsApp IA; el flujo ahora es de **3 pasos rápidos** (1. Tu Salón, 2. Servicios, 3. Equipo y Finalizar).
+   - Al tocar `✨ Finalizar y Abrir Mi Dashboard` en el Paso 3, se guardan los datos en Supabase y se abre el panel de inmediato.
+   - Corrección del saludo en el dashboard: ahora prioriza el nombre real de la dueña o del salón (ej. *Sandra Color´s*) en lugar del prefijo del correo (`notasdevida`).
+
+7. **Protección & Control en Agendador si no hay Servicios ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+   - El agendador bloquea el paso hacia especialistas si no hay ningún servicio seleccionado (`disabled`).
+   - Si el catálogo del salón aún no está cargado, muestra la tarjeta didáctica *"Catálogo de Servicios en Preparación"* y ofrece un botón de contacto directo al WhatsApp del salón.
+   - Eliminación total de mapeos erróneos (`undefined profesional`) y estricto aislamiento de especialistas reales por negocio.
   - **Migración SQL Ejecutada en Supabase**: Columnas en `public.tenants` activas (`plan_tier`, `subscription_status`, `trial_ends_at`, `subscription_price_cop`, `max_stylists`, etc.).
   - **Anclaje Psicológico de Alto Impacto ($680.000 COP ➔ $50.000 COP Setup)**:
     - Valor regular de desarrollo web + agendador + POS: **$680.000 COP**.
