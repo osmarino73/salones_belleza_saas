@@ -13,6 +13,10 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+- **Landing Page B2B Kowy ([`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
+  - **Escalera de Valor Oficial en COP**: Presenta los 4 planes principales (**$0 Gratuito de por vida**, **$50.000 Plan Inicio**, **$120.000 Plan Crecimiento ⭐ Regalo Mes 1**, **$240.000 Plan Pro Flow IA**) más acceso a los planes superiores **Escala ($720k)** y **Agencia VIP ($1.44M)**.
+  - **Oferta de Activación de Alto Impacto (Anclaje $680.000 ➔ $50.000 COP)**: Formulario de captura que ofrece la web personalizada lista en 48 horas con el Plan Crecimiento de regalo durante los primeros 30 días.
+  - **Logo Oficial de Kowy sin Marco**: Icono en alta definición integrado en la barra de navegación y pie de página.
 - **Kit de Código QR Imprimible para Reservas en el Salón ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
   - **Generador de QR Dinámico por Salón**: Botón *"📲 Mi Código QR de Reservas"* en la cabecera del Dashboard que abre una ventana con diseño de acrílico premium listo para colocar en recepción, espejos o puerta del local.
   - **Descarga de Imagen PNG en Alta Resolución (1000x1000 px)**: Permite descargar el código en 1 clic para imprimir afiches o tarjetas de presentación.

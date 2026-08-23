@@ -16,7 +16,9 @@ import {
   ShieldCheck,
   Zap,
   LogIn,
-  Sparkles
+  Sparkles,
+  Crown,
+  X
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -287,108 +289,244 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Plans */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-1.5">// PLANES TRANSPARENTES</div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Suscripción Mensual <span className="text-orange-500">Sin Contratos Engañosos</span></h2>
-            <p className="text-slate-400 text-sm mt-2">Página web profesional de regalo incluida en todos los planes.</p>
+      {/* Pricing Plans Oficiales Kowy (Escalera de Valor COP) */}
+      <section id="planes" className="py-16 sm:py-24 bg-gradient-to-b from-[#090B10] via-[#0E121B] to-[#090B10]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-1.5 text-xs font-black text-[#FF5A36] uppercase tracking-wider mb-2 bg-[#FF5A36]/10 px-3 py-1 rounded-full border border-[#FF5A36]/20">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>PLANES TRANSPARENTES EN PESOS COLOMBIANOS ($ COP)</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Sin Contratos de Permanencia. <br className="hidden sm:block" />
+              <span className="bg-gradient-to-r from-[#FF5A36] via-pink-500 to-amber-400 bg-clip-text text-transparent">
+                Comienza con tu Web 100% Gratis
+              </span>
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
+              Elige el plan que se adapte al tamaño de tu equipo. Todos los planes incluyen alojamiento seguro en la nube y vitrina digital de por vida.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            {/* Plan 1 */}
-            <div className="bg-dark-800 border border-white/10 rounded-2xl p-7">
-              <h3 className="text-xl font-bold text-white">Plan Básico</h3>
-              <p className="text-xs text-slate-400">Para 1 a 2 Estilistas o Barberos</p>
-              <div className="text-4xl font-extrabold text-white my-4">$39 <span className="text-sm font-normal text-slate-400">/mes</span></div>
-              <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Página Web Profesional de Regalo</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Agendamiento Web en Línea</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> CRM Fichas de Clientes</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Hasta 2 Agendas de Estilistas</li>
-              </ul>
-              <a href="#solicitar" className="block text-center py-2.5 rounded-lg border border-white/10 hover:border-orange-500 text-white text-xs font-bold transition-all">Elegir Plan Básico</a>
-            </div>
-
-            {/* Plan 2: Featured */}
-            <div className="bg-dark-700 border-2 border-orange-500 rounded-2xl p-8 shadow-xl shadow-orange-500/20 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider">
-                MÁS POPULAR
+          {/* Grid de los 4 Planes Principales */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            
+            {/* Plan 0: Gratuito */}
+            <div className="bg-[#141926] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">
+                  PRESENCIA DE MARCA
+                </span>
+                <h3 className="text-xl font-extrabold text-white mt-3">🌐 Plan Gratuito</h3>
+                <p className="text-xs text-slate-400 mt-1">Tu vitrina de lujo en Google</p>
+                <div className="text-3xl font-black text-white my-4">
+                  $0 <span className="text-xs font-normal text-slate-400">/ mes (De por vida)</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Página Web Profesional de Lujo (móvil y PC)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Botón flotante directo a tu WhatsApp</span></li>
+                  <li className="flex items-start gap-2 text-slate-500 line-through"><X className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" /> <span>Agendador online interactivo</span></li>
+                </ul>
               </div>
-              <h3 className="text-xl font-bold text-orange-500">Plan PRO IA</h3>
-              <p className="text-xs text-slate-400">Salones Medianos (3 a 6 Estilistas)</p>
-              <div className="text-4xl font-extrabold text-white my-4">$89 <span className="text-sm font-normal text-slate-400">/mes</span></div>
-              <ul className="space-y-2.5 text-xs text-slate-200 mb-6">
-                <li className="flex items-center gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Todo lo del Plan Básico</li>
-                <li className="flex items-center gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Agente IA en WhatsApp 24/7</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Recordatorios Anti-Plantón WhatsApp</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Ficha Técnica de Tintes & Fórmulas</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Hasta 6 Agendas de Estilistas</li>
-              </ul>
-              <a href="#solicitar" className="block text-center py-3 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-lg shadow-orange-500/30 transition-all">
-                Iniciar Prueba de 14 Días
+              <a
+                href="#solicitar"
+                className="w-full text-center py-3 rounded-2xl border border-white/10 hover:border-white/30 text-white text-xs font-bold transition-all bg-white/[0.02]"
+              >
+                Reclamar Web Gratis
               </a>
             </div>
 
-            {/* Plan 3 */}
-            <div className="bg-dark-800 border border-white/10 rounded-2xl p-7">
-              <h3 className="text-xl font-bold text-white">Plan VIP 360°</h3>
-              <p className="text-xs text-slate-400">Salones Grandes & Multi-Sede</p>
-              <div className="text-4xl font-extrabold text-white my-4">$149 <span className="text-sm font-normal text-slate-400">/mes</span></div>
-              <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Todo lo del Plan PRO IA</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Estilistas e Agendas Ilimitadas</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Módulo POS de Caja & Retail</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" /> Liquidación de Comisiones de Equipo</li>
-              </ul>
-              <a href="#solicitar" className="block text-center py-2.5 rounded-lg border border-white/10 hover:border-orange-500 text-white text-xs font-bold transition-all">Elegir Plan VIP 360°</a>
+            {/* Plan 1: Inicio */}
+            <div className="bg-[#141926] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-xl">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  BARBERÍAS & INDEPENDIENTES
+                </span>
+                <h3 className="text-xl font-extrabold text-white mt-3">🚀 Plan Inicio</h3>
+                <p className="text-xs text-slate-400 mt-1">Digitaliza tus citas sin llamadas</p>
+                <div className="text-3xl font-black text-white my-4">
+                  $50.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Todo lo del Plan Gratuito</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Agendador Interactivo (<strong className="text-white">kowy.app/reservar/:slug</strong>)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Hasta 4 Colaboradores con agendas</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Link para Bio de Instagram & TikTok</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Panel de control de citas para el salón</span></li>
+                </ul>
+              </div>
+              <a
+                href="#solicitar"
+                className="w-full text-center py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10"
+              >
+                Comenzar con Inicio
+              </a>
             </div>
+
+            {/* Plan 2: Crecimiento (ESTRELLA - MES 1 INCLUIDO) */}
+            <div className="bg-gradient-to-b from-[#181F33] to-[#121624] border-2 border-amber-400 rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-amber-500/15 relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black uppercase px-3.5 py-1 rounded-full tracking-wider shadow-lg flex items-center gap-1">
+                <Crown className="w-3 h-3" /> REGALO EN TU MES 1
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  GESTIÓN & CAJA POS
+                </span>
+                <h3 className="text-xl font-extrabold text-amber-300 mt-3">📈 Plan Crecimiento</h3>
+                <p className="text-xs text-slate-400 mt-1">Para salones medianos y spas</p>
+                <div className="text-3xl font-black text-white my-4">
+                  $120.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-slate-200 mb-6">
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Colaboradores ILIMITADOS</span></li>
+                  <li className="flex items-start gap-2 font-bold text-amber-200"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>App Móvil para Estilistas (<strong className="text-white">/colaborador</strong>)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Módulo de Caja POS Profesional & Arqueo Z</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Liquidación automática de comisiones</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Inventario y venta de productos retail</span></li>
+                </ul>
+              </div>
+              <a
+                href="#solicitar"
+                className="w-full text-center py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF5A36] hover:opacity-95 text-slate-950 text-xs font-black shadow-lg shadow-orange-500/30 transition-all hover:scale-[1.02]"
+              >
+                Reclamar con Mes 1 de Regalo
+              </a>
+            </div>
+
+            {/* Plan 3: Pro Flow IA */}
+            <div className="bg-gradient-to-b from-[#1E142B] to-[#140E1E] border border-purple-500/50 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-400 transition-all shadow-xl">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                  AUTOMATIZACIÓN IA 24/7
+                </span>
+                <h3 className="text-xl font-extrabold text-purple-300 mt-3">🤖 Plan Pro Flow IA</h3>
+                <p className="text-xs text-slate-400 mt-1">Tu recepcionista virtual en WhatsApp</p>
+                <div className="text-3xl font-black text-white my-4">
+                  $240.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-slate-200 mb-6">
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Todo lo del Plan Crecimiento</span></li>
+                  <li className="flex items-start gap-2 font-bold text-purple-300"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Asistente Kowy IA en WhatsApp 24/7</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Bandeja Omnicanal (WhatsApp + IG + FB)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Recordatorios WhatsApp anti-plantón (24h y 2h)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Control humano en 1 clic (Human Takeover)</span></li>
+                </ul>
+              </div>
+              <a
+                href="#solicitar"
+                className="w-full text-center py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all"
+              >
+                Activar Kowy IA
+              </a>
+            </div>
+
           </div>
+
+          {/* Banner Planes Superiores: Escala & Agencia VIP */}
+          <div className="mt-8 p-6 rounded-3xl bg-[#141926] border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center md:text-left">
+              <span className="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                PLANES PARA CADENAS & SPAS DE ALTO VOLUMEN
+              </span>
+              <h4 className="text-lg font-black text-white">¿Buscas Pauta en Meta Ads o Gestión Llave en Mano?</h4>
+              <p className="text-xs text-slate-400 max-w-2xl">
+                Contamos con el <strong>Plan Escala ($720k COP/mes)</strong> con pauta geolocalizada y radar de clientas inactivas (+35 días), y el <strong>Plan Agencia VIP ($1.44M COP/mes)</strong> con equipo dedicado y dominio propio.
+              </p>
+            </div>
+            <a
+              href="https://wa.me/573009008000?text=Hola%20Kowy,%20deseo%20consultar%20sobre%20los%20Planes%20Escala%20o%20Agencia%20VIP"
+              target="_blank"
+              rel="noreferrer"
+              className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 shrink-0 transition-all"
+            >
+              Consultar Planes VIP →
+            </a>
+          </div>
+
         </div>
       </section>
 
-      {/* Lead Capture Form */}
-      <section id="solicitar" className="py-16 sm:py-24 bg-gradient-to-b from-dark-800 to-dark-900 border-t border-white/10">
-        <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-dark-800 border border-orange-500/40 rounded-2xl p-6 sm:p-10 shadow-2xl text-center">
-            <div className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-2">// OFERTA LIMITADA POR CIUDAD</div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-3">
-              Solicita la <span className="text-orange-500">Página Web Gratis</span> de tu Salón
-            </h2>
-            <p className="text-slate-400 text-sm max-w-xl mx-auto mb-8">
-              Te entregamos el diseño web personalizado de tu salón en 48 horas con el motor de IA y agendamiento 24/7 activado por 14 días sin costo.
-            </p>
+      {/* Lead Capture Form con Oferta de Activación $50k (Anclaje $680.000) */}
+      <section id="solicitar" className="py-16 sm:py-24 bg-gradient-to-b from-[#090B10] to-[#0E121B] border-t border-white/10">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-[#141926] border-2 border-[#FF5A36]/40 rounded-3xl p-6 sm:p-12 shadow-2xl relative overflow-hidden">
+            
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <div className="inline-flex items-center gap-1.5 text-xs font-black text-amber-300 bg-amber-500/10 px-3.5 py-1 rounded-full border border-amber-500/30 uppercase tracking-wider mb-3">
+                <Gift className="w-4 h-4 text-amber-400" />
+                <span>OFERTA DE LANZAMIENTO LOCAL</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                Reclama la <span className="bg-gradient-to-r from-[#FF5A36] to-pink-500 bg-clip-text text-transparent">Página Web Gratis</span> de tu Salón
+              </h2>
+              <p className="text-slate-300 text-xs sm:text-sm mt-3 leading-relaxed">
+                El desarrollo y configuración comercial regular cuesta <strong className="text-rose-400 line-through">$680.000 COP</strong>. Por un aporte simbólico de activación de solo <strong className="text-emerald-400 font-extrabold">$50.000 COP</strong>, te entregamos tu web personalizada lista en 48 horas con el <strong className="text-amber-300">Plan Crecimiento de Regalo durante tus primeros 30 días</strong>.
+              </p>
+            </div>
 
             {submitted ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 text-center space-y-2">
-                <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-                <h3 className="text-lg font-bold text-white">¡Solicitud Recibida con Éxito!</h3>
-                <p className="text-xs text-slate-300">Un especialista se comunicará a tu WhatsApp en los próximos 15 minutos para entregarte tu boceto de página web gratis.</p>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-8 text-center space-y-3 animate-fade-in">
+                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+                <h3 className="text-xl font-black text-white">¡Solicitud Recibida con Éxito!</h3>
+                <p className="text-xs text-slate-300 max-w-md mx-auto">
+                  Un especialista de Kowy se comunicará a tu WhatsApp en los próximos 15 minutos para entregarte el boceto de tu página web oficial.
+                </p>
               </div>
             ) : (
               <form onSubmit={handleLeadSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Nombre de tu Salón / Spa</label>
-                  <input type="text" required placeholder="Studio Glamour Spa" className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Nombre de tu Salón / Barbería / Spa *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Sandra Color´s Studio"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Tu Nombre y Cargo</label>
-                  <input type="text" required placeholder="Sofía Restrepo (Dueña)" className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Tu Nombre y Cargo *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Sandra Pérez (Dueña)"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">WhatsApp Principal</label>
-                  <input type="tel" required placeholder="+57 300 123 4567" className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Número de WhatsApp Principal *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+57 300 123 4567"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36] font-mono"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Ciudad y País</label>
-                  <input type="text" required placeholder="Medellín, Colombia" className="w-full bg-dark-900 border border-white/10 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Ciudad / Municipio *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Medellín / Apartadó, Colombia"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                  />
                 </div>
-                <div className="sm:col-span-2 pt-2">
-                  <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 transition-all text-sm">
+                <div className="sm:col-span-2 pt-3">
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-[#FF5A36] via-pink-500 to-amber-500 hover:opacity-95 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-orange-500/30 transition-all hover:scale-[1.01] text-sm cursor-pointer"
+                  >
                     <Gift className="w-5 h-5" />
-                    <span>Reclamar Mi Web Gratis + 14 Días de IA</span>
+                    <span>Reclamar Mi Web Gratis + 30 Días de Plan Crecimiento</span>
                   </button>
+                  <p className="text-[11px] text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Cero riesgo • Sin contratos ni cláusulas de permanencia • Soporte local en Colombia</span>
+                  </p>
                 </div>
               </form>
             )}
