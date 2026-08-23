@@ -12,6 +12,22 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+- **Kit de Código QR Imprimible para Reservas en el Salón ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - **Generador de QR Dinámico por Salón**: Botón *"📲 Mi Código QR de Reservas"* en la cabecera del Dashboard que abre una ventana con diseño de acrílico premium listo para colocar en recepción, espejos o puerta del local.
+  - **Descarga de Imagen PNG en Alta Resolución (1000x1000 px)**: Permite descargar el código en 1 clic para imprimir afiches o tarjetas de presentación.
+  - **Copia de Enlace Directo**: Botón para copiar la URL de agendamiento (`/reservas`) y compartirla en historias de Instagram o estados de WhatsApp.
+- **Página de Reservas de Alta Conversión & Multi-Servicio ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+  - **Carrusel Táctil de 14 Días**: Selector horizontal dinámico con tarjetas para tocar en 1 toque (*Hoy*, *Mañana*, *Días de la semana*) más buscador de fechas alternativo.
+  - **WhatsApp Prioritario en Paso 4**: El campo de WhatsApp se ubica de primero para reconocimiento inmediato del cliente, seguido de Nombre y Correo Electrónico opcional para copia digital de la cita.
+  - **Carrito Multi-Servicio & Upselling**: Permite seleccionar y combinar múltiples servicios en la misma cita con cálculo automático de duración acumulada y total en COP.
+  - **Segmentación Visual de Horarios**: Filtros por turnos (*Todos*, *☀️ Mañana*, *🌤️ Tarde*, *🌙 Noche*) para seleccionar horas rápidamente.
+  - **Cupones de Descuento & Promociones**: Soporte interactivo para códigos promocionales (ej. `BEAUTY10`, `VIP20`) con recálculo dinámico.
+  - **Integración con Google Calendar & Recordatorios**: Botón directo en el comprobante para agendar automáticamente la cita con alertas en el calendario de Google / Celular.
+  - **Sticky Footer Móvil**: Barra flotante inferior para continuar fluidamente entre pasos en pantallas pequeñas.
+  - **Auto-Completado de Clientes**: Recuerda nombre, WhatsApp y correo para agilizar reservas recurrentes.
+- **Comprobante Digital & Notificación por WhatsApp en Agendador Online ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+  - **Tarjeta Voucher en Pantalla Final**: Al completar la reserva, la clienta ve un comprobante moderno con nombre, teléfono, servicios, especialista, fecha, hora y precio.
+  - **Botón de Envío Inmediato**: Enlace directo a WhatsApp formateado con emojis y todos los datos listos para notificar al salón y guardar la cita en el chat de la clienta.
 - **Normalización Universal de Imágenes 1:1 en Sitios Web ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`landing-html-injector`])**:
   - **Relación de Aspecto Uniforme**: Todas las tarjetas de servicios y galerías inyectadas ahora aplican forzosamente `aspect-ratio: 1 / 1; object-fit: cover; border-radius: 14px;`, eliminando discrepancias de altura entre fotos verticales y horizontales.
   - **Catálogo Ampliado de Barbería & Barba ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts))**: 10 nuevas fotos de alta resolución para afeitados tradicionales con toalla caliente, mid fade, skin fade, perfilado de barba con navaja, cortes infantiles y hair tattoo.

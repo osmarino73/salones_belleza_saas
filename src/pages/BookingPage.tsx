@@ -15,7 +15,15 @@ import {
   Sparkles,
   AlertTriangle,
   Ban,
-  Phone
+  Phone,
+  Plus,
+  Trash2,
+  CalendarPlus,
+  MapPin,
+  Tag,
+  Sun,
+  Sunset,
+  Moon
 } from 'lucide-react';
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
 import { Service, Stylist } from '../types';
@@ -27,106 +35,121 @@ export const BookingPage: React.FC = () => {
 
   const [salonName, setSalonName] = useState<string>('Studio Glamour Spa');
   const [salonPhone, setSalonPhone] = useState<string>('');
+  const [salonAddress, setSalonAddress] = useState<string>('');
   const [salonCurrency, setSalonCurrency] = useState<string>('COP');
   const [services, setServices] = useState<Service[]>(initialServices);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
 
   const [step, setStep] = useState<number>(1);
-  const [selectedService, setSelectedService] = useState<Service>(initialServices[0]);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([initialServices[0]]);
   const [selectedStylist, setSelectedStylist] = useState<Stylist | null>(initialStylists[0]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState<string>('02:00 PM');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'morning' | 'afternoon' | 'evening'>('all');
+  
   const [clientName, setClientName] = useState<string>('');
+  const [clientEmail, setClientEmail] = useState<string>('');
   const [countryCode, setCountryCode] = useState<string>('+57');
   const [phone10Digits, setPhone10Digits] = useState<string>('');
+  const [couponCode, setCouponCode] = useState<string>('');
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [couponMessage, setCouponMessage] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  // Check if stylist is blocked on selected date or if day of week is non-working
+  // Lista de próximos 14 días para selección visual rápida
+  const next14Days = useMemo(() => {
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      const dayName = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : d.toLocaleDateString('es-CO', { weekday: 'short' });
+      const dayNum = d.getDate();
+      const monthName = d.toLocaleDateString('es-CO', { month: 'short' });
+      days.push({ iso, dayName, dayNum, monthName });
+    }
+    return days;
+  }, []);
+
+  useEffect(() => {
+    const savedName = localStorage.getItem('bf_client_name');
+    const savedPhone = localStorage.getItem('bf_client_phone');
+    const savedEmail = localStorage.getItem('bf_client_email');
+    if (savedName && !clientName) setClientName(savedName);
+    if (savedPhone && !phone10Digits) setPhone10Digits(savedPhone);
+    if (savedEmail && !clientEmail) setClientEmail(savedEmail);
+  }, []);
+
+  const primaryService = selectedServices[0] || services[0];
+
+  const handleToggleService = (srv: Service) => {
+    const exists = selectedServices.some(s => s.id === srv.id);
+    if (exists) {
+      if (selectedServices.length === 1) return;
+      setSelectedServices(selectedServices.filter(s => s.id !== srv.id));
+    } else {
+      setSelectedServices([...selectedServices, srv]);
+    }
+  };
+
   const stylistAvailability = useMemo(() => {
     if (!selectedStylist || !selectedDate) return { blocked: false, reason: '' };
-
-    // 1. Specific blocked dates / vacations
     if (selectedStylist.blocked_dates?.includes(selectedDate)) {
       const slot = selectedStylist.blocked_slots?.find(s => s.date === selectedDate);
-      return {
-        blocked: true,
-        reason: slot?.reason || 'Vacaciones / Día Libre'
-      };
+      return { blocked: true, reason: slot?.reason || 'Vacaciones / Día Libre' };
     }
-
-    // 2. Standard working days (0=Dom, 1=Lun, 2=Mar, 3=Mie, 4=Jue, 5=Vie, 6=Sab)
     if (selectedStylist.working_days && selectedStylist.working_days.length > 0) {
       const dayOfWeek = new Date(selectedDate + 'T00:00:00').getDay();
       if (!selectedStylist.working_days.includes(dayOfWeek)) {
-        return {
-          blocked: true,
-          reason: 'Día de descanso semanal'
-        };
+        return { blocked: true, reason: 'Día de descanso semanal' };
       }
     }
-
     return { blocked: false, reason: '' };
   }, [selectedStylist, selectedDate]);
 
-  // Filter stylists that can perform the selected service
   const filteredStylists = useMemo(() => {
     const activeStylists = stylists.filter(s => s.attends_clients !== false);
-    if (!selectedService) return activeStylists;
-    const cat = selectedService.category;
-    const srvId = selectedService.id;
+    if (!primaryService) return activeStylists;
+    const cat = primaryService.category;
+    const srvId = primaryService.id;
 
-    const matched = activeStylists.filter(s => {
-      // 1. Exact service ID match
-      if (s.service_ids && s.service_ids.length > 0) {
-        if (s.service_ids.includes(srvId)) return true;
-      }
-      // 2. Service category match
-      if (s.service_categories && s.service_categories.length > 0) {
-        if (s.service_categories.includes(cat)) return true;
-      }
-      // 3. Fallback: Specialty keyword match
+    return activeStylists.filter(s => {
+      if (s.service_ids?.includes(srvId)) return true;
+      if (s.service_categories?.includes(cat)) return true;
       if (s.specialty) {
         const spec = s.specialty.toLowerCase();
         if (cat === 'color' && (spec.includes('color') || spec.includes('balayage'))) return true;
         if (cat === 'corte' && (spec.includes('corte') || spec.includes('estilista') || spec.includes('barber'))) return true;
-        if (cat === 'keratina' && (spec.includes('keratina') || spec.includes('alisado') || spec.includes('color') || spec.includes('estilista'))) return true;
-        if (cat === 'nails' && (spec.includes('nail') || spec.includes('uña') || spec.includes('manicur'))) return true;
-        if (cat === 'barberia' && (spec.includes('barber') || spec.includes('corte') || spec.includes('caballero'))) return true;
-        if (cat === 'spa' && (spec.includes('spa') || spec.includes('facial') || spec.includes('masaje') || spec.includes('nail'))) return true;
+        if (cat === 'keratina' && (spec.includes('keratina') || spec.includes('alisado'))) return true;
+        if (cat === 'nails' && (spec.includes('nail') || spec.includes('uña'))) return true;
+        if (cat === 'spa' && (spec.includes('spa') || spec.includes('facial') || spec.includes('masaje'))) return true;
       }
       return false;
     });
+  }, [stylists, primaryService]);
 
-    return matched.length > 0 ? matched : activeStylists;
-  }, [stylists, selectedService]);
-
-  // Auto-select first matching stylist when service changes if current is not in list
   useEffect(() => {
     if (filteredStylists.length > 0 && selectedStylist) {
       const isCurrentValid = filteredStylists.some(s => s.id === selectedStylist.id);
-      if (!isCurrentValid) {
-        setSelectedStylist(filteredStylists[0]);
-      }
+      if (!isCurrentValid) setSelectedStylist(filteredStylists[0]);
     }
   }, [filteredStylists]);
 
   useEffect(() => {
     async function loadBookingData() {
       let targetTenantId: string | undefined = undefined;
-
-      // 1. Cargar datos del salón activo desde LocalStorage
       const activeTenantRaw = localStorage.getItem('bf_tenant_active');
       if (activeTenantRaw) {
         try {
           const tenant = JSON.parse(activeTenantRaw);
           if (tenant.name) setSalonName(tenant.name);
           if (tenant.phone) setSalonPhone(tenant.phone);
+          if (tenant.address) setSalonAddress(tenant.address);
           if (tenant.currency) setSalonCurrency(tenant.currency);
           if (tenant.id) targetTenantId = tenant.id;
         } catch (e) {}
       }
-
-      // 2. Si hay slug en URL, buscar primero en prospect_sites (sitios gancho creados con DATOS_NEGOCIO.json)
       if (salonSlug) {
         try {
           const prospectSite = await api.getProspectSiteBySlug(salonSlug);
@@ -134,45 +157,31 @@ export const BookingPage: React.FC = () => {
             if (prospectSite.business_name) setSalonName(prospectSite.business_name);
             if (prospectSite.phone_whatsapp) setSalonPhone(prospectSite.phone_whatsapp);
             setSalonCurrency('COP');
-
-            // Mapear servicios reales de DATOS_NEGOCIO.json si existen
             if (prospectSite.business_data?.servicios && prospectSite.business_data.servicios.length > 0) {
-              const mappedSrvs: Service[] = prospectSite.business_data.servicios.map((s: any, idx: number) => {
-                const titleLower = s.titulo.toLowerCase();
-                let cat: Service['category'] = 'corte';
-                if (titleLower.includes('color') || titleLower.includes('balayage') || titleLower.includes('tinte')) cat = 'color';
-                else if (titleLower.includes('keratina') || titleLower.includes('alisad') || titleLower.includes('botox')) cat = 'keratina';
-                else if (titleLower.includes('nail') || titleLower.includes('uña') || titleLower.includes('pedicur')) cat = 'nails';
-                else if (titleLower.includes('barber') || titleLower.includes('fade')) cat = 'barberia';
-                else if (titleLower.includes('facial') || titleLower.includes('spa') || titleLower.includes('masaje') || titleLower.includes('pestaña')) cat = 'spa';
-
-                return {
-                  id: `ps-srv-${idx + 1}`,
-                  tenant_id: prospectSite.id,
-                  name: s.titulo,
-                  category: cat,
-                  duration_minutes: s.duracion_minutos || 60,
-                  price: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
-                  price_cop: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
-                  price_usd: s.precio_cop || (cat === 'color' ? 280000 : cat === 'spa' ? 120000 : 65000),
-                  requires_patch_test: cat === 'color',
-                  description: s.descripcion || `${s.titulo} profesional`
-                };
-              });
+              const mappedSrvs: Service[] = prospectSite.business_data.servicios.map((s: any, idx: number) => ({
+                id: `ps-srv-${idx + 1}`,
+                tenant_id: prospectSite.id,
+                name: s.titulo,
+                category: 'corte',
+                duration_minutes: s.duracion_minutos || 60,
+                price: s.precio_cop || 65000,
+                price_cop: s.precio_cop || 65000,
+                price_usd: s.precio_cop || 65000,
+                requires_patch_test: false,
+                description: s.descripcion || `${s.titulo} profesional`
+              }));
               setServices(mappedSrvs);
-              setSelectedService(mappedSrvs[0]);
+              setSelectedServices([mappedSrvs[0]]);
             }
-
-            // Mapear especialistas reales de DATOS_NEGOCIO.json si existen
             if (prospectSite.business_data?.especialistas && prospectSite.business_data.especialistas.length > 0) {
               const mappedStys: Stylist[] = prospectSite.business_data.especialistas.map((esp: any, idx: number) => ({
                 id: `ps-sty-${idx + 1}`,
                 tenant_id: prospectSite.id,
                 name: esp.nombre,
-                specialty: esp.rol || 'Master Stylist',
+                specialty: esp.rol || 'Stylist',
                 photo_url: '',
                 rating: 5.0,
-                reviews_count: 14 + idx * 6,
+                reviews_count: 15 + idx * 5,
                 commission_service_pct: 45,
                 commission_retail_pct: 10,
                 working_days: [1, 2, 3, 4, 5, 6],
@@ -181,158 +190,133 @@ export const BookingPage: React.FC = () => {
               }));
               setStylists(mappedStys);
               setSelectedStylist(mappedStys[0]);
-              return; // Terminamos la carga específica de prospect site
             }
+            return;
           }
-
-          // Si no es prospect_site, buscar en tenants SaaS registrados
-          const tenantBySlug = await api.getTenantBySlug(salonSlug);
-          if (tenantBySlug) {
-            if (tenantBySlug.name) setSalonName(tenantBySlug.name);
-            if (tenantBySlug.phone) setSalonPhone(tenantBySlug.phone);
-            if (tenantBySlug.currency) setSalonCurrency(tenantBySlug.currency);
-            if (tenantBySlug.id) targetTenantId = tenantBySlug.id;
-          } else {
-            const formatted = salonSlug.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            setSalonName(formatted);
-          }
-        } catch (e) {}
+        } catch (err) {}
       }
-
-      // 3. Cargar servicios y estilistas estándar del tenant
-      const [srvs, stys] = await Promise.all([
-        api.getServices(targetTenantId),
-        api.getStylists(targetTenantId)
-      ]);
-
-      if (srvs && srvs.length > 0) {
-        setServices(srvs);
-        setSelectedService(srvs[0]);
-      } else {
-        setServices([]);
-      }
-      if (stys && stys.length > 0) {
-        setStylists(stys);
-        setSelectedStylist(stys[0]);
-      } else {
-        setStylists([]);
-        setSelectedStylist(null);
-      }
+      try {
+        const tid = targetTenantId || getActiveTenantId();
+        const [srvList, styList] = await Promise.all([api.getServices(tid), api.getStylists(tid)]);
+        if (srvList.length > 0) { setServices(srvList); setSelectedServices([srvList[0]]); }
+        if (styList.length > 0) { setStylists(styList); setSelectedStylist(styList[0]); }
+      } catch (err) {}
     }
     loadBookingData();
   }, [salonSlug]);
 
-  const availableSlots = [
-    '09:00 AM', '10:30 AM', '11:45 AM', '02:00 PM', '03:30 PM', '05:00 PM', '06:15 PM'
-  ];
+  const allAvailableSlots = ['08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM'];
 
-  const handlePhoneChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 10);
-    if (digits.length <= 3) {
-      setPhone10Digits(digits);
-    } else if (digits.length <= 6) {
-      setPhone10Digits(`${digits.slice(0, 3)} ${digits.slice(3)}`);
-    } else {
-      setPhone10Digits(`${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`);
-    }
+  const filteredSlots = useMemo(() => {
+    if (timeFilter === 'morning') return allAvailableSlots.filter(s => s.includes('AM') || s.startsWith('12:'));
+    if (timeFilter === 'afternoon') return allAvailableSlots.filter(s => (s.includes('PM') && !s.startsWith('12:')) && !['06:00 PM', '06:30 PM', '07:00 PM'].includes(s));
+    if (timeFilter === 'evening') return allAvailableSlots.filter(s => ['05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM'].includes(s));
+    return allAvailableSlots;
+  }, [timeFilter]);
+
+  const handlePhoneChange = (val: string) => setPhone10Digits(val.replace(/\D/g, '').slice(0, 10));
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanCode = couponCode.trim().toUpperCase();
+    if (cleanCode === 'BEAUTY10') { setAppliedDiscount(10); setCouponMessage('🎉 ¡Cupón aplicado! 10% de descuento concedido.'); }
+    else if (cleanCode === 'VIP20') { setAppliedDiscount(20); setCouponMessage('🌟 ¡Descuento VIP del 20% aplicado!'); }
+    else setCouponMessage('❌ Código no válido o expirado.');
   };
+
+  const totalRawPrice = selectedServices.reduce((acc, s) => acc + (Number(s.price_cop ?? s.price ?? s.price_usd ?? 0)), 0);
+  const totalDuration = selectedServices.reduce((acc, s) => acc + (Number(s.duration_minutes || 45)), 0);
+  const discountAmount = appliedDiscount > 0 ? (totalRawPrice * (appliedDiscount / 100)) : 0;
+  const finalPrice = Math.max(0, totalRawPrice - discountAmount);
 
   const handleConfirmBooking = async () => {
-    if (!selectedService) return;
+    if (!clientName.trim() || phone10Digits.length < 7) return alert('Por favor completa tu nombre y WhatsApp.');
+    localStorage.setItem('bf_client_name', clientName.trim());
+    localStorage.setItem('bf_client_phone', phone10Digits.trim());
+    if (clientEmail.trim()) localStorage.setItem('bf_client_email', clientEmail.trim());
     try {
-      const activeTid = selectedService.tenant_id || getActiveTenantId();
       await api.createAppointment({
-        id: '',
-        tenant_id: activeTid,
-        client_id: '',
-        client_name: clientName.trim() || 'Clienta Web',
+        id: `apt-${Date.now()}`,
+        tenant_id: selectedServices[0]?.tenant_id || getActiveTenantId(),
+        client_id: `cli-${Date.now()}`,
+        client_name: clientName.trim(),
         client_phone: `${countryCode} ${phone10Digits}`.trim(),
-        stylist_id: selectedStylist?.id || (stylists[0]?.id && stylists[0]?.id !== 'sty-1' ? stylists[0]?.id : '') || '',
+        stylist_id: selectedStylist?.id || (stylists[0]?.id || 'sty-1'),
         stylist_name: selectedStylist ? selectedStylist.name : (stylists[0]?.name || 'Primer Disponible'),
-        service_id: selectedService.id,
-        service_name: selectedService.name,
+        service_id: selectedServices[0]?.id || 'srv-1',
+        service_name: selectedServices.map(s => s.name).join(' + '),
+        service_ids: selectedServices.map(s => s.id),
+        services_summary: selectedServices.map(s => s.name).join(' + '),
         date: selectedDate,
         time: selectedTime,
-        duration_minutes: selectedService.duration_minutes || 60,
-        price_usd: Number(selectedService.price_usd ?? selectedService.price ?? 0),
+        duration_minutes: totalDuration,
         status: 'confirmada_wa',
+        price_cop: finalPrice,
+        price_usd: finalPrice,
         wa_reminder_24h_sent: true,
         wa_reminder_2h_sent: false,
+        notes: `Reserva Web (${selectedServices.length} servicios). Email: ${clientEmail || 'N/A'}. Cupón: ${appliedDiscount}%`,
         created_at: new Date().toISOString()
       });
-    } catch (e) {
-      console.warn('Booking notice:', e);
-    }
-    setIsSuccess(true);
+      setIsSuccess(true);
+    } catch (e) { setIsSuccess(true); }
   };
 
-  const formatCurrency = (amount: number | undefined | null, currency: string = salonCurrency || 'COP') => {
-    const num = Number(amount ?? 0);
-    if (currency === 'COP' || (!currency && num > 1000)) {
-      return `$ ${num.toLocaleString('es-CO')} COP`;
-    }
-    if (currency === 'MXN') {
-      return `$ ${num.toLocaleString('es-MX')} MXN`;
-    }
-    if (currency === 'EUR') {
-      return `€ ${num.toLocaleString('es-ES')} EUR`;
-    }
-    return `$ ${num.toLocaleString('en-US')} USD`;
+  const formatCurrency = (amount: number | undefined | null, curr: string = 'COP') => {
+    const num = Number(amount) || 0;
+    return `$ ${num.toLocaleString('es-CO')} ${curr}`;
+  };
+
+  const getGoogleCalendarUrl = () => {
+    const title = encodeURIComponent(`Cita en ${salonName}`);
+    const [timeOnly, period] = selectedTime.split(' ');
+    let [hours, mins] = timeOnly.split(':').map(Number);
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    const start = new Date(`${selectedDate}T${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`);
+    const end = new Date(start.getTime() + (totalDuration * 60000));
+    const fmt = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=Reserva en ${salonName}&location=${encodeURIComponent(salonAddress || salonName)}`;
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-white font-sans py-8 px-4 sm:px-6 relative overflow-hidden">
-      
-      {/* Background Aura */}
+    <div className="min-h-screen bg-[#0A0D14] text-white font-sans py-8 px-4 sm:px-6 pb-24">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header */}
-      <div className="max-w-3xl mx-auto text-center mb-8 relative z-10">
-        <Link to="/" className="inline-flex items-center gap-2 text-lg font-extrabold text-white mb-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-[#FF5A36] to-pink-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-[#FF5A36]/40">
-            <Scissors className="w-4 h-4" />
+      <div className="max-w-3xl mx-auto text-center mb-6 relative z-10">
+        <Link to="/" className="inline-flex items-center gap-2 text-lg font-extrabold text-white mb-2">
+          <div className="w-9 h-9 bg-gradient-to-tr from-[#FF5A36] to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-[#FF5A36]/40">
+            <Scissors className="w-5 h-5" />
           </div>
           <span>{salonName}</span>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Reserva tu Cita Online</h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">Elige tu servicio y horario en menos de 1 minuto sin esperar en el teléfono.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-white">Reserva tu Cita Online</h1>
       </div>
 
-      {/* Booking Wizard Card */}
-      <div className="max-w-3xl mx-auto bg-[#141926] border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-8 relative z-10">
-        
-        {/* Step Progress Pills */}
-        <div className="grid grid-cols-4 gap-2 mb-8 pb-6 border-b border-white/10">
-          {[
-            { num: 1, label: 'Servicio' },
-            { num: 2, label: 'Especialista' },
-            { num: 3, label: 'Fecha y Hora' },
-            { num: 4, label: 'Tus Datos' }
-          ].map((s) => (
-            <div
-              key={s.num}
-              onClick={() => s.num < step && setStep(s.num)}
-              className={`text-center p-2 rounded-xl border transition-all cursor-pointer ${
-                step === s.num
-                  ? 'border-[#FF5A36] bg-[#FF5A36]/10 text-white'
-                  : step > s.num
-                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
-                  : 'border-white/5 bg-white/[0.02] text-slate-500'
-              }`}
-            >
-              <div className="text-xs font-bold">Paso {s.num}</div>
-              <div className="text-[11px] truncate hidden sm:block">{s.label}</div>
+      <div className="max-w-3xl mx-auto bg-[#141926] border border-white/10 rounded-3xl shadow-2xl p-5 sm:p-8 relative z-10">
+        <div className="grid grid-cols-4 gap-2 mb-6 pb-5 border-b border-white/10">
+          {[1,2,3,4].map((n) => (
+            <div key={n} className={`text-center p-2 rounded-xl border ${step === n ? 'border-[#FF5A36] bg-[#FF5A36]/15' : 'border-white/5 bg-white/[0.02]'}`}>
+              <div className="text-xs font-black">Paso {n}</div>
             </div>
           ))}
         </div>
-
-        {/* Step 1: Select Service */}
+         {/* Step 1: Multi-Service Selection */}
         {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#FF5A36]" />
-              Selecciona el Servicio Deseado
-            </h2>
+          <div className="space-y-4 animate-fade-in">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-black text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#FF5A36]" />
+                  Selecciona tus Servicios
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Puedes combinar varios tratamientos en la misma cita.
+                </p>
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-slate-300">
+                {selectedServices.length} seleccionado(s)
+              </span>
+            </div>
 
             {services.length === 0 ? (
               <div className="text-center py-10 text-slate-400 bg-white/[0.02] border border-white/5 rounded-xl">
@@ -341,57 +325,66 @@ export const BookingPage: React.FC = () => {
                 <p className="text-xs text-slate-400 mt-1">Por favor comunícate directamente con el salón.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3">
-                {services.map((srv) => (
-                  <div
-                    key={srv.id}
-                    onClick={() => setSelectedService(srv)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
-                      selectedService?.id === srv.id
-                        ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
-                        : 'border-white/10 bg-[#0E121B] hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      {srv.image_url && (
-                        <img
-                          src={srv.image_url}
-                          alt={srv.name}
-                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-white/10 shrink-0"
-                          loading="lazy"
-                        />
-                      )}
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <strong className="text-sm sm:text-base text-white truncate">{srv.name}</strong>
-                          {srv.requires_patch_test && (
-                            <span className="text-[10px] bg-[#FF5A36]/20 text-[#FF5A36] font-bold px-2 py-0.5 rounded-full shrink-0">
-                              Test de Parche
+              <div className="grid grid-cols-1 gap-2.5">
+                {services.map((srv) => {
+                  const isSelected = selectedServices.some(s => s.id === srv.id);
+                  return (
+                    <div
+                      key={srv.id}
+                      onClick={() => handleToggleService(srv)}
+                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center gap-3 ${
+                        isSelected
+                          ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/15'
+                          : 'border-white/10 bg-[#0E121B] hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {srv.image_url && (
+                          <img
+                            src={srv.image_url}
+                            alt={srv.name}
+                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-white/10 shrink-0"
+                            loading="lazy"
+                          />
+                        )}
+                        <div className="space-y-0.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-sm sm:text-base text-white truncate font-bold">{srv.name}</strong>
+                            <span className="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">
+                              {srv.category}
                             </span>
-                          )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 line-clamp-1">{srv.description || 'Servicio profesional garantizado.'}</p>
+                          <span className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
+                            <Clock className="w-3 h-3 text-[#FF5A36]" /> {srv.duration_minutes} min
+                          </span>
                         </div>
-                        <p className="text-xs text-slate-400 line-clamp-2">{srv.description}</p>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {srv.duration_minutes} minutos
-                        </span>
                       </div>
-                    </div>
 
-                    <div className="text-right pl-4 shrink-0">
-                      <div className="text-base sm:text-lg font-extrabold text-[#FF5A36]">
-                        {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
+                      <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+                        <div className="text-sm sm:text-base font-black text-[#FF5A36]">
+                          {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
+                        </div>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                          isSelected ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'border border-white/20 text-slate-500'
+                        }`}>
+                          {isSelected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
-            <div className="pt-4 flex justify-end">
+            <div className="pt-4 flex justify-between items-center border-t border-white/10">
+              <div className="text-xs text-slate-400">
+                Total: <strong className="text-white text-sm font-black">{formatCurrency(totalRawPrice, salonCurrency)}</strong> ({totalDuration} min)
+              </div>
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer"
               >
                 <span>Continuar a Especialista</span>
                 <ChevronRight className="w-4 h-4" />
@@ -402,72 +395,68 @@ export const BookingPage: React.FC = () => {
 
         {/* Step 2: Select Specialist */}
         {step === 2 && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-[#FF5A36]" />
                 Escoge tu Especialista
               </h2>
-              {selectedService && (
+              {primaryService && (
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Mostrando profesionales capacitados para: <strong className="text-[#FF5A36]">{selectedService.name}</strong>
+                  Mostrando profesionales capacitados para: <strong className="text-[#FF5A36]">{primaryService.name}</strong>
                 </p>
               )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Option: First Available */}
               <div
                 onClick={() => setSelectedStylist(null)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 ${
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 ${
                   selectedStylist === null
-                    ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
+                    ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/15'
                     : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                 }`}
               >
-                <div className="w-14 h-14 rounded-full bg-[#0A0D14] border border-[#FF5A36] flex items-center justify-center text-[#FF5A36] shrink-0">
-                  <Sparkles className="w-6 h-6" />
+                <div className="w-14 h-14 rounded-2xl bg-[#0A0D14] border border-[#FF5A36] flex items-center justify-center text-[#FF5A36] shrink-0">
+                  <Sparkles className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
-                  <strong className="text-sm text-white block">Cualquier Especialista</strong>
-                  <span className="text-xs text-slate-400 block">Primer horario disponible</span>
-                  <span className="text-[11px] text-emerald-400 font-semibold">⚡ Mayor disponibilidad de turnos</span>
+                  <strong className="text-sm text-white block font-bold">Cualquier Especialista</strong>
+                  <span className="text-xs text-slate-400 block">Primer horario libre disponible</span>
+                  <span className="text-[11px] text-emerald-400 font-bold">⚡ Mayor disponibilidad de turnos</span>
                 </div>
               </div>
 
-              {/* Filtered Specialists List */}
               {filteredStylists.map((sty) => {
                 const isSelected = selectedStylist?.id === sty.id;
-                const isBlockedToday = sty.blocked_dates?.includes(selectedDate);
-
                 return (
                   <div
                     key={sty.id}
                     onClick={() => setSelectedStylist(sty)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-3.5 relative ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 relative ${
                       isSelected
-                        ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/10'
+                        ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/15'
                         : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                     }`}
                   >
                     <img
                       src={sty.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80'}
                       alt={sty.name}
-                      className={`w-14 h-14 rounded-full object-cover border-2 shrink-0 ${
+                      className={`w-14 h-14 rounded-2xl object-cover border-2 shrink-0 ${
                         isSelected ? 'border-[#FF5A36]' : 'border-white/15'
                       }`}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <strong className="text-sm text-white block truncate">{sty.name}</strong>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shrink-0">
-                          Calificado/a
+                        <strong className="text-sm text-white block truncate font-bold">{sty.name}</strong>
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shrink-0">
+                          Master
                         </span>
                       </div>
                       <span className="text-xs text-slate-400 block truncate">{sty.specialty}</span>
-                      <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5">
+                      <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5 font-bold">
                         <Star className="w-3.5 h-3.5 fill-amber-400" />
-                        <span>{sty.rating || 5.0} ({sty.reviews_count || 12} reseñas)</span>
+                        <span>{sty.rating || 5.0} ({sty.reviews_count || 18} reseñas)</span>
                       </div>
                     </div>
                   </div>
@@ -479,14 +468,14 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="text-slate-400 hover:text-white px-4 py-2 text-sm flex items-center gap-1"
+                className="text-slate-400 hover:text-white px-4 py-2 text-xs sm:text-sm flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer"
               >
                 <span>Continuar a Horario</span>
                 <ChevronRight className="w-4 h-4" />
@@ -495,65 +484,134 @@ export const BookingPage: React.FC = () => {
           </div>
         )}
 
-        {/* Step 3: Date and Time */}
+        {/* Step 3: Date and Time with 14-Day Visual Carousel & Turn Segmentation */}
         {step === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-[#FF5A36]" />
-              Elige Día y Hora
-            </h2>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Fecha de la Cita</label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
-                />
-              </div>
-
-              {/* Warning if Stylist is on Vacation or Off Day */}
-              {stylistAvailability.blocked ? (
-                <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs space-y-1.5 animate-fade-in">
-                  <div className="flex items-center gap-2 font-bold text-red-400">
-                    <Ban className="w-4 h-4 shrink-0" />
-                    <span>{selectedStylist?.name} no tiene disponibilidad para esta fecha</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300">
-                    Motivo: <strong className="text-white">{stylistAvailability.reason}</strong>. Por favor selecciona otro día en el calendario o regresa a elegir otro profesional.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-2">Horarios Disponibles para esta Fecha</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {availableSlots.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedTime(slot)}
-                        className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                          selectedTime === slot
-                            ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
-                            : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+          <div className="space-y-5 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-[#FF5A36]" />
+                Elige Día y Horario
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Toca cualquier día para ver sus turnos disponibles al instante.
+              </p>
             </div>
+
+            {/* Carrusel Táctil Horizontal de 14 Días */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-400">Próximos Días Disponibles</label>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10">
+                {next14Days.map((d) => {
+                  const isSelected = selectedDate === d.iso;
+                  return (
+                    <button
+                      key={d.iso}
+                      type="button"
+                      onClick={() => setSelectedDate(d.iso)}
+                      className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer min-w-[70px] ${
+                        isSelected
+                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30 scale-105'
+                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
+                      }`}
+                    >
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                        {d.dayName}
+                      </span>
+                      <span className="text-lg font-black my-0.5">
+                        {d.dayNum}
+                      </span>
+                      <span className={`text-[9px] uppercase font-semibold ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                        {d.monthName}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selector de Fecha Calendario Alternativo */}
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs text-slate-400 shrink-0">O busca otra fecha:</span>
+              <input
+                type="date"
+                value={selectedDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+              />
+            </div>
+
+            {/* Warning if Stylist is on Vacation or Off Day */}
+            {stylistAvailability.blocked ? (
+              <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs space-y-1.5 animate-fade-in">
+                <div className="flex items-center gap-2 font-bold text-red-400">
+                  <Ban className="w-4 h-4 shrink-0" />
+                  <span>{selectedStylist?.name} no tiene disponibilidad para esta fecha</span>
+                </div>
+                <p className="text-[11px] text-slate-300">
+                  Motivo: <strong className="text-white">{stylistAvailability.reason}</strong>. Por favor selecciona otro día en el calendario o regresa a elegir otro profesional.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="text-xs font-semibold text-slate-400">Turnos Disponibles</label>
+                  <div className="flex gap-1 p-0.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setTimeFilter('all')}
+                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${timeFilter === 'all' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
+                    >
+                      Todos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeFilter('morning')}
+                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'morning' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
+                    >
+                      <Sun className="w-3 h-3" /> Mañana
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeFilter('afternoon')}
+                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'afternoon' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
+                    >
+                      <Sunset className="w-3 h-3" /> Tarde
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTimeFilter('evening')}
+                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'evening' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
+                    >
+                      <Moon className="w-3 h-3" /> Noche
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {filteredSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setSelectedTime(slot)}
+                      className={`p-2.5 sm:p-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
+                        selectedTime === slot
+                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="pt-4 flex justify-between">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="text-slate-400 hover:text-white px-4 py-2 text-sm flex items-center gap-1 cursor-pointer"
+                className="text-slate-400 hover:text-white px-4 py-2 text-xs sm:text-sm flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
@@ -561,7 +619,7 @@ export const BookingPage: React.FC = () => {
                 type="button"
                 disabled={stylistAvailability.blocked}
                 onClick={() => setStep(4)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>Continuar a Mis Datos</span>
                 <ChevronRight className="w-4 h-4" />
@@ -570,34 +628,30 @@ export const BookingPage: React.FC = () => {
           </div>
         )}
 
-        {/* Step 4: Client Info */}
+        {/* Step 4: WhatsApp First + Name + Optional Email + Coupon */}
         {step === 4 && !isSuccess && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              Tus Datos de Contacto
-            </h2>
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                Tus Datos de Confirmación
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Ingresa tu WhatsApp para enviarte el comprobante y recordatorio directo.
+              </p>
+            </div>
 
             <div className="space-y-3">
+              {/* 1. WHATSAPP DE PRIMERO */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Nombre Completo *</label>
-                <input
-                  type="text"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Ej. Camila Restrepo"
-                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Número de WhatsApp (Para recordatorios) *</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  1. Número de WhatsApp (Principal) *
+                </label>
                 <div className="flex gap-2">
                   <select
                     value={countryCode}
                     onChange={(e) => setCountryCode(e.target.value)}
-                    className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                    className="bg-[#0E121B] border border-white/10 rounded-2xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
                   >
                     <option value="+57">🇨🇴 +57</option>
                     <option value="+52">🇲🇽 +52</option>
@@ -609,30 +663,95 @@ export const BookingPage: React.FC = () => {
                     value={phone10Digits}
                     onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder="300 123 4567"
-                    className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36] font-mono"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36] font-mono font-bold"
                     required
                   />
                 </div>
               </div>
 
-              {/* Booking Summary Box */}
-              <div className="bg-[#0E121B] border border-white/10 rounded-xl p-4 space-y-2 text-xs text-slate-300">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Servicio:</span>
-                  <strong className="text-white">{selectedService?.name}</strong>
+              {/* 2. NOMBRE COMPLETO */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  2. Tu Nombre y Apellido *
+                </label>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Ej. Camila Restrepo"
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                  required
+                />
+              </div>
+
+              {/* 3. CORREO ELECTRÓNICO OPCIONAL */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  3. Correo Electrónico <span className="text-[10px] text-slate-500 font-normal">(Opcional - Para recibir copia de tu cita)</span>
+                </label>
+                <input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="ejemplo@correo.com"
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-2xl p-3 text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                />
+              </div>
+
+              {/* Cupón de Descuento Opcional */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="¿Tienes cupón? (ej. BEAUTY10)"
+                      className="w-full bg-[#0E121B] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white uppercase focus:outline-none focus:border-[#FF5A36] font-mono"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shrink-0"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+                {couponMessage && (
+                  <span className={`text-[11px] block font-bold ${appliedDiscount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {couponMessage}
+                  </span>
+                )}
+              </div>
+
+              {/* Resumen Final de Reserva */}
+              <div className="bg-[#0E121B] border border-white/10 rounded-2xl p-4 space-y-2 text-xs text-slate-300">
+                <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                  <span className="text-slate-400 font-semibold">Servicios ({selectedServices.length}):</span>
+                  <strong className="text-white text-right">{selectedServices.map(s => s.name).join(' + ')}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Especialista:</span>
-                  <strong className="text-white">{selectedStylist ? selectedStylist.name : 'Primer Disponible'}</strong>
+                  <span className="text-slate-400">Especialista:</span>
+                  <strong className="text-amber-300">{selectedStylist ? selectedStylist.name : 'Primer Disponible'}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Fecha y Hora:</span>
-                  <strong className="text-[#FF5A36]">{selectedDate} • {selectedTime}</strong>
+                  <span className="text-slate-400">Fecha y Hora:</span>
+                  <strong className="text-[#FF5A36] font-black">{selectedDate} • {selectedTime}</strong>
                 </div>
+
+                {appliedDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-bold">
+                    <span>Descuento ({appliedDiscount}%):</span>
+                    <span>- {formatCurrency(discountAmount, salonCurrency)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between pt-2 border-t border-white/10 text-sm">
-                  <span className="font-bold text-white">Total Estimado:</span>
-                  <strong className="text-white font-extrabold">
-                    {selectedService ? formatCurrency(selectedService.price_usd ?? selectedService.price ?? selectedService.price_cop, salonCurrency) : '$ 0'}
+                  <span className="font-bold text-white">Total Final:</span>
+                  <strong className="text-emerald-400 font-black text-base">
+                    {formatCurrency(finalPrice, salonCurrency)}
                   </strong>
                 </div>
               </div>
@@ -642,65 +761,155 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="text-slate-400 hover:text-white px-4 py-2 text-sm flex items-center gap-1"
+                className="text-slate-400 hover:text-white px-4 py-2 text-xs sm:text-sm flex items-center gap-1 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
               <button
                 type="button"
                 onClick={handleConfirmBooking}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-8 py-3 rounded-xl flex items-center gap-2 text-sm shadow-lg shadow-[#FF5A36]/40"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-8 py-3 rounded-2xl flex items-center gap-2 text-xs sm:text-sm shadow-xl shadow-emerald-500/25 cursor-pointer transition-all hover:scale-105"
               >
-                <Check className="w-4 h-4" />
-                <span>Confirmar Cita</span>
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>Confirmar Reserva</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Success Confirmation Screen */}
+        {/* Success Confirmation Screen con Google Calendar y WhatsApp */}
         {isSuccess && (
-          <div className="text-center py-8 space-y-4">
-            <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className="text-center py-6 space-y-5 animate-fade-in">
+            <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30">
+              <CheckCircle2 className="w-10 h-10 animate-pulse" />
             </div>
-            <h2 className="text-2xl font-extrabold text-white">¡Cita Agendada con Éxito!</h2>
-            <p className="text-sm text-slate-300 max-w-md mx-auto">
-              Hemos enviado un mensaje de confirmación a tu WhatsApp <strong>{countryCode} {phone10Digits}</strong> con los detalles y recordatorio automático.
-            </p>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight">¡Tu Cita está Confirmada! 🎉</h2>
+              <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+                Hemos reservado tu espacio en <strong className="text-white">{salonName}</strong>.
+              </p>
+            </div>
 
-            {salonPhone && (
-              <div className="pt-2">
+            {/* Tarjeta Visual de Comprobante / Voucher */}
+            <div className="bg-[#0E121B] border border-emerald-500/40 rounded-2xl p-5 max-w-md mx-auto text-left space-y-3 shadow-xl shadow-emerald-500/10 relative overflow-hidden">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
+                <span className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                  ✓ Comprobante Digital
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Cliente</span>
+                  <strong className="text-white block truncate">{clientName || 'Cliente'}</strong>
+                  <span className="text-[10px] text-slate-400 font-mono">{countryCode} {phone10Digits}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Especialista</span>
+                  <strong className="text-amber-300 block truncate">{selectedStylist ? selectedStylist.name : 'Equipo Master'}</strong>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Fecha & Hora</span>
+                  <strong className="text-[#FF5A36] block">{selectedDate}</strong>
+                  <span className="text-xs text-white font-bold">{selectedTime}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-semibold">Servicios & Total</span>
+                  <strong className="text-white block truncate">{selectedServices.map(s => s.name).join(' + ')}</strong>
+                  <span className="text-xs text-emerald-400 font-black">
+                    {formatCurrency(finalPrice, salonCurrency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Acciones de WhatsApp y Google Calendar */}
+            <div className="space-y-2 max-w-md mx-auto pt-1">
+              {salonPhone ? (
                 <a
-                  href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${salonName}! 💖 Acabo de reservar mi cita online para *${selectedService?.name}* con *${selectedStylist ? selectedStylist.name : 'su equipo'}* para el día *${selectedDate}* a las *${selectedTime}*. Mi nombre es *${clientName || 'Clienta Web'}*.`)}`}
+                  href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `✨ *¡Hola ${salonName}!* Acabo de agendar mi cita online:\n\n` +
+                    `👤 *Cliente:* ${clientName || 'Cliente'}\n` +
+                    `✂️ *Servicios:* ${selectedServices.map(s => s.name).join(' + ')}\n` +
+                    `💈 *Especialista:* ${selectedStylist ? selectedStylist.name : 'Equipo'}\n` +
+                    `📅 *Fecha:* ${selectedDate}\n` +
+                    `⏰ *Hora:* ${selectedTime}\n` +
+                    `💰 *Total:* ${formatCurrency(finalPrice, salonCurrency)}\n\n` +
+                    `¿Me confirman la recepción, por favor? ¡Muchas gracias! 💖`
+                  )}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black px-6 py-3 rounded-full text-xs shadow-xl shadow-emerald-500/30 transition-all hover:scale-105"
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-6 py-3.5 rounded-2xl text-xs shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02] cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <span>📲 Enviar Comprobante y Confirmar por WhatsApp</span>
+                </a>
+              ) : (
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    `✨ *Mi Cita en ${salonName}* ✨\n\n` +
+                    `👤 *Cliente:* ${clientName || 'Cliente'}\n` +
+                    `✂️ *Servicios:* ${selectedServices.map(s => s.name).join(' + ')}\n` +
+                    `💈 *Especialista:* ${selectedStylist ? selectedStylist.name : 'Equipo'}\n` +
+                    `📅 *Fecha:* ${selectedDate}\n` +
+                    `⏰ *Hora:* ${selectedTime}\n\n` +
+                    `Guardado en mi calendario 💖`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black px-6 py-3.5 rounded-2xl text-xs shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02] cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Notificar al Salón por WhatsApp Directo</span>
+                  <span>📲 Guardar Comprobante en mi WhatsApp</span>
                 </a>
-              </div>
-            )}
+              )}
 
-            <div className="pt-4 flex justify-center gap-3 flex-wrap">
-              <Link
-                to="/dashboard"
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-lg shadow-[#FF5A36]/30"
+              {/* Botón de Google Calendar */}
+              <a
+                href={getGoogleCalendarUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white font-bold px-6 py-3 rounded-2xl text-xs border border-white/10 transition-all cursor-pointer"
               >
-                Ver Cita en el Dashboard
-              </Link>
+                <CalendarPlus className="w-4 h-4 text-blue-400" />
+                <span>📅 Agregar a Google Calendar / Alerta en Celular</span>
+              </a>
+            </div>
+
+            <div className="pt-3 flex justify-center gap-3 flex-wrap">
               <Link
                 to="/"
-                className="bg-white/10 hover:bg-white/15 text-white font-semibold px-6 py-2.5 rounded-xl text-sm"
+                className="bg-white/5 hover:bg-white/10 text-slate-300 font-semibold px-6 py-2.5 rounded-xl text-xs transition-all border border-white/5"
               >
-                Volver al Inicio
+                Volver a la Página del Salón
               </Link>
             </div>
           </div>
         )}
 
       </div>
+
+      {/* Sticky Mobile Summary Bar */}
+      {!isSuccess && selectedServices.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0E121B]/95 backdrop-blur-md border-t border-white/10 p-3 sm:hidden flex items-center justify-between px-4 shadow-2xl">
+          <div>
+            <span className="text-[10px] text-slate-400 block">{selectedServices.length} servicio(s) seleccionado(s)</span>
+            <strong className="text-sm font-black text-emerald-400">{formatCurrency(finalPrice, salonCurrency)}</strong>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStep(step < 4 ? step + 1 : 4)}
+            className="bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white font-black text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5"
+          >
+            <span>{step === 4 ? 'Confirmar' : 'Siguiente'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
     </div>
   );
 };

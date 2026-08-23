@@ -167,10 +167,13 @@ export interface Appointment {
   stylist_name: string;
   service_id: string;
   service_name: string;
+  service_ids?: string[];
+  services_summary?: string;
   date: string;
   time: string;
   duration_minutes: number;
   price_usd: number;
+  price_cop?: number;
   status: 'pendiente' | 'confirmada_wa' | 'en_atencion' | 'completada' | 'cobrada' | 'no_show';
   wa_reminder_24h_sent: boolean;
   wa_reminder_2h_sent: boolean;
