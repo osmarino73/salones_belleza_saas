@@ -1,6 +1,6 @@
-# AGENTS.md - Contexto y Reglas de Desarrollo para BeautyFlow AI
+# AGENTS.md - Contexto y Reglas de Desarrollo para Kowy (kowy.app)
 
-¡Bienvenido, agente de IA! Este proyecto contiene la Landing Page de captura B2B y la plataforma SaaS **BeautyFlow AI** para Salones de Belleza, Barberías y Spas.
+¡Bienvenido, agente de IA! Este proyecto contiene la Landing Page de captura B2B y la plataforma SaaS multi-tenant **Kowy** (`kowy.app`) para Salones de Belleza, Barberías, Spas y Negocios de Citas.
 
 ## 📌 Reglas de Código & Estructura
 1. **Arquitectura React SPA**: Toda funcionalidad y vista se desarrolla en `src/` utilizando React 18, TypeScript, Tailwind CSS, Lucide Icons y Supabase Client.

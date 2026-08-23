@@ -59,10 +59,10 @@ export const LandingPage: React.FC = () => {
       <header className="sticky top-0 z-50 bg-dark-800/95 backdrop-blur-md border-b border-white/10 py-3.5">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2 text-xl font-extrabold text-white">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-orange-500/40">
+            <div className="w-8 h-8 bg-gradient-to-tr from-[#FF5A36] to-pink-500 rounded-lg flex items-center justify-center text-white shadow-md shadow-orange-500/40">
               <Scissors className="w-4 h-4" />
             </div>
-            <span>BeautyFlow<span className="text-orange-500">.AI</span></span>
+            <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -398,10 +398,10 @@ export const LandingPage: React.FC = () => {
       <footer className="bg-black/90 border-t border-white/10 py-10 text-xs text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-white font-extrabold text-base">
-            <Scissors className="w-4 h-4 text-orange-500" />
-            <span>BeautyFlow<span className="text-orange-500">.AI</span></span>
+            <Scissors className="w-4 h-4 text-[#FF5A36]" />
+            <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </div>
-          <div>© 2026 BeautyFlow AI • Diseñado para Salones de Belleza Exclusivos en LATAM</div>
+          <div>© 2026 Kowy.app • La Plataforma Todo-en-Uno para Salones, Barberías y Spas</div>
           <div className="flex gap-4">
             <Link to="/login" className="hover:text-orange-500">Ingresar</Link>
             <Link to="/reservas" className="hover:text-orange-500">Portal Citas</Link>

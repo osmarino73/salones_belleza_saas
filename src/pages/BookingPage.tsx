@@ -39,6 +39,7 @@ export const BookingPage: React.FC = () => {
   const [salonCurrency, setSalonCurrency] = useState<string>('COP');
   const [services, setServices] = useState<Service[]>(initialServices);
   const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
+  const [existingAppointments, setExistingAppointments] = useState<any[]>([]);
 
   const [step, setStep] = useState<number>(1);
   const [selectedServices, setSelectedServices] = useState<Service[]>([initialServices[0]]);
@@ -197,15 +198,95 @@ export const BookingPage: React.FC = () => {
       }
       try {
         const tid = targetTenantId || getActiveTenantId();
-        const [srvList, styList] = await Promise.all([api.getServices(tid), api.getStylists(tid)]);
+        const [srvList, styList, aptList] = await Promise.all([
+          api.getServices(tid),
+          api.getStylists(tid),
+          api.getAppointments(tid)
+        ]);
         if (srvList.length > 0) { setServices(srvList); setSelectedServices([srvList[0]]); }
         if (styList.length > 0) { setStylists(styList); setSelectedStylist(styList[0]); }
+        if (aptList.length > 0) { setExistingAppointments(aptList); }
       } catch (err) {}
     }
     loadBookingData();
   }, [salonSlug]);
 
   const allAvailableSlots = ['08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM'];
+
+  // Helper para convertir hora ("02:30 PM") a minutos del día (ej. 870)
+  const timeToMinutes = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.trim().split(' ');
+    if (parts.length < 2) return 0;
+    const [hStr, mStr] = parts[0].split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr || '0', 10);
+    const period = parts[1].toUpperCase();
+    if (period === 'PM' && h < 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h * 60 + m;
+  };
+
+  const totalRawPrice = selectedServices.reduce((acc, s) => acc + (Number(s.price_cop ?? s.price ?? s.price_usd ?? 0)), 0);
+  const totalDuration = selectedServices.reduce((acc, s) => acc + (Number(s.duration_minutes || 45)), 0);
+  const discountAmount = appliedDiscount > 0 ? (totalRawPrice * (appliedDiscount / 100)) : 0;
+  const finalPrice = Math.max(0, totalRawPrice - discountAmount);
+
+  // Función para determinar si un slot de horario está ocupado
+  const isSlotOccupied = (slotStr: string): { occupied: boolean; reason?: string } => {
+    const slotStartMin = timeToMinutes(slotStr);
+    const slotEndMin = slotStartMin + totalDuration;
+
+    // 1. Validar si la fecha es hoy y la hora ya pasó
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (selectedDate === todayStr) {
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      if (slotStartMin <= currentMin + 15) { // 15 min de margen mínimo
+        return { occupied: true, reason: 'Horario pasado' };
+      }
+    }
+
+    // Filtrar citas activas para el día seleccionado
+    const dayAppointments = existingAppointments.filter(
+      apt => apt.date === selectedDate && apt.status !== 'cancelada' && apt.status !== 'no_show'
+    );
+
+    // Caso A: Si el usuario seleccionó un especialista específico
+    if (selectedStylist) {
+      const stylistApts = dayAppointments.filter(apt => apt.stylist_id === selectedStylist.id);
+      for (const apt of stylistApts) {
+        const aptStartMin = timeToMinutes(apt.time);
+        const aptEndMin = aptStartMin + (apt.duration_minutes || 60);
+
+        // Comprobar colisión de rangos [slotStart, slotEnd] vs [aptStart, aptEnd]
+        if (slotStartMin < aptEndMin && slotEndMin > aptStartMin) {
+          return { occupied: true, reason: 'Ocupado con este especialista' };
+        }
+      }
+      return { occupied: false };
+    }
+
+    // Caso B: Si eligió "Cualquier Especialista", verificar si TODOS los capacitados están ocupados
+    if (filteredStylists.length > 0) {
+      let busyCount = 0;
+      for (const sty of filteredStylists) {
+        const styApts = dayAppointments.filter(apt => apt.stylist_id === sty.id);
+        const isStyBusy = styApts.some(apt => {
+          const aptStartMin = timeToMinutes(apt.time);
+          const aptEndMin = aptStartMin + (apt.duration_minutes || 60);
+          return slotStartMin < aptEndMin && slotEndMin > aptStartMin;
+        });
+        if (isStyBusy) busyCount++;
+      }
+
+      if (busyCount >= filteredStylists.length) {
+        return { occupied: true, reason: 'Equipo completo ocupado' };
+      }
+    }
+
+    return { occupied: false };
+  };
 
   const filteredSlots = useMemo(() => {
     if (timeFilter === 'morning') return allAvailableSlots.filter(s => s.includes('AM') || s.startsWith('12:'));
@@ -223,11 +304,6 @@ export const BookingPage: React.FC = () => {
     else if (cleanCode === 'VIP20') { setAppliedDiscount(20); setCouponMessage('🌟 ¡Descuento VIP del 20% aplicado!'); }
     else setCouponMessage('❌ Código no válido o expirado.');
   };
-
-  const totalRawPrice = selectedServices.reduce((acc, s) => acc + (Number(s.price_cop ?? s.price ?? s.price_usd ?? 0)), 0);
-  const totalDuration = selectedServices.reduce((acc, s) => acc + (Number(s.duration_minutes || 45)), 0);
-  const discountAmount = appliedDiscount > 0 ? (totalRawPrice * (appliedDiscount / 100)) : 0;
-  const finalPrice = Math.max(0, totalRawPrice - discountAmount);
 
   const handleConfirmBooking = async () => {
     if (!clientName.trim() || phone10Digits.length < 7) return alert('Por favor completa tu nombre y WhatsApp.');
@@ -588,21 +664,40 @@ export const BookingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {filteredSlots.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedTime(slot)}
-                      className={`p-2.5 sm:p-3 rounded-xl border text-xs font-black transition-all cursor-pointer ${
-                        selectedTime === slot
-                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
-                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {filteredSlots.map((slot) => {
+                    const status = isSlotOccupied(slot);
+                    const isSelected = selectedTime === slot;
+
+                    if (status.occupied) {
+                      return (
+                        <div
+                          key={slot}
+                          title={status.reason || 'Horario no disponible'}
+                          className="p-2.5 sm:p-3 rounded-xl border border-white/5 bg-white/[0.02] text-slate-600 text-xs font-semibold flex flex-col items-center justify-center opacity-40 cursor-not-allowed select-none line-through"
+                        >
+                          <span>{slot}</span>
+                          <span className="text-[9px] no-underline text-rose-400 font-normal mt-0.5">🔒 Ocupado</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedTime(slot)}
+                        className={`p-2.5 sm:p-3 rounded-xl border text-xs font-black transition-all cursor-pointer flex flex-col items-center justify-center ${
+                          isSelected
+                            ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30 scale-[1.02]'
+                            : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/30 hover:bg-white/5'
+                        }`}
+                      >
+                        <span>{slot}</span>
+                        <span className={`text-[9px] font-medium mt-0.5 ${isSelected ? 'text-white/80' : 'text-emerald-400'}`}>✓ Libre</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -890,6 +985,13 @@ export const BookingPage: React.FC = () => {
           </div>
         )}
 
+      </div>
+
+      {/* Footer Branding Kowy */}
+      <div className="max-w-3xl mx-auto text-center mt-6 text-xs text-slate-500 relative z-10 flex items-center justify-center gap-2">
+        <span>Impulsado por <strong className="text-slate-300">Kowy<span className="text-[#FF5A36]">.app</span></strong></span>
+        <span>•</span>
+        <span>Sistema Oficial de Reservas</span>
       </div>
 
       {/* Sticky Mobile Summary Bar */}

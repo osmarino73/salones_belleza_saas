@@ -102,7 +102,7 @@ export const PublicProspectSitePage: React.FC = () => {
           to="/"
           className="bg-[#FF5A36] text-white font-bold px-6 py-2.5 rounded-full text-xs shadow-lg shadow-[#FF5A36]/30"
         >
-          Ir a BeautyFlow AI
+          Ir a Kowy.app
         </Link>
       </div>
     );

@@ -78,33 +78,33 @@ export const LoginPage: React.FC = () => {
         {/* Left Showcase (Desktop) */}
         <div className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-b from-dark-800/90 to-dark-900/95 relative border-r border-white/10">
           <Link to="/" className="flex items-center gap-2.5 text-xl font-extrabold text-white">
-            <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange-500/40">
+            <div className="w-9 h-9 bg-gradient-to-tr from-[#FF5A36] to-pink-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange-500/40">
               <Scissors className="w-5 h-5" />
             </div>
-            <span>BeautyFlow<span className="text-orange-500">.AI</span></span>
+            <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
           <div className="my-auto space-y-4">
             <h2 className="text-3xl font-extrabold text-white leading-tight">
-              Gestiona tu Salón con <span className="text-orange-500">Inteligencia Artificial</span>
+              Gestiona tu Negocio con <span className="text-[#FF5A36]">Inteligencia Artificial</span>
             </h2>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Atención automatizada en WhatsApp 24/7, fichas técnicas de tinte en la nube y liquidación automática de comisiones para tu equipo.
+              Atención automatizada en WhatsApp 24/7 con Kowy IA, reservas online en 30 segundos y control total de caja POS.
             </p>
 
             <div className="bg-dark-800/80 border border-white/10 rounded-xl p-4 flex items-center gap-3.5 shadow-xl">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[#FF5A36]/20 text-[#FF5A36] flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <strong className="text-white text-sm block">Acceso Seguro Multi-Tenant</strong>
-                <span className="text-xs text-slate-400">Tus fórmulas y datos protegidos con RLS en Supabase</span>
+                <strong className="text-white text-sm block">Acceso Seguro Kowy Multi-Tenant</strong>
+                <span className="text-xs text-slate-400">Tus datos y agenda protegidos en la nube</span>
               </div>
             </div>
           </div>
 
           <div className="text-xs text-slate-500">
-            © 2026 BeautyFlow AI • Todos los derechos reservados.
+            © 2026 Kowy.app • Todos los derechos reservados.
           </div>
         </div>
 

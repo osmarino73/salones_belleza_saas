@@ -614,12 +614,12 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base font-black tracking-tight text-white">BeautyFlow AI</h1>
+              <h1 className="text-base font-black tracking-tight text-white">Kowy<span className="text-[#FF5A36]">.app</span></h1>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40">
                 👑 Superadmin Master
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">Lead Engine & Central de Salones SaaS</p>
+            <p className="text-[11px] text-slate-400">Lead Engine & Central Multi-Tenant Kowy</p>
           </div>
         </div>
 

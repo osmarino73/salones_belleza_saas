@@ -1,5 +1,6 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS BeautyFlow AI con Activación de Tenants B2B desde Superadmin (Solicitud de Email & Entrega de Credenciales por WhatsApp), Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
+- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal y Biblioteca Multimedia CDN WebP.
+- **Marca y Dominio Oficial**: **`Kowy`** (`kowy.app`)
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservas](https://belleza2027.netlify.app/reservas)**
 - **Repositorio Oficial GitHub**: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas)
@@ -17,6 +18,8 @@
   - **Descarga de Imagen PNG en Alta Resolución (1000x1000 px)**: Permite descargar el código en 1 clic para imprimir afiches o tarjetas de presentación.
   - **Copia de Enlace Directo**: Botón para copiar la URL de agendamiento (`/reservas`) y compartirla en historias de Instagram o estados de WhatsApp.
 - **Página de Reservas de Alta Conversión & Multi-Servicio ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+  - **Bloqueo Inteligente de Horarios Ocupados (Anti-Colisiones)**: Consulta las citas activas del salón y bloquea visualmente los turnos (`🔒 Ocupado`, tachado y deshabilitado) tanto si el cliente escoge un especialista específico como si todos los capacitados están ocupados a esa misma hora, calculando con exactitud la duración del tratamiento.
+  - **Bloqueo de Horarios Pasados en Tiempo Real**: Si el cliente reserva para "Hoy", los turnos anteriores a la hora actual se inhabilitan automáticamente.
   - **Carrusel Táctil de 14 Días**: Selector horizontal dinámico con tarjetas para tocar en 1 toque (*Hoy*, *Mañana*, *Días de la semana*) más buscador de fechas alternativo.
   - **WhatsApp Prioritario en Paso 4**: El campo de WhatsApp se ubica de primero para reconocimiento inmediato del cliente, seguido de Nombre y Correo Electrónico opcional para copia digital de la cita.
   - **Carrito Multi-Servicio & Upselling**: Permite seleccionar y combinar múltiples servicios en la misma cita con cálculo automático de duración acumulada y total en COP.

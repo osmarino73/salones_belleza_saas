@@ -1100,10 +1100,10 @@ export const DashboardPage: React.FC = () => {
       }`}>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link to="/" className="flex items-center gap-2.5 font-extrabold text-base sm:text-lg">
-            <div className="w-8 h-8 rounded-lg bg-[#FF5A36] text-white flex items-center justify-center shadow-md shadow-[#FF5A36]/40">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white flex items-center justify-center shadow-md shadow-[#FF5A36]/40">
               <Scissors className="w-4 h-4" />
             </div>
-            <span className="hidden sm:inline">BeautyFlow <span className="text-[#FF5A36]">AI</span></span>
+            <span className="hidden sm:inline">Kowy <span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
           {/* Segmented Pill Navigation Strip */}
@@ -6312,7 +6312,7 @@ export const DashboardPage: React.FC = () => {
                     // Crédito inferior
                     ctx.fillStyle = '#64748B';
                     ctx.font = '500 24px sans-serif';
-                    ctx.fillText('Tecnología BeautyFlow AI • Sistema Oficial de Reservas', 600, 1440);
+                    ctx.fillText('Tecnología Kowy.app • Sistema Oficial de Reservas', 600, 1440);
 
                     // Descargar automáticamente la imagen
                     const link = document.createElement('a');
