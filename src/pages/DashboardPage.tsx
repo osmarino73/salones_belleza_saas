@@ -1099,11 +1099,11 @@ export const DashboardPage: React.FC = () => {
         theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
       }`}>
         <div className="flex items-center gap-4 sm:gap-6">
-          <Link to="/" className="flex items-center gap-2.5 font-black text-base sm:text-lg">
+          <Link to="/" className="flex items-center gap-2 text-base sm:text-lg font-black">
             <img
               src="/kowy-logo.jpg"
               alt="Kowy Logo"
-              className="w-8 h-8 rounded-xl shadow-md shadow-[#FF5A36]/40 border border-white/15 object-cover"
+              className="w-8 h-8 rounded-xl object-contain shadow-md shadow-[#FF5A36]/30"
             />
             <span className="hidden sm:inline">Kowy <span className="text-[#FF5A36]">.app</span></span>
           </Link>

@@ -77,11 +77,11 @@ export const LoginPage: React.FC = () => {
         
         {/* Left Showcase (Desktop) */}
         <div className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-b from-dark-800/90 to-dark-900/95 relative border-r border-white/10">
-          <Link to="/" className="flex items-center gap-3 text-2xl font-black text-white">
+          <Link to="/" className="flex items-center gap-2.5 text-2xl font-black text-white">
             <img
               src="/kowy-logo.jpg"
               alt="Kowy Logo"
-              className="w-10 h-10 rounded-2xl shadow-xl shadow-[#FF5A36]/40 border border-white/20 object-cover"
+              className="w-10 h-10 rounded-xl object-contain shadow-lg shadow-[#FF5A36]/30"
             />
             <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>

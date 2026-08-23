@@ -58,11 +58,11 @@ export const LandingPage: React.FC = () => {
       {/* Main Navbar */}
       <header className="sticky top-0 z-50 bg-dark-800/95 backdrop-blur-md border-b border-white/10 py-3.5">
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2.5 text-xl font-black text-white">
+          <Link to="/" className="flex items-center gap-2 text-xl font-black text-white">
             <img
               src="/kowy-logo.jpg"
               alt="Kowy Logo"
-              className="w-9 h-9 rounded-xl shadow-lg shadow-[#FF5A36]/30 border border-white/15 object-cover"
+              className="w-8 h-8 rounded-xl object-contain shadow-md shadow-[#FF5A36]/20"
             />
             <span>Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>
