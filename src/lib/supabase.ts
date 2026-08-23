@@ -1142,6 +1142,8 @@ export const api = {
   async getTenantByUserEmail(email: string): Promise<any | null> {
     if (!email) return null;
     const cleanEmail = email.toLowerCase().trim();
+    const emailPrefix = cleanEmail.split('@')[0].replace(/[^a-z0-9]/g, '');
+
     if (supabase && isSupabaseConfigured) {
       try {
         // 1. Buscar directamente en la tabla tenants por owner_email
@@ -1170,12 +1172,38 @@ export const api = {
             .maybeSingle();
           if (tenantData) return tenantData;
         }
+
+        // 3. Buscar si hay un sitio prospecto reclamado o asignado a este negocio
+        const { data: prospectData } = await supabase
+          .from('prospect_sites')
+          .select('*')
+          .or(`claimed_tenant_id.not.is.null,slug.ilike.%${emailPrefix}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (prospectData && prospectData.claimed_tenant_id) {
+          const { data: tClaimed } = await supabase
+            .from('tenants')
+            .select('*')
+            .eq('id', prospectData.claimed_tenant_id)
+            .maybeSingle();
+          if (tClaimed) return tClaimed;
+        }
       } catch (e) {}
     }
+
     const saved = localStorage.getItem('bf_tenant_active');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Validar que el tenant guardado pertenezca a este email o su prefijo
+        if (
+          parsed.owner_email?.toLowerCase().trim() === cleanEmail ||
+          parsed.email?.toLowerCase().trim() === cleanEmail ||
+          (parsed.slug && emailPrefix && (parsed.slug.includes(emailPrefix) || emailPrefix.includes(parsed.slug)))
+        ) {
+          return parsed;
+        }
       } catch (e) {}
     }
     return null;

@@ -72,18 +72,34 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
 
   React.useEffect(() => {
     async function loadInitialData() {
+      // 1. Extraer horario en formato texto limpio
+      const formatHours = (hours: any) => {
+        if (!hours) return 'Lun a Sáb: 8:00 AM – 7:00 PM';
+        if (typeof hours === 'string') return hours;
+        if (typeof hours === 'object' && hours.summary) return hours.summary;
+        return 'Lun a Sáb: 8:00 AM – 7:00 PM';
+      };
+
+      // Si hay un tenant válido asignado
       if (tenant && tenant.id !== '00000000-0000-0000-0000-000000000001') {
         if (tenant.name) setSalonName(tenant.name);
-        if (tenant.phone) setSalonPhone(tenant.phone);
-        if (tenant.address) setSalonAddress(tenant.address);
+        if (tenant.phone) {
+          setSalonPhone(tenant.phone);
+          setWaPhoneNumber(tenant.phone);
+        }
+        if (tenant.address) setSalonAddress(tenant.address.replace(/^,\s*/, '').trim());
         if (tenant.city) setSalonCity(tenant.city);
         if (tenant.currency) setCurrency(tenant.currency as any);
-        if (tenant.business_hours?.summary) setBusinessHours(tenant.business_hours.summary);
+        if (tenant.business_hours) setBusinessHours(formatHours(tenant.business_hours));
 
-        // Precargar servicios del prospecto si existen
+        // Precargar servicios del prospecto asociado a este tenant exacto
         try {
           const prospects = await api.getProspectSites();
-          const pSite = prospects.find(p => p.claimed_tenant_id === tenant.id || p.slug === tenant.slug || (p.business_name && tenant.name && p.business_name.toLowerCase().includes(tenant.name.toLowerCase())));
+          const pSite = prospects.find(p => 
+            (p.claimed_tenant_id && p.claimed_tenant_id === tenant.id) ||
+            (p.slug && tenant.slug && p.slug === tenant.slug) ||
+            (p.business_name && tenant.name && p.business_name.toLowerCase().trim() === tenant.name.toLowerCase().trim())
+          );
           if (pSite?.business_data?.servicios && pSite.business_data.servicios.length > 0) {
             const loadedServices = pSite.business_data.servicios.map((s: any) => ({
               name: s.nombre || s.titulo,
@@ -95,29 +111,32 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             setServicesList(loadedServices);
           }
         } catch (e) {}
-      } else {
-        // Si es un onboarding inicial de prospecto (ej. Sandra, Cris, Kapa)
+      } else if (ownerEmail && ownerEmail !== 'sofia@studioglamour.co') {
+        // Si no hay tenant cargado aún pero tenemos el correo del usuario, buscar si tiene un prospecto asignado
         try {
+          const cleanE = ownerEmail.toLowerCase().trim();
+          const emailPrefix = cleanE.split('@')[0].replace(/[^a-z0-9]/g, '');
           const prospects = await api.getProspectSites();
-          let targetProspect = null;
-          if (ownerEmail) {
-            targetProspect = prospects.find(p => p.claimed_tenant_id && p.claimed_tenant_id === tenant?.id);
-          }
-          if (!targetProspect && prospects.length > 0) {
-            targetProspect = prospects[0]; // Tomar el primer prospecto activo
-          }
-          if (targetProspect) {
-            setSalonName(targetProspect.business_name);
-            if (targetProspect.phone_whatsapp) {
-              setSalonPhone(targetProspect.phone_whatsapp);
-              setWaPhoneNumber(targetProspect.phone_whatsapp);
+          
+          const matchedProspect = prospects.find(p => {
+            if (p.claimed_tenant_id && p.claimed_tenant_id === tenant?.id) return true;
+            if (p.phone_whatsapp && cleanE.includes(p.phone_whatsapp.replace(/\D/g, ''))) return true;
+            if (p.slug && emailPrefix && (p.slug.includes(emailPrefix) || emailPrefix.includes(p.slug))) return true;
+            return false;
+          });
+
+          if (matchedProspect) {
+            setSalonName(matchedProspect.business_name);
+            if (matchedProspect.phone_whatsapp) {
+              setSalonPhone(matchedProspect.phone_whatsapp);
+              setWaPhoneNumber(matchedProspect.phone_whatsapp);
             }
-            if (targetProspect.city) setSalonCity(targetProspect.city);
-            if (targetProspect.address) setSalonAddress(targetProspect.address);
-            setBusinessHours(targetProspect.business_data?.horario_atencion || 'Lun a Sáb: 8:00 AM – 7:00 PM');
+            if (matchedProspect.city) setSalonCity(matchedProspect.city);
+            if (matchedProspect.address) setSalonAddress(matchedProspect.address);
+            setBusinessHours(formatHours(matchedProspect.business_data?.horario_atencion));
             
-            if (targetProspect.business_data?.servicios && targetProspect.business_data.servicios.length > 0) {
-              const loadedServices = targetProspect.business_data.servicios.map((s: any) => ({
+            if (matchedProspect.business_data?.servicios && matchedProspect.business_data.servicios.length > 0) {
+              const loadedServices = matchedProspect.business_data.servicios.map((s: any) => ({
                 name: s.nombre || s.titulo,
                 category: 'color',
                 duration_minutes: s.duracion_minutos || 60,
@@ -126,6 +145,15 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
               }));
               setServicesList(loadedServices);
             }
+          } else {
+            // Inicializar limpio con el nombre del usuario sin mezclar otro negocio
+            const cleanName = ownerEmail.split('@')[0].replace(/[._-]/g, ' ');
+            const capitalized = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+            setSalonName(`Salón ${capitalized}`);
+            setSalonCity('Medellín');
+            setSalonAddress('');
+            setSalonPhone('+57 300 000 0000');
+            setBusinessHours('Lun a Sáb: 8:00 AM – 7:00 PM');
           }
         } catch (e) {}
       }
