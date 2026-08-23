@@ -141,31 +141,32 @@ export const BookingPage: React.FC = () => {
     async function loadBookingData() {
       let resolvedTenant: any = null;
       let tid: string | undefined = undefined;
+      let prospectDataObj: any = null;
 
       // 1. Si viene un slug en la URL (/reservar/:salonSlug)
       if (salonSlug) {
         try {
+          const cleanSlug = salonSlug.toLowerCase().trim();
+          
           // A. Buscar tenant oficial en base de datos por slug
-          resolvedTenant = await api.getTenantBySlug(salonSlug);
+          resolvedTenant = await api.getTenantBySlug(cleanSlug);
 
-          // B. Si no se encuentra como tenant directo, buscar en prospect_sites
-          if (!resolvedTenant) {
-            const prospectSite = await api.getProspectSiteBySlug(salonSlug);
-            if (prospectSite) {
-              if (prospectSite.claimed_tenant_id) {
-                const claimed = await api.getTenantBySlug(prospectSite.slug);
-                if (claimed) resolvedTenant = claimed;
-              }
-              if (!resolvedTenant) {
-                resolvedTenant = {
-                  id: prospectSite.id,
-                  name: prospectSite.business_name,
-                  phone: prospectSite.phone_whatsapp,
-                  address: prospectSite.address,
-                  currency: 'COP',
-                  prospectData: prospectSite.business_data
-                };
-              }
+          // B. Buscar en prospect_sites por slug
+          const prospectSite = await api.getProspectSiteBySlug(cleanSlug);
+          if (prospectSite) {
+            prospectDataObj = prospectSite.business_data;
+            if (prospectSite.claimed_tenant_id && !resolvedTenant) {
+              resolvedTenant = await api.getTenantBySlug(prospectSite.slug);
+            }
+            if (!resolvedTenant) {
+              resolvedTenant = {
+                id: prospectSite.id,
+                name: prospectSite.business_name,
+                phone: prospectSite.phone_whatsapp,
+                address: prospectSite.address,
+                currency: 'COP',
+                prospectData: prospectSite.business_data
+              };
             }
           }
         } catch (err) {}
@@ -188,49 +189,12 @@ export const BookingPage: React.FC = () => {
         if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
         if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
         if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
-
-        // Si es un prospecto con servicios estructurados
-        if (resolvedTenant.prospectData?.servicios && resolvedTenant.prospectData.servicios.length > 0) {
-          const mappedSrvs: Service[] = resolvedTenant.prospectData.servicios.map((s: any, idx: number) => {
-            const srvName = s.nombre || s.titulo || 'Servicio Profesional';
-            return {
-              id: `ps-srv-${idx + 1}`,
-              tenant_id: tid || 'prospect',
-              name: srvName,
-              category: s.categoria || 'Servicio',
-              duration_minutes: Number(s.duracion_minutos || 60),
-              price: Number(s.precio_cop || s.precio || 0),
-              price_cop: Number(s.precio_cop || s.precio || 0),
-              price_usd: Number(s.precio_cop || s.precio || 0),
-              requires_patch_test: false,
-              description: s.descripcion || `Tratamiento de ${srvName}`
-            };
-          });
-          setServices(mappedSrvs);
-          if (mappedSrvs.length > 0) setSelectedServices([mappedSrvs[0]]);
-        }
-
-        if (resolvedTenant.prospectData?.especialistas && resolvedTenant.prospectData.especialistas.length > 0) {
-          const mappedStys: Stylist[] = resolvedTenant.prospectData.especialistas.map((esp: any, idx: number) => ({
-            id: `ps-sty-${idx + 1}`,
-            tenant_id: tid || 'prospect',
-            name: esp.nombre || 'Especialista',
-            specialty: esp.rol || esp.especialidad || 'Master Stylist',
-            photo_url: esp.foto || esp.photo_url || '',
-            rating: 5.0,
-            reviews_count: 20 + idx * 5,
-            commission_service_pct: 45,
-            commission_retail_pct: 10,
-            working_days: [1, 2, 3, 4, 5, 6],
-            attends_clients: true,
-            is_active: true
-          }));
-          setStylists(mappedStys);
-          if (mappedStys.length > 0) setSelectedStylist(mappedStys[0]);
-        }
       }
 
-      // 4. Si el tenant tiene servicios y estilistas registrados en la BD, cargarlos exclusivamente para su tenant_id
+      let loadedServices: Service[] = [];
+      let loadedStylists: Stylist[] = [];
+
+      // 4. Cargar servicios y estilistas registrados en base de datos para este tenant
       if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
         try {
           const [srvList, styList, aptList] = await Promise.all([
@@ -238,31 +202,63 @@ export const BookingPage: React.FC = () => {
             api.getStylists(tid),
             api.getAppointments(tid)
           ]);
-          if (srvList && srvList.length > 0) {
-            setServices(srvList);
-            setSelectedServices([srvList[0]]);
-          } else if (!resolvedTenant?.prospectData?.servicios) {
-            setServices([]);
-            setSelectedServices([]);
-          }
-
-          if (styList && styList.length > 0) {
-            setStylists(styList);
-            setSelectedStylist(styList[0]);
-          } else if (!resolvedTenant?.prospectData?.especialistas) {
-            setStylists([]);
-            setSelectedStylist(null);
-          }
-
-          if (aptList && aptList.length > 0) {
-            setExistingAppointments(aptList);
-          }
+          if (srvList && srvList.length > 0) loadedServices = srvList;
+          if (styList && styList.length > 0) loadedStylists = styList;
+          if (aptList && aptList.length > 0) setExistingAppointments(aptList);
         } catch (err) {}
-      } else if (!resolvedTenant) {
-        // Si no existe el negocio, dejar listas vacías sin cargar datos demo
-        setServices([]);
+      }
+
+      // 5. Si la BD aún no tiene servicios guardados, pero el prospecto sí los tiene definidos, usarlos
+      const fallbackServices = prospectDataObj?.servicios || resolvedTenant?.prospectData?.servicios;
+      if (loadedServices.length === 0 && fallbackServices && fallbackServices.length > 0) {
+        loadedServices = fallbackServices.map((s: any, idx: number) => {
+          const srvName = s.nombre || s.titulo || 'Tratamiento Profesional';
+          const p = Number(s.precio_cop || s.precio || s.precio_usd || 0);
+          return {
+            id: `ps-srv-${idx + 1}`,
+            tenant_id: tid || 'prospect',
+            name: srvName,
+            category: s.categoria || 'Servicio',
+            duration_minutes: Number(s.duracion_minutos || 60),
+            price: p,
+            price_cop: p,
+            price_usd: p,
+            requires_patch_test: false,
+            description: s.descripcion || `Servicio profesional de ${srvName}`
+          };
+        });
+      }
+
+      const fallbackStylists = prospectDataObj?.especialistas || resolvedTenant?.prospectData?.especialistas;
+      if (loadedStylists.length === 0 && fallbackStylists && fallbackStylists.length > 0) {
+        loadedStylists = fallbackStylists.map((esp: any, idx: number) => ({
+          id: `ps-sty-${idx + 1}`,
+          tenant_id: tid || 'prospect',
+          name: esp.nombre || 'Especialista',
+          specialty: esp.rol || esp.especialidad || 'Master Stylist',
+          photo_url: esp.foto || esp.photo_url || '',
+          rating: 5.0,
+          reviews_count: 20 + idx * 5,
+          commission_service_pct: 45,
+          commission_retail_pct: 10,
+          working_days: [1, 2, 3, 4, 5, 6],
+          attends_clients: true,
+          is_active: true
+        }));
+      }
+
+      // 6. Asignar estado final en memoria de React
+      setServices(loadedServices);
+      if (loadedServices.length > 0) {
+        setSelectedServices([loadedServices[0]]);
+      } else {
         setSelectedServices([]);
-        setStylists([]);
+      }
+
+      setStylists(loadedStylists);
+      if (loadedStylists.length > 0) {
+        setSelectedStylist(loadedStylists[0]);
+      } else {
         setSelectedStylist(null);
       }
     }
