@@ -2463,39 +2463,35 @@ export const api = {
       }
     }
 
-    // 4.1 Sembrar Servicios reales del JSON de Negocio (business_data)
+    // 4.1 Sembrar Servicios reales del JSON de Negocio (business_data) SOLO SI EXISTEN
     const rawServices = prospect?.business_data?.servicios || prospect?.business_data?.services || [];
-    const servicesToSeed = rawServices.length > 0 
-      ? rawServices.map((srv: any) => {
-          const srvName = srv.titulo || srv.name || srv.nombre || 'Servicio Profesional';
-          let detectedCategory: any = 'corte';
-          const lower = srvName.toLowerCase();
-          if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
-          else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
-          else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
-          else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
-          else if (lower.includes('barba') || lower.includes('barber')) detectedCategory = 'barberia';
+    if (rawServices && rawServices.length > 0) {
+      const servicesToSeed = rawServices.map((srv: any) => {
+        const srvName = srv.titulo || srv.name || srv.nombre || 'Servicio Profesional';
+        let detectedCategory: any = 'corte';
+        const lower = srvName.toLowerCase();
+        if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
+        else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
+        else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
+        else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
+        else if (lower.includes('barba') || lower.includes('barber')) detectedCategory = 'barberia';
 
-          return {
-            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
-            tenant_id: newTenant.id,
-            name: srvName,
-            category: detectedCategory,
-            duration_minutes: Number(srv.duracion_minutos || srv.duration || 60),
-            price_usd: Number(srv.precio_cop || srv.precio || srv.price || 50000),
-            requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
-            description: srv.descripcion || srv.description || `${srvName} con productos profesionales de alta gama.`,
-            is_active: true
-          };
-        })
-      : initialServices.map((srv) => ({
-          ...srv,
+        return {
           id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
-          tenant_id: newTenant.id
-        }));
+          tenant_id: newTenant.id,
+          name: srvName,
+          category: detectedCategory,
+          duration_minutes: Number(srv.duracion_minutos || srv.duration || 60),
+          price_usd: Number(srv.precio_cop || srv.precio || srv.price || 50000),
+          requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
+          description: srv.descripcion || srv.description || `${srvName} con productos profesionales de alta gama.`,
+          is_active: true
+        };
+      });
 
-    for (const service of servicesToSeed) {
-      await this.createService(service);
+      for (const service of servicesToSeed) {
+        await this.createService(service);
+      }
     }
 
     // 5. Actualizar prospect_sites como 'reclamado'
