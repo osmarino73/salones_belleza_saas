@@ -70,228 +70,69 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 1. Inyectar regla CSS suave solo para que el contenedor general no sea negro/blanco transparente
-  // e importar Plus Jakarta Sans & Inter según FICHA_DISENO.md
+  // 1. Inyectar únicamente soporte técnico limpio (Smart Hide Navbar) sin alterar fuentes, colores ni tipografía del HTML de referencia
   const resetCss = `
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style id="beautyflow-prospect-reset">
-  body, p, span, li, a, input, textarea, button {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  }
-  h1, h2, h3, h4, h5, h6, .brand-name, .logo-text, .hero-main-title, .btn-pill-magenta, .btn-view-all-services, .card-service-title {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  }
-  .prospect-site-wrapper { 
-    background-color: var(--soft-pink-bg, #fbf2f6);
-  }
-  .hero-floating-pill strong {
-    color: var(--deep-navy, #190d2e) !important;
-    display: block !important;
-    font-size: 0.88rem !important;
-    font-weight: 800 !important;
-  }
-  .hero-floating-pill span {
-    color: #64748b !important;
-  }
-
-  /* NORMALIZACIÓN Y ESTILOS DE ALTO CONTRASTE PARA TARJETAS DE SERVICIOS */
-  .glow-service-card {
-    background: #ffffff !important;
-    border-radius: 20px !important;
-    padding: 16px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
-    border: 1px solid rgba(225, 29, 72, 0.1) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-  }
-  .glow-service-card:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 16px 36px rgba(225, 29, 72, 0.12) !important;
-  }
-  .glow-service-card .card-photo-box {
-    position: relative !important;
-    overflow: hidden !important;
-    aspect-ratio: 1 / 1 !important;
-    border-radius: 14px !important;
-    margin-bottom: 14px !important;
-  }
-  .glow-service-card .card-photo-box img,
-  .services-four-grid .card-photo-box img,
-  .services-grid .card-photo-box img,
-  .services-four-grid img,
-  .services-grid img,
-  .servicios-grid img,
-  .grid-services img {
-    width: 100% !important;
-    height: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    object-fit: cover !important;
-    object-position: center !important;
-    display: block !important;
-    border-radius: 14px !important;
-  }
-  .glow-service-card .card-num-badge {
-    position: absolute !important;
-    top: 10px !important;
-    left: 10px !important;
-    background: rgba(15, 23, 42, 0.8) !important;
-    color: #ffffff !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 3px 8px !important;
-    border-radius: 8px !important;
-    backdrop-filter: blur(6px) !important;
-    z-index: 2 !important;
-  }
-  .glow-service-card .card-service-title {
-    font-size: 17px !important;
-    font-weight: 800 !important;
-    color: #1e1b4b !important;
-    margin: 0 0 6px 0 !important;
-    line-height: 1.3 !important;
-  }
-  .glow-service-card .pink-divider-dash {
-    width: 32px !important;
-    height: 3px !important;
-    background: linear-gradient(90deg, #e11d48, #d946ef) !important;
-    border-radius: 999px !important;
-    margin-bottom: 10px !important;
-  }
-  .glow-service-card .card-service-desc {
-    font-size: 13px !important;
-    color: #475569 !important;
-    margin: 0 0 16px 0 !important;
-    line-height: 1.5 !important;
-  }
-  .glow-service-card .price-pill-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: 100% !important;
-    background: linear-gradient(135deg, #e11d48, #d946ef) !important;
-    color: #ffffff !important;
-    font-weight: 800 !important;
-    font-size: 13px !important;
-    padding: 10px 16px !important;
-    border-radius: 999px !important;
-    text-decoration: none !important;
-    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.28) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  }
-  .glow-service-card .price-pill-btn:hover {
-    transform: scale(1.02) !important;
-    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.38) !important;
-  }
-
   /* SMART HIDE NAVBAR (DESLIZAMIENTO SUAVE) */
-  header, nav, .main-header, .site-header, .navbar {
+  header, nav, .main-header, .site-header, .navbar, .header, .top-nav, .navigation {
     position: sticky !important;
     top: 0 !important;
     z-index: 1000 !important;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, background-color 0.3s ease !important;
+    will-change: transform;
   }
   .nav-hidden {
-    transform: translateY(-100%) !important;
+    transform: translateY(-105%) !important;
+    pointer-events: none !important;
   }
 
-  /* OPTIMIZACIÓN MÓVIL HERO: FOTO EN EL FONDO COMPLETO Y TEXTOS ARRIBA */
+  /* BARRA SUPERIOR & HERO MÓVIL PERFECCIONADOS */
   @media (max-width: 768px) {
-    .hero-fullwidth-section,
-    .hero-section,
-    section[id*="inicio"],
-    section[class*="hero"] {
-      position: relative !important;
-      min-height: 88vh !important;
+    /* Barra Superior / Navbar en Móvil: Espaciado, alineación y botón compacto */
+    header, nav, .main-header, .site-header, .navbar, .header {
+      padding: 12px 16px !important;
       display: flex !important;
       align-items: center !important;
-      justify-content: center !important;
-      padding: 70px 20px 50px 20px !important;
-      overflow: hidden !important;
-    }
-    .hero-bg-cover,
-    .hero-main-img-box,
-    .model-image-frame {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      box-sizing: border-box !important;
       width: 100% !important;
-      height: 100% !important;
-      z-index: 1 !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
     }
+    
+    /* Botón de la barra superior en móvil: elegante, contenido y proporcional */
+    header a[class*="btn"], 
+    nav a[class*="btn"], 
+    .navbar a[class*="btn"], 
+    .header a[class*="btn"],
+    .btn-header,
+    .btn-pill-magenta {
+      padding: 8px 14px !important;
+      font-size: 0.82rem !important;
+      white-space: nowrap !important;
+      border-radius: 10px !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Imagen de Portada del Hero: 100% Centrada y Nítida */
     .hero-bg-img,
     .hero-bg-cover img,
-    .hero-main-img-box img {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
+    .hero-main-img-box img,
+    .model-image-frame img,
+    .hero-image-container img,
+    .hero-media-wrapper img {
       object-fit: cover !important;
-      object-position: center 25% !important;
-      display: block !important;
-      opacity: 0.9 !important;
+      object-position: center center !important;
+      opacity: 0.95 !important;
     }
-    .hero-bg-overlay {
-      position: absolute !important;
-      inset: 0 !important;
-      background: linear-gradient(180deg, rgba(24, 21, 40, 0.72) 0%, rgba(24, 21, 40, 0.85) 100%) !important;
-      z-index: 2 !important;
-    }
-    .hero-content-wrapper,
-    .hero-text-content,
-    .hero-container {
-      position: relative !important;
-      z-index: 10 !important;
-      width: 100% !important;
-      text-align: center !important;
-      padding: 0 !important;
-    }
-    .hero-content-wrapper h1,
-    .hero-main-title,
-    .hero-title {
-      color: #ffffff !important;
-      text-shadow: 0 2px 14px rgba(0,0,0,0.5) !important;
-    }
-    .hero-content-wrapper p,
-    .hero-subtitle,
-    .hero-desc {
-      color: #f1f5f9 !important;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.4) !important;
-    }
-    .hero-script-eyebrow,
-    .badge-hero {
-      color: #fb7185 !important;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.4) !important;
+
+    /* Overlay / Background frontal suave para lucir la foto */
+    .hero-bg-overlay,
+    .hero-overlay,
+    .hero-bg-cover .hero-bg-overlay {
+      opacity: 0.3 !important;
     }
   }
 </style>
-
-<script>
-  // SMART HIDE NAVBAR SCRIPT
-  (function() {
-    let lastScrollY = window.pageYOffset;
-    window.addEventListener('scroll', function() {
-      const currentScrollY = window.pageYOffset;
-      const nav = document.querySelector('header, nav, .main-header, .site-header, .navbar');
-      if (!nav) return;
-      if (currentScrollY > 90 && currentScrollY > lastScrollY) {
-        // Scrolling DOWN -> Ocultar barra para maximizar pantalla
-        nav.classList.add('nav-hidden');
-      } else {
-        // Scrolling UP o en el tope -> Mostrar barra
-        nav.classList.remove('nav-hidden');
-      }
-      lastScrollY = currentScrollY;
-    }, { passive: true });
-  })();
-</script>
 `;
   if (processed.includes('</head>')) {
     processed = processed.replace('</head>', `${resetCss}</head>`);

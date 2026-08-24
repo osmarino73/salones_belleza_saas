@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier } from '../types';
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
+import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
+import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -1913,14 +1915,22 @@ export const api = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as ProspectSite[];
-        const hasKapa = parsed.some(s => s.slug === 'kapa-spa');
-        const merged = hasKapa ? parsed : [KAPA_SPA_SITE_DATA, ...parsed];
+        let merged = parsed;
+        if (!merged.some(s => s.slug === 'kapa-spa')) {
+          merged = [KAPA_SPA_SITE_DATA, ...merged];
+        }
+        if (!merged.some(s => s.slug === 'milena-gomez-salon')) {
+          merged = [MILENA_GOMEZ_SITE_DATA, ...merged];
+        }
+        if (!merged.some(s => s.slug === 'luxus-beauty-spa')) {
+          merged = [LUXUS_BEAUTY_SITE_DATA, ...merged];
+        }
         inMemoryProspectSitesCache = merged;
         return merged;
       } catch (e) {}
     }
 
-    // Datos Demo Iniciales (Kapa Spa Apartadó & Studio Glamour Spa Poblado)
+    // Datos Demo Iniciales (Kapa Spa, Milena Gómez, Luxus Beauty & Studio Glamour Spa)
     const demoSite: ProspectSite = {
       id: 'ps-demo-101',
       slug: 'studio-glamour-spa',
@@ -1982,13 +1992,22 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    const defaultSites = [KAPA_SPA_SITE_DATA, demoSite];
+    const defaultSites = [KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, demoSite];
     inMemoryProspectSitesCache = defaultSites;
     safeSaveProspectSitesToLocalStorage(defaultSites);
     return defaultSites;
   },
 
   async getProspectSiteBySlug(slug: string): Promise<ProspectSite | null> {
+    if (slug === 'luxus-beauty-spa' || slug === 'luxus_beauty_spa') {
+      return LUXUS_BEAUTY_SITE_DATA;
+    }
+    if (slug === 'milena-gomez-salon' || slug === 'milena_gomez_salon') {
+      return MILENA_GOMEZ_SITE_DATA;
+    }
+    if (slug === 'kapa-spa' || slug === 'kapa_spa') {
+      return KAPA_SPA_SITE_DATA;
+    }
     if (supabase && isSupabaseConfigured) {
       try {
         const { data, error } = await supabase

@@ -1,0 +1,105 @@
+{
+  "negocio": {
+    "nombre": "Milena Gómez salon",
+    "rubro": "Centro de estética",
+    "categoria": "estetica",
+    "eslogan": "Milena Gómez salon — Centro de estética y bienestar en Apartadó",
+    "calificacion": "5.0",
+    "resenas": "1",
+    "contacto": {
+      "telefono_principal": "(+57) 312 886 7937",
+      "telefono_raw": "+573128867937",
+      "whatsapp": {
+        "numero": "+573128867937",
+        "link": "https://wa.me/573128867937?text=Hola%20Milena%20G%C3%B3mez%20salon%2C%20quisiera%20agendar%20una%20cita%20para%20tratamientos%20de%20est%C3%A9tica."
+      }
+    },
+    "ubicacion": {
+      "direccion": "Cl. 101 #97/56, Apartadó, Antioquia",
+      "ciudad": "Apartadó",
+      "departamento_pais": "Antioquia, Colombia",
+      "google_maps_url": "https://www.google.com/maps/place/Milena+G%C3%B3mez+salon/@7.8816604,-76.6480189,15z/data=!4m10!1m2!2m1!1ssalones+de+belleza+en+apartado!3m6!1s0x8e500d5adeb6cedf:0x37a8bf1d21c854bb!8m2!3d7.8851221!4d-76.6293883!15sCh5zYWxvbmVzIGRlIGJlbGxlemEgZW4gYXBhcnRhZG9aICIec2Fsb25lcyBkZSBiZWxsZXphIGVuIGFwYXJ0YWRvkgEMYmVhdXR5X3NhbG9u4AEA!16s%2Fg%2F11hds1r6_9",
+      "iframe_embed_url": "https://maps.google.com/maps?q=Milena+G%C3%B3mez+salon,+Cl.+101+%2397%2F56,+Apartad%C3%B3,+Antioquia,+Colombia&t=&z=16&ie=UTF8&iwloc=&output=embed"
+    },
+    "horario_atencion": {
+      "lunes_a_sabado": "8:00 AM - 7:00 PM",
+      "domingos_y_festivos": "Previa reserva y disponibilidad"
+    },
+    "sitio_web": "",
+    "sistema_reservas": {
+      "estado": "ACTIVO_WHATSAPP",
+      "oportunidad_saas": "MEDIA",
+      "motivo_auditoria": "Agendamiento asistido por WhatsApp con cotización personalizada"
+    },
+    "servicios": [
+      {
+        "id": "faciales-glow",
+        "nombre": "Limpieza Facial Profunda",
+        "descripcion": "Limpieza exhaustiva, exfoliación enzimática, extracción higiénica, hidratación y luminosidad inmediata para tu rostro.",
+        "duracion": "60 min",
+        "badge": "Técnica Glow Spa",
+        "icono": "fa-spa",
+        "imagen": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "masajes-corporales",
+        "nombre": "Masajes Relajantes & Corporales",
+        "descripcion": "Alivia la tensión muscular, reduce el estrés diario y restaura el equilibrio holístico con aceites botánicos tibios.",
+        "duracion": "60 min",
+        "badge": "Ritual Anti-Estrés",
+        "icono": "fa-hands",
+        "imagen": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "manicura-spa",
+        "nombre": "Manicura Spa & Rusa",
+        "descripcion": "Tratamiento de cutículas milimétrico, limado anatómico y esmaltado de alta gama con acabado tipo espejo.",
+        "duracion": "45 min",
+        "badge": "Cuidado de Autor",
+        "icono": "fa-hand-sparkles",
+        "imagen": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "pedicura-spa",
+        "nombre": "Pedicura Spa & Relax",
+        "descripcion": "Baño con sales minerales aromáticas, exfoliación intensiva de durezas, mascarilla emoliente y masaje podal.",
+        "duracion": "60 min",
+        "badge": "Spa Podal Relax",
+        "icono": "fa-shoe-prints",
+        "imagen": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "skincare-tratamientos",
+        "nombre": "Tratamientos Skincare & Anti-Edad",
+        "descripcion": "Nutrición celular intensiva, sueros antioxidantes y protocolos de rejuvenecimiento facial no invasivo.",
+        "duracion": "75 min",
+        "badge": "Dermo-Nutrición",
+        "icono": "fa-bottle-droplet",
+        "imagen": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80"
+      }
+    ],
+    "testimonios": [
+      {
+        "nombre": "Carolina V.",
+        "ciudad": "Apartadó, Antioquia",
+        "comentario": "¡Una experiencia maravillosa! La atención de Milena y su equipo es impecable, el facial me dejó la piel súper suave y luminosa.",
+        "calificacion": 5,
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+      },
+      {
+        "nombre": "Valentina M.",
+        "ciudad": "Apartadó, Antioquia",
+        "comentario": "El masaje relajante es de otro mundo. Salí renovada por completo. El lugar es hermoso, huele delicioso y la higiene es del 100%.",
+        "calificacion": 5,
+        "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80"
+      },
+      {
+        "nombre": "Luciana R.",
+        "ciudad": "Apartadó, Antioquia",
+        "comentario": "Excelente salón de estética en Apartadó. Los tratamientos de manicure y pedicure duran muchísimo y cuidan de verdad la salud de las uñas.",
+        "calificacion": 5,
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+      }
+    ]
+  }
+}
