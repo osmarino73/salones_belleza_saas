@@ -194,7 +194,7 @@ export const BookingPage: React.FC = () => {
       let loadedServices: Service[] = [];
       let loadedStylists: Stylist[] = [];
 
-      // 4. Cargar servicios y estilistas registrados en base de datos para este tenant
+      // 4. Cargar servicios y estilistas registrados para este tenant
       if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
         try {
           const [srvList, styList, aptList] = await Promise.all([
@@ -206,6 +206,17 @@ export const BookingPage: React.FC = () => {
           if (styList && styList.length > 0) loadedStylists = styList;
           if (aptList && aptList.length > 0) setExistingAppointments(aptList);
         } catch (err) {}
+
+        // Si no encontró por tid directo y tenemos un prospectSite con claimed_tenant_id o id alternativo
+        if (loadedServices.length === 0) {
+          try {
+            const altTid = resolvedTenant?.claimed_tenant_id || (resolvedTenant?.slug ? `tenant-${resolvedTenant.slug}` : undefined);
+            if (altTid && altTid !== tid) {
+              const altSrvs = await api.getServices(altTid);
+              if (altSrvs && altSrvs.length > 0) loadedServices = altSrvs;
+            }
+          } catch (e) {}
+        }
       }
 
       // Helper robusto para extraer el valor numérico de precios en cualquier formato (número, string con $ o texto descriptivo)

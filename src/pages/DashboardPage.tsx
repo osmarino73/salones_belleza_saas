@@ -832,38 +832,48 @@ export const DashboardPage: React.FC = () => {
     // Si no seleccionó imagen, sugerir una de la librería según la categoría
     const finalImage = serviceForm.image_url || getSuggestedImageForService(serviceForm.name, serviceForm.category);
 
-    if (editingService) {
-      const updated: Service = {
-        ...editingService,
-        name: serviceForm.name,
-        category: serviceForm.category,
-        duration_minutes: Number(serviceForm.duration_minutes),
-        price_usd: Number(serviceForm.price_usd),
-        image_url: finalImage,
-        requires_patch_test: serviceForm.requires_patch_test,
-        description: serviceForm.description,
-        is_featured: !!serviceForm.is_featured
-      };
-      await api.updateService(updated);
-      setServices(services.map(s => s.id === updated.id ? updated : s));
-    } else {
-      const activeTid = activeTenantObj?.id || getActiveTenantId();
-      const newSrv: Service = {
-        id: `srv-${Date.now()}`,
-        tenant_id: activeTid,
-        name: serviceForm.name,
-        category: serviceForm.category,
-        duration_minutes: Number(serviceForm.duration_minutes),
-        price_usd: Number(serviceForm.price_usd),
-        image_url: finalImage,
-        requires_patch_test: serviceForm.requires_patch_test,
-        description: serviceForm.description,
-        is_featured: !!serviceForm.is_featured
-      };
-      const saved = await api.createService(newSrv);
-      setServices([saved, ...services]);
+    try {
+      if (editingService) {
+        const updated: Service = {
+          ...editingService,
+          name: serviceForm.name,
+          category: serviceForm.category,
+          duration_minutes: Number(serviceForm.duration_minutes),
+          price_usd: Number(serviceForm.price_usd),
+          price: Number(serviceForm.price_usd),
+          price_cop: salonCurrency === 'COP' ? Number(serviceForm.price_usd) : Number(serviceForm.price_usd) * 4000,
+          image_url: finalImage,
+          requires_patch_test: serviceForm.requires_patch_test,
+          description: serviceForm.description,
+          is_featured: !!serviceForm.is_featured
+        };
+        await api.updateService(updated);
+        setServices(services.map(s => s.id === updated.id ? updated : s));
+        alert(`✅ Servicio "${serviceForm.name}" actualizado con éxito en Supabase y visible en tu agendador.`);
+      } else {
+        const activeTid = activeTenantObj?.id || getActiveTenantId();
+        const newSrv: Service = {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `srv-${Date.now()}`,
+          tenant_id: activeTid,
+          name: serviceForm.name,
+          category: serviceForm.category,
+          duration_minutes: Number(serviceForm.duration_minutes),
+          price_usd: Number(serviceForm.price_usd),
+          price: Number(serviceForm.price_usd),
+          price_cop: salonCurrency === 'COP' ? Number(serviceForm.price_usd) : Number(serviceForm.price_usd) * 4000,
+          image_url: finalImage,
+          requires_patch_test: serviceForm.requires_patch_test,
+          description: serviceForm.description,
+          is_featured: !!serviceForm.is_featured
+        };
+        const saved = await api.createService(newSrv);
+        setServices([saved, ...services]);
+        alert(`✨ ¡Servicio "${serviceForm.name}" guardado exitosamente en la base de datos de Supabase! Ahora las clientas pueden reservarlo online.`);
+      }
+      setIsServiceModalOpen(false);
+    } catch (err: any) {
+      alert(`❌ Error guardando en Supabase: ${err.message || 'Error desconocido'}`);
     }
-    setIsServiceModalOpen(false);
   };
 
   const handleDeleteService = async (id: string) => {
@@ -5706,6 +5716,27 @@ export const DashboardPage: React.FC = () => {
               localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
               try {
                 await api.updateTenant(updatedTenant);
+                // Sincronizar también con prospect_sites para que la web pública lo refleje inmediatamente
+                const pSites = await api.getProspectSites();
+                const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
+                if (matched) {
+                  const updatedSite: any = {
+                    hero_image_url: updatedTenant.hero_image_url,
+                    primary_color: updatedTenant.primary_color,
+                    business_data: {
+                      ...matched.business_data,
+                      hero_image_url: updatedTenant.hero_image_url,
+                      primary_color: updatedTenant.primary_color,
+                      logo_icon: updatedTenant.logo_icon,
+                      hero_eyebrow: updatedTenant.hero_eyebrow,
+                      slogan: updatedTenant.slogan,
+                      title_accent: updatedTenant.title_accent,
+                      subtitle: updatedTenant.subtitle,
+                      show_team_section: updatedTenant.show_team_section
+                    }
+                  };
+                  await api.updateProspectSite(matched.id, updatedSite);
+                }
               } catch (err) {
                 console.warn('Error saving website config in Supabase:', err);
               }

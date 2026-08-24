@@ -920,7 +920,6 @@ export const api = {
           requires_patch_test: serviceWithTenant.requires_patch_test || false,
           description: serviceWithTenant.description || 'Servicio profesional garantizado.',
           image_url: serviceWithTenant.image_url || null,
-          is_featured: serviceWithTenant.is_featured,
           is_active: true
         };
         if (cleanServiceId) payload.id = cleanServiceId;
@@ -928,19 +927,27 @@ export const api = {
         const { data, error } = await supabase.from('services').insert([payload]).select().single();
         if (!error && data) {
           const p = Number(data.price ?? priceValue);
-          return {
+          const savedResult = {
             ...data,
             price: p,
             price_usd: p,
             price_cop: p,
             image_url: data.image_url || serviceWithTenant.image_url,
-            is_featured: data.is_featured !== false
+            is_featured: serviceWithTenant.is_featured !== false
           } as Service;
+          
+          // Actualizar caché local sincronizada
+          const current = await this.getServices(tid);
+          const updated = [savedResult, ...current.filter(s => s.id !== savedResult.id && s.name !== savedResult.name)];
+          localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+          return savedResult;
         } else if (error) {
-          console.warn('Error insertando servicio en Supabase:', error.message);
+          console.error('Error crítico insertando servicio en Supabase:', error.message, error.details);
+          throw new Error(`Error en Supabase: ${error.message}`);
         }
-      } catch (err) {
-        console.warn('Excepción insertando servicio en Supabase:', err);
+      } catch (err: any) {
+        console.error('Excepción insertando servicio en Supabase:', err);
+        throw err;
       }
     }
 
@@ -1398,7 +1405,7 @@ export const api = {
         .from('tenant_ai_settings')
         .select('*')
         .eq('tenant_id', tid)
-        .single();
+        .maybeSingle();
       if (!error && data) return data as TenantAISettings;
     }
     const saved = localStorage.getItem('bf_tenant_ai_settings_v1');

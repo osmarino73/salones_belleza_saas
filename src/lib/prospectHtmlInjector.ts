@@ -80,8 +80,29 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     color: #64748b !important;
   }
 
-  /* NORMALIZACIÓN UNIVERSAL 1:1 PARA TODAS LAS FOTOS DE SERVICIOS */
-  .glow-service-card .card-photo-box,
+  /* NORMALIZACIÓN Y ESTILOS DE ALTO CONTRASTE PARA TARJETAS DE SERVICIOS */
+  .glow-service-card {
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    padding: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(225, 29, 72, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  }
+  .glow-service-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 16px 36px rgba(225, 29, 72, 0.12) !important;
+  }
+  .glow-service-card .card-photo-box {
+    position: relative !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
+  }
   .glow-service-card .card-photo-box img,
   .services-four-grid .card-photo-box img,
   .services-grid .card-photo-box img,
@@ -90,18 +111,65 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .servicios-grid img,
   .grid-services img {
     width: 100% !important;
+    height: 100% !important;
     aspect-ratio: 1 / 1 !important;
     object-fit: cover !important;
     object-position: center !important;
     display: block !important;
-    border-radius: 12px !important;
-  }
-  .glow-service-card .card-photo-box {
-    position: relative !important;
-    overflow: hidden !important;
-    aspect-ratio: 1 / 1 !important;
     border-radius: 14px !important;
-    margin-bottom: 12px !important;
+  }
+  .glow-service-card .card-num-badge {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(6px) !important;
+    z-index: 2 !important;
+  }
+  .glow-service-card .card-service-title {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #1e1b4b !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.3 !important;
+  }
+  .glow-service-card .pink-divider-dash {
+    width: 32px !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, #e11d48, #d946ef) !important;
+    border-radius: 999px !important;
+    margin-bottom: 10px !important;
+  }
+  .glow-service-card .card-service-desc {
+    font-size: 13px !important;
+    color: #475569 !important;
+    margin: 0 0 16px 0 !important;
+    line-height: 1.5 !important;
+  }
+  .glow-service-card .price-pill-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    background: linear-gradient(135deg, #e11d48, #d946ef) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 13px !important;
+    padding: 10px 16px !important;
+    border-radius: 999px !important;
+    text-decoration: none !important;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.28) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  }
+  .glow-service-card .price-pill-btn:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.38) !important;
   }
 
   /* OPTIMIZACIÓN MÓVIL HERO (OPCIÓN A: FOTO NÍTIDA Y VIBRANTE) */
@@ -159,7 +227,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       : `<span style="font-size: 22px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">${logoIcon}</span>`;
 
     processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*logo-silhouette-box[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i,
+      /(<(?:div|span|a)\b[^>]*class=["'][^"']*(?:logo-silhouette-box|logo-box|logo-icon|logo-symbol|brand-icon)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|a)>)/i,
       `$1${iconInnerHtml}$3`
     );
   }
@@ -167,7 +235,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow)
   if (heroEyebrow) {
     processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*hero-script-eyebrow[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i,
+      /(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i,
       `$1${heroEyebrow}$3`
     );
   }
@@ -175,7 +243,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
   if (heroImageUrl) {
     processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
       `$1${heroImageUrl}$3`
     );
   }
@@ -184,23 +252,35 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   if (slogan || titleAccent) {
     const mainTitleName = slogan || businessName;
     const accentText = titleAccent ? `<span class="magenta-accent">${titleAccent}</span>` : '';
-    processed = processed.replace(
-      /(<h1\b[^>]*class=["'][^"']*hero-main-title[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
-      `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
-    );
+    
+    if (/(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
+        `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
+      );
+    } else {
+      // Fallback a cualquier primer <h1> dentro del documento
+      processed = processed.replace(
+        /(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i,
+        `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
+      );
+    }
   }
 
   // 1.5 Inyección Dinámica de Subtítulo Descriptivo
   if (subtitle) {
-    processed = processed.replace(
-      /(<p\b[^>]*class=["'][^"']*hero-subtitle[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,
-      `$1${subtitle}$3`
-    );
+    if (/(<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,
+        `$1${subtitle}$3`
+      );
+    }
   }
 
   // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
   if (liveServices && liveServices.length > 0) {
-    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i;
+    // Expresión regular robusta que busca la cuadrícula completa de servicios y su contenido completo
+    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
     
     if (servicesGridRegex.test(processed)) {
       // Filtrar únicamente los marcados como destacados para la portada web (is_featured === true o !== false por defecto)
@@ -210,44 +290,40 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
       const liveCardsHtml = displayServices.map((srv, idx) => {
         const numStr = String(idx + 1).padStart(2, '0');
-        const priceNum = srv.price_cop ?? srv.price ?? srv.price_usd ?? 0;
-        const formattedPrice = currency === 'COP'
-          ? `$${priceNum.toLocaleString()} COP`
-          : `$${priceNum} ${currency}`;
         const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-        const serviceBookingLink = `${bookingUrl}?serviceId=${srv.id}`;
 
         return `
-        <!-- Card ${numStr} Dinámica -->
+        <!-- Card ${numStr} Dinámica (Diseño Original) -->
         <div class="glow-service-card">
-          <div class="card-photo-box" style="width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 14px; margin-bottom: 12px; position: relative;">
+          <div class="card-photo-box">
             <span class="card-num-badge">${numStr}</span>
-            <img src="${serviceImg}" alt="${srv.name}" style="width: 100%; height: 100%; aspect-ratio: 1 / 1; object-fit: cover; object-position: center; display: block; border-radius: 14px;">
+            <img src="${serviceImg}" alt="${srv.name}">
           </div>
           <div class="card-info-body">
             <h3 class="card-service-title">${srv.name}</h3>
             <div class="pink-divider-dash"></div>
-            <p class="card-service-desc">${srv.description || 'Tratamiento profesional garantizado de alta gama con asesoría personalizada.'}</p>
-            <div>
-              <a href="${serviceBookingLink}" class="price-pill-btn" style="text-decoration: none; display: inline-block;">
-                ${formattedPrice} • Agendar
-              </a>
-            </div>
+            <p class="card-service-desc">${srv.description || 'Tratamiento profesional de alta gama con asesoría personalizada.'}</p>
           </div>
         </div>`;
       }).join('\n');
 
-      // Botón "Ver Catálogo Completo" si hay más servicios
+      // Botón "Ver todos los servicios" si el negocio tiene más servicios registrados que los mostrados en portada
+      // Alineado idénticamente con el estilo, color (#c82d5a) y border-radius del botón del Header
       const viewAllButtonHtml = liveServices.length > displayServices.length ? `
-      <div style="text-align: center; margin-top: 28px; width: 100%; grid-column: 1 / -1;">
-        <a href="${bookingUrl}" class="btn-pill-magenta" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 999px; box-shadow: 0 8px 24px rgba(217,38,114,0.35);">
-          ✨ Ver Todos los Servicios (${liveServices.length}) & Reservar Online
+      <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
+        <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: #c82d5a; color: #ffffff; box-shadow: 0 4px 14px rgba(200, 45, 90, 0.25); transition: all 0.2s ease;">
+          Ver todos los servicios (${liveServices.length})
         </a>
       </div>` : '';
 
       processed = processed.replace(
         servicesGridRegex,
-        `$1\n${liveCardsHtml}\n${viewAllButtonHtml}\n$3`
+        (match, p1, p2, p3) => {
+          if (p3.includes('</section>')) {
+            return `${p1}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
+          }
+          return `${p1}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
+        }
       );
     }
   }

@@ -25,14 +25,13 @@ export const PublicProspectSitePage: React.FC = () => {
         // Actualizar título de la pestaña para Google SEO
         document.title = `${found.business_name} | Sitio Oficial`;
 
-        // Cargar tenant, servicios y estilistas reales solo si el salón ya fue reclamado (es un tenant real activo)
+        // Cargar tenant, servicios y estilistas reales configurados en Supabase
         try {
-          const tid = found.claimed_tenant_id;
-          let tenantData = null;
-          if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
-            tenantData = await api.getTenantBySlug(slug);
-            if (tenantData) {
-              setTenant(tenantData);
+          const tenantData = await api.getTenantBySlug(slug);
+          if (tenantData) {
+            setTenant(tenantData);
+            const tid = tenantData.id;
+            if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
               const [dbServices, dbStylists] = await Promise.all([
                 api.getServices(tid),
                 api.getStylists(tid)
