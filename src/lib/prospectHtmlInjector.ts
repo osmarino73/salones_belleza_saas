@@ -671,14 +671,18 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   processed = processed.replace(
     /<a\b([^>]*?)>(.*?)<\/a>/gis,
     (fullTag, attrs, innerHtml) => {
-      // Excluir explícitamente el botón flotante fijo de WhatsApp
-      if (attrs.includes('wa-floating') || attrs.includes('btn-whatsapp-float')) {
+      // Excluir explícitamente el botón flotante fijo de WhatsApp o enlaces a redes externas (Instagram, Facebook, TikTok)
+      if (
+        attrs.includes('wa-floating') || 
+        attrs.includes('btn-whatsapp-float') ||
+        /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/i.test(attrs)
+      ) {
         return fullTag;
       }
 
       // Si el texto interno o atributos contienen palabras clave de agendamiento
-      const isBookingButton = /(?:Agendar|Reservar|Pedir|Solicitar)\s+(?:Cita|Turno|Online)|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita|btn-header-book|btn-pill-magenta|vip-booking|btn-white-book/i.test(innerHtml) ||
-        /btn-header-book|btn-pill-magenta|btn-white-book/i.test(attrs);
+      const isBookingButton = /(?:Agendar|Reservar|Pedir|Solicitar)\s+(?:Cita|Turno|Online)|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita|btn-header-book|btn-pill-magenta|vip-booking|btn-white-book|btn-primary|btn-booking/i.test(innerHtml) ||
+        /btn-header-book|btn-pill-magenta|btn-white-book|btn-book|btn-reserve/i.test(attrs);
 
       if (isBookingButton) {
         // Reemplazar o actualizar href
@@ -695,6 +699,51 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       }
 
       return fullTag;
+    }
+  );
+
+  // 4.1 REGLA ESTRICTA DE FOOTER: Todo botón o CTA dentro del Footer conduce a /reservar/:slug
+  // Procesa enlaces o botones dentro de etiquetas <footer>
+  processed = processed.replace(
+    /(<footer\b[^>]*>)([\s\S]*?)(<\/footer>)/gis,
+    (fullFooter, footerOpen, footerContent, footerClose) => {
+      let updatedFooter = footerContent;
+
+      // Convertir botones/links de reserva y newsletters en el footer hacia bookingUrl
+      updatedFooter = updatedFooter.replace(
+        /<a\b([^>]*?)>(.*?)<\/a>/gis,
+        (tag: string, attrs: string, content: string) => {
+          // Excluir redes sociales o WhatsApp
+          if (/instagram\.com|facebook\.com|tiktok\.com|wa\.me|api\.whatsapp\.com/i.test(attrs)) {
+            return tag;
+          }
+          // Si es un botón o link de acción en footer (agendar, newsletter, reservar)
+          if (/(?:btn|button|cta|agendar|reservar|cita|turno|suscrib|newsletter)/i.test(attrs) || /(?:Agendar|Reservar|Cita|Turno|Suscribir|Enviar)/i.test(content)) {
+            let newAttrs = attrs;
+            if (/href=["'][^"']*["']/i.test(newAttrs)) {
+              newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
+            } else {
+              newAttrs += ` href="${bookingUrl}"`;
+            }
+            newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
+            return `<a${newAttrs}>${content}</a>`;
+          }
+          return tag;
+        }
+      );
+
+      // Convertir <button> dentro del footer en enlace estilizado a bookingUrl
+      updatedFooter = updatedFooter.replace(
+        /<button\b([^>]*?)>(.*?)<\/button>/gis,
+        (btnTag: string, attrs: string, content: string) => {
+          if (/(?:btn|button|newsletter|submit|agendar|reservar)/i.test(attrs) || /(?:Agendar|Reservar|Suscrib|Enviar|Unirme)/i.test(content)) {
+            return `<a href="${bookingUrl}" ${attrs} style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">${content}</a>`;
+          }
+          return btnTag;
+        }
+      );
+
+      return `${footerOpen}${updatedFooter}${footerClose}`;
     }
   );
 
