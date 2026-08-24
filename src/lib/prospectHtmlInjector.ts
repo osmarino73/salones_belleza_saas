@@ -200,13 +200,13 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
   if (liveServices && liveServices.length > 0) {
-    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/section>)/i;
+    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i;
     
     if (servicesGridRegex.test(processed)) {
       // Filtrar únicamente los marcados como destacados para la portada web (is_featured === true o !== false por defecto)
       const featuredServices = liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined));
       // Si todos fueron desmarcados o no hay destacados, mostrar los que queden con is_featured activo
-      const displayServices = (featuredServices.length > 0 ? featuredServices : []).slice(0, 6);
+      const displayServices = (featuredServices.length > 0 ? featuredServices : liveServices).slice(0, 6);
 
       const liveCardsHtml = displayServices.map((srv, idx) => {
         const numStr = String(idx + 1).padStart(2, '0');
@@ -239,7 +239,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
       // Botón "Ver Catálogo Completo" si hay más servicios
       const viewAllButtonHtml = liveServices.length > displayServices.length ? `
-      <div style="text-align: center; margin-top: 28px; width: 100%;">
+      <div style="text-align: center; margin-top: 28px; width: 100%; grid-column: 1 / -1;">
         <a href="${bookingUrl}" class="btn-pill-magenta" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 999px; box-shadow: 0 8px 24px rgba(217,38,114,0.35);">
           ✨ Ver Todos los Servicios (${liveServices.length}) & Reservar Online
         </a>
@@ -247,7 +247,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
       processed = processed.replace(
         servicesGridRegex,
-        `$1\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</section>`
+        `$1\n${liveCardsHtml}\n${viewAllButtonHtml}\n$3`
       );
     }
   }
