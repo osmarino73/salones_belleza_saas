@@ -2417,6 +2417,7 @@ export const api = {
         const member = rawTeam[i];
         const memberName = member.nombre || member.name || `Especialista ${i + 1}`;
         const cleanMemberEmail = memberName.toLowerCase().replace(/[^a-z0-9]/g, '') + `@${cleanSlug}.com`;
+        const memberPhoto = member.foto_url || member.photo_url || member.avatar || member.imagen || teamPhotos[i % teamPhotos.length];
         
         const stylistEntity: Stylist = {
           id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sty-${newTenant.id.slice(0, 6)}-${i + 1}`,
@@ -2424,11 +2425,12 @@ export const api = {
           name: memberName,
           email: member.email || cleanMemberEmail,
           phone: member.telefono || member.phone || wa,
-          specialty: member.rol || member.especialidad || member.specialty || 'Estilista Profesional',
-          photo_url: member.foto_url || member.photo_url || member.avatar || teamPhotos[i % teamPhotos.length],
+          specialty: member.cargo || member.rol || member.especialidad || member.specialty || 'Estilista Profesional',
+          photo_url: memberPhoto,
           role: 'colaborador',
           is_owner: false,
           attends_clients: true,
+          show_on_web: true,
           rating: Number(member.calificacion || member.rating || 5.0),
           reviews_count: Number(member.resenas || 14),
           commission_service_pct: 50,
@@ -2467,24 +2469,50 @@ export const api = {
     const rawServices = prospect?.business_data?.servicios || prospect?.business_data?.services || [];
     if (rawServices && rawServices.length > 0) {
       const servicesToSeed = rawServices.map((srv: any) => {
-        const srvName = srv.titulo || srv.name || srv.nombre || 'Servicio Profesional';
+        const srvName = srv.nombre || srv.titulo || srv.name || 'Servicio Profesional';
         let detectedCategory: any = 'corte';
         const lower = srvName.toLowerCase();
         if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
         else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
         else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
         else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
-        else if (lower.includes('barba') || lower.includes('barber')) detectedCategory = 'barberia';
+        else if (lower.includes('barba') || lower.includes('barber') || lower.includes('afeitad') || lower.includes('fade') || lower.includes('tattoo')) detectedCategory = 'barberia';
+
+        // Parsear duración (ej: "45 mins", "120", 45) -> 45
+        let durationMinutes = 60;
+        if (typeof srv.duracion === 'string') {
+          const match = srv.duracion.match(/\d+/);
+          if (match) durationMinutes = parseInt(match[0], 10);
+        } else if (srv.duracion_minutos || srv.duration) {
+          durationMinutes = Number(srv.duracion_minutos || srv.duration);
+        }
+
+        // Parsear precio (ej: "$25.000 COP", "$18.000", 25000) -> 25000
+        let parsedPrice = 50000;
+        const rawPriceValue = srv.precio_desde || srv.precio_cop || srv.precio || srv.price || srv.valor;
+        if (typeof rawPriceValue === 'string') {
+          const digitsOnly = rawPriceValue.replace(/[^0-9]/g, '');
+          if (digitsOnly) parsedPrice = parseInt(digitsOnly, 10);
+        } else if (typeof rawPriceValue === 'number' && !isNaN(rawPriceValue)) {
+          parsedPrice = rawPriceValue;
+        }
+
+        // Extraer imagen del servicio (foto_url, image_url, imagen, etc.)
+        const srvImageUrl = srv.foto_url || srv.image_url || srv.imagen || srv.photo_url || undefined;
 
         return {
           id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
           tenant_id: newTenant.id,
           name: srvName,
           category: detectedCategory,
-          duration_minutes: Number(srv.duracion_minutos || srv.duration || 60),
-          price_usd: Number(srv.precio_cop || srv.precio || srv.price || 50000),
+          duration_minutes: durationMinutes,
+          price_usd: parsedPrice,
+          price: parsedPrice,
+          price_cop: parsedPrice,
+          image_url: srvImageUrl,
           requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
-          description: srv.descripcion || srv.description || `${srvName} con productos profesionales de alta gama.`,
+          description: srv.descripcion || srv.description || `${srvName} con atención profesional de alta precisión.`,
+          is_featured: true,
           is_active: true
         };
       });
