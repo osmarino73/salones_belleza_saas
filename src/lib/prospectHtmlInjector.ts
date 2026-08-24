@@ -167,29 +167,89 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       -webkit-tap-highlight-color: transparent !important;
     }
 
-    /* Barra Superior / Navbar en Móvil: Espaciado, alineación y botón compacto */
+    /* BARRA SUPERIOR MÓVIL 100% TRANSPARENTE SOBRE LA FOTO (LIMPIA, SIN FONDOS NI PÍLDORAS) */
+    .topbar, .top-bar {
+      display: none !important;
+    }
+
     header, nav, .main-header, .site-header, .navbar, .header {
-      padding: 10px 14px !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: unset !important;
+      padding: 16px 20px !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: none !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
       display: flex !important;
       align-items: center !important;
-      justify-content: space-between !important;
-      gap: 8px !important;
+      justify-content: center !important;
+      z-index: 100 !important;
       box-sizing: border-box !important;
-      width: 100% !important;
     }
-    
-    /* Botón de la barra superior en móvil: elegante, contenido y proporcional */
+
+    /* Contenedor del Logo y Nombre del Negocio Centrado sobre la Foto */
+    .brand-logo, .logo, .navbar .brand-logo, header .brand-logo {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 10px !important;
+      margin: 0 auto !important;
+      text-decoration: none !important;
+    }
+
+    .brand-icon, .logo-silhouette-box, .logo-icon {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
+      flex-shrink: 0 !important;
+    }
+
+    .brand-text, .logo-text {
+      display: flex !important;
+      flex-direction: column !important;
+      text-align: left !important;
+    }
+
+    .brand-title, .logo-title, .brand-name {
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      line-height: 1.1 !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .brand-subtitle, .logo-subtitle {
+      font-size: 0.65rem !important;
+      letter-spacing: 2px !important;
+      text-transform: uppercase !important;
+      font-weight: 700 !important;
+    }
+
+    /* Ocultar elementos redundantes en móvil */
+    .nav-links, 
+    .menu-toggle,
+    .mobile-toggle,
+    button[id*="menu"],
+    button[class*="menu"],
     header a[class*="btn"], 
     nav a[class*="btn"], 
     .navbar a[class*="btn"], 
     .header a[class*="btn"],
     .btn-header,
-    .btn-pill-magenta {
-      padding: 8px 12px !important;
-      font-size: 0.8rem !important;
-      white-space: nowrap !important;
-      border-radius: 10px !important;
-      flex-shrink: 0 !important;
+    .btn-pill-magenta,
+    .navbar .btn-header {
+      display: none !important;
     }
 
     /* HERO MÓVIL INMERSIVO: FOTO EN EL FONDO CON ROSTRO ARRIBA Y TEXTO DEL MEDIO HACIA ABAJO */
