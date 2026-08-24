@@ -92,25 +92,8 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
         if (tenant.currency) setCurrency(tenant.currency as any);
         if (tenant.business_hours) setBusinessHours(formatHours(tenant.business_hours));
 
-        // Precargar servicios del prospecto asociado a este tenant exacto
-        try {
-          const prospects = await api.getProspectSites();
-          const pSite = prospects.find(p => 
-            (p.claimed_tenant_id && p.claimed_tenant_id === tenant.id) ||
-            (p.slug && tenant.slug && p.slug === tenant.slug) ||
-            (p.business_name && tenant.name && p.business_name.toLowerCase().trim() === tenant.name.toLowerCase().trim())
-          );
-          if (pSite?.business_data?.servicios && pSite.business_data.servicios.length > 0) {
-            const loadedServices = pSite.business_data.servicios.map((s: any) => ({
-              name: s.nombre || s.titulo,
-              category: 'color',
-              duration_minutes: s.duracion_minutos || 60,
-              price: s.precio_cop || 90000,
-              image_url: s.img || s.imagen || ''
-            }));
-            setServicesList(loadedServices);
-          }
-        } catch (e) {}
+        // Inicializar servicios siempre en 0 limpio
+        setServicesList([]);
       } else if (ownerEmail && ownerEmail !== 'sofia@studioglamour.co') {
         // Si no hay tenant cargado aún pero tenemos el correo del usuario, buscar si tiene un prospecto asignado
         try {
@@ -134,17 +117,6 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             if (matchedProspect.city) setSalonCity(matchedProspect.city);
             if (matchedProspect.address) setSalonAddress(matchedProspect.address);
             setBusinessHours(formatHours(matchedProspect.business_data?.horario_atencion));
-            
-            if (matchedProspect.business_data?.servicios && matchedProspect.business_data.servicios.length > 0) {
-              const loadedServices = matchedProspect.business_data.servicios.map((s: any) => ({
-                name: s.nombre || s.titulo,
-                category: 'color',
-                duration_minutes: s.duracion_minutos || 60,
-                price: s.precio_cop || 90000,
-                image_url: s.img || s.imagen || ''
-              }));
-              setServicesList(loadedServices);
-            }
           } else {
             // Inicializar limpio con el nombre del usuario sin mezclar otro negocio
             const cleanName = ownerEmail.split('@')[0].replace(/[._-]/g, ' ');
@@ -155,6 +127,7 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
             setSalonPhone('+57 300 000 0000');
             setBusinessHours('Lun a Sáb: 8:00 AM – 7:00 PM');
           }
+          setServicesList([]);
         } catch (e) {}
       }
     }
