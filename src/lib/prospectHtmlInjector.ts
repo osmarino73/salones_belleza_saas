@@ -188,46 +188,110 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     box-shadow: 0 6px 18px rgba(225, 29, 72, 0.38) !important;
   }
 
-  /* OPTIMIZACIÓN MÓVIL HERO (OPCIÓN A: FOTO NÍTIDA Y VIBRANTE) */
+  /* SMART HIDE NAVBAR (DESLIZAMIENTO SUAVE) */
+  header, nav, .main-header, .site-header, .navbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease !important;
+  }
+  .nav-hidden {
+    transform: translateY(-100%) !important;
+  }
+
+  /* OPTIMIZACIÓN MÓVIL HERO: FOTO EN EL FONDO COMPLETO Y TEXTOS ARRIBA */
   @media (max-width: 768px) {
-    .hero-fullwidth-section {
-      padding-top: 24px !important;
-      padding-bottom: 40px !important;
-      min-height: auto !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
-    .hero-bg-cover {
+    .hero-fullwidth-section,
+    .hero-section,
+    section[id*="inicio"],
+    section[class*="hero"] {
       position: relative !important;
-      width: 100% !important;
-      height: 320px !important;
-      margin-top: 24px !important;
-      border-radius: 24px !important;
+      min-height: 88vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 70px 20px 50px 20px !important;
       overflow: hidden !important;
-      box-shadow: 0 12px 32px rgba(225, 29, 72, 0.15) !important;
-      order: 2 !important;
     }
-    .hero-bg-img {
+    .hero-bg-cover,
+    .hero-main-img-box,
+    .model-image-frame {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 1 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+    .hero-bg-img,
+    .hero-bg-cover img,
+    .hero-main-img-box img {
       position: absolute !important;
       top: 0 !important;
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
-      object-position: center top !important;
-      opacity: 1 !important;
+      object-position: center 25% !important;
       display: block !important;
+      opacity: 0.9 !important;
     }
     .hero-bg-overlay {
-      background: linear-gradient(180deg, transparent 60%, rgba(24, 21, 40, 0.3) 100%) !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background: linear-gradient(180deg, rgba(24, 21, 40, 0.72) 0%, rgba(24, 21, 40, 0.85) 100%) !important;
+      z-index: 2 !important;
     }
-    .hero-content-wrapper {
-      order: 1 !important;
+    .hero-content-wrapper,
+    .hero-text-content,
+    .hero-container {
       position: relative !important;
-      z-index: 5 !important;
+      z-index: 10 !important;
+      width: 100% !important;
+      text-align: center !important;
+      padding: 0 !important;
+    }
+    .hero-content-wrapper h1,
+    .hero-main-title,
+    .hero-title {
+      color: #ffffff !important;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.5) !important;
+    }
+    .hero-content-wrapper p,
+    .hero-subtitle,
+    .hero-desc {
+      color: #f1f5f9 !important;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.4) !important;
+    }
+    .hero-script-eyebrow,
+    .badge-hero {
+      color: #fb7185 !important;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.4) !important;
     }
   }
 </style>
+
+<script>
+  // SMART HIDE NAVBAR SCRIPT
+  (function() {
+    let lastScrollY = window.pageYOffset;
+    window.addEventListener('scroll', function() {
+      const currentScrollY = window.pageYOffset;
+      const nav = document.querySelector('header, nav, .main-header, .site-header, .navbar');
+      if (!nav) return;
+      if (currentScrollY > 90 && currentScrollY > lastScrollY) {
+        // Scrolling DOWN -> Ocultar barra para maximizar pantalla
+        nav.classList.add('nav-hidden');
+      } else {
+        // Scrolling UP o en el tope -> Mostrar barra
+        nav.classList.remove('nav-hidden');
+      }
+      lastScrollY = currentScrollY;
+    }, { passive: true });
+  })();
+</script>
 `;
   if (processed.includes('</head>')) {
     processed = processed.replace('</head>', `${resetCss}</head>`);
