@@ -195,19 +195,12 @@ export const SalonOnboardingModal: React.FC<SalonOnboardingModalProps> = ({
     fetchCats();
   }, [tenant, isOpen]);
 
-  // Paso 2: Servicios Iniciales
-  const [servicesList, setServicesList] = useState<NewServiceItem[]>([
-    {
-      name: 'Corte de Cabello & Cepillado',
-      category: 'corte',
-      duration_minutes: 45,
-      price: currency === 'COP' ? 45000 : 25
-    }
-  ]);
+  // Paso 2: Servicios Iniciales (Empieza limpio con 0 servicios para que la dueña agregue los suyos)
+  const [servicesList, setServicesList] = useState<NewServiceItem[]>([]);
   const [tempServiceName, setTempServiceName] = useState('');
   const [tempServiceCategory, setTempServiceCategory] = useState<string>('color');
   const [tempServiceDuration, setTempServiceDuration] = useState(60);
-  const [tempServicePrice, setTempServicePrice] = useState<number>(currency === 'COP' ? 90000 : 40);
+  const [tempServicePrice, setTempServicePrice] = useState<number>(currency === 'COP' ? 60000 : 30);
   const [tempServiceImage, setTempServiceImage] = useState<string>('');
 
   // Paso 3: Colaboradores Iniciales
