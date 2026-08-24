@@ -2403,6 +2403,46 @@ export const api = {
     };
     await this.createStylist(ownerStylist, tempPassword);
 
+    // 3.1 Sembrar Colaboradoras / Especialistas reales del JSON de Negocio (business_data)
+    const rawTeam = prospect?.business_data?.especialistas || prospect?.business_data?.colaboradores || prospect?.business_data?.team || [];
+    const teamPhotos = [
+      'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=300&q=80',
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80'
+    ];
+
+    if (rawTeam.length > 0) {
+      for (let i = 0; i < rawTeam.length; i++) {
+        const member = rawTeam[i];
+        const memberName = member.nombre || member.name || `Especialista ${i + 1}`;
+        const cleanMemberEmail = memberName.toLowerCase().replace(/[^a-z0-9]/g, '') + `@${cleanSlug}.com`;
+        
+        const stylistEntity: Stylist = {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sty-${newTenant.id.slice(0, 6)}-${i + 1}`,
+          tenant_id: newTenant.id,
+          name: memberName,
+          email: member.email || cleanMemberEmail,
+          phone: member.telefono || member.phone || wa,
+          specialty: member.rol || member.especialidad || member.specialty || 'Estilista Profesional',
+          photo_url: member.foto_url || member.photo_url || member.avatar || teamPhotos[i % teamPhotos.length],
+          role: 'colaborador',
+          is_owner: false,
+          attends_clients: true,
+          rating: Number(member.calificacion || member.rating || 5.0),
+          reviews_count: Number(member.resenas || 14),
+          commission_service_pct: 50,
+          commission_retail_pct: 10,
+          working_days: [1, 2, 3, 4, 5, 6],
+          service_categories: ['spa', 'corte', 'color', 'keratina', 'nails', 'barberia'],
+          service_ids: [],
+          is_active: true
+        };
+
+        await this.createStylist(stylistEntity, tempPassword);
+      }
+    }
+
     // 4. Precargar las categorías base oficiales para el salón
     const defaultCategoriesToInsert = initialCategories.map((c, idx) => ({
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `cat-${newTenant.id.slice(0, 8)}-${idx}`,
@@ -2421,6 +2461,41 @@ export const api = {
       } catch (e) {
         console.warn('Notice seeding default categories in DB:', e);
       }
+    }
+
+    // 4.1 Sembrar Servicios reales del JSON de Negocio (business_data)
+    const rawServices = prospect?.business_data?.servicios || prospect?.business_data?.services || [];
+    const servicesToSeed = rawServices.length > 0 
+      ? rawServices.map((srv: any) => {
+          const srvName = srv.titulo || srv.name || srv.nombre || 'Servicio Profesional';
+          let detectedCategory: any = 'corte';
+          const lower = srvName.toLowerCase();
+          if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
+          else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
+          else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
+          else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
+          else if (lower.includes('barba') || lower.includes('barber')) detectedCategory = 'barberia';
+
+          return {
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
+            tenant_id: newTenant.id,
+            name: srvName,
+            category: detectedCategory,
+            duration_minutes: Number(srv.duracion_minutos || srv.duration || 60),
+            price_usd: Number(srv.precio_cop || srv.precio || srv.price || 50000),
+            requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
+            description: srv.descripcion || srv.description || `${srvName} con productos profesionales de alta gama.`,
+            is_active: true
+          };
+        })
+      : initialServices.map((srv) => ({
+          ...srv,
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
+          tenant_id: newTenant.id
+        }));
+
+    for (const service of servicesToSeed) {
+      await this.createService(service);
     }
 
     // 5. Actualizar prospect_sites como 'reclamado'
