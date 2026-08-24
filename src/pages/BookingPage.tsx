@@ -148,7 +148,7 @@ export const BookingPage: React.FC = () => {
         try {
           const cleanSlug = salonSlug.toLowerCase().trim();
           
-          // A. Buscar tenant oficial en base de datos por slug
+          // A. Buscar tenant oficial en base de datos por slug exacto o parcial
           resolvedTenant = await api.getTenantBySlug(cleanSlug);
 
           // B. Buscar en prospect_sites por slug
@@ -172,7 +172,7 @@ export const BookingPage: React.FC = () => {
         } catch (err) {}
       }
 
-      // 2. Fallback a tenant activo en sesión solo si no había slug en la URL
+      // 2. Solo si NO viene slug en la URL, consultar tenant activo en sesión
       if (!resolvedTenant && !salonSlug) {
         const activeTenantRaw = localStorage.getItem('bf_tenant_active');
         if (activeTenantRaw) {
