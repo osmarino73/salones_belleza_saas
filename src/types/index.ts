@@ -46,6 +46,9 @@ export interface Tenant {
   subtitle?: string; // Párrafo descriptivo de servicios
   primary_color?: string; // Color hexadecimal principal de la marca (ej. '#d92672')
   show_team_section?: boolean; // Controla si se muestra u oculta la sección Nosotros/Equipo en la web
+  show_first_visit_discount?: boolean; // Controla si se muestra el banner de descuento por primera visita (por defecto false)
+  first_visit_discount_pct?: number; // Porcentaje de descuento (ej. 10, 15, 20)
+  first_visit_discount_title?: string; // Texto personalizado del descuento
   created_at: string;
 }
 

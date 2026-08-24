@@ -61,12 +61,19 @@ export const PublicProspectSitePage: React.FC = () => {
       ? tenant.show_team_section 
       : (bData.show_team_section !== undefined ? bData.show_team_section : true);
 
+    const showDiscount = tenant?.show_first_visit_discount !== undefined
+      ? tenant.show_first_visit_discount
+      : (bData.show_first_visit_discount !== undefined ? bData.show_first_visit_discount : false);
+
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
       primaryColor: tenant?.primary_color || bData.primary_color || undefined,
       showTeamSection: showTeam,
+      showFirstVisitDiscount: showDiscount,
+      firstVisitDiscountPct: tenant?.first_visit_discount_pct || bData.first_visit_discount_pct || 15,
+      firstVisitDiscountTitle: tenant?.first_visit_discount_title || bData.first_visit_discount_title || undefined,
       heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
       logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
       heroEyebrow: tenant?.hero_eyebrow || bData.hero_eyebrow || undefined,

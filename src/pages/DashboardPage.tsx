@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { injectProspectLinks } from '../lib/prospectHtmlInjector';
 import {
   Scissors,
   Sparkles,
@@ -192,6 +193,9 @@ export const DashboardPage: React.FC = () => {
     hero_image_url: string;
     primary_color: string;
     show_team_section: boolean;
+    show_first_visit_discount: boolean;
+    first_visit_discount_pct: number;
+    first_visit_discount_title: string;
     logo_icon: string;
     hero_eyebrow: string;
     slogan: string;
@@ -201,12 +205,67 @@ export const DashboardPage: React.FC = () => {
     hero_image_url: '',
     primary_color: '#d92672',
     show_team_section: true,
+    show_first_visit_discount: false,
+    first_visit_discount_pct: 15,
+    first_visit_discount_title: '',
     logo_icon: '🪄',
     hero_eyebrow: 'Bienvenidas a ❤️',
     slogan: 'Sandra Color´s',
     title_accent: 'Centro de Estética',
     subtitle: 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
   });
+
+  const [prospectRawHtml, setProspectRawHtml] = useState<string>('');
+
+  // Sincronizar websiteForm y prospectRawHtml cuando activeTenantObj esté listo o al abrir el modal
+  useEffect(() => {
+    if (activeTenantObj) {
+      setWebsiteForm({
+        hero_image_url: activeTenantObj.hero_image_url || '',
+        primary_color: activeTenantObj.primary_color || '#d92672',
+        show_team_section: activeTenantObj.show_team_section !== undefined ? activeTenantObj.show_team_section : true,
+        show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : false,
+        first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || 15,
+        first_visit_discount_title: activeTenantObj.first_visit_discount_title || '',
+        logo_icon: activeTenantObj.logo_icon || '🪄',
+        hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
+        slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
+        title_accent: activeTenantObj.title_accent || 'Centro de Estética',
+        subtitle: activeTenantObj.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
+      });
+
+      // Cargar el HTML real del sitio del prospecto para el previsualizador
+      api.getProspectSites().then((pSites) => {
+        const matched = pSites.find(p => p.slug === activeTenantObj.slug || p.claimed_tenant_id === activeTenantObj.id);
+        if (matched?.raw_html) {
+          setProspectRawHtml(matched.raw_html);
+        }
+      }).catch(() => {});
+    }
+  }, [activeTenantObj]);
+
+  // Generar HTML real inyectado en vivo para el iframe de previsualización
+  const previewRenderedHtml = useMemo(() => {
+    if (!prospectRawHtml) return '';
+    return injectProspectLinks(prospectRawHtml, {
+      slug: activeTenantObj?.slug || 'sandra-color-s',
+      businessName: activeTenantObj?.name || 'Sandra Color´s',
+      phoneWhatsapp: activeTenantObj?.phone || '+57 300 000 0000',
+      primaryColor: websiteForm.primary_color || activeTenantObj?.primary_color || '#d92672',
+      showTeamSection: websiteForm.show_team_section !== false,
+      showFirstVisitDiscount: websiteForm.show_first_visit_discount,
+      firstVisitDiscountPct: Number(websiteForm.first_visit_discount_pct || 15),
+      firstVisitDiscountTitle: websiteForm.first_visit_discount_title || undefined,
+      heroImageUrl: websiteForm.hero_image_url || undefined,
+      logoIcon: websiteForm.logo_icon || undefined,
+      heroEyebrow: websiteForm.hero_eyebrow || undefined,
+      slogan: websiteForm.slogan || undefined,
+      titleAccent: websiteForm.title_accent || undefined,
+      subtitle: websiteForm.subtitle || undefined,
+      liveServices: services.length > 0 ? services : undefined,
+      liveStylists: stylists.length > 0 ? stylists : undefined
+    });
+  }, [prospectRawHtml, websiteForm, activeTenantObj, services, stylists]);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -1336,6 +1395,9 @@ export const DashboardPage: React.FC = () => {
                           hero_image_url: activeTenantObj.hero_image_url || '',
                           primary_color: activeTenantObj.primary_color || '#d92672',
                           show_team_section: activeTenantObj.show_team_section !== false,
+                          show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : false,
+                          first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || 15,
+                          first_visit_discount_title: activeTenantObj.first_visit_discount_title || '',
                           logo_icon: activeTenantObj.logo_icon || '🪄',
                           hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
                           slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
@@ -5675,131 +5737,122 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL PERSONALIZAR PÁGINA WEB & PORTADA */}
+      {/* MODAL PERSONALIZAR PÁGINA WEB & PORTADA CON VISTA PREVIA EN VIVO */}
       {isWebsiteCustomizerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className={`border rounded-3xl max-w-5xl w-full max-h-[94vh] overflow-hidden flex flex-col shadow-2xl animate-fade-in ${
+            theme === 'dark' ? 'bg-[#121622] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <Palette className="w-5 h-5 text-pink-400" />
+            {/* Header del Modal */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-black/5 dark:border-white/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center shadow-lg shadow-pink-500/20 text-white">
+                  <Palette className="w-5 h-5" />
+                </div>
                 <div>
-                  <h3 className="text-base font-black">Personalizar Portada de tu Página Web</h3>
-                  <span className="text-[11px] text-slate-400">Actualiza la foto principal del Header y los textos de bienvenida</span>
+                  <h3 className="text-base font-black tracking-tight">Personalizador de tu Página Web</h3>
+                  <span className="text-xs text-slate-400">Edita los textos, portada y promociones con vista previa en vivo</span>
                 </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsWebsiteCustomizerOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              if (!activeTenantObj) return;
-              const updatedTenant: Tenant = {
-                ...activeTenantObj,
-                hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
-                primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
-                show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
-                logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
-                hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
-                slogan: websiteForm.slogan || activeTenantObj.slogan,
-                title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
-                subtitle: websiteForm.subtitle || activeTenantObj.subtitle
-              };
-              setActiveTenantObj(updatedTenant);
-              localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
-              try {
-                await api.updateTenant(updatedTenant);
-                // Sincronizar también con prospect_sites para que la web pública lo refleje inmediatamente
-                const pSites = await api.getProspectSites();
-                const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
-                if (matched) {
-                  const updatedSite: any = {
-                    hero_image_url: updatedTenant.hero_image_url,
-                    primary_color: updatedTenant.primary_color,
-                    business_data: {
-                      ...matched.business_data,
+            {/* Contenido en 2 Columnas (Formulario + Vista Previa) */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Columna Izquierda: Formulario de Configuración (7 cols) */}
+              <form id="website-customizer-form" onSubmit={async (e) => {
+                e.preventDefault();
+                if (!activeTenantObj) return;
+                const updatedTenant: Tenant = {
+                  ...activeTenantObj,
+                  hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
+                  primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
+                  show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
+                  show_first_visit_discount: websiteForm.show_first_visit_discount !== undefined ? websiteForm.show_first_visit_discount : false,
+                  first_visit_discount_pct: Number(websiteForm.first_visit_discount_pct || 15),
+                  first_visit_discount_title: websiteForm.first_visit_discount_title || undefined,
+                  logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
+                  hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
+                  slogan: websiteForm.slogan || activeTenantObj.slogan,
+                  title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
+                  subtitle: websiteForm.subtitle || activeTenantObj.subtitle
+                };
+                setActiveTenantObj(updatedTenant);
+                localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+                try {
+                  await api.updateTenant(updatedTenant);
+                  const pSites = await api.getProspectSites();
+                  const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
+                  if (matched) {
+                    const updatedSite: any = {
                       hero_image_url: updatedTenant.hero_image_url,
                       primary_color: updatedTenant.primary_color,
-                      logo_icon: updatedTenant.logo_icon,
-                      hero_eyebrow: updatedTenant.hero_eyebrow,
-                      slogan: updatedTenant.slogan,
-                      title_accent: updatedTenant.title_accent,
-                      subtitle: updatedTenant.subtitle,
-                      show_team_section: updatedTenant.show_team_section
-                    }
-                  };
-                  await api.updateProspectSite(matched.id, updatedSite);
+                      business_data: {
+                        ...matched.business_data,
+                        hero_image_url: updatedTenant.hero_image_url,
+                        primary_color: updatedTenant.primary_color,
+                        logo_icon: updatedTenant.logo_icon,
+                        hero_eyebrow: updatedTenant.hero_eyebrow,
+                        slogan: updatedTenant.slogan,
+                        title_accent: updatedTenant.title_accent,
+                        subtitle: updatedTenant.subtitle,
+                        show_team_section: updatedTenant.show_team_section,
+                        show_first_visit_discount: updatedTenant.show_first_visit_discount,
+                        first_visit_discount_pct: updatedTenant.first_visit_discount_pct,
+                        first_visit_discount_title: updatedTenant.first_visit_discount_title
+                      }
+                    };
+                    await api.updateProspectSite(matched.id, updatedSite);
+                  }
+                } catch (err) {
+                  console.warn('Error saving website config in Supabase:', err);
                 }
-              } catch (err) {
-                console.warn('Error saving website config in Supabase:', err);
-              }
-              setIsWebsiteCustomizerOpen(false);
-              alert('✨ ¡Portada, colores, equipo y textos de tu sitio web actualizados con éxito!');
-            }} className="space-y-4 text-xs">
+                setIsWebsiteCustomizerOpen(false);
+                alert('✨ ¡Tu página web ha sido actualizada y publicada con éxito!');
+              }} className="lg:col-span-7 space-y-4 text-xs">
 
-              {/* Selector de Fotografía de Cabecera (Hero) */}
-              <ServiceImagePicker
-                value={websiteForm.hero_image_url}
-                category="color"
-                onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
-                label="1. Fotografía Principal del Header (Portada)"
-              />
-
-              {/* Switch de Visibilidad de la Sección Nosotros / Equipo */}
-              <div className="p-3.5 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-between">
-                <div>
-                  <strong className="text-white text-xs block flex items-center gap-1.5">
-                    👥 Mostrar Sección "Equipo de Especialistas" en la Web
-                  </strong>
-                  <span className="text-[10px] text-slate-400">
-                    {websiteForm.show_team_section !== false 
-                      ? 'Visible en la página web con hasta 4 colaboradoras destacadas.' 
-                      : 'Oculta completamente la sección de Nosotros y su enlace del menú.'}
-                  </span>
+                {/* 1. Selector de Fotografía de Portada (Hero) */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02]">
+                  <ServiceImagePicker
+                    value={websiteForm.hero_image_url}
+                    category="color"
+                    onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
+                    label="1. Fotografía Principal del Header (Portada)"
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setWebsiteForm({ ...websiteForm, show_team_section: websiteForm.show_team_section === false ? true : false })}
-                  className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
-                    websiteForm.show_team_section !== false ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
-                  }`}
-                >
-                  <div className="w-4 h-4 rounded-full bg-white shadow-md" />
-                </button>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-1">
-                  <label className="block text-slate-400 mb-1 font-semibold">2. Icono / Logo Navbar</label>
-                  <div className="flex flex-wrap items-center gap-1.5">
+                {/* 2. Logo / Isotipo del Salón */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
+                  <label className="block text-slate-300 font-bold text-xs">2. Logo / Isotipo de la Cabecera</label>
+                  <div className="flex flex-wrap items-center gap-2">
                     {['🪄', '✨', '✂️', '👑', '💅', '🧖‍♀️'].map((ic) => (
                       <button
                         key={ic}
                         type="button"
                         onClick={() => setWebsiteForm({ ...websiteForm, logo_icon: ic })}
-                        className={`w-8 h-8 rounded-xl border text-sm flex items-center justify-center transition-all ${
+                        className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all cursor-pointer ${
                           websiteForm.logo_icon === ic
-                            ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-sm'
-                            : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+                            ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md shadow-[#FF5A36]/30'
+                            : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-700'
                         }`}
                       >
                         {ic}
                       </button>
                     ))}
 
-                    <label className={`w-8 h-8 rounded-xl border flex items-center justify-center cursor-pointer transition-all ${
+                    <label className={`h-9 px-3.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all text-xs font-semibold ${
                       websiteForm.logo_icon && (websiteForm.logo_icon.startsWith('http') || websiteForm.logo_icon.startsWith('data:image/'))
-                        ? 'bg-[#FF5A36] text-white border-[#FF5A36]'
-                        : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-400 hover:text-white' : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`} title="Subir logo propio (PNG / JPG / WebP)">
+                        ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md'
+                        : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-700'
+                    }`} title="Subir logo propio (PNG transparente / JPG / WebP)">
                       <Upload className="w-3.5 h-3.5" />
+                      <span>{websiteForm.logo_icon && (websiteForm.logo_icon.startsWith('http') || websiteForm.logo_icon.startsWith('data:image/')) ? 'Logo Subido ✓' : 'Subir Logo PNG/JPG'}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -5821,90 +5874,233 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1 font-semibold">3. Saludo Superior (Eyebrow)</label>
-                  <input
-                    type="text"
-                    value={websiteForm.hero_eyebrow}
-                    onChange={(e) => setWebsiteForm({ ...websiteForm, hero_eyebrow: e.target.value })}
-                    placeholder="Ej. Bienvenidas a ❤️"
-                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                  />
+                {/* 3. Textos Principales del Hero */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
+                  <strong className="text-slate-300 font-bold text-xs block">3. Mensaje Principal & Subtítulos</strong>
+                  
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Saludo Superior (Eyebrow)</label>
+                    <input
+                      type="text"
+                      value={websiteForm.hero_eyebrow}
+                      onChange={(e) => setWebsiteForm({ ...websiteForm, hero_eyebrow: e.target.value })}
+                      placeholder="Ej. Bienvenidas a ❤️"
+                      className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Nombre / Título Principal *</label>
+                      <input
+                        type="text"
+                        value={websiteForm.slogan}
+                        onChange={(e) => setWebsiteForm({ ...websiteForm, slogan: e.target.value })}
+                        placeholder="Ej. Sandra Color´s"
+                        className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
+                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                        }`}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-400 mb-1 font-semibold">Acento / Especialidad Destacada</label>
+                      <input
+                        type="text"
+                        value={websiteForm.title_accent}
+                        onChange={(e) => setWebsiteForm({ ...websiteForm, title_accent: e.target.value })}
+                        placeholder="Ej. Salon & Hair Studio"
+                        className={`w-full border rounded-xl p-2.5 font-bold text-pink-400 focus:outline-none focus:border-[#FF5A36] ${
+                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Subtítulo / Propuesta de Valor (Párrafo)</label>
+                    <textarea
+                      rows={2}
+                      value={websiteForm.subtitle}
+                      onChange={(e) => setWebsiteForm({ ...websiteForm, subtitle: e.target.value })}
+                      placeholder="Ej. Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó."
+                      className={`w-full border rounded-xl p-2.5 leading-relaxed focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Secciones Condicionales de la Página */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
+                  <strong className="text-slate-300 font-bold text-xs block">4. Secciones Opcionales de tu Web</strong>
+
+                  {/* Switch de Especialistas / Equipo */}
+                  <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">
+                    <div>
+                      <strong className="text-white text-xs block flex items-center gap-1.5">
+                        👥 Publicar Sección "Equipo de Especialistas"
+                      </strong>
+                      <span className="text-[10px] text-slate-400">
+                        {websiteForm.show_team_section !== false 
+                          ? 'Visible en la web con hasta 4 colaboradoras destacadas y botón de reserva directo.' 
+                          : 'Sección oculta en la página web y en el menú de navegación.'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWebsiteForm({ ...websiteForm, show_team_section: websiteForm.show_team_section === false ? true : false })}
+                      className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
+                        websiteForm.show_team_section !== false ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
+                      }`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                    </button>
+                  </div>
+
+                  {/* Switch y Configuración de Descuento por Primera Visita */}
+                  <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <strong className="text-white text-xs block flex items-center gap-1.5">
+                          🎁 Publicar Banner de "Descuento Primera Visita"
+                        </strong>
+                        <span className="text-[10px] text-slate-400">
+                          {websiteForm.show_first_visit_discount 
+                            ? 'Banner promocional activo en la web para capturar clientas nuevas.' 
+                            : 'Desactivado por defecto. Actívalo si deseas ofrecer una oferta de bienvenida.'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, show_first_visit_discount: !websiteForm.show_first_visit_discount })}
+                        className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
+                          websiteForm.show_first_visit_discount ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
+                        }`}
+                      >
+                        <div className="w-4 h-4 rounded-full bg-white shadow-md" />
+                      </button>
+                    </div>
+
+                    {/* Campos si el descuento está activo */}
+                    {websiteForm.show_first_visit_discount && (
+                      <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
+                        <div className="sm:col-span-1">
+                          <label className="block text-slate-400 mb-1 font-semibold">% Descuento</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min="5"
+                              max="50"
+                              step="5"
+                              value={websiteForm.first_visit_discount_pct || 15}
+                              onChange={(e) => setWebsiteForm({ ...websiteForm, first_visit_discount_pct: Number(e.target.value) })}
+                              className={`w-full border rounded-xl p-2.5 pr-7 font-bold text-pink-400 focus:outline-none focus:border-[#FF5A36] ${
+                                theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                              }`}
+                            />
+                            <span className="absolute right-2.5 top-2.5 text-slate-400 font-bold">%</span>
+                          </div>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-slate-400 mb-1 font-semibold">Título Oferta (Opcional)</label>
+                          <input
+                            type="text"
+                            value={websiteForm.first_visit_discount_title}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, first_visit_discount_title: e.target.value })}
+                            placeholder={`¡Obtén un ${websiteForm.first_visit_discount_pct || 15}% OFF en tu Primera Visita!`}
+                            className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </form>
+
+              {/* Columna Derecha: Previsualizador Real del Sitio Web en Vivo (5 cols) */}
+              <div className="lg:col-span-5 flex flex-col space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    👁️ Vista Previa 100% Real
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
+                      En Vivo
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mockup del Navegador con Iframe del Sitio Real */}
+                <div className="border border-white/10 bg-[#0E121B] rounded-2xl overflow-hidden shadow-2xl flex-1 flex flex-col min-h-[480px]">
+                  {/* Barra de Navegador Mockup */}
+                  <div className="bg-[#181D2A] px-3 py-2 border-b border-white/10 flex items-center gap-2 shrink-0">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                    </div>
+                    <div className="bg-black/40 border border-white/5 rounded-lg px-2.5 py-1 text-[10px] text-slate-300 flex-1 text-center font-mono truncate">
+                      https://kowy.app/sitio/{activeTenantObj?.slug || 'sandra-color-s'}
+                    </div>
+                  </div>
+
+                  {/* Iframe Real del Sitio Web con inyección reactiva */}
+                  <div className="flex-1 w-full bg-white relative overflow-hidden">
+                    {previewRenderedHtml ? (
+                      <iframe
+                        title="Live Website Preview"
+                        srcDoc={previewRenderedHtml}
+                        className="w-full h-full min-h-[440px] border-0"
+                        sandbox="allow-scripts allow-same-origin"
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-500 bg-[#0B0F19]">
+                        <div className="w-8 h-8 rounded-full border-2 border-pink-500 border-t-transparent animate-spin mb-2" />
+                        <span className="text-xs">Cargando diseño web oficial...</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">4. Nombre Principal del Salón *</label>
-                  <input
-                    type="text"
-                    value={websiteForm.slogan}
-                    onChange={(e) => setWebsiteForm({ ...websiteForm, slogan: e.target.value })}
-                    placeholder="Ej. Sandra Color´s"
-                    className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                  />
-                </div>
+            {/* Footer / Botonera de Acción */}
+            <div className="px-6 py-3.5 border-t border-black/5 dark:border-white/10 flex justify-between items-center bg-black/10 shrink-0">
+              <a
+                href={`/sitio/${activeTenantObj?.slug || 'sandra-color-s'}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 font-bold text-xs transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Abrir Sitio Oficial en Nueva Pestaña</span>
+              </a>
 
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">5. Especialidad / Acento Fucsia</label>
-                  <input
-                    type="text"
-                    value={websiteForm.title_accent}
-                    onChange={(e) => setWebsiteForm({ ...websiteForm, title_accent: e.target.value })}
-                    placeholder="Ej. Centro de Estética"
-                    className={`w-full border rounded-xl p-2.5 font-bold text-pink-400 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">6. Subtítulo / Propuesta de Valor (Párrafo)</label>
-                <textarea
-                  rows={3}
-                  value={websiteForm.subtitle}
-                  onChange={(e) => setWebsiteForm({ ...websiteForm, subtitle: e.target.value })}
-                  placeholder="Ej. Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó."
-                  className={`w-full border rounded-xl p-2.5 leading-relaxed focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-between items-center">
-                <a
-                  href={`/sitio/${activeTenantObj?.slug || 'sandra-color-s'}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-cyan-400 hover:underline flex items-center gap-1 font-bold text-[11px]"
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsWebsiteCustomizerOpen(false)}
+                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Ver mi Página Web</span>
-                </a>
-
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsWebsiteCustomizerOpen(false)}
-                    className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    <span>Guardar Portada</span>
-                  </button>
-                </div>
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  form="website-customizer-form"
+                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-6 py-2 rounded-full shadow-lg shadow-[#FF5A36]/30 flex items-center gap-2 transition-transform active:scale-95 cursor-pointer text-xs"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Guardar y Publicar</span>
+                </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

@@ -13,6 +13,9 @@ export interface InjectProspectOptions {
   currency?: string;
   primaryColor?: string;
   showTeamSection?: boolean;
+  showFirstVisitDiscount?: boolean;
+  firstVisitDiscountPct?: number;
+  firstVisitDiscountTitle?: string;
   heroImageUrl?: string;
   logoIcon?: string;
   heroEyebrow?: string;
@@ -50,6 +53,9 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     currency = 'COP',
     primaryColor,
     showTeamSection = true,
+    showFirstVisitDiscount = false,
+    firstVisitDiscountPct = 15,
+    firstVisitDiscountTitle,
     heroImageUrl,
     logoIcon,
     heroEyebrow,
@@ -65,8 +71,18 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   let processed = html;
 
   // 1. Inyectar regla CSS suave solo para que el contenedor general no sea negro/blanco transparente
+  // e importar Plus Jakarta Sans & Inter según FICHA_DISENO.md
   const resetCss = `
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style id="beautyflow-prospect-reset">
+  body, p, span, li, a, input, textarea, button {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  }
+  h1, h2, h3, h4, h5, h6, .brand-name, .logo-text, .hero-main-title, .btn-pill-magenta, .btn-view-all-services, .card-service-title {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  }
   .prospect-site-wrapper { 
     background-color: var(--soft-pink-bg, #fbf2f6);
   }
@@ -232,6 +248,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
+  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar y Logo Text
+  if (slogan || businessName) {
+    const brandName = slogan || businessName;
+    processed = processed.replace(
+      /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-name|logo-text|logo-title|brand-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi,
+      `$1${brandName}$3`
+    );
+  }
+
   // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow)
   if (heroEyebrow) {
     processed = processed.replace(
@@ -248,8 +273,8 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
-  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia
-  if (slogan || titleAccent) {
+  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia en el Hero H1
+  if (slogan || titleAccent || businessName) {
     const mainTitleName = slogan || businessName;
     const accentText = titleAccent ? `<span class="magenta-accent">${titleAccent}</span>` : '';
     
@@ -258,7 +283,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         /(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
         `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
       );
-    } else {
+    } else if (/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
       // Fallback a cualquier primer <h1> dentro del documento
       processed = processed.replace(
         /(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i,
@@ -275,6 +300,51 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         `$1${subtitle}$3`
       );
     }
+  }
+
+  // 1.6 Inyección Condicional del Banner de Descuento por Primera Cita
+  const discountBannerRegex = /(<section\b[^>]*?(?:id=["'](?:descuento|promo|oferta|first-visit-banner|cta|promocion)["']|class=["'][^"']*(?:promo-section|discount-section|first-visit-banner|cta-section|offer-section|cta-banner|banner-promo|first-visit-promo-section)[^"']*)[^>]*>[\s\S]*?<\/section>)/gi;
+  
+  if (showFirstVisitDiscount) {
+    const discountPct = firstVisitDiscountPct || 15;
+    const discountHeading = firstVisitDiscountTitle || `¡Obtén un ${discountPct}% OFF en tu Primera Visita!`;
+    const promoColor = primaryColor || '#c82d5a';
+
+    const discountSectionHtml = `
+    <!-- Sección de Descuento por Primera Visita -->
+    <section class="first-visit-promo-section" style="padding: 40px 20px; background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(251,242,246,0.9) 100%);">
+      <div style="max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 24px; padding: 32px 28px; box-shadow: 0 14px 40px rgba(0,0,0,0.06); border: 1px solid rgba(200,45,90,0.12); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: ${promoColor}; opacity: 0.08; border-radius: 50%;"></div>
+        <span style="background: rgba(200,45,90,0.1); color: ${promoColor}; font-size: 12px; font-weight: 800; padding: 6px 16px; border-radius: 999px; text-transform: uppercase; letter-spacing: 1px;">
+          🎁 Regalo Exclusivo de Bienvenida
+        </span>
+        <h2 style="font-size: 26px; font-weight: 800; color: #190d2e; margin: 0; line-height: 1.25;">
+          ${discountHeading}
+        </h2>
+        <p style="font-size: 14px; color: #64748b; max-width: 580px; margin: 0; line-height: 1.5;">
+          Agenda tu cita hoy de forma online y recibe un <strong>${discountPct}% de descuento automático</strong> en cualquier servicio capilar o tratamiento de nuestro salón.
+        </p>
+        <div style="margin-top: 8px;">
+          <a href="${bookingUrl}" class="btn-promo-discount" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: ${promoColor}; color: #ffffff; box-shadow: 0 4px 16px rgba(200,45,90,0.3); transition: transform 0.2s ease;">
+            Agendar con ${discountPct}% OFF ✨
+          </a>
+        </div>
+      </div>
+    </section>
+    `;
+
+    if (discountBannerRegex.test(processed)) {
+      processed = processed.replace(discountBannerRegex, discountSectionHtml);
+    } else {
+      // Inyectar justo antes de la sección de servicios
+      const beforeServicesRegex = /(<section\b[^>]*?(?:id=["'](?:servicios|services)["']|class=["'][^"']*(?:services-section|servicios-section)[^"']*)[^>]*>)/i;
+      if (beforeServicesRegex.test(processed)) {
+        processed = processed.replace(beforeServicesRegex, `${discountSectionHtml}\n$1`);
+      }
+    }
+  } else {
+    // Si está desactivado, eliminar cualquier sección de descuento / oferta residual del HTML maquetado
+    processed = processed.replace(discountBannerRegex, '');
   }
 
   // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
