@@ -890,8 +890,17 @@ export const api = {
   async createService(service: Service): Promise<Service> {
     const tid = service.tenant_id || getActiveTenantId();
     const priceValue = Number(service.price ?? service.price_usd ?? service.price_cop ?? 0);
+    
+    const isValidUUID = (str?: string) => {
+      if (!str) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    };
+
+    const cleanServiceId = isValidUUID(service.id) ? service.id : (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined);
+
     const serviceWithTenant = {
       ...service,
+      id: cleanServiceId || service.id,
       tenant_id: tid,
       price: priceValue,
       price_usd: priceValue,
@@ -899,32 +908,42 @@ export const api = {
       image_url: service.image_url || '',
       is_featured: service.is_featured !== false
     };
+
     if (supabase && isSupabaseConfigured) {
-      const { data, error } = await supabase.from('services').insert([{
-        id: serviceWithTenant.id,
-        tenant_id: tid,
-        name: serviceWithTenant.name,
-        category: serviceWithTenant.category,
-        price: priceValue,
-        duration_minutes: serviceWithTenant.duration_minutes,
-        requires_patch_test: serviceWithTenant.requires_patch_test,
-        description: serviceWithTenant.description,
-        image_url: serviceWithTenant.image_url || null,
-        is_featured: serviceWithTenant.is_featured,
-        is_active: true
-      }]).select().single();
-      if (!error && data) {
-        const p = Number(data.price ?? priceValue);
-        return {
-          ...data,
-          price: p,
-          price_usd: p,
-          price_cop: p,
-          image_url: data.image_url || serviceWithTenant.image_url,
-          is_featured: data.is_featured !== false
-        } as Service;
+      try {
+        const payload: any = {
+          tenant_id: tid,
+          name: serviceWithTenant.name,
+          category: serviceWithTenant.category,
+          price: priceValue,
+          duration_minutes: serviceWithTenant.duration_minutes,
+          requires_patch_test: serviceWithTenant.requires_patch_test || false,
+          description: serviceWithTenant.description || 'Servicio profesional garantizado.',
+          image_url: serviceWithTenant.image_url || null,
+          is_featured: serviceWithTenant.is_featured,
+          is_active: true
+        };
+        if (cleanServiceId) payload.id = cleanServiceId;
+
+        const { data, error } = await supabase.from('services').insert([payload]).select().single();
+        if (!error && data) {
+          const p = Number(data.price ?? priceValue);
+          return {
+            ...data,
+            price: p,
+            price_usd: p,
+            price_cop: p,
+            image_url: data.image_url || serviceWithTenant.image_url,
+            is_featured: data.is_featured !== false
+          } as Service;
+        } else if (error) {
+          console.warn('Error insertando servicio en Supabase:', error.message);
+        }
+      } catch (err) {
+        console.warn('Excepción insertando servicio en Supabase:', err);
       }
     }
+
     const current = await this.getServices(tid);
     // Evitar duplicados por nombre en el mismo tenant
     const existingIndex = current.findIndex(s => s.name?.toLowerCase().trim() === serviceWithTenant.name?.toLowerCase().trim());
