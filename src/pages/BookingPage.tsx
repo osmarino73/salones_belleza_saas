@@ -222,54 +222,8 @@ export const BookingPage: React.FC = () => {
         return fallback;
       };
 
-      // 5. Si la BD aún no tiene servicios guardados, pero el prospecto sí los tiene definidos, usarlos
-      const fallbackServices = prospectDataObj?.servicios || resolvedTenant?.prospectData?.servicios;
-      if (loadedServices.length === 0 && fallbackServices && fallbackServices.length > 0) {
-        loadedServices = fallbackServices.map((s: any, idx: number) => {
-          const srvName = s.nombre || s.titulo || 'Tratamiento Profesional';
-          const rawPrice = s.precio_cop ?? s.precio ?? s.precio_desde ?? s.precio_usd ?? s.price;
-          const p = parsePriceValue(rawPrice, 60000);
-          
-          // Extraer duración
-          let dur = 60;
-          if (typeof s.duracion_minutos === 'number') dur = s.duracion_minutos;
-          else if (typeof s.duracion === 'string') {
-            const durDigits = s.duracion.replace(/\D/g, '');
-            if (durDigits) dur = parseInt(durDigits, 10) || 60;
-          }
-
-          return {
-            id: `ps-srv-${idx + 1}`,
-            tenant_id: tid || 'prospect',
-            name: srvName,
-            category: s.categoria || 'Servicio',
-            duration_minutes: dur,
-            price: p,
-            price_cop: p,
-            price_usd: p,
-            requires_patch_test: false,
-            description: s.descripcion || `Servicio profesional de ${srvName}`
-          };
-        });
-      }
-
-      const fallbackStylists = prospectDataObj?.especialistas || resolvedTenant?.prospectData?.especialistas;
-      if (loadedStylists.length === 0 && fallbackStylists && fallbackStylists.length > 0) {
-        loadedStylists = fallbackStylists.map((esp: any, idx: number) => ({
-          id: `ps-sty-${idx + 1}`,
-          tenant_id: tid || 'prospect',
-          name: esp.nombre || 'Especialista',
-          specialty: esp.rol || esp.especialidad || 'Master Stylist',
-          photo_url: esp.foto || esp.photo_url || '',
-          rating: 5.0,
-          reviews_count: 20 + idx * 5,
-          commission_service_pct: 45,
-          commission_retail_pct: 10,
-          working_days: [1, 2, 3, 4, 5, 6],
-          attends_clients: true,
-          is_active: true
-        }));
-      }
+      // 5. Si no hay servicios creados en la base de datos, NO inyectar servicios ficticios
+      // El agendador mostrará limpiamente el estado "Catálogo de Servicios en Preparación" con botón directo a WhatsApp.
 
       // 6. Asignar estado final en memoria de React
       setServices(loadedServices);
