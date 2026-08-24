@@ -294,12 +294,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
-  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar y Logo Text
-  if (slogan || businessName) {
-    const brandName = slogan || businessName;
+  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar (solo si fue modificado específicamente)
+  if (slogan) {
     processed = processed.replace(
       /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-name|logo-text|logo-title|brand-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi,
-      `$1${brandName}$3`
+      `$1${slogan}$3`
     );
   }
 
@@ -319,21 +318,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
-  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia en el Hero H1
-  if (slogan || titleAccent || businessName) {
-    const mainTitleName = slogan || businessName;
-    const accentText = titleAccent ? `<span class="magenta-accent">${titleAccent}</span>` : '';
+  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia en el Hero H1 (SOLO si el usuario configuró explícitamente titleAccent o un slogan personalizado que no sea el fallback del negocio)
+  if (titleAccent) {
+    const mainTitleName = slogan || '';
+    const accentText = `<span class="magenta-accent accent-gold">${titleAccent}</span>`;
     
     if (/(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
       processed = processed.replace(
         /(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
-        `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
-      );
-    } else if (/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
-      // Fallback a cualquier primer <h1> dentro del documento
-      processed = processed.replace(
-        /(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i,
-        `$1\n            ${mainTitleName}\n            ${accentText}\n          $3`
+        `$1\n            ${mainTitleName ? mainTitleName + '\n' : ''}${accentText}\n          $3`
       );
     }
   }
