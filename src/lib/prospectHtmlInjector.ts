@@ -192,23 +192,139 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       flex-shrink: 0 !important;
     }
 
-    /* Imagen de Portada del Hero: 100% Centrada y Nítida */
+    /* HERO MÓVIL INMERSIVO: FOTO EN EL FONDO CON ROSTRO ARRIBA Y TEXTO DEL MEDIO HACIA ABAJO */
+    .hero-fullwidth-section,
+    .hero-section,
+    .hero,
+    section[id*="inicio"],
+    section[class*="hero"] {
+      min-height: 90vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      padding: 20px 16px 40px 16px !important;
+      position: relative !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Fotografía de la Modelo en el Fondo: Rostro arriba completamente libre */
+    .hero-bg-cover,
+    .hero-main-img-box,
+    .model-image-frame,
+    .hero-image-container,
+    .hero-media-wrapper {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      z-index: 1 !important;
+    }
+
     .hero-bg-img,
     .hero-bg-cover img,
     .hero-main-img-box img,
     .model-image-frame img,
     .hero-image-container img,
     .hero-media-wrapper img {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       object-fit: cover !important;
-      object-position: center center !important;
+      object-position: center 5% !important;
       opacity: 0.95 !important;
+      display: block !important;
     }
 
-    /* Overlay / Background frontal suave para lucir la foto */
+    /* Máscara de Fusión: Transparente arriba (deja ver el rostro libre) y degradado suave abajo (para leer el texto) */
     .hero-bg-overlay,
-    .hero-overlay,
-    .hero-bg-cover .hero-bg-overlay {
-      opacity: 0.3 !important;
+    .hero-overlay {
+      position: absolute !important;
+      inset: 0 !important;
+      display: block !important;
+      background: linear-gradient(
+        180deg, 
+        rgba(253, 250, 249, 0.05) 0%, 
+        rgba(253, 250, 249, 0.25) 40%, 
+        rgba(251, 243, 242, 0.88) 70%, 
+        rgba(251, 243, 242, 0.98) 100%
+      ) !important;
+      z-index: 2 !important;
+    }
+
+    /* Contenedor de Textos: Centrado y ubicado del Medio hacia Abajo */
+    .hero-content-wrapper,
+    .hero-text-content,
+    .hero-container,
+    .hero-content,
+    .hero-text-block {
+      width: 100% !important;
+      max-width: 100% !important;
+      text-align: center !important;
+      padding: 0 !important;
+      margin: 0 auto !important;
+      position: relative !important;
+      z-index: 10 !important;
+    }
+
+    /* Escala elegante del título H1 con sombra de legibilidad */
+    .hero-title,
+    .hero-main-title,
+    .hero-content-wrapper h1,
+    .hero-text-block h1 {
+      font-size: 2rem !important;
+      line-height: 1.18 !important;
+      margin-bottom: 8px !important;
+      text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* Subtítulo */
+    .hero-desc,
+    .hero-subtitle,
+    .hero-description,
+    .hero-content-wrapper p,
+    .hero-text-block p {
+      font-size: 0.86rem !important;
+      line-height: 1.5 !important;
+      max-width: 310px !important;
+      margin: 0 auto 16px auto !important;
+      text-shadow: 0 1px 8px rgba(255, 255, 255, 0.8) !important;
+    }
+
+    /* Botones CTA apilados verticalmente dentro del Hero */
+    .hero-actions,
+    .hero-ctas {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 10px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+    }
+
+    .hero-actions a,
+    .hero-ctas a,
+    .btn-primary,
+    .btn-secondary {
+      width: 100% !important;
+      max-width: 290px !important;
+      min-height: 46px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      box-sizing: border-box !important;
     }
 
     /* Cuadrícula de Servicios Móvil: 2 columnas balanceadas o 1 columna fluida */
