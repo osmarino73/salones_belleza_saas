@@ -208,18 +208,42 @@ export const BookingPage: React.FC = () => {
         } catch (err) {}
       }
 
+      // Helper robusto para extraer el valor numérico de precios en cualquier formato (número, string con $ o texto descriptivo)
+      const parsePriceValue = (val: any, fallback: number = 50000): number => {
+        if (typeof val === 'number' && !isNaN(val) && val > 0) return val;
+        if (typeof val === 'string') {
+          // Extraer dígitos (ej: "Desde $450.000 COP" -> 450000, "$ 65.000" -> 65000)
+          const digitsOnly = val.replace(/\D/g, '');
+          if (digitsOnly) {
+            const parsed = parseInt(digitsOnly, 10);
+            if (!isNaN(parsed) && parsed > 0) return parsed;
+          }
+        }
+        return fallback;
+      };
+
       // 5. Si la BD aún no tiene servicios guardados, pero el prospecto sí los tiene definidos, usarlos
       const fallbackServices = prospectDataObj?.servicios || resolvedTenant?.prospectData?.servicios;
       if (loadedServices.length === 0 && fallbackServices && fallbackServices.length > 0) {
         loadedServices = fallbackServices.map((s: any, idx: number) => {
           const srvName = s.nombre || s.titulo || 'Tratamiento Profesional';
-          const p = Number(s.precio_cop || s.precio || s.precio_usd || 0);
+          const rawPrice = s.precio_cop ?? s.precio ?? s.precio_desde ?? s.precio_usd ?? s.price;
+          const p = parsePriceValue(rawPrice, 60000);
+          
+          // Extraer duración
+          let dur = 60;
+          if (typeof s.duracion_minutos === 'number') dur = s.duracion_minutos;
+          else if (typeof s.duracion === 'string') {
+            const durDigits = s.duracion.replace(/\D/g, '');
+            if (durDigits) dur = parseInt(durDigits, 10) || 60;
+          }
+
           return {
             id: `ps-srv-${idx + 1}`,
             tenant_id: tid || 'prospect',
             name: srvName,
             category: s.categoria || 'Servicio',
-            duration_minutes: Number(s.duracion_minutos || 60),
+            duration_minutes: dur,
             price: p,
             price_cop: p,
             price_usd: p,
