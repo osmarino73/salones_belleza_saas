@@ -86,15 +86,94 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     pointer-events: none !important;
   }
 
-  /* BARRA SUPERIOR & HERO MÓVIL PERFECCIONADOS */
+  /* ESTILOS Y ESTRUCTURA DE LAS TARJETAS DE SERVICIOS DINÁMICAS */
+  .glow-service-card {
+    background: #ffffff !important;
+    border-radius: 20px !important;
+    padding: 16px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(200, 45, 90, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  }
+  .glow-service-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 16px 36px rgba(200, 45, 90, 0.12) !important;
+  }
+  .glow-service-card .card-photo-box {
+    position: relative !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 14px !important;
+    margin-bottom: 14px !important;
+  }
+  .glow-service-card .card-photo-box img,
+  .services-four-grid .card-photo-box img,
+  .services-grid .card-photo-box img,
+  .services-four-grid img,
+  .services-grid img,
+  .servicios-grid img,
+  .grid-services img {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
+    border-radius: 14px !important;
+  }
+  .glow-service-card .card-num-badge {
+    position: absolute !important;
+    top: 10px !important;
+    left: 10px !important;
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 3px 8px !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(6px) !important;
+    z-index: 2 !important;
+  }
+  .glow-service-card .card-service-title {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #1e1b4b !important;
+    margin: 0 0 6px 0 !important;
+    line-height: 1.3 !important;
+  }
+  .glow-service-card .pink-divider-dash {
+    width: 32px !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, #c82d5a, #e11d48) !important;
+    border-radius: 999px !important;
+    margin-bottom: 10px !important;
+  }
+  .glow-service-card .card-service-desc {
+    font-size: 13px !important;
+    color: #475569 !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.5 !important;
+  }
+
+  /* PAQUETE INTEGRAL DE OPTIMIZACIÓN MOBILE-FIRST (>90% DE USUARIOS EN SMARTPHONES) */
   @media (max-width: 768px) {
+    /* Prevención de desbordamiento horizontal en todo el sitio */
+    html, body, .prospect-site-wrapper {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+
     /* Barra Superior / Navbar en Móvil: Espaciado, alineación y botón compacto */
     header, nav, .main-header, .site-header, .navbar, .header {
-      padding: 12px 16px !important;
+      padding: 10px 14px !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
-      gap: 12px !important;
+      gap: 8px !important;
       box-sizing: border-box !important;
       width: 100% !important;
     }
@@ -106,8 +185,8 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     .header a[class*="btn"],
     .btn-header,
     .btn-pill-magenta {
-      padding: 8px 14px !important;
-      font-size: 0.82rem !important;
+      padding: 8px 12px !important;
+      font-size: 0.8rem !important;
       white-space: nowrap !important;
       border-radius: 10px !important;
       flex-shrink: 0 !important;
@@ -130,6 +209,68 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     .hero-overlay,
     .hero-bg-cover .hero-bg-overlay {
       opacity: 0.3 !important;
+    }
+
+    /* Cuadrícula de Servicios Móvil: 2 columnas balanceadas o 1 columna fluida */
+    .services-four-grid,
+    .services-grid,
+    .servicios-grid,
+    .grid-services,
+    .services-5-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+      padding: 0 4px !important;
+    }
+
+    .glow-service-card {
+      padding: 12px !important;
+      border-radius: 16px !important;
+    }
+
+    .glow-service-card .card-service-title {
+      font-size: 14px !important;
+      margin-bottom: 4px !important;
+    }
+
+    .glow-service-card .card-service-desc {
+      font-size: 11px !important;
+      line-height: 1.4 !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+    }
+
+    /* Botones CTA táctiles cómodos para el pulgar */
+    .btn-view-all-services,
+    .btn-promo-discount,
+    .hero-actions a,
+    .hero-ctas a {
+      min-height: 46px !important;
+      padding: 12px 20px !important;
+      font-size: 14px !important;
+      border-radius: 12px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    /* En pantallas muy compactas (360px - 400px), 2 columnas de servicios ultra optimizadas */
+    .services-four-grid,
+    .services-grid,
+    .servicios-grid,
+    .grid-services {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+    }
+    
+    .glow-service-card {
+      padding: 10px !important;
+    }
+    
+    .glow-service-card .card-photo-box {
+      margin-bottom: 8px !important;
+      border-radius: 10px !important;
     }
   }
 </style>
