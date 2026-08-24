@@ -2276,6 +2276,37 @@ export const api = {
     return null;
   },
 
+  async purgeTestDatabase(): Promise<{ success: boolean; message: string }> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('appointments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('inventory_movements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('products').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('clients').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('stylists').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('service_categories').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('tenant_ai_settings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('tenants').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('prospect_sites').update({ status: 'prospecto', claimed_tenant_id: null }).neq('id', '00000000-0000-0000-0000-000000000000');
+      } catch (e: any) {
+        console.warn('Error purging Supabase DB:', e.message);
+      }
+    }
+
+    // Limpiar localStorage
+    localStorage.removeItem('bf_tenant_active');
+    localStorage.removeItem('bf_auth_user');
+    localStorage.removeItem(STORAGE_KEYS.SERVICES);
+    localStorage.removeItem(STORAGE_KEYS.STYLISTS);
+    localStorage.removeItem(STORAGE_KEYS.APPOINTMENTS);
+    localStorage.removeItem(STORAGE_KEYS.CLIENTS);
+    localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+    localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
+
+    return { success: true, message: 'Base de datos y tenants de prueba limpiados exitosamente.' };
+  },
+
   async activateProspectAsTenant(params: {
     prospectId: string;
     ownerEmail: string;

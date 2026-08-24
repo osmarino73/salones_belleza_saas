@@ -635,6 +635,20 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
             <span className="hidden sm:inline">🖼️ Galería Stock CDN</span>
           </button>
 
+          <button
+            type="button"
+            onClick={async () => {
+              if (confirm('⚠️ ¿Estás seguro de que deseas limpiar la base de datos de pruebas?\n\nEsta acción borrará citas, servicios, estilistas y tenants de prueba para dejar la base de datos completamente limpia.')) {
+                const res = await api.purgeTestDatabase();
+                alert('✅ ' + res.message);
+                await loadData();
+              }
+            }}
+            className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-red-500/30 hover:border-red-500/50 bg-red-500/10 text-red-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Limpiar tenants y datos de prueba"
+          >
+            <span>🧹 Limpiar BD</span>
+          </button>
           <Link
             to="/dashboard"
             className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 hover:text-white transition-all flex items-center gap-1.5"
