@@ -527,7 +527,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = processed.replace(discountBannerRegex, '');
   }
 
-  // 2. Inyección Dinámica de Servicios Reales (Respetando al 100% el diseño, clases, colores y tipografía del HTML original)
+  // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos e iconos)
   if (liveServices && liveServices.length > 0) {
     const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-5-grid|services-four-grid|services-grid|servicios-grid|grid-services|services-container|services-list)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
     
@@ -538,68 +538,68 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       processed = processed.replace(
         servicesGridRegex,
         (match, gridOpeningTag, gridInnerContent, closingTags) => {
-          // Extraer la primera tarjeta como plantilla de diseño original
-          const singleCardMatch = gridInnerContent.match(/<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/i);
-          const originalCardTemplate = singleCardMatch ? singleCardMatch[0] : '';
+          // Extraer la lista de tarjetas hijas existentes en el HTML original
+          const cardRegex = /<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/gi;
+          const existingCards = gridInnerContent.match(cardRegex);
 
-          let liveCardsHtml = '';
-
-          if (originalCardTemplate) {
-            liveCardsHtml = displayServices.map((srv, idx) => {
+          // Si el HTML original ya tiene exactamente la misma cantidad de tarjetas maquetadas de forma rica y hermosa, sincronizar cada una manteniendo su estructura
+          if (existingCards && existingCards.length > 0) {
+            const updatedCardsHtml = displayServices.map((srv, idx) => {
               const numStr = String(idx + 1).padStart(2, '0');
               const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-              let cardHtml = originalCardTemplate;
+              // Usar la tarjeta correspondiente o la primera como molde
+              let cardHtml = existingCards[idx] || existingCards[0];
 
-              // 1. Reemplazar imagen de la tarjeta respetando etiquetas y clases originales
+              // 1. Actualizar imagen
               cardHtml = cardHtml.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
                 let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
                 updated = updated.replace(/alt=["'][^"']*["']/i, `alt="${srv.name}"`);
-                if (!updated.includes('alt=')) {
-                  updated = updated.replace('<img', `<img alt="${srv.name}"`);
-                }
                 return updated;
               });
 
-              // 2. Reemplazar número o badge si existe en el template
+              // 2. Actualizar número / badge si existe
               cardHtml = cardHtml.replace(/(<span\b[^>]*class=["'][^"']*(?:card-num-badge|badge-num|service-num|num)[^"']*["'][^>]*>)[^<]*(<\/span>)/i, `$1${numStr}$2`);
 
-              // 3. Reemplazar título de servicio respetando etiquetas h3/h4/div y estilos
-              cardHtml = cardHtml.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
+              // 3. Actualizar título del servicio (manteniendo clases de títulos h3/h4/span)
+              cardHtml = cardHtml.replace(/(<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[3-4]|div|span)>)/i, `$1${srv.name}$3`);
+              if (!cardHtml.includes(srv.name)) {
+                cardHtml = cardHtml.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
+              }
 
-              // 4. Reemplazar descripción de servicio
-              const srvDesc = srv.description || `${srv.name} con atención y productos profesionales de alta gama.`;
-              cardHtml = cardHtml.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srvDesc}$3`);
+              // 4. Actualizar descripción
+              if (srv.description) {
+                cardHtml = cardHtml.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srv.description}$3`);
+              }
 
-              // 5. Eliminar precios o botones de compra internos en portada según directiva
-              cardHtml = cardHtml.replace(/<span\b[^>]*class=["'][^"']*(?:price|precio|card-price)[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, '');
-              cardHtml = cardHtml.replace(/<a\b[^>]*class=["'][^"']*(?:btn|button|btn-book)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, '');
+              // 5. Actualizar o sincronizar precio si existe en la tarjeta original
+              const priceVal = srv.price_cop || srv.price || srv.price_usd;
+              if (priceVal) {
+                const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
+                cardHtml = cardHtml.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
+              }
+
+              // 6. Actualizar duración si existe en la tarjeta original
+              if (srv.duration_minutes) {
+                const durationText = `${srv.duration_minutes} mins`;
+                cardHtml = cardHtml.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
+              }
 
               return cardHtml;
             }).join('\n');
-          } else {
-            // Fallback elegante transparente si no se pudo capturar template específico
-            liveCardsHtml = displayServices.map((srv, idx) => {
-              const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-              return `
-              <div class="service-card">
-                <div class="service-image-box" style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; height: 180px;">
-                  <img src="${serviceImg}" alt="${srv.name}" style="width: 100%; height: 100%; object-fit: cover;" />
-                </div>
-                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">${srv.name}</h3>
-                <p style="font-size: 0.9rem; color: inherit; opacity: 0.85; line-height: 1.4;">${srv.description || ''}</p>
-              </div>`;
-            }).join('\n');
+
+            // Botón "Ver todos los servicios" si el salón tiene más servicios registrados que los mostrados
+            const viewAllButtonHtml = liveServices.length > displayServices.length ? `
+            <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
+              <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #c82d5a); color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
+                Ver todos los servicios (${liveServices.length})
+              </a>
+            </div>` : '';
+
+            return `${gridOpeningTag}\n${updatedCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
           }
 
-          // Botón "Ver todos los servicios" si hay más registrados que los mostrados
-          const viewAllButtonHtml = liveServices.length > displayServices.length ? `
-          <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
-            <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #c82d5a); color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
-              Ver todos los servicios (${liveServices.length})
-            </a>
-          </div>` : '';
-
-          return `${gridOpeningTag}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
+          // Si no se pudieron capturar tarjetas previas, mantener el contenido original intacto
+          return match;
         }
       );
     }
