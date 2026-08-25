@@ -242,34 +242,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           normalizedSectionOpen = normalizedSectionOpen.replace('<section', '<section id="servicios"');
         }
 
-        // Normalización Inteligente del Encabezado de la Sección de Servicios
-        // Unifica encabezados divididos en columnas en un solo bloque semántico centrado
-        const headerContainerRegex = /(<div\b[^>]*class=["'][^"']*(?:header|intro|top|head|title-wrap|heading)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*(?=<div\b[^>]*class=["'][^"']*(?:grid|cards|container|row|services-5|services-4|popular-services|item)|<article|<ul))/i;
-        
-        if (headerContainerRegex.test(updatedSectionBody)) {
-          updatedSectionBody = updatedSectionBody.replace(headerContainerRegex, (_fullHeader: string, _hOpen: string, hInner: string) => {
-            // Extraer eyebrow si existe
-            const eyebrowMatch = hInner.match(/<(?:span|p|div)\b[^>]*class=["'][^"']*(?:eyebrow|sub-title|tag|badge|label)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|p|div)>/i) || hInner.match(/<(?:span|p|div)\b[^>]*>([\s\S]*?NUESTRA CARTA[\s\S]*?)<\/(?:span|p|div)>/i);
-            const eyebrowText = eyebrowMatch ? eyebrowMatch[1].replace(/<[^>]*>/g, '').trim() : 'NUESTRA CARTA';
-
-            // Extraer title
-            const titleMatch = hInner.match(/(<h[1-6]\b[^>]*>)([\s\S]*?)(<\/h[1-6]>)/i);
-            const titleHtml = titleMatch ? titleMatch[2].trim() : 'SERVICIOS <span class="accent-gold">POPULARES</span>';
-
-            // Extraer description / subtitle
-            const descMatch = hInner.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i);
-            const descText = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').trim() : '';
-
-            const promoColor = primaryColor || '#e5a950';
-
-            return `
-            <div class="section-header unified-services-header" style="width: 100%; text-align: center; margin: 0 auto 32px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box;">
-              <span class="section-eyebrow" style="display: inline-block; text-transform: uppercase; font-weight: 700; font-size: 0.85rem; letter-spacing: 2px; color: ${promoColor}; margin-bottom: 8px; text-align: center;">${eyebrowText}</span>
-              <h2 class="section-title" style="font-size: 2.2rem; font-weight: 900; line-height: 1.15; color: #ffffff; margin: 0 0 10px 0; text-align: center; letter-spacing: -0.5px;">${titleHtml}</h2>
-              ${descText ? `<p class="section-subtitle" style="font-size: 0.9rem; line-height: 1.5; color: rgba(226, 232, 240, 0.88); max-width: 340px; margin: 0 auto; text-align: center;">${descText}</p>` : ''}
-            </div>`;
-          });
-        }
+        // El encabezado nativo (section-header) se preserva 100% intacto con sus clases y colores originales
 
         // Función auxiliar para actualizar una tarjeta individual
         const processSingleCard = (cardOpen: string, cardInner: string, cardClose: string): string => {
@@ -313,14 +286,6 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
             }
           }
 
-          // 5.1 Eliminar medallas rotas, círculos flotantes o iconos entre imagen y título en móvil
-          inner = inner.replace(/<(?:div|span)\b[^>]*class=["'][^"']*(?:badge|icon|medal|circle|step|number|category)[^"']*["'][^>]*>[\s\S]*?<\/(?:div|span)>/gi, (match) => {
-            if (/mins|minuto|duraci|precio|cop|\$|✓/i.test(match)) {
-              return match;
-            }
-            return '';
-          });
-
           // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
           const titleMatch = inner.match(/<(?:h[1-6]|div|span|p)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[1-6]|div|span|p)>/i) || inner.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
           const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
@@ -358,15 +323,9 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
             });
           }
 
-          // Fallback de seguridad: si la tarjeta no tenía ningún botón o enlace, insertar botón sutil con el link
-          if (!linkInjected) {
-            const fallbackBtnHtml = `
-            <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
-              <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
-                <span>Agendar Cita</span>
-              </a>
-            </div>`;
-            inner = inner + fallbackBtnHtml;
+          // Si la tarjeta tiene pill/badge de acción, enlazarlo suavemente
+          if (!linkInjected && /(<span\b[^>]*class=["'][^"']*(?:service-tag-pill|tag-pill|card-badge|btn-tag)[^"']*["'][^>]*>)([\s\S]*?)(<\/span>)/i.test(inner)) {
+            inner = inner.replace(/(<span\b[^>]*class=["'][^"']*(?:service-tag-pill|tag-pill|card-badge|btn-tag)[^"']*["'][^>]*>)([\s\S]*?)(<\/span>)/i, `<a href="${srvBookingUrl}" style="text-decoration: none;" class="service-tag-link">$1$2$3</a>`);
           }
 
           return `${cardOpen}${inner}${cardClose}`;
