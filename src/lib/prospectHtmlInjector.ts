@@ -527,29 +527,31 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = processed.replace(discountBannerRegex, '');
   }
 
-  // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos e iconos)
-  if (liveServices && liveServices.length > 0) {
-    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-5-grid|services-four-grid|services-grid|servicios-grid|grid-services|services-container|services-list)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
-    
-    if (servicesGridRegex.test(processed)) {
-      const featuredServices = liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined));
-      const displayServices = (featuredServices.length > 0 ? featuredServices : liveServices).slice(0, 6);
+  // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos y añadiendo botón de agendar)
+  const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-5-grid|services-four-grid|services-grid|servicios-grid|grid-services|services-container|services-list)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
+  
+  if (servicesGridRegex.test(processed)) {
+    processed = processed.replace(
+      servicesGridRegex,
+      (match, gridOpeningTag, gridInnerContent, closingTags) => {
+        // Extraer la lista de tarjetas hijas existentes en el HTML original
+        const cardRegex = /<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/gi;
+        const existingCards = gridInnerContent.match(cardRegex);
 
-      processed = processed.replace(
-        servicesGridRegex,
-        (match, gridOpeningTag, gridInnerContent, closingTags) => {
-          // Extraer la lista de tarjetas hijas existentes en el HTML original
-          const cardRegex = /<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/gi;
-          const existingCards = gridInnerContent.match(cardRegex);
+        if (existingCards && existingCards.length > 0) {
+          const featuredServices = (liveServices && liveServices.length > 0)
+            ? liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined)).slice(0, 6)
+            : [];
 
-          // Si el HTML original ya tiene exactamente la misma cantidad de tarjetas maquetadas de forma rica y hermosa, sincronizar cada una manteniendo su estructura
-          if (existingCards && existingCards.length > 0) {
-            const updatedCardsHtml = displayServices.map((srv, idx) => {
-              const numStr = String(idx + 1).padStart(2, '0');
+          const updatedCardsHtml = existingCards.map((originalCard: string, idx: number) => {
+            const numStr = String(idx + 1).padStart(2, '0');
+            const srv = featuredServices[idx];
+            let cardHtml = originalCard;
+
+            // Si hay liveServices de base de datos, sincronizar datos
+            if (srv) {
               const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-              // Usar la tarjeta correspondiente o la primera como molde
-              let cardHtml = existingCards[idx] || existingCards[0];
-
+              
               // 1. Actualizar imagen
               cardHtml = cardHtml.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
                 let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
@@ -557,68 +559,74 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
                 return updated;
               });
 
-              // 2. Actualizar número / badge si existe
-              cardHtml = cardHtml.replace(/(<span\b[^>]*class=["'][^"']*(?:card-num-badge|badge-num|service-num|num)[^"']*["'][^>]*>)[^<]*(<\/span>)/i, `$1${numStr}$2`);
-
-              // 3. Actualizar título del servicio (manteniendo clases de títulos h3/h4/span)
+              // 2. Actualizar título del servicio
               cardHtml = cardHtml.replace(/(<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[3-4]|div|span)>)/i, `$1${srv.name}$3`);
               if (!cardHtml.includes(srv.name)) {
                 cardHtml = cardHtml.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
               }
 
-              // 4. Actualizar descripción
+              // 3. Actualizar descripción
               if (srv.description) {
                 cardHtml = cardHtml.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srv.description}$3`);
               }
 
-              // 5. Actualizar o sincronizar precio si existe en la tarjeta original
+              // 4. Actualizar precio
               const priceVal = srv.price_cop || srv.price || srv.price_usd;
               if (priceVal) {
                 const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
                 cardHtml = cardHtml.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
               }
 
-              // 6. Añadir botón de Agendar Cita integrado en la tarjeta
-              const srvBookingUrl = `${bookingUrl}?serviceId=${encodeURIComponent(srv.id)}`;
-              const bookBtnHtml = `
-              <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
-                <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 16px; border-radius: 12px; background: var(--primary, #FF5A36); color: #ffffff; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                  <span>📅 Agendar Cita</span>
-                </a>
-              </div>`;
-
-              // Si la tarjeta no tiene botón previo de agendar, insertarlo antes del cierre del último contenedor
-              if (!cardHtml.includes('btn-card-book') && !cardHtml.includes('btn-book') && !cardHtml.includes('Reservar Cita') && !cardHtml.includes('Agendar Cita')) {
-                const lastDivIndex = cardHtml.lastIndexOf('</div>');
-                if (lastDivIndex !== -1) {
-                  cardHtml = cardHtml.slice(0, lastDivIndex) + bookBtnHtml + '\n' + cardHtml.slice(lastDivIndex);
-                } else {
-                  cardHtml += bookBtnHtml;
-                }
-              } else {
-                // Si ya tenía botón o enlace, actualizar su href al servicio directo
-                cardHtml = cardHtml.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
+              // 5. Actualizar duración
+              if (srv.duration_minutes) {
+                const durationText = `${srv.duration_minutes} mins`;
+                cardHtml = cardHtml.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
               }
+            }
 
-              return cardHtml;
-            }).join('\n');
+            // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
+            const titleMatch = cardHtml.match(/<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[3-4]|div|span)>/i) || cardHtml.match(/<h[3-4]\b[^>]*>([\s\S]*?)<\/h[3-4]>/i);
+            const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
+            const cleanServiceParam = extractedTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
 
-            // Botón "Ver todos los servicios" si el salón tiene más servicios registrados que los mostrados
-            const viewAllButtonHtml = liveServices.length > displayServices.length ? `
-            <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
-              <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #c82d5a); color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
-                Ver todos los servicios (${liveServices.length})
+            // Botón de Agendar Cita con estilo dorado / primario integrado perfectamente al pie de la tarjeta
+            const bookBtnHtml = `
+            <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
+              <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 9px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
+                <span>Agendar Cita</span>
               </a>
-            </div>` : '';
+            </div>`;
 
-            return `${gridOpeningTag}\n${updatedCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
-          }
+            // Insertar el botón si la tarjeta no lo tiene aún
+            if (!cardHtml.includes('btn-card-book') && !cardHtml.includes('btn-book') && !cardHtml.includes('Reservar Cita') && !cardHtml.includes('Agendar Cita')) {
+              const lastDivIndex = cardHtml.lastIndexOf('</div>');
+              if (lastDivIndex !== -1) {
+                cardHtml = cardHtml.slice(0, lastDivIndex) + bookBtnHtml + '\n' + cardHtml.slice(lastDivIndex);
+              } else {
+                cardHtml += bookBtnHtml;
+              }
+            } else {
+              cardHtml = cardHtml.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
+            }
 
-          // Si no se pudieron capturar tarjetas previas, mantener el contenido original intacto
-          return match;
+            return cardHtml;
+          }).join('\n');
+
+          // Botón "Ver todos los servicios" si hay más servicios registrados
+          const viewAllButtonHtml = (liveServices && liveServices.length > featuredServices.length) ? `
+          <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
+            <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #e5a950); color: #0d1117; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
+              Ver todos los servicios (${liveServices.length})
+            </a>
+          </div>` : '';
+
+          return `${gridOpeningTag}\n${updatedCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
         }
-      );
-    }
+
+        return match;
+      }
+    );
   }
 
   // 2.5 Inyección y Control de Visibilidad de la Sección de Equipo / Especialistas
