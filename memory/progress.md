@@ -100,6 +100,11 @@
 - [x] **Scroll Responsivo y Altura Máxima en Modales (`max-h-[90vh] overflow-y-auto`)**:
   - Ajuste en todos los modales del Dashboard y Portal de Colaboradores para asegurar visibilidad total y accesibilidad en cualquier resolución de pantalla.
 
+- [x] **Depuración Visual del Hero Móvil en Ingesta Web (`prospectHtmlInjector.ts`)**:
+  - Eliminación total de la capa de gradiente de emblanquecimiento (`.hero-bg-overlay, .hero-overlay { display: none !important; }`).
+  - Restauración de la opacidad al 100% en la fotografía de fondo para conservar el contraste, tonalidades y atmósfera original del negocio (barberías oscuras, spas, salones).
+  - Remoción de sombras blancas forzadas en títulos y subtítulos del Hero móvil.
+
 - [x] **Despliegue Continuo (CI/CD) Netlify + GitHub**:
   - Repositorio oficial: [https://github.com/osmarino73/salones_belleza_saas](https://github.com/osmarino73/salones_belleza_saas).
   - Producción activa: [https://belleza2027.netlify.app](https://belleza2027.netlify.app).

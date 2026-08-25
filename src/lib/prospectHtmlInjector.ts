@@ -267,24 +267,14 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       height: 100% !important;
       object-fit: cover !important;
       object-position: center 5% !important;
-      opacity: 0.95 !important;
+      opacity: 1 !important;
       display: block !important;
     }
 
-    /* Máscara de Fusión: Transparente arriba (deja ver el rostro libre) y degradado suave abajo (para leer el texto) */
+    /* Respeto estricto del fondo y tonalidades originales: sin capas de emblanquecimiento forzadas */
     .hero-bg-overlay,
     .hero-overlay {
-      position: absolute !important;
-      inset: 0 !important;
-      display: block !important;
-      background: linear-gradient(
-        180deg, 
-        rgba(253, 250, 249, 0.05) 0%, 
-        rgba(253, 250, 249, 0.25) 40%, 
-        rgba(251, 243, 242, 0.88) 70%, 
-        rgba(251, 243, 242, 0.98) 100%
-      ) !important;
-      z-index: 2 !important;
+      display: none !important;
     }
 
     /* Contenedor de Textos: Centrado y ubicado del Medio hacia Abajo */
@@ -302,7 +292,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       z-index: 10 !important;
     }
 
-    /* Escala elegante del título H1 con sombra de legibilidad */
+    /* Escala elegante del título H1 respetando colores originales */
     .hero-title,
     .hero-main-title,
     .hero-content-wrapper h1,
@@ -310,7 +300,6 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       font-size: 2rem !important;
       line-height: 1.18 !important;
       margin-bottom: 8px !important;
-      text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9) !important;
     }
 
     /* Subtítulo */
@@ -323,7 +312,6 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       line-height: 1.5 !important;
       max-width: 310px !important;
       margin: 0 auto 16px auto !important;
-      text-shadow: 0 1px 8px rgba(255, 255, 255, 0.8) !important;
     }
 
     /* Botones CTA apilados verticalmente dentro del Hero */
