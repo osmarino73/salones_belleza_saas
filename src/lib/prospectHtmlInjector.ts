@@ -319,35 +319,365 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
     }
 
-    /* Cuadrícula de Servicios Móvil: 2 columnas balanceadas o 1 columna fluida */
+    /* ENCABEZADOS DE SECCIÓN EN MÓVIL (NUESTRA CARTA / SERVICIOS POPULARES / DESCRIPCIÓN) */
+    .section-header,
+    .services-header,
+    .servicios-header,
+    .services-top,
+    .services-intro,
+    .services-head,
+    .services-header-row,
+    .services-header-grid,
+    .services-header-wrap,
+    .services-title-wrap,
+    .services-header-container,
+    .services-heading,
+    .popular-header,
+    .popular-intro,
+    .carta-header,
+    section[id*="serv"] .section-header,
+    section[class*="serv"] .section-header,
+    section[id*="serv"] .container > .row:first-child,
+    section[class*="serv"] .container > .row:first-child,
+    section[id*="serv"] > .container > div:first-child,
+    section[class*="serv"] > .container > div:first-child,
+    section[id*="serv"] > div:first-child,
+    section[class*="serv"] > div:first-child,
+    section[id*="serv"] .header-wrap,
+    section[class*="serv"] .header-wrap {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 auto 24px auto !important;
+      padding: 0 12px !important;
+      box-sizing: border-box !important;
+      grid-template-columns: 1fr !important;
+    }
+
+    section[id*="serv"] > .container > div:first-child > div,
+    section[class*="serv"] > .container > div:first-child > div,
+    section[id*="serv"] > div:first-child > div,
+    section[class*="serv"] > div:first-child > div,
+    .services-top > div,
+    .services-header-grid > div,
+    .services-header-row > div {
+      width: 100% !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 auto !important;
+    }
+
+    .section-eyebrow,
+    .services-eyebrow,
+    .servicios-eyebrow,
+    .section-header span,
+    .section-header .eyebrow,
+    section[id*="serv"] .section-eyebrow,
+    section[class*="serv"] .section-eyebrow,
+    section[id*="serv"] span.eyebrow,
+    section[class*="serv"] span.eyebrow {
+      font-size: 0.82rem !important;
+      letter-spacing: 2px !important;
+      text-transform: uppercase !important;
+      font-weight: 700 !important;
+      margin-bottom: 6px !important;
+      display: block !important;
+      text-align: center !important;
+    }
+
+    .section-title,
+    .services-title,
+    .servicios-title,
+    .section-header h2,
+    .section-header h3,
+    section[id*="serv"] .section-title,
+    section[class*="serv"] .section-title,
+    section[id*="serv"] h2,
+    section[class*="serv"] h2 {
+      font-size: 1.95rem !important;
+      line-height: 1.15 !important;
+      font-weight: 800 !important;
+      text-align: center !important;
+      margin-bottom: 8px !important;
+      letter-spacing: -0.5px !important;
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .section-desc,
+    .section-description,
+    .services-desc,
+    .servicios-desc,
+    .section-subtitle,
+    .section-header p,
+    section[id*="serv"] .section-header p,
+    section[class*="serv"] .section-header p,
+    section[id*="serv"] p.desc,
+    section[class*="serv"] p.desc,
+    section[id*="serv"] p,
+    section[class*="serv"] p {
+      font-size: 0.88rem !important;
+      line-height: 1.5 !important;
+      color: rgba(226, 232, 240, 0.88) !important;
+      text-align: center !important;
+      max-width: 320px !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+
+    /* Cuadrícula Universal de Servicios Móvil: 2 columnas balanceadas */
     .services-four-grid,
     .services-grid,
     .servicios-grid,
     .grid-services,
-    .services-5-grid {
+    .services-5-grid,
+    .services-container,
+    .services-list,
+    .services-cards,
+    .popular-services-grid,
+    .popular-grid,
+    .cards-grid,
+    .menu-grid,
+    .carta-grid,
+    .services-wrap,
+    .services-row,
+    .services-catalog,
+    .services-items,
+    section[id*="serv"] .grid,
+    section[class*="serv"] .grid,
+    section[id*="serv"] > .container > div:not(.section-header):not(.services-top):not(.services-header),
+    section[class*="serv"] > .container > div:not(.section-header):not(.services-top):not(.services-header) {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+      padding: 0 4px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .glow-service-card,
+    .service-circular-card,
+    .service-card,
+    .services-item,
+    .servicio-card,
+    .popular-card,
+    .menu-card,
+    .carta-card,
+    .item-card,
+    .treatment-card,
+    .service-box,
+    section[id*="serv"] article,
+    section[class*="serv"] article {
+      width: 100% !important;
+      max-width: 100% !important;
+      padding: 10px 10px 12px 10px !important;
+      border-radius: 18px !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      gap: 6px !important;
+      background: rgba(26, 29, 36, 0.85) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* Ocultar medallas rotas / badges flotantes desalineados en mobile */
+    .card-badge,
+    .popular-badge,
+    .service-badge,
+    .badge-wrap,
+    .floating-medal,
+    .floating-badge,
+    .card-icon-floating,
+    .service-card-badge,
+    .popular-card-badge,
+    .badge-floating,
+    .popular-card-icon,
+    .card-icon-wrap,
+    .service-icon-wrap,
+    .icon-badge,
+    .medal-icon,
+    .popular-card-number,
+    .card-category-icon,
+    .popular-card-medal,
+    .popular-card > div:not([class*="img"]):not([class*="content"]):not([class*="body"]):not([class*="info"]) {
+      display: none !important;
+    }
+
+    /* Imagen superior CUADRADA (1:1) de la tarjeta en 2 columnas */
+    .service-avatar-wrap,
+    .card-photo-box,
+    .service-photo-box,
+    .service-card-img,
+    .popular-card-img,
+    .card-image-wrap,
+    .card-img-top,
+    .service-card-image,
+    .service-card img,
+    .popular-card img,
+    .service-circular-card img,
+    .glow-service-card img,
+    section[id*="serv"] .card img,
+    section[class*="serv"] .card img,
+    section[id*="serv"] article img,
+    section[class*="serv"] article img {
+      aspect-ratio: 1 / 1 !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      border-radius: 12px !important;
+      object-fit: cover !important;
+      margin: 0 auto 6px auto !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+      display: block !important;
+    }
+
+    /* Título de la tarjeta */
+    .glow-service-card .card-service-title,
+    .service-circular-card .service-title,
+    .service-card h3,
+    .popular-card h3,
+    .service-card-title,
+    .popular-card-title,
+    .service-card .card-title,
+    .popular-card .card-title {
+      font-size: 13.5px !important;
+      line-height: 1.22 !important;
+      margin: 2px 0 4px 0 !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Pills / Badges de metadatos (duración, navaja, etc.) */
+    .popular-card span,
+    .service-card span,
+    .card-meta,
+    .service-meta,
+    .popular-card .meta,
+    .service-card .meta,
+    .meta-tag,
+    .badge-pill {
+      font-size: 10px !important;
+      line-height: 1.2 !important;
+      padding: 3px 6px !important;
+      border-radius: 6px !important;
+      margin: 1px auto !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 3px !important;
+    }
+
+    /* Descripción y metadatos generales */
+    .glow-service-card .card-service-desc,
+    .service-circular-card .service-desc,
+    .service-card p,
+    .popular-card p,
+    .service-card-desc,
+    .popular-card-desc {
+      font-size: 10.5px !important;
+      line-height: 1.35 !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+      color: rgba(226, 232, 240, 0.85) !important;
+    }
+
+    /* Botón Agendar dentro de la tarjeta */
+    .service-card a,
+    .popular-card a,
+    .service-card .btn,
+    .popular-card .btn,
+    .btn-card-book,
+    .btn-service-book,
+    .service-card button,
+    .popular-card button {
+      width: 100% !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      padding: 8px 10px !important;
+      min-height: 36px !important;
+      border-radius: 9px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.6px !important;
+      box-sizing: border-box !important;
+      margin-top: 4px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    /* Cuadrícula de Colaboradores Móvil: 2 columnas compactas */
+    .team-grid,
+    .stylists-grid,
+    .team-container,
+    .grid-team,
+    .equipo-grid {
       display: grid !important;
       grid-template-columns: repeat(2, 1fr) !important;
       gap: 12px !important;
       padding: 0 4px !important;
     }
 
-    .glow-service-card {
-      padding: 12px !important;
+    .team-card {
+      padding: 14px 8px !important;
       border-radius: 16px !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: space-between !important;
     }
 
-    .glow-service-card .card-service-title {
+    .team-photo-box {
+      width: 76px !important;
+      height: 76px !important;
+      margin: 0 auto 10px auto !important;
+    }
+
+    .team-name {
       font-size: 14px !important;
-      margin-bottom: 4px !important;
+      font-weight: 700 !important;
+      margin-bottom: 2px !important;
+      line-height: 1.2 !important;
     }
 
-    .glow-service-card .card-service-desc {
+    .team-role {
       font-size: 11px !important;
-      line-height: 1.4 !important;
+      margin-bottom: 6px !important;
       display: -webkit-box !important;
-      -webkit-line-clamp: 2 !important;
+      -webkit-line-clamp: 1 !important;
       -webkit-box-orient: vertical !important;
       overflow: hidden !important;
+    }
+
+    .team-rating {
+      font-size: 10px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .btn-team-book {
+      font-size: 11px !important;
+      padding: 6px 10px !important;
+      width: 100% !important;
+      max-width: 130px !important;
+      box-sizing: border-box !important;
     }
 
     /* Botones CTA táctiles cómodos para el pulgar */
@@ -363,7 +693,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   }
 
   @media (max-width: 480px) {
-    /* En pantallas muy compactas (360px - 400px), 2 columnas de servicios ultra optimizadas */
+    /* En pantallas muy compactas (360px - 400px), 2 columnas de servicios y equipo ultra optimizadas */
     .services-four-grid,
     .services-grid,
     .servicios-grid,
@@ -379,6 +709,34 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     .glow-service-card .card-photo-box {
       margin-bottom: 8px !important;
       border-radius: 10px !important;
+    }
+
+    .team-grid,
+    .stylists-grid,
+    .team-container,
+    .grid-team,
+    .equipo-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 10px !important;
+    }
+
+    .team-card {
+      padding: 10px 6px !important;
+    }
+
+    .team-photo-box {
+      width: 68px !important;
+      height: 68px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .team-name {
+      font-size: 13px !important;
+    }
+
+    .btn-team-book {
+      font-size: 10px !important;
+      padding: 5px 8px !important;
     }
   }
 </style>
@@ -513,6 +871,35 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           normalizedSectionOpen = normalizedSectionOpen.replace('<section', '<section id="servicios"');
         }
 
+        // Normalización Inteligente del Encabezado de la Sección de Servicios
+        // Unifica encabezados divididos en columnas en un solo bloque semántico centrado
+        const headerContainerRegex = /(<div\b[^>]*class=["'][^"']*(?:header|intro|top|head|title-wrap|heading)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*(?=<div\b[^>]*class=["'][^"']*(?:grid|cards|container|row|services-5|services-4|popular-services|item)|<article|<ul))/i;
+        
+        if (headerContainerRegex.test(updatedSectionBody)) {
+          updatedSectionBody = updatedSectionBody.replace(headerContainerRegex, (_fullHeader: string, _hOpen: string, hInner: string) => {
+            // Extraer eyebrow si existe
+            const eyebrowMatch = hInner.match(/<(?:span|p|div)\b[^>]*class=["'][^"']*(?:eyebrow|sub-title|tag|badge|label)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|p|div)>/i) || hInner.match(/<(?:span|p|div)\b[^>]*>([\s\S]*?NUESTRA CARTA[\s\S]*?)<\/(?:span|p|div)>/i);
+            const eyebrowText = eyebrowMatch ? eyebrowMatch[1].replace(/<[^>]*>/g, '').trim() : 'NUESTRA CARTA';
+
+            // Extraer title
+            const titleMatch = hInner.match(/(<h[1-6]\b[^>]*>)([\s\S]*?)(<\/h[1-6]>)/i);
+            const titleHtml = titleMatch ? titleMatch[2].trim() : 'SERVICIOS <span class="accent-gold">POPULARES</span>';
+
+            // Extraer description / subtitle
+            const descMatch = hInner.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i);
+            const descText = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').trim() : '';
+
+            const promoColor = primaryColor || '#e5a950';
+
+            return `
+            <div class="section-header unified-services-header" style="width: 100%; text-align: center; margin: 0 auto 32px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box;">
+              <span class="section-eyebrow" style="display: inline-block; text-transform: uppercase; font-weight: 700; font-size: 0.85rem; letter-spacing: 2px; color: ${promoColor}; margin-bottom: 8px; text-align: center;">${eyebrowText}</span>
+              <h2 class="section-title" style="font-size: 2.2rem; font-weight: 900; line-height: 1.15; color: #ffffff; margin: 0 0 10px 0; text-align: center; letter-spacing: -0.5px;">${titleHtml}</h2>
+              ${descText ? `<p class="section-subtitle" style="font-size: 0.9rem; line-height: 1.5; color: rgba(226, 232, 240, 0.88); max-width: 340px; margin: 0 auto; text-align: center;">${descText}</p>` : ''}
+            </div>`;
+          });
+        }
+
         // Función auxiliar para actualizar una tarjeta individual
         const processSingleCard = (cardOpen: string, cardInner: string, cardClose: string): string => {
           const idx = cardIndex++;
@@ -554,6 +941,14 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
               inner = inner.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
             }
           }
+
+          // 5.1 Eliminar medallas rotas, círculos flotantes o iconos entre imagen y título en móvil
+          inner = inner.replace(/<(?:div|span)\b[^>]*class=["'][^"']*(?:badge|icon|medal|circle|step|number|category)[^"']*["'][^>]*>[\s\S]*?<\/(?:div|span)>/gi, (match) => {
+            if (/mins|minuto|duraci|precio|cop|\$|✓/i.test(match)) {
+              return match;
+            }
+            return '';
+          });
 
           // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
           const titleMatch = inner.match(/<(?:h[1-6]|div|span|p)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[1-6]|div|span|p)>/i) || inner.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
