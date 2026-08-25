@@ -17,13 +17,14 @@
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
 
-  <!-- Google Fonts: Playfair Display + Alex Brush + Plus Jakarta Sans -->
+  <!-- Google Fonts: Playfair Display + Alex Brush + Plus Jakarta Sans optimizadas con swap -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- FontAwesome 6 (Free CDN) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- FontAwesome 6 CDN Asíncrono (No Bloqueante en Móvil) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 
   <style>
     /* ==========================================================================
@@ -1680,9 +1681,17 @@
   <main>
     <section class="hero-fullwidth-section" id="inicio">
       
-      <!-- IMAGEN DE FONDO EDGE-TO-EDGE & MÁSCARA GRADIENTE -->
+      <!-- IMAGEN DE FONDO EDGE-TO-EDGE & MÁSCARA GRADIENTE OPTIMIZADA -->
       <div class="hero-bg-cover">
-        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=85" alt="Tratamiento Facial y Spa en Milena Gómez salon Apartadó" class="hero-bg-img" />
+        <img 
+          src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80" 
+          srcset="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=640&q=75 640w, https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80 1200w" 
+          sizes="(max-width: 768px) 100vw, 1200px" 
+          alt="Tratamiento Facial y Spa en Milena Gómez salon Apartadó" 
+          class="hero-bg-img" 
+          fetchpriority="high" 
+          decoding="async" 
+        />
         <div class="hero-bg-overlay"></div>
       </div>
 
@@ -1735,7 +1744,7 @@
           <!-- Servicio 1: Faciales -->
           <article class="service-circular-card">
             <div class="service-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80" alt="Limpieza Facial Profunda en Apartadó" class="service-avatar-img" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=300&q=75" alt="Limpieza Facial Profunda en Apartadó" class="service-avatar-img" loading="lazy" decoding="async" width="130" height="130">
               <div class="service-icon-medal">
                 <i class="fa-solid fa-spa"></i>
               </div>
@@ -1748,7 +1757,7 @@
           <!-- Servicio 2: Masaje Corporal -->
           <article class="service-circular-card">
             <div class="service-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=600&q=80" alt="Masajes Relajantes Corporales" class="service-avatar-img" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=300&q=75" alt="Masajes Relajantes Corporales" class="service-avatar-img" loading="lazy" decoding="async" width="130" height="130">
               <div class="service-icon-medal">
                 <i class="fa-solid fa-hands"></i>
               </div>
@@ -1761,7 +1770,7 @@
           <!-- Servicio 3: Manicura -->
           <article class="service-circular-card">
             <div class="service-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80" alt="Manicura Spa y Rusa" class="service-avatar-img" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=300&q=75" alt="Manicura Spa y Rusa" class="service-avatar-img" loading="lazy" decoding="async" width="130" height="130">
               <div class="service-icon-medal">
                 <i class="fa-solid fa-hand-sparkles"></i>
               </div>
@@ -1774,7 +1783,7 @@
           <!-- Servicio 4: Pedicura -->
           <article class="service-circular-card">
             <div class="service-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80" alt="Pedicura Spa y Masaje Podal" class="service-avatar-img" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=300&q=75" alt="Pedicura Spa y Masaje Podal" class="service-avatar-img" loading="lazy" decoding="async" width="130" height="130">
               <div class="service-icon-medal">
                 <i class="fa-solid fa-shoe-prints"></i>
               </div>
@@ -1787,7 +1796,7 @@
           <!-- Servicio 5: Skincare -->
           <article class="service-circular-card">
             <div class="service-avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80" alt="Tratamientos Skincare y Anti-Edad" class="service-avatar-img" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=75" alt="Tratamientos Skincare y Anti-Edad" class="service-avatar-img" loading="lazy" decoding="async" width="130" height="130">
               <div class="service-icon-medal">
                 <i class="fa-solid fa-bottle-droplet"></i>
               </div>
@@ -1844,7 +1853,7 @@
         <div class="why-us-grid">
           <div class="why-us-media">
             <div class="why-us-img-box">
-              <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80" alt="Espacio de Spa y Estética Milena Gómez salon" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=75" alt="Espacio de Spa y Estética Milena Gómez salon" loading="lazy" decoding="async">
             </div>
           </div>
 
@@ -1896,7 +1905,7 @@
 
         <div class="gallery-grid">
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80" alt="Facial Luminosidad Glow" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=450&q=75" alt="Facial Luminosidad Glow" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Glow Facial</span>
               <span class="gallery-overlay-title">Piel Luminosa & Hidratada</span>
@@ -1904,7 +1913,7 @@
           </div>
 
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=600&q=80" alt="Masaje con Aceites Esenciales" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=450&q=75" alt="Masaje con Aceites Esenciales" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Relax Spa</span>
               <span class="gallery-overlay-title">Masaje Anti-Estrés</span>
@@ -1912,7 +1921,7 @@
           </div>
 
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80" alt="Manicura y Nail Art Elegante" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=450&q=75" alt="Manicura y Nail Art Elegante" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Manos Bellas</span>
               <span class="gallery-overlay-title">Esmaltado Semipermanente</span>
@@ -1920,7 +1929,7 @@
           </div>
 
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=600&q=80" alt="Pedicura Spa Hidratante" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=450&q=75" alt="Pedicura Spa Hidratante" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Pies Suaves</span>
               <span class="gallery-overlay-title">Ritual Podal Spa</span>
@@ -1928,7 +1937,7 @@
           </div>
 
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80" alt="Cosmética y Sueros Botánicos" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=450&q=75" alt="Cosmética y Sueros Botánicos" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Dermo Care</span>
               <span class="gallery-overlay-title">Sueros de Alta Nutrición</span>
@@ -1936,7 +1945,7 @@
           </div>
 
           <div class="gallery-item">
-            <img src="https://images.unsplash.com/photo-1512290900672-1f5bebb18029?auto=format&fit=crop&w=600&q=80" alt="Cabina de Spa y Bienestar" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1512290900672-1f5bebb18029?auto=format&fit=crop&w=450&q=75" alt="Cabina de Spa y Bienestar" loading="lazy" decoding="async">
             <div class="gallery-overlay">
               <span class="gallery-overlay-tag">Atmósfera VIP</span>
               <span class="gallery-overlay-title">Confort & Serenidad</span>
@@ -1957,7 +1966,7 @@
 
         <div class="testimonials-grid">
           <div class="testimonial-card">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Clienta Carolina V." class="testimonial-avatar" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=75" alt="Clienta Carolina V." class="testimonial-avatar" loading="lazy" decoding="async" width="64" height="64">
             <div class="testimonial-stars">
               <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
@@ -1969,7 +1978,7 @@
           </div>
 
           <div class="testimonial-card">
-            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80" alt="Clienta Valentina M." class="testimonial-avatar" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=75" alt="Clienta Valentina M." class="testimonial-avatar" loading="lazy" decoding="async" width="64" height="64">
             <div class="testimonial-stars">
               <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
@@ -1981,7 +1990,7 @@
           </div>
 
           <div class="testimonial-card">
-            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80" alt="Clienta Luciana R." class="testimonial-avatar" loading="lazy">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=75" alt="Clienta Luciana R." class="testimonial-avatar" loading="lazy" decoding="async" width="64" height="64">
             <div class="testimonial-stars">
               <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
             </div>
