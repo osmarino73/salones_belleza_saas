@@ -73,19 +73,6 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // 1. Inyectar únicamente soporte técnico limpio (Smart Hide Navbar) sin alterar fuentes, colores ni tipografía del HTML de referencia
   const resetCss = `
 <style id="beautyflow-prospect-reset">
-  /* SMART HIDE NAVBAR (DESLIZAMIENTO SUAVE) */
-  header, nav, .main-header, .site-header, .navbar, .header, .top-nav, .navigation {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 1000 !important;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, background-color 0.3s ease !important;
-    will-change: transform;
-  }
-  .nav-hidden {
-    transform: translateY(-105%) !important;
-    pointer-events: none !important;
-  }
-
   /* ESTILOS Y ESTRUCTURA DE LAS TARJETAS DE SERVICIOS DINÁMICAS */
   .glow-service-card {
     background: #ffffff !important;
@@ -123,105 +110,28 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     display: block !important;
   }
 
+  /* EN PC Y TABLET (> 768px): LA CABECERA PERMANECE SIEMPRE FIJA Y VISIBLE */
+  @media (min-width: 769px) {
+    header, nav, .main-header, .site-header, .navbar, .header, .top-nav, .navigation, .topbar, .top-bar {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1000 !important;
+    }
+  }
+
   /* PAQUETE INTEGRAL DE OPTIMIZACIÓN MOBILE-FIRST (>90% DE USUARIOS EN SMARTPHONES) */
   @media (max-width: 768px) {
+    /* En móvil: Ocultar la barra superior para mantener el Hero 100% limpio e inmersivo */
+    .topbar, .top-bar, header, nav, .main-header, .site-header, .navbar, .header {
+      display: none !important;
+    }
+
     /* Prevención de desbordamiento horizontal en todo el sitio */
     html, body, .prospect-site-wrapper {
       overflow-x: hidden !important;
       width: 100% !important;
       -webkit-tap-highlight-color: transparent !important;
     }
-
-    /* BARRA SUPERIOR MÓVIL 100% TRANSPARENTE SOBRE LA FOTO (LIMPIA, SIN FONDOS NI PÍLDORAS) */
-    .topbar, .top-bar {
-      display: none !important;
-    }
-
-    header, nav, .main-header, .site-header, .navbar, .header {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: auto !important;
-      min-height: unset !important;
-      padding: 16px 20px !important;
-      background: transparent !important;
-      background-color: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border: none !important;
-      border-bottom: none !important;
-      box-shadow: none !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 100 !important;
-      box-sizing: border-box !important;
-      pointer-events: none !important;
-    }
-
-    header a, nav a, .brand-logo, .logo, .brand-icon {
-      pointer-events: auto !important;
-    }
-
-    /* Contenedor del Logo y Nombre del Negocio Centrado sobre la Foto */
-    .brand-logo, .logo, .navbar .brand-logo, header .brand-logo {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 10px !important;
-      margin: 0 auto !important;
-      text-decoration: none !important;
-    }
-
-    .brand-icon, .logo-silhouette-box, .logo-icon {
-      width: 40px !important;
-      height: 40px !important;
-      border-radius: 12px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      background: #ffffff !important;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
-      flex-shrink: 0 !important;
-    }
-
-    .brand-text, .logo-text {
-      display: flex !important;
-      flex-direction: column !important;
-      text-align: left !important;
-    }
-
-    .brand-title, .logo-title, .brand-name {
-      font-size: 1.25rem !important;
-      font-weight: 700 !important;
-      line-height: 1.1 !important;
-      letter-spacing: 0.5px !important;
-    }
-
-    .brand-subtitle, .logo-subtitle {
-      font-size: 0.65rem !important;
-      letter-spacing: 2px !important;
-      text-transform: uppercase !important;
-      font-weight: 700 !important;
-    }
-
-    /* Ocultar elementos redundantes en móvil */
-    .nav-links, 
-    .menu-toggle,
-    .mobile-toggle,
-    button[id*="menu"],
-    button[class*="menu"],
-    header a[class*="btn"], 
-    nav a[class*="btn"], 
-    .navbar a[class*="btn"], 
-    .header a[class*="btn"],
-    .btn-header,
-    .btn-pill-magenta,
-    .navbar .btn-header {
-      display: none !important;
-    }
-
     /* HERO MÓVIL INMERSIVO: FOTO EN EL FONDO CON ROSTRO ARRIBA Y TEXTO DEL MEDIO HACIA ABAJO */
     .hero-fullwidth-section,
     .hero-section,
@@ -276,13 +186,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       display: block !important;
     }
 
-    /* Respeto estricto del fondo y tonalidades originales: sin capas de emblanquecimiento forzadas */
+    /* Sin degradados ni capas oscuras: Fotografía 100% pura y limpia */
     .hero-bg-overlay,
-    .hero-overlay {
+    .hero-overlay,
+    .hero-fullwidth-section::after,
+    .hero-section::after,
+    .hero::after,
+    section[id*="inicio"]::after,
+    section[class*="hero"]::after {
       display: none !important;
+      background: none !important;
     }
 
-    /* Contenedor de Textos: Centrado y ubicado del Medio hacia Abajo */
+    /* Contenedor de Textos: 100% Limpio y Transparente (Sin cajas anidadas oscuras ni bordes artificiales) */
     .hero-content-wrapper,
     .hero-text-content,
     .hero-container,
@@ -291,32 +207,59 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       width: 100% !important;
       max-width: 100% !important;
       text-align: center !important;
-      padding: 0 !important;
+      padding: 0 16px !important;
       margin: 0 auto !important;
       position: relative !important;
       z-index: 500 !important;
       pointer-events: auto !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-sizing: border-box !important;
     }
 
-    /* Escala elegante del título H1 respetando colores originales */
+    /* Saludo / Eyebrow */
+    .hero-script-eyebrow,
+    .hero-eyebrow,
+    .script-eyebrow,
+    .hero-badge {
+      font-size: 0.88rem !important;
+      letter-spacing: 1.5px !important;
+      text-transform: uppercase !important;
+      font-weight: 700 !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7) !important;
+      margin-bottom: 6px !important;
+      display: inline-block !important;
+    }
+
+    /* Escala elegante del título H1 con máxima nitidez y contraste */
     .hero-title,
     .hero-main-title,
     .hero-content-wrapper h1,
     .hero-text-block h1 {
-      font-size: 2rem !important;
-      line-height: 1.18 !important;
-      margin-bottom: 8px !important;
+      font-size: 2.1rem !important;
+      line-height: 1.16 !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      text-shadow: 0 3px 16px rgba(0, 0, 0, 0.8) !important;
+      margin-bottom: 10px !important;
     }
 
-    /* Subtítulo */
+    /* Subtítulo nítido y legible */
     .hero-desc,
     .hero-subtitle,
     .hero-description,
     .hero-content-wrapper p,
     .hero-text-block p {
-      font-size: 0.86rem !important;
-      line-height: 1.5 !important;
-      max-width: 310px !important;
+      font-size: 0.88rem !important;
+      line-height: 1.55 !important;
+      color: rgba(241, 245, 249, 0.92) !important;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8) !important;
+      max-width: 325px !important;
       margin: 0 auto 16px auto !important;
     }
 
@@ -327,7 +270,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
-      gap: 10px !important;
+      gap: 12px !important;
       width: 100% !important;
       margin: 0 auto !important;
       position: relative !important;
@@ -341,7 +284,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     .btn-secondary {
       width: 100% !important;
       max-width: 290px !important;
-      min-height: 46px !important;
+      min-height: 48px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -354,6 +297,40 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       touch-action: manipulation !important;
       user-select: none !important;
       -webkit-user-select: none !important;
+      font-size: 15px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.4px !important;
+      text-decoration: none !important;
+      gap: 8px !important;
+      border-radius: 12px !important;
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+    }
+
+    /* Botón Primario (Agendar Cita): Máxima Luminosidad y Nitidez */
+    .hero-actions a:first-child,
+    .hero-ctas a:first-child,
+    .btn-primary {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    /* Botón Secundario (Explorar / Ver Servicios): Cristalino de Alto Contraste */
+    .hero-actions a:nth-child(2),
+    .hero-ctas a:nth-child(2),
+    .btn-secondary,
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.12) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
     }
 
     /* Cuadrícula de Servicios Móvil: 2 columnas balanceadas o 1 columna fluida */

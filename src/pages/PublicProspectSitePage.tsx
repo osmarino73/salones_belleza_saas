@@ -85,28 +85,6 @@ export const PublicProspectSitePage: React.FC = () => {
     });
   }, [site, liveServices, liveStylists, tenant]);
 
-  // SMART HIDE NAVBAR: Ocultar al bajar y mostrar al subir
-  useEffect(() => {
-    let lastScrollY = window.pageYOffset;
-    const handleScroll = () => {
-      const currentScrollY = window.pageYOffset;
-      const nav = document.querySelector('header, nav, .main-header, .site-header, .navbar, .header') as HTMLElement | null;
-      if (!nav) return;
-
-      if (currentScrollY > 80 && currentScrollY > lastScrollY) {
-        // Scrolling DOWN -> Ocultar la barra
-        nav.classList.add('nav-hidden');
-      } else {
-        // Scrolling UP o en el tope -> Mostrar la barra
-        nav.classList.remove('nav-hidden');
-      }
-      lastScrollY = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [renderedHtml]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col items-center justify-center p-4">
