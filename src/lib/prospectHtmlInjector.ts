@@ -527,21 +527,20 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = processed.replace(discountBannerRegex, '');
   }
 
-  // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos y añadiendo botón de agendar)
+  // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos y asignando el link respectivo al botón nativo)
   // Busca la sección de servicios completa
-  const servicesSectionRegex = /(<section\b[^>]*?(?:id=["'](?:servicios|services|menu|carta)["']|class=["'][^"']*(?:services|servicios|menu|carta)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
+  const servicesSectionRegex = /(<section\b[^>]*?(?:id=["'](?:servicios|services|menu|carta|catalogo)["']|class=["'][^"']*(?:services|servicios|menu|carta|catalogo)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
   
   if (servicesSectionRegex.test(processed)) {
     processed = processed.replace(
       servicesSectionRegex,
       (match, sectionOpen, sectionBody, sectionClose) => {
-        // Buscar todas las tarjetas de servicios (por clase o que contengan precio / imagen / titulo)
-        const cardRegex = /(<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card|popular-card|menu-card)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*(?=<div\b|<\/div>\s*<\/div>|<\/div>\s*<\/section>|$))/gi;
-        
         let cardIndex = 0;
-        const updatedSectionBody = sectionBody.replace(cardRegex, (_match: string, cardOpen: string, cardInner: string, cardClose: string) => {
+        let updatedSectionBody = sectionBody;
+
+        // Función auxiliar para actualizar una tarjeta individual
+        const processSingleCard = (cardOpen: string, cardInner: string, cardClose: string): string => {
           const idx = cardIndex++;
-          const numStr = String(idx + 1).padStart(2, '0');
           let inner = cardInner;
 
           // Si hay liveServices de base de datos, sincronizar datos
@@ -557,24 +556,24 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
             });
 
             // 2. Actualizar título del servicio
-            inner = inner.replace(/(<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[3-4]|div|span)>)/i, `$1${srv.name}$3`);
+            inner = inner.replace(/(<(?:h[1-6]|div|span)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[1-6]|div|span)>)/i, `$1${srv.name}$3`);
             if (!inner.includes(srv.name)) {
-              inner = inner.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
+              inner = inner.replace(/(<h[1-6]\b[^>]*>)([\s\S]*?)(<\/h[1-6]>)/i, `$1${srv.name}$3`);
             }
 
             // 3. Actualizar descripción
             if (srv.description) {
-              inner = inner.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srv.description}$3`);
+              inner = inner.replace(/(<(?:p|span|div)\b[^>]*class=["'][^"']*(?:service-desc|service-desc-text|desc|description)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:p|span|div)>)/i, `$1${srv.description}$3`);
             }
 
-            // 4. Actualizar precio
+            // 4. Actualizar precio si la tarjeta lo muestra
             const priceVal = srv.price_cop || srv.price || srv.price_usd;
             if (priceVal) {
               const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
               inner = inner.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
             }
 
-            // 5. Actualizar duración
+            // 5. Actualizar duración si la tarjeta la muestra
             if (srv.duration_minutes) {
               const durationText = `${srv.duration_minutes} mins`;
               inner = inner.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
@@ -582,28 +581,82 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           }
 
           // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
-          const titleMatch = inner.match(/<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[3-4]|div|span)>/i) || inner.match(/<h[3-4]\b[^>]*>([\s\S]*?)<\/h[3-4]>/i);
+          const titleMatch = inner.match(/<(?:h[1-6]|div|span|p)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[1-6]|div|span|p)>/i) || inner.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
           const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
           const cleanServiceParam = extractedTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
           const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
 
-          // Botón de Agendar Cita con estilo dorado / primario integrado perfectamente al pie de la tarjeta
-          const bookBtnHtml = `
-          <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
-            <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
-              <span>Agendar Cita</span>
-            </a>
-          </div>`;
+          // 6. Asignar el enlace respectivo de agendamiento directamente al botón/enlace nativo de la tarjeta
+          let linkInjected = false;
 
-          // Insertar el botón si la tarjeta no lo tiene aún
-          if (!inner.includes('btn-card-book') && !inner.includes('btn-book') && !inner.includes('Reservar Cita') && !inner.includes('Agendar Cita')) {
-            inner = inner + bookBtnHtml;
-          } else {
-            inner = inner.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
+          // Si la tarjeta contiene enlaces <a>
+          if (/<a\b[^>]*>/i.test(inner)) {
+            inner = inner.replace(/<a\b([^>]*?)>([\s\S]*?)<\/a>/gi, (fullATag, attrs, aContent) => {
+              // Excluir si es un link de redes o whatsapp flotante
+              if (/wa-floating|btn-whatsapp-float|whatsapp-float/i.test(attrs)) {
+                return fullATag;
+              }
+              let newAttrs = attrs;
+              if (/href=["'][^"']*["']/i.test(newAttrs)) {
+                newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${srvBookingUrl}"`);
+              } else {
+                newAttrs += ` href="${srvBookingUrl}"`;
+              }
+              // Eliminar target="_blank" para abrir fluidamente el agendador SaaS
+              newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
+              linkInjected = true;
+              return `<a${newAttrs}>${aContent}</a>`;
+            });
+          }
+
+          // Si la tarjeta contiene elementos <button> para agendar, convertirlos a <a> con el enlace respectivo
+          if (!linkInjected && /<button\b[^>]*>/i.test(inner)) {
+            inner = inner.replace(/<button\b([^>]*?)>([\s\S]*?)<\/button>/gi, (_btnTag, attrs, btnContent) => {
+              linkInjected = true;
+              return `<a href="${srvBookingUrl}" ${attrs} style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">${btnContent}</a>`;
+            });
+          }
+
+          // Fallback de seguridad: si la tarjeta no tenía ningún botón o enlace, insertar botón sutil con el link
+          if (!linkInjected) {
+            const fallbackBtnHtml = `
+            <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
+              <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
+                <span>Agendar Cita</span>
+              </a>
+            </div>`;
+            inner = inner + fallbackBtnHtml;
           }
 
           return `${cardOpen}${inner}${cardClose}`;
-        });
+        };
+
+        // Si las tarjetas usan la etiqueta semántica <article ...>...</article>
+        if (/<article\b[^>]*>/i.test(updatedSectionBody)) {
+          updatedSectionBody = updatedSectionBody.replace(
+            /(<article\b[^>]*>)([\s\S]*?)(<\/article>)/gi,
+            (_m: string, cOpen: string, cInner: string, cClose: string) => processSingleCard(cOpen, cInner, cClose)
+          );
+        } else {
+          // Si las tarjetas usan <div class="...card..."> o <li class="...card...">
+          const divCardRegex = /(<(?:div|li)\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|services-item|servicio-card|popular-card|menu-card|service-box|item-service|card)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|li)>)/gi;
+          updatedSectionBody = updatedSectionBody.replace(
+            divCardRegex,
+            (_m: string, cOpen: string, cInner: string, cClose: string) => processSingleCard(cOpen, cInner, cClose)
+          );
+        }
+
+        // 7. Si hay más servicios registrados que los mostrados en portada, agregar botón centrado "Ver todos los servicios"
+        if (liveServices && liveServices.length > cardIndex && !updatedSectionBody.includes('btn-view-all-services')) {
+          const promoColor = primaryColor || '#c82d5a';
+          const viewAllBtnHtml = `
+          <div style="margin-top: 36px; text-align: center; width: 100%;">
+            <a href="${bookingUrl}" class="btn-view-all-services" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 28px; border-radius: 999px; background: ${promoColor}; color: #ffffff; font-size: 0.92rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: transform 0.2s ease;">
+              Ver todos los servicios (${liveServices.length}) →
+            </a>
+          </div>`;
+          updatedSectionBody = updatedSectionBody + viewAllBtnHtml;
+        }
 
         return `${sectionOpen}${updatedSectionBody}${sectionClose}`;
       }
@@ -662,34 +715,47 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     `href="${bookingUrl}"`
   );
 
-  // 4. Reemplazar enlaces <a> cuyo contenido o atributos indiquen agendamiento
-  // IMPORTANTE: Tanto el botón del Header / Menú Superior como el del Hero / Footer
-  // se transforman en enlaces directos a /reservar/:slug.
+  // 4. Reemplazar enlaces <a> cuyo contenido, clase o atributos indiquen agendamiento
+  // IMPORTANTE: Tanto el botón del Header / Menú Superior como el del Hero / Footer y botones de CTA
+  // se transforman en enlaces directos a /reservar/:slug sin sobreescribir enlaces específicos de servicios (?service=) o especialistas (?stylistId=).
   processed = processed.replace(
     /<a\b([^>]*?)>(.*?)<\/a>/gis,
     (fullTag, attrs, innerHtml) => {
-      // Excluir explícitamente el botón flotante fijo de WhatsApp o enlaces a redes externas (Instagram, Facebook, TikTok)
+      // Excluir explícitamente el botón flotante fijo de WhatsApp o redes sociales externas
       if (
         attrs.includes('wa-floating') || 
         attrs.includes('btn-whatsapp-float') ||
+        attrs.includes('whatsapp-float') ||
+        attrs.includes('whatsapp-btn') ||
         /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/i.test(attrs)
       ) {
         return fullTag;
       }
 
-      // Si el texto interno o atributos contienen palabras clave de agendamiento
-      const isBookingButton = /(?:Agendar|Reservar|Pedir|Solicitar)\s+(?:Cita|Turno|Online)|Agenda\s+tu\s+Cita|Agendar\s+mi\s+cita|btn-header-book|btn-pill-magenta|vip-booking|btn-white-book|btn-primary|btn-booking/i.test(innerHtml) ||
-        /btn-header-book|btn-pill-magenta|btn-white-book|btn-book|btn-reserve/i.test(attrs);
+      // Si el enlace ya tiene un parámetro específico como ?service= o ?stylistId=, NO sobreescribirlo
+      if (attrs.includes('?service=') || attrs.includes('?stylistId=')) {
+        return fullTag;
+      }
 
-      if (isBookingButton) {
-        // Reemplazar o actualizar href
+      // Detectar si el texto, clase, id o href indica agendamiento
+      const combined = `${attrs} ${innerHtml}`.toLowerCase();
+      const isBookingButton = 
+        /agend|reserv|turno|cita|separar|book|solicitar\s+cita|pedir\s+cita/i.test(combined) ||
+        /btn-header|btn-primary|btn-booking|btn-pill|btn-card|btn-book|btn-reserve/i.test(attrs) ||
+        /text=.*(?:agendar|reservar|cita|turno|tratamiento|servicio)/i.test(attrs);
+
+      // Excluir si es el enlace de soporte / contacto del topbar que explícitamente solo pide información
+      const isPureInfo = /solicitar\s+informaci[oó]n|chatear\s+con\s+recepci[oó]n/i.test(combined) && !/agend|reserv|cita|turno/i.test(innerHtml);
+
+      if (isBookingButton && !isPureInfo) {
+        // Reemplazar o actualizar href hacia la página de agendamiento
         let newAttrs = attrs;
         if (/href=["'][^"']*["']/i.test(newAttrs)) {
           newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
         } else {
           newAttrs += ` href="${bookingUrl}"`;
         }
-        // Remover target="_blank" si lo tenía para abrir en la misma app
+        // Remover target="_blank" para abrir dentro de la misma aplicación
         newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
 
         return `<a${newAttrs}>${innerHtml}</a>`;

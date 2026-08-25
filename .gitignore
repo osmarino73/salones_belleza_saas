@@ -31,5 +31,5 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-# Agent Memory (optional keep or ignore)
-.agents/
+# Agent Skills & Customizations
+!.agents/skills/

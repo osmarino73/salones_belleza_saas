@@ -1,5 +1,5 @@
 ## 📍 Estado Actual
-- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles por Slug, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal, Biblioteca Multimedia CDN WebP y Onboarding Guiado en 3 Pasos.
+- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Corrección Definitiva de Enlaces de Agendamiento (`/reservar/:slug` en Hero, Navbar, Footer y `/reservar/:slug?service=...` en Tarjetas de Servicios), Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles por Slug, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal, Biblioteca Multimedia CDN WebP y Onboarding Guiado en 3 Pasos.
 - **Marca y Dominio Oficial**: **`Kowy`** (`kowy.app`)
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservar/:slug](https://belleza2027.netlify.app/reservar/:slug)**
