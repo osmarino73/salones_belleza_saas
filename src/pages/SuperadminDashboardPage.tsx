@@ -11,6 +11,7 @@ import {
   optimizeProspectHtml
 } from '../lib/beautyImageLibrary';
 import { HomepageStudioModal } from '../components/HomepageStudio/HomepageStudioModal';
+import { compressImage } from '../utils/imageCompressor';
 import {
   Crown,
   Sparkles,
@@ -295,19 +296,31 @@ export const SuperadminDashboardPage: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // Carga de Fotografía Principal del Hero (JPG, PNG, WebP)
-  const handleHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Carga de Fotografía Principal del Hero (JPG, PNG, WebP) con optimización a WebP
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileNameHeroImg(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      if (base64) {
-        setHeroImageUrl(base64);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const result = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.82,
+        mimeType: 'image/webp',
+        cropSquare: false
+      });
+      setHeroImageUrl(result.dataUrl);
+    } catch (err) {
+      console.warn('Error comprimiendo hero image, usando fallback reader:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        if (base64) {
+          setHeroImageUrl(base64);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Carga del preset Luxus Beauty Spa
