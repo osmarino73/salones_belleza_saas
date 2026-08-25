@@ -2028,6 +2028,108 @@ export const api = {
     return sites.find(s => s.slug === slug || s.slug.toLowerCase() === slug.toLowerCase()) || null;
   },
 
+  async generateUniqueProspectSlug(baseNameOrSlug: string, currentSiteId?: string): Promise<string> {
+    const cleanBase = (baseNameOrSlug || 'salon')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'salon';
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data } = await supabase
+          .from('prospect_sites')
+          .select('id, slug')
+          .ilike('slug', `${cleanBase}%`);
+
+        if (data && data.length > 0) {
+          const existingSlugs = new Set(
+            data
+              .filter(s => !currentSiteId || s.id !== currentSiteId)
+              .map(s => (s.slug || '').toLowerCase())
+          );
+
+          if (!existingSlugs.has(cleanBase)) {
+            return cleanBase;
+          }
+
+          let counter = 2;
+          let candidate = `${cleanBase}-${counter}`;
+          while (existingSlugs.has(candidate)) {
+            counter++;
+            candidate = `${cleanBase}-${counter}`;
+          }
+          return candidate;
+        }
+      } catch (e) {
+        console.warn('Error checking prospect slug collision:', e);
+      }
+    }
+
+    // Fallback con memoria y localStorage
+    const current = await this.getProspectSites();
+    const existingSlugs = new Set(
+      current
+        .filter(s => !currentSiteId || s.id !== currentSiteId)
+        .map(s => (s.slug || '').toLowerCase())
+    );
+
+    if (!existingSlugs.has(cleanBase)) {
+      return cleanBase;
+    }
+
+    let counter = 2;
+    let candidate = `${cleanBase}-${counter}`;
+    while (existingSlugs.has(candidate)) {
+      counter++;
+      candidate = `${cleanBase}-${counter}`;
+    }
+    return candidate;
+  },
+
+  async generateUniqueTenantSlug(baseNameOrSlug: string, currentTenantId?: string): Promise<string> {
+    const cleanBase = (baseNameOrSlug || 'salon')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'salon';
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data } = await supabase
+          .from('tenants')
+          .select('id, slug')
+          .ilike('slug', `${cleanBase}%`);
+
+        if (data && data.length > 0) {
+          const existingSlugs = new Set(
+            data
+              .filter(t => !currentTenantId || t.id !== currentTenantId)
+              .map(t => (t.slug || '').toLowerCase())
+          );
+
+          if (!existingSlugs.has(cleanBase)) {
+            return cleanBase;
+          }
+
+          let counter = 2;
+          let candidate = `${cleanBase}-${counter}`;
+          while (existingSlugs.has(candidate)) {
+            counter++;
+            candidate = `${cleanBase}-${counter}`;
+          }
+          return candidate;
+        }
+      } catch (e) {
+        console.warn('Error checking tenant slug collision:', e);
+      }
+    }
+
+    return cleanBase;
+  },
+
   async createProspectSite(site: Partial<ProspectSite>): Promise<ProspectSite> {
     const isValidUUID = (str?: string) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     const generatedId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
@@ -2035,12 +2137,7 @@ export const api = {
       : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
     
     const targetId = isValidUUID(site.id) ? site.id! : generatedId;
-    const targetSlug = (site.slug || site.business_name || 'salon')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    const targetSlug = await this.generateUniqueProspectSlug(site.slug || site.business_name || 'salon', site.id);
 
     const newSite: ProspectSite = {
       id: targetId,
@@ -2065,11 +2162,10 @@ export const api = {
         const { data: existing } = await supabase
           .from('prospect_sites')
           .select('id')
-          .eq('slug', targetSlug)
+          .eq('id', targetId)
           .maybeSingle();
 
         if (existing) {
-          newSite.id = existing.id;
           await supabase
             .from('prospect_sites')
             .update({ ...newSite, id: existing.id })
@@ -2083,7 +2179,7 @@ export const api = {
     }
 
     const current = await this.getProspectSites();
-    const updated = [newSite, ...current.filter(s => s.slug !== newSite.slug && s.id !== newSite.id)];
+    const updated = [newSite, ...current.filter(s => s.id !== newSite.id)];
     inMemoryProspectSitesCache = updated;
     safeSaveProspectSitesToLocalStorage(updated);
     return newSite;
@@ -2321,7 +2417,8 @@ export const api = {
 
     const bName = params.businessName || prospect?.business_name || 'Salón & Spa';
     const wa = params.phoneWhatsapp || prospect?.phone_whatsapp || '+573000000000';
-    const cleanSlug = (prospect?.slug || bName.toLowerCase().replace(/[^a-z0-9]/g, '-')).replace(/^-+|-+$/g, '');
+    const rawSlug = (prospect?.slug || bName.toLowerCase().replace(/[^a-z0-9]/g, '-')).replace(/^-+|-+$/g, '');
+    const cleanSlug = await this.generateUniqueTenantSlug(rawSlug, prospect?.claimed_tenant_id || undefined);
     const tempPassword = params.tempPassword || (bName.replace(/\s+/g, '').slice(0, 5) + '2026*');
     const tenantCurrency = params.currency || 'COP';
 
