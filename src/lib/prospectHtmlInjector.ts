@@ -112,50 +112,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .glow-service-card .card-photo-box img,
   .services-four-grid .card-photo-box img,
   .services-grid .card-photo-box img,
+  /* Ajustes universales sutiles para imágenes de catálogo sin romper estilos originales */
+  .services-5-grid img,
   .services-four-grid img,
   .services-grid img,
   .servicios-grid img,
   .grid-services img {
-    width: 100% !important;
-    height: 100% !important;
-    aspect-ratio: 1 / 1 !important;
+    max-width: 100%;
     object-fit: cover !important;
-    object-position: center !important;
     display: block !important;
-    border-radius: 14px !important;
-  }
-  .glow-service-card .card-num-badge {
-    position: absolute !important;
-    top: 10px !important;
-    left: 10px !important;
-    background: rgba(15, 23, 42, 0.8) !important;
-    color: #ffffff !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    padding: 3px 8px !important;
-    border-radius: 8px !important;
-    backdrop-filter: blur(6px) !important;
-    z-index: 2 !important;
-  }
-  .glow-service-card .card-service-title {
-    font-size: 17px !important;
-    font-weight: 800 !important;
-    color: #1e1b4b !important;
-    margin: 0 0 6px 0 !important;
-    line-height: 1.3 !important;
-  }
-  .glow-service-card .pink-divider-dash {
-    width: 32px !important;
-    height: 3px !important;
-    background: linear-gradient(90deg, #c82d5a, #e11d48) !important;
-    border-radius: 999px !important;
-    margin-bottom: 10px !important;
-  }
-  .glow-service-card .card-service-desc {
-    font-size: 13px !important;
-    color: #475569 !important;
-    margin: 0 0 8px 0 !important;
-    line-height: 1.5 !important;
   }
 
   /* PAQUETE INTEGRAL DE OPTIMIZACIÓN MOBILE-FIRST (>90% DE USUARIOS EN SMARTPHONES) */
@@ -562,52 +527,79 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = processed.replace(discountBannerRegex, '');
   }
 
-  // 2. Inyección Dinámica de Servicios Reales (si existen en Supabase para este salón)
+  // 2. Inyección Dinámica de Servicios Reales (Respetando al 100% el diseño, clases, colores y tipografía del HTML original)
   if (liveServices && liveServices.length > 0) {
-    // Expresión regular robusta que busca la cuadrícula completa de servicios y su contenido completo
-    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-four-grid|services-grid|servicios-grid|grid-services|services-container)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
+    const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-5-grid|services-four-grid|services-grid|servicios-grid|grid-services|services-container|services-list)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
     
     if (servicesGridRegex.test(processed)) {
-      // Filtrar únicamente los marcados como destacados para la portada web (is_featured === true o !== false por defecto)
       const featuredServices = liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined));
-      // Si todos fueron desmarcados o no hay destacados, mostrar los que queden con is_featured activo
       const displayServices = (featuredServices.length > 0 ? featuredServices : liveServices).slice(0, 6);
-
-      const liveCardsHtml = displayServices.map((srv, idx) => {
-        const numStr = String(idx + 1).padStart(2, '0');
-        const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-
-        return `
-        <!-- Card ${numStr} Dinámica (Diseño Original) -->
-        <div class="glow-service-card">
-          <div class="card-photo-box">
-            <span class="card-num-badge">${numStr}</span>
-            <img src="${serviceImg}" alt="${srv.name}">
-          </div>
-          <div class="card-info-body">
-            <h3 class="card-service-title">${srv.name}</h3>
-            <div class="pink-divider-dash"></div>
-            <p class="card-service-desc">${srv.description || 'Tratamiento profesional de alta gama con asesoría personalizada.'}</p>
-          </div>
-        </div>`;
-      }).join('\n');
-
-      // Botón "Ver todos los servicios" si el negocio tiene más servicios registrados que los mostrados en portada
-      // Alineado idénticamente con el estilo, color (#c82d5a) y border-radius del botón del Header
-      const viewAllButtonHtml = liveServices.length > displayServices.length ? `
-      <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
-        <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: #c82d5a; color: #ffffff; box-shadow: 0 4px 14px rgba(200, 45, 90, 0.25); transition: all 0.2s ease;">
-          Ver todos los servicios (${liveServices.length})
-        </a>
-      </div>` : '';
 
       processed = processed.replace(
         servicesGridRegex,
-        (match, p1, p2, p3) => {
-          if (p3.includes('</section>')) {
-            return `${p1}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
+        (match, gridOpeningTag, gridInnerContent, closingTags) => {
+          // Extraer la primera tarjeta como plantilla de diseño original
+          const singleCardMatch = gridInnerContent.match(/<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/i);
+          const originalCardTemplate = singleCardMatch ? singleCardMatch[0] : '';
+
+          let liveCardsHtml = '';
+
+          if (originalCardTemplate) {
+            liveCardsHtml = displayServices.map((srv, idx) => {
+              const numStr = String(idx + 1).padStart(2, '0');
+              const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+              let cardHtml = originalCardTemplate;
+
+              // 1. Reemplazar imagen de la tarjeta respetando etiquetas y clases originales
+              cardHtml = cardHtml.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
+                let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
+                updated = updated.replace(/alt=["'][^"']*["']/i, `alt="${srv.name}"`);
+                if (!updated.includes('alt=')) {
+                  updated = updated.replace('<img', `<img alt="${srv.name}"`);
+                }
+                return updated;
+              });
+
+              // 2. Reemplazar número o badge si existe en el template
+              cardHtml = cardHtml.replace(/(<span\b[^>]*class=["'][^"']*(?:card-num-badge|badge-num|service-num|num)[^"']*["'][^>]*>)[^<]*(<\/span>)/i, `$1${numStr}$2`);
+
+              // 3. Reemplazar título de servicio respetando etiquetas h3/h4/div y estilos
+              cardHtml = cardHtml.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
+
+              // 4. Reemplazar descripción de servicio
+              const srvDesc = srv.description || `${srv.name} con atención y productos profesionales de alta gama.`;
+              cardHtml = cardHtml.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srvDesc}$3`);
+
+              // 5. Eliminar precios o botones de compra internos en portada según directiva
+              cardHtml = cardHtml.replace(/<span\b[^>]*class=["'][^"']*(?:price|precio|card-price)[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, '');
+              cardHtml = cardHtml.replace(/<a\b[^>]*class=["'][^"']*(?:btn|button|btn-book)[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, '');
+
+              return cardHtml;
+            }).join('\n');
+          } else {
+            // Fallback elegante transparente si no se pudo capturar template específico
+            liveCardsHtml = displayServices.map((srv, idx) => {
+              const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+              return `
+              <div class="service-card">
+                <div class="service-image-box" style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; height: 180px;">
+                  <img src="${serviceImg}" alt="${srv.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">${srv.name}</h3>
+                <p style="font-size: 0.9rem; color: inherit; opacity: 0.85; line-height: 1.4;">${srv.description || ''}</p>
+              </div>`;
+            }).join('\n');
           }
-          return `${p1}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
+
+          // Botón "Ver todos los servicios" si hay más registrados que los mostrados
+          const viewAllButtonHtml = liveServices.length > displayServices.length ? `
+          <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
+            <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #c82d5a); color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
+              Ver todos los servicios (${liveServices.length})
+            </a>
+          </div>` : '';
+
+          return `${gridOpeningTag}\n${liveCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
         }
       );
     }
