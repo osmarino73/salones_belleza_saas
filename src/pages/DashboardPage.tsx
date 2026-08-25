@@ -6058,7 +6058,7 @@ export const DashboardPage: React.FC = () => {
                         title="Live Website Preview"
                         srcDoc={previewRenderedHtml}
                         className="w-full h-full min-h-[440px] border-0"
-                        sandbox="allow-scripts allow-same-origin"
+                        sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms allow-popups"
                       />
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-500 bg-[#0B0F19]">

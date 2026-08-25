@@ -157,6 +157,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       justify-content: center !important;
       z-index: 100 !important;
       box-sizing: border-box !important;
+      pointer-events: none !important;
+    }
+
+    header a, nav a, .brand-logo, .logo, .brand-icon {
+      pointer-events: auto !important;
     }
 
     /* Contenedor del Logo y Nombre del Negocio Centrado sobre la Foto */
@@ -289,7 +294,8 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       padding: 0 !important;
       margin: 0 auto !important;
       position: relative !important;
-      z-index: 10 !important;
+      z-index: 500 !important;
+      pointer-events: auto !important;
     }
 
     /* Escala elegante del título H1 respetando colores originales */
@@ -324,6 +330,9 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       gap: 10px !important;
       width: 100% !important;
       margin: 0 auto !important;
+      position: relative !important;
+      z-index: 510 !important;
+      pointer-events: auto !important;
     }
 
     .hero-actions a,
@@ -338,6 +347,13 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       justify-content: center !important;
       text-align: center !important;
       box-sizing: border-box !important;
+      position: relative !important;
+      z-index: 520 !important;
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      touch-action: manipulation !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
     }
 
     /* Cuadrícula de Servicios Móvil: 2 columnas balanceadas o 1 columna fluida */
@@ -526,6 +542,14 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         let cardIndex = 0;
         let updatedSectionBody = sectionBody;
 
+        // Asegurar que la sección siempre tenga id="servicios" para que los botones ancla funcionen
+        let normalizedSectionOpen = sectionOpen;
+        if (/id=["'][^"']*["']/i.test(normalizedSectionOpen)) {
+          normalizedSectionOpen = normalizedSectionOpen.replace(/id=["'][^"']*["']/i, 'id="servicios"');
+        } else {
+          normalizedSectionOpen = normalizedSectionOpen.replace('<section', '<section id="servicios"');
+        }
+
         // Función auxiliar para actualizar una tarjeta individual
         const processSingleCard = (cardOpen: string, cardInner: string, cardClose: string): string => {
           const idx = cardIndex++;
@@ -646,7 +670,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           updatedSectionBody = updatedSectionBody + viewAllBtnHtml;
         }
 
-        return `${sectionOpen}${updatedSectionBody}${sectionClose}`;
+        return `${normalizedSectionOpen}${updatedSectionBody}${sectionClose}`;
       }
     );
   }
@@ -725,12 +749,26 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         return fullTag;
       }
 
+      // Si es enlace a la sección de Servicios (e.g. "Ver Servicios", "Servicios", href="#servicios", href="#services")
+      const isServicesAnchor = /ver\s+servicios|nuestros\s+servicios|conoce\s+nuestros\s+servicios|carta\s+de\s+servicios|ver\s+carta|cat[aá]logo/i.test(innerHtml) ||
+        /href=["']#(?:servicios|services|menu|carta|catalogo)["']/i.test(attrs);
+
+      if (isServicesAnchor) {
+        let newAttrs = attrs;
+        if (/href=["'][^"']*["']/i.test(newAttrs)) {
+          newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, 'href="#servicios"');
+        } else {
+          newAttrs += ' href="#servicios"';
+        }
+        return `<a${newAttrs}>${innerHtml}</a>`;
+      }
+
       // Detectar si el texto, clase, id o href indica agendamiento
       const combined = `${attrs} ${innerHtml}`.toLowerCase();
       const isBookingButton = 
         /agend|reserv|turno|cita|separar|book|solicitar\s+cita|pedir\s+cita/i.test(combined) ||
         /btn-header|btn-primary|btn-booking|btn-pill|btn-card|btn-book|btn-reserve/i.test(attrs) ||
-        /text=.*(?:agendar|reservar|cita|turno|tratamiento|servicio)/i.test(attrs);
+        /text=.*(?:agendar|reservar|cita|turno|tratamiento)/i.test(attrs);
 
       // Excluir si es el enlace de soporte / contacto del topbar que explícitamente solo pide información
       const isPureInfo = /solicitar\s+informaci[oó]n|chatear\s+con\s+recepci[oó]n/i.test(combined) && !/agend|reserv|cita|turno/i.test(innerHtml);
@@ -820,6 +858,57 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       /(?:\(\+57\)\s*\d{3}\s*\d{3}\s*\d{4}|\+57\s*\d{3}\s*\d{3}\s*\d{4})/g,
       formattedTel
     );
+  }
+
+  // 7. Inyectar Script Técnico Ligero para Navegación Táctil Móvil y Compatibilidad en Iframes
+  const interactionScript = `
+<script id="beautyflow-interaction-script">
+  (function() {
+    function initInteractions() {
+      document.addEventListener('click', function(e) {
+        var target = e.target && e.target.closest ? e.target.closest('a') : null;
+        if (!target) return;
+        var href = target.getAttribute('href');
+        if (!href) return;
+
+        // 1. Desplazamiento suave garantizado a la sección de servicios
+        if (href === '#servicios' || href === '#services' || href.startsWith('#serv') || href.startsWith('#menu') || href.startsWith('#carta')) {
+          e.preventDefault();
+          var srvSec = document.getElementById('servicios') || document.getElementById('services') || document.querySelector('.services-section, .servicios-section, .services-grid, [class*="service"]');
+          if (srvSec) {
+            srvSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          return;
+        }
+
+        // 2. Navegación segura hacia el Agendador SaaS (/reservar/:slug)
+        if (href.indexOf('/reservar/') !== -1) {
+          // Si está embebido en iframe de previsualización (Dashboard / Studio)
+          if (window.self !== window.top) {
+            e.preventDefault();
+            try {
+              window.top.location.href = href;
+            } catch (err) {
+              window.open(href, '_top');
+            }
+          }
+        }
+      }, { passive: false });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initInteractions);
+    } else {
+      initInteractions();
+    }
+  })();
+</script>
+`;
+
+  if (processed.includes('</body>')) {
+    processed = processed.replace('</body>', `${interactionScript}</body>`);
+  } else {
+    processed += interactionScript;
   }
 
   return processed;
