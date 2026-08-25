@@ -528,103 +528,84 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   }
 
   // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos y añadiendo botón de agendar)
-  const servicesGridRegex = /(<div\b[^>]*class=["'][^"']*(?:services-5-grid|services-four-grid|services-grid|servicios-grid|grid-services|services-container|services-list)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>|(?=<section\b|<footer\b))/i;
+  // Busca la sección de servicios completa
+  const servicesSectionRegex = /(<section\b[^>]*?(?:id=["'](?:servicios|services|menu|carta)["']|class=["'][^"']*(?:services|servicios|menu|carta)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
   
-  if (servicesGridRegex.test(processed)) {
+  if (servicesSectionRegex.test(processed)) {
     processed = processed.replace(
-      servicesGridRegex,
-      (match, gridOpeningTag, gridInnerContent, closingTags) => {
-        // Extraer la lista de tarjetas hijas existentes en el HTML original
-        const cardRegex = /<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card)[^"']*["'][\s\S]*?<\/div>\s*(?=<div\b|<\/div>|$)/gi;
-        const existingCards = gridInnerContent.match(cardRegex);
+      servicesSectionRegex,
+      (match, sectionOpen, sectionBody, sectionClose) => {
+        // Buscar todas las tarjetas de servicios (por clase o que contengan precio / imagen / titulo)
+        const cardRegex = /(<div\b[^>]*class=["'][^"']*(?:service-circular-card|service-card|glow-service-card|card|services-item|servicio-card|popular-card|menu-card)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*(?=<div\b|<\/div>\s*<\/div>|<\/div>\s*<\/section>|$))/gi;
+        
+        let cardIndex = 0;
+        const updatedSectionBody = sectionBody.replace(cardRegex, (_match: string, cardOpen: string, cardInner: string, cardClose: string) => {
+          const idx = cardIndex++;
+          const numStr = String(idx + 1).padStart(2, '0');
+          let inner = cardInner;
 
-        if (existingCards && existingCards.length > 0) {
-          const featuredServices = (liveServices && liveServices.length > 0)
-            ? liveServices.filter(s => s.is_featured === true || (s.is_featured !== false && s.is_featured !== undefined)).slice(0, 6)
-            : [];
+          // Si hay liveServices de base de datos, sincronizar datos
+          const srv = (liveServices && liveServices.length > idx) ? liveServices[idx] : null;
+          if (srv) {
+            const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+            
+            // 1. Actualizar imagen
+            inner = inner.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
+              let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
+              updated = updated.replace(/alt=["'][^"']*["']/i, `alt="${srv.name}"`);
+              return updated;
+            });
 
-          const updatedCardsHtml = existingCards.map((originalCard: string, idx: number) => {
-            const numStr = String(idx + 1).padStart(2, '0');
-            const srv = featuredServices[idx];
-            let cardHtml = originalCard;
-
-            // Si hay liveServices de base de datos, sincronizar datos
-            if (srv) {
-              const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-              
-              // 1. Actualizar imagen
-              cardHtml = cardHtml.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
-                let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
-                updated = updated.replace(/alt=["'][^"']*["']/i, `alt="${srv.name}"`);
-                return updated;
-              });
-
-              // 2. Actualizar título del servicio
-              cardHtml = cardHtml.replace(/(<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[3-4]|div|span)>)/i, `$1${srv.name}$3`);
-              if (!cardHtml.includes(srv.name)) {
-                cardHtml = cardHtml.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
-              }
-
-              // 3. Actualizar descripción
-              if (srv.description) {
-                cardHtml = cardHtml.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srv.description}$3`);
-              }
-
-              // 4. Actualizar precio
-              const priceVal = srv.price_cop || srv.price || srv.price_usd;
-              if (priceVal) {
-                const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
-                cardHtml = cardHtml.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
-              }
-
-              // 5. Actualizar duración
-              if (srv.duration_minutes) {
-                const durationText = `${srv.duration_minutes} mins`;
-                cardHtml = cardHtml.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
-              }
+            // 2. Actualizar título del servicio
+            inner = inner.replace(/(<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[3-4]|div|span)>)/i, `$1${srv.name}$3`);
+            if (!inner.includes(srv.name)) {
+              inner = inner.replace(/(<h[3-4]\b[^>]*>)([\s\S]*?)(<\/h[3-4]>)/i, `$1${srv.name}$3`);
             }
 
-            // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
-            const titleMatch = cardHtml.match(/<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[3-4]|div|span)>/i) || cardHtml.match(/<h[3-4]\b[^>]*>([\s\S]*?)<\/h[3-4]>/i);
-            const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
-            const cleanServiceParam = extractedTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
-
-            // Botón de Agendar Cita con estilo dorado / primario integrado perfectamente al pie de la tarjeta
-            const bookBtnHtml = `
-            <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
-              <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 9px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
-                <span>Agendar Cita</span>
-              </a>
-            </div>`;
-
-            // Insertar el botón si la tarjeta no lo tiene aún
-            if (!cardHtml.includes('btn-card-book') && !cardHtml.includes('btn-book') && !cardHtml.includes('Reservar Cita') && !cardHtml.includes('Agendar Cita')) {
-              const lastDivIndex = cardHtml.lastIndexOf('</div>');
-              if (lastDivIndex !== -1) {
-                cardHtml = cardHtml.slice(0, lastDivIndex) + bookBtnHtml + '\n' + cardHtml.slice(lastDivIndex);
-              } else {
-                cardHtml += bookBtnHtml;
-              }
-            } else {
-              cardHtml = cardHtml.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
+            // 3. Actualizar descripción
+            if (srv.description) {
+              inner = inner.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${srv.description}$3`);
             }
 
-            return cardHtml;
-          }).join('\n');
+            // 4. Actualizar precio
+            const priceVal = srv.price_cop || srv.price || srv.price_usd;
+            if (priceVal) {
+              const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
+              inner = inner.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
+            }
 
-          // Botón "Ver todos los servicios" si hay más servicios registrados
-          const viewAllButtonHtml = (liveServices && liveServices.length > featuredServices.length) ? `
-          <div class="view-all-services-container" style="text-align: center; margin-top: 40px; width: 100%; grid-column: 1 / -1;">
-            <a href="${bookingUrl}" class="btn-view-all-services" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 12px; background-color: var(--primary, #e5a950); color: #0d1117; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s ease;">
-              Ver todos los servicios (${liveServices.length})
+            // 5. Actualizar duración
+            if (srv.duration_minutes) {
+              const durationText = `${srv.duration_minutes} mins`;
+              inner = inner.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
+            }
+          }
+
+          // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
+          const titleMatch = inner.match(/<(?:h[3-4]|div|span)\b[^>]*class=["'][^"']*(?:service-title|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[3-4]|div|span)>/i) || inner.match(/<h[3-4]\b[^>]*>([\s\S]*?)<\/h[3-4]>/i);
+          const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
+          const cleanServiceParam = extractedTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
+
+          // Botón de Agendar Cita con estilo dorado / primario integrado perfectamente al pie de la tarjeta
+          const bookBtnHtml = `
+          <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
+            <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 14px; border-radius: 10px; background: #e5a950; color: #0d1117; font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: 0 4px 12px rgba(229,169,80,0.25); transition: all 0.2s ease;">
+              <span>Agendar Cita</span>
             </a>
-          </div>` : '';
+          </div>`;
 
-          return `${gridOpeningTag}\n${updatedCardsHtml}\n</div>\n${viewAllButtonHtml}\n</div>\n</section>`;
-        }
+          // Insertar el botón si la tarjeta no lo tiene aún
+          if (!inner.includes('btn-card-book') && !inner.includes('btn-book') && !inner.includes('Reservar Cita') && !inner.includes('Agendar Cita')) {
+            inner = inner + bookBtnHtml;
+          } else {
+            inner = inner.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
+          }
 
-        return match;
+          return `${cardOpen}${inner}${cardClose}`;
+        });
+
+        return `${sectionOpen}${updatedSectionBody}${sectionClose}`;
       }
     );
   }
