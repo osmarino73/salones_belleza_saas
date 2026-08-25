@@ -29,3 +29,10 @@
 - **Estado**: Aprobado e Implementado
 - **Contexto**: Se evaluó Zernio API (`docs.zernio.com`) como Gateway unificado para WhatsApp e Instagram. Dado que el usuario ya cuenta con servidor n8n propio y requiere envíos multicanal (WhatsApp + Emails con Resend/SMTP).
 - **Decisión**: Utilizar n8n en el servidor del usuario como orquestador central, conectado a los webhooks de Zernio, el motor OpenAI GPT-4o-mini con Function Calling, y Supabase como base de datos de estado. Se crearon los flujos JSON listos para importar en `n8n_workflows/`.
+
+## [ADR-006] Preservación Estética Absoluta del HTML Base (Zero CSS & Hierarchy Overrides)
+- **Fecha**: 2026-08-25
+- **Estado**: Aprobado e Implementado
+- **Contexto**: Las plantillas HTML base de los negocios ya vienen con diseño estético y responsive revisado. Cualquier alteración de CSS o inyección de subtítulos/clases artificiales (ej. en la sección de servicios) rompería la armonía original.
+- **Decisión**: Blindar en la skill `landing-html-injector` y en las reglas de desarrollo que el HTML base se mantiene 100% intacto en diseño, clases CSS y jerarquía visual. La integración SaaS opera únicamente a nivel funcional (enlaces `/reservar/:slug`, canal WhatsApp y sincronización con Supabase).
+
