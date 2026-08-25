@@ -578,13 +578,25 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
                 cardHtml = cardHtml.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
               }
 
-              // 7. Hacer la tarjeta clickeable de forma natural hacia el agendamiento directo del servicio
+              // 6. Añadir botón de Agendar Cita integrado en la tarjeta
               const srvBookingUrl = `${bookingUrl}?serviceId=${encodeURIComponent(srv.id)}`;
-              if (!cardHtml.includes('href=')) {
-                // Si la tarjeta no es un link <a>, envolver el contenido o transformar el contenedor
-                cardHtml = `<a href="${srvBookingUrl}" style="text-decoration: none; color: inherit; display: block; height: 100%; cursor: pointer;" title="Agendar ${srv.name}">\n${cardHtml}\n</a>`;
+              const bookBtnHtml = `
+              <div class="card-btn-wrap" style="margin-top: 14px; text-align: center; width: 100%;">
+                <a href="${srvBookingUrl}" class="btn-card-book" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 16px; border-radius: 12px; background: var(--primary, #FF5A36); color: #ffffff; font-size: 0.85rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s, background 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                  <span>📅 Agendar Cita</span>
+                </a>
+              </div>`;
+
+              // Si la tarjeta no tiene botón previo de agendar, insertarlo antes del cierre del último contenedor
+              if (!cardHtml.includes('btn-card-book') && !cardHtml.includes('btn-book') && !cardHtml.includes('Reservar Cita') && !cardHtml.includes('Agendar Cita')) {
+                const lastDivIndex = cardHtml.lastIndexOf('</div>');
+                if (lastDivIndex !== -1) {
+                  cardHtml = cardHtml.slice(0, lastDivIndex) + bookBtnHtml + '\n' + cardHtml.slice(lastDivIndex);
+                } else {
+                  cardHtml += bookBtnHtml;
+                }
               } else {
-                // Si ya tiene un enlace interno o botón de agendar, actualizarlo hacia el servicio directo
+                // Si ya tenía botón o enlace, actualizar su href al servicio directo
                 cardHtml = cardHtml.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
               }
 
