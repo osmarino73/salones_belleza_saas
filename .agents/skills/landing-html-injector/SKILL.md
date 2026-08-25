@@ -19,9 +19,8 @@ Esta habilidad define el protocolo oficial para procesar, inyectar y sincronizar
 3. **Hero Inmersivo Móvil: Rostro Despejado Arriba y Textos Centrados del Medio hacia Abajo**:
    - **Fotografía al Fondo con Rostro Libre**: La imagen se expande en el fondo completo (`min-height: 90vh; inset: 0; object-fit: cover; object-position: center 5% !important; opacity: 1;`). El rostro, la mirada y el cabello quedan 100% despejados y nítidos en la mitad superior de la pantalla sin capas ni velos de emblanquecimiento forzados (`.hero-bg-overlay, .hero-overlay { display: none !important; }`), preservando al 100% las tonalidades originales.
    - **Ubicación de Textos y Botones (`justify-content: flex-end`)**: El saludo *eyebrow*, título *h1* (`font-size: 2rem`), subtítulo (`max-width: 310px`) y los botones apilados (*"Agendar Cita"* y *"Explorar Servicios"*, `max-width: 290px; min-height: 46px; gap: 10px;`) se ubican centrados en la mitad inferior de la pantalla.
-4. **Barra Superior Adaptativa (PC fija vs Móvil limpia)**:
-   - En PC y Tablet (>768px), la barra superior y navbar permanecen fijas y visibles (`position: sticky; top: 0;`).
-   - En móvil (≤768px), la barra superior se oculta (`display: none;`) para brindar una experiencia inmersiva limpia y sin saturación sobre la fotografía del Hero.
+4. **Barra Superior y Cabecera Visible (Preservación del HTML Guía)**:
+   - Se preserva la barra superior (topbar), navbar, menú y botones de cabecera visibles tanto en PC como en móvil, respetando el diseño, estructura y comportamiento original del HTML guía.
 5. **Regla Estricta de Agendamiento en Tarjetas, Navbar, Hero & Footer**:
    - **Botones Nativos en Tarjetas de Servicios**: Todo botón o enlace dentro de las tarjetas del catálogo (`<article>`, `<div>`, `<li>`) se enlaza automáticamente a `/reservar/:slug?service=nombre-del-servicio`, eliminando `target="_blank"` para abrir fluidamente el agendador interactivo SaaS.
    - **Botones Globales de Agendamiento (Header, Hero, Footer, Banners)**: Todo botón cuyo texto, clase o atributo contenga palabras de agendamiento (`Agendar Cita`, `Reservar Cita`, `Agenda tu Cita`, `Turno`, `btn-header`, `btn-primary`, etc.) o `href` con parámetros de cita/tratamiento conduce directamente a `/reservar/:slug`.

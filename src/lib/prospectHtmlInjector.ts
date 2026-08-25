@@ -110,22 +110,8 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     display: block !important;
   }
 
-  /* EN PC Y TABLET (> 768px): LA CABECERA PERMANECE SIEMPRE FIJA Y VISIBLE */
-  @media (min-width: 769px) {
-    header, nav, .main-header, .site-header, .navbar, .header, .top-nav, .navigation, .topbar, .top-bar {
-      position: sticky !important;
-      top: 0 !important;
-      z-index: 1000 !important;
-    }
-  }
-
   /* PAQUETE INTEGRAL DE OPTIMIZACIÓN MOBILE-FIRST (>90% DE USUARIOS EN SMARTPHONES) */
   @media (max-width: 768px) {
-    /* En móvil: Ocultar la barra superior para mantener el Hero 100% limpio e inmersivo */
-    .topbar, .top-bar, header, nav, .main-header, .site-header, .navbar, .header {
-      display: none !important;
-    }
-
     /* Prevención de desbordamiento horizontal en todo el sitio */
     html, body, .prospect-site-wrapper {
       overflow-x: hidden !important;
