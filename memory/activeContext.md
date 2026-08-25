@@ -16,6 +16,14 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+0. **Sistema de Slugs Únicos con Auto-Sufijo Incremental Anti-Colisiones ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+   - Funciones universales `generateUniqueProspectSlug` y `generateUniqueTenantSlug`.
+   - Cuando se registra o crea un negocio con un nombre ya existente (ej. *Sandra Color´s*), el sistema asigna automáticamente el slug incremental:
+     - 1er negocio: `/reservar/sandra-colors`
+     - 2do negocio: `/reservar/sandra-colors-2`
+     - 3er negocio: `/reservar/sandra-colors-3`
+   - Previene sobreescrituras accidentales en la base de datos y colisiones en URLs públicas.
+
 1. **Rebranding Completo a Kowy (`kowy.app`) & Nuevo Isotipo Oficial**:
    - Transición definitiva del nombre de marca a **Kowy** con el dominio oficial **`kowy.app`**.
    - Generación del isotipo 3D con la letra **'K'** en degradado coral-neón a magenta con destello de IA sobre fondo obsidiana `#090B10`.
