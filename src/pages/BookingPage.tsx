@@ -238,21 +238,54 @@ export const BookingPage: React.FC = () => {
 
       // 6. Asignar estado final en memoria de React
       setServices(loadedServices);
-      if (loadedServices.length > 0) {
+      
+      // Buscar si el cliente viene con un servicio específico desde la tarjeta de la portada web
+      const paramServiceQuery = searchParams.get('serviceId') || searchParams.get('service') || searchParams.get('srv') || searchParams.get('servicio');
+      let targetService: Service | null = null;
+
+      if (paramServiceQuery && loadedServices.length > 0) {
+        const cleanQuery = paramServiceQuery.toLowerCase().trim();
+        targetService = loadedServices.find(s => 
+          s.id === cleanQuery || 
+          s.name.toLowerCase().replace(/[^a-z0-9]/g, '-').includes(cleanQuery) ||
+          cleanQuery.includes(s.name.toLowerCase().replace(/[^a-z0-9]/g, '-')) ||
+          s.name.toLowerCase().includes(cleanQuery)
+        ) || null;
+      }
+
+      if (targetService) {
+        setSelectedServices([targetService]);
+        setStep(2); // Avanzar directamente al selector de barbero/especialista y fecha/hora (cero fricción)
+      } else if (loadedServices.length > 0) {
         setSelectedServices([loadedServices[0]]);
       } else {
         setSelectedServices([]);
       }
 
+      // Buscar si el cliente viene con una estilista/barbero específico
+      const paramStylistQuery = searchParams.get('stylistId') || searchParams.get('stylist') || searchParams.get('barber');
+      let targetStylist: Stylist | null = null;
+
+      if (paramStylistQuery && loadedStylists.length > 0) {
+        const cleanStylist = paramStylistQuery.toLowerCase().trim();
+        targetStylist = loadedStylists.find(st => 
+          st.id === cleanStylist || 
+          st.name.toLowerCase().replace(/[^a-z0-9]/g, '-').includes(cleanStylist) ||
+          st.name.toLowerCase().includes(cleanStylist)
+        ) || null;
+      }
+
       setStylists(loadedStylists);
-      if (loadedStylists.length > 0) {
+      if (targetStylist) {
+        setSelectedStylist(targetStylist);
+      } else if (loadedStylists.length > 0) {
         setSelectedStylist(loadedStylists[0]);
       } else {
         setSelectedStylist(null);
       }
     }
     loadBookingData();
-  }, [salonSlug]);
+  }, [salonSlug, searchParams]);
 
   const allAvailableSlots = ['08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM'];
 

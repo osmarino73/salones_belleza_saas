@@ -578,10 +578,14 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
                 cardHtml = cardHtml.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
               }
 
-              // 6. Actualizar duración si existe en la tarjeta original
-              if (srv.duration_minutes) {
-                const durationText = `${srv.duration_minutes} mins`;
-                cardHtml = cardHtml.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
+              // 7. Hacer la tarjeta clickeable de forma natural hacia el agendamiento directo del servicio
+              const srvBookingUrl = `${bookingUrl}?serviceId=${encodeURIComponent(srv.id)}`;
+              if (!cardHtml.includes('href=')) {
+                // Si la tarjeta no es un link <a>, envolver el contenido o transformar el contenedor
+                cardHtml = `<a href="${srvBookingUrl}" style="text-decoration: none; color: inherit; display: block; height: 100%; cursor: pointer;" title="Agendar ${srv.name}">\n${cardHtml}\n</a>`;
+              } else {
+                // Si ya tiene un enlace interno o botón de agendar, actualizarlo hacia el servicio directo
+                cardHtml = cardHtml.replace(/href=["'][^"']*["']/gi, `href="${srvBookingUrl}"`);
               }
 
               return cardHtml;
