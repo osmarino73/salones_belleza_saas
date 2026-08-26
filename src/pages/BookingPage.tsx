@@ -367,6 +367,20 @@ export const BookingPage: React.FC = () => {
   const discountAmount = appliedDiscount > 0 ? (totalRawPrice * (appliedDiscount / 100)) : 0;
   const finalPrice = Math.max(0, totalRawPrice - discountAmount);
 
+  // Helper para calcular la hora final estimada del servicio
+  const calculateEndTime = (startSlot: string, durationMin: number): string => {
+    const startMin = timeToMinutes(startSlot);
+    const endMin = startMin + durationMin;
+    let h = Math.floor(endMin / 60);
+    const m = endMin % 60;
+    const period = (h >= 12 && h < 24) ? 'PM' : 'AM';
+    if (h > 12) h -= 12;
+    if (h === 0) h = 12;
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${hh}:${mm} ${period}`;
+  };
+
   // Función para determinar si un slot de horario está ocupado
   const isSlotOccupied = (slotStr: string): { occupied: boolean; reason?: string } => {
     const slotStartMin = timeToMinutes(slotStr);
@@ -747,10 +761,10 @@ export const BookingPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Carrusel Táctil Horizontal de 14 Días */}
+            {/* Carrusel Táctil Horizontal de 14 Días (Scrollbar oculta) */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-slate-400">Próximos Días Disponibles</label>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10">
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {next14Days.map((d) => {
                   const isSelected = selectedDate === d.iso;
                   return (
@@ -758,10 +772,10 @@ export const BookingPage: React.FC = () => {
                       key={d.iso}
                       type="button"
                       onClick={() => setSelectedDate(d.iso)}
-                      className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer min-w-[70px] ${
+                      className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer min-w-[72px] ${
                         isSelected
-                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30 scale-105'
-                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/20'
+                          ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/35 scale-105 ring-2 ring-[#FF5A36]/20'
+                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/30 hover:bg-white/[0.04]'
                       }`}
                     >
                       <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-400'}`}>
@@ -770,7 +784,7 @@ export const BookingPage: React.FC = () => {
                       <span className="text-lg font-black my-0.5">
                         {d.dayNum}
                       </span>
-                      <span className={`text-[9px] uppercase font-semibold ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                      <span className={`text-[9px] uppercase font-semibold ${isSelected ? 'text-white/90' : 'text-slate-500'}`}>
                         {d.monthName}
                       </span>
                     </button>
@@ -780,14 +794,14 @@ export const BookingPage: React.FC = () => {
             </div>
 
             {/* Selector de Fecha Calendario Alternativo */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-0.5">
               <span className="text-xs text-slate-400 shrink-0">O busca otra fecha:</span>
               <input
                 type="date"
                 value={selectedDate}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5A36] transition-colors"
               />
             </div>
 
@@ -803,42 +817,49 @@ export const BookingPage: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <label className="text-xs font-semibold text-slate-400">Turnos Disponibles</label>
-                  <div className="flex gap-1 p-0.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold">
-                    <button
-                      type="button"
-                      onClick={() => setTimeFilter('all')}
-                      className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${timeFilter === 'all' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
-                    >
-                      Todos
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeFilter('morning')}
-                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'morning' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
-                    >
-                      <Sun className="w-3 h-3" /> Mañana
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeFilter('afternoon')}
-                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'afternoon' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
-                    >
-                      <Sunset className="w-3 h-3" /> Tarde
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTimeFilter('evening')}
-                      className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${timeFilter === 'evening' ? 'bg-[#FF5A36] text-white' : 'text-slate-400'}`}
-                    >
-                      <Moon className="w-3 h-3" /> Noche
-                    </button>
-                  </div>
+              <div className="space-y-3.5">
+                {/* Segmentación Prominente por Franjas Horarias */}
+                <div className="grid grid-cols-4 gap-1.5 p-1.5 bg-white/[0.03] border border-white/10 rounded-2xl">
+                  <button
+                    type="button"
+                    onClick={() => setTimeFilter('all')}
+                    className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      timeFilter === 'all' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    ✨ Todos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTimeFilter('morning')}
+                    className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      timeFilter === 'morning' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Sun className="w-3.5 h-3.5" /> Mañana
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTimeFilter('afternoon')}
+                    className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      timeFilter === 'afternoon' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Sunset className="w-3.5 h-3.5" /> Tarde
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTimeFilter('evening')}
+                    className={`py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      timeFilter === 'evening' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Moon className="w-3.5 h-3.5" /> Noche
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {/* Cuadrícula Limpia de Horarios Disponibles */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                   {filteredSlots.map((slot) => {
                     const status = isSlotOccupied(slot);
                     const isSelected = selectedTime === slot;
@@ -848,10 +869,9 @@ export const BookingPage: React.FC = () => {
                         <div
                           key={slot}
                           title={status.reason || 'Horario no disponible'}
-                          className="p-2.5 sm:p-3 rounded-xl border border-white/5 bg-white/[0.02] text-slate-600 text-xs font-semibold flex flex-col items-center justify-center opacity-40 cursor-not-allowed select-none line-through"
+                          className="py-3 px-2 rounded-xl border border-white/5 bg-white/[0.02] text-slate-600 text-xs font-semibold flex items-center justify-center gap-1 opacity-35 cursor-not-allowed select-none line-through"
                         >
                           <span>{slot}</span>
-                          <span className="text-[9px] no-underline text-rose-400 font-normal mt-0.5">🔒 Ocupado</span>
                         </div>
                       );
                     }
@@ -861,18 +881,38 @@ export const BookingPage: React.FC = () => {
                         key={slot}
                         type="button"
                         onClick={() => setSelectedTime(slot)}
-                        className={`p-2.5 sm:p-3 rounded-xl border text-xs font-black transition-all cursor-pointer flex flex-col items-center justify-center ${
+                        className={`py-3 px-2 rounded-xl border text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           isSelected
-                            ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30 scale-[1.02]'
-                            : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/30 hover:bg-white/5'
+                            ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/35 scale-[1.03] ring-2 ring-[#FF5A36]/20'
+                            : 'border-white/10 bg-[#0E121B] text-slate-200 hover:border-white/30 hover:bg-white/5'
                         }`}
                       >
+                        <Clock className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#FF5A36]'}`} />
                         <span>{slot}</span>
-                        <span className={`text-[9px] font-medium mt-0.5 ${isSelected ? 'text-white/80' : 'text-emerald-400'}`}>✓ Libre</span>
                       </button>
                     );
                   })}
                 </div>
+
+                {/* Resumen Inteligente del Turno Seleccionado */}
+                {selectedTime && !isSlotOccupied(selectedTime).occupied && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FF5A36]/15 via-pink-500/10 to-transparent border border-[#FF5A36]/30 flex items-center justify-between gap-3 text-xs animate-fade-in mt-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-[#FF5A36] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF5A36]/30 font-black">
+                        <Check className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-slate-400 block text-[11px]">Horario seleccionado para tu cita:</span>
+                        <strong className="text-white font-black text-xs sm:text-sm block truncate">
+                          {selectedTime} ➔ {calculateEndTime(selectedTime, totalDuration)} ({totalDuration} min)
+                        </strong>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-[#FF5A36] font-extrabold px-2.5 py-1 rounded-full bg-[#FF5A36]/10 border border-[#FF5A36]/20 shrink-0">
+                      ✓ Confirmado
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
