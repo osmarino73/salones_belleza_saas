@@ -1,3 +1,8 @@
+- [x] **Preselección Inteligente de Servicios vía URL (`?service=...`) en Agendador SaaS ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+  - Función de normalización NFD `normalizeBookingSlug` anti-tildes y símbolos.
+  - Reconocimiento 100% fiel de URLs como `/reservar/crismar-barbershop?service=corte-clasico-fade` para servicios con nombres como *"Corte Clásico & Fade"*.
+  - Selección inmediata con resaltado visual, total exacto y compatibilidad con preselección de especialistas (`?stylist=...`).
+
 - [x] **Rebranding Integral a Kowy (`kowy.app`) & Favicon / Logo Oficial**:
   - Actualización de toda la plataforma a la marca Kowy y dominio `kowy.app`.
   - Isotipo 3D 'K' en coral-neón a magenta con destello de IA sobre fondo obsidiana `#090B10`, sin marcos blancos.

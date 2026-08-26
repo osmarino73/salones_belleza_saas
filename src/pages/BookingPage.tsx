@@ -236,6 +236,17 @@ export const BookingPage: React.FC = () => {
       // 5. Si no hay servicios creados en la base de datos, NO inyectar servicios ficticios
       // El agendador mostrará limpiamente el estado "Catálogo de Servicios en Preparación" con botón directo a WhatsApp.
 
+      // Helper universal para normalizar nombres y slugs (remover tildes, caracteres especiales y guiones redundantes)
+      const normalizeBookingSlug = (str: string): string => {
+        if (!str) return '';
+        return str
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Remover tildes y diacríticos (á->a, é->e, etc.)
+          .replace(/[^a-z0-9]+/g, '-')     // Reemplazar caracteres especiales y espacios por guión
+          .replace(/^-+|-+$/g, '');        // Limpiar guiones al inicio y final
+      };
+
       // 6. Asignar estado final en memoria de React
       setServices(loadedServices);
       
@@ -244,18 +255,40 @@ export const BookingPage: React.FC = () => {
       let targetService: Service | null = null;
 
       if (paramServiceQuery && loadedServices.length > 0) {
-        const cleanQuery = paramServiceQuery.toLowerCase().trim();
-        targetService = loadedServices.find(s => 
-          s.id === cleanQuery || 
-          s.name.toLowerCase().replace(/[^a-z0-9]/g, '-').includes(cleanQuery) ||
-          cleanQuery.includes(s.name.toLowerCase().replace(/[^a-z0-9]/g, '-')) ||
-          s.name.toLowerCase().includes(cleanQuery)
-        ) || null;
+        const rawQuery = paramServiceQuery.toLowerCase().trim();
+        const normQuery = normalizeBookingSlug(paramServiceQuery);
+        const cleanAlphaQuery = normQuery.replace(/-/g, '');
+
+        targetService = loadedServices.find(s => {
+          if (!s) return false;
+          // 1. Coincidencia por ID directo
+          if (s.id && (s.id.toLowerCase() === rawQuery || normalizeBookingSlug(s.id) === normQuery)) return true;
+          
+          // 2. Coincidencia exacta de Slug Normalizado (ej: "corte-clasico-fade" === "corte-clasico-fade")
+          const normName = normalizeBookingSlug(s.name);
+          if (normName && normName === normQuery) return true;
+
+          // 3. Coincidencia alfanumérica sin guiones (ej: "corteclasicofade" === "corteclasicofade")
+          const cleanAlphaName = normName.replace(/-/g, '');
+          if (cleanAlphaName && cleanAlphaQuery && cleanAlphaName === cleanAlphaQuery) return true;
+
+          // 4. Contención de subcadena normalizada
+          if (normName && normQuery && (normName.includes(normQuery) || (normQuery.length > 3 && normQuery.includes(normName)))) return true;
+
+          // 5. Coincidencia por palabras clave significativas (tokens >= 3 letras)
+          const queryTokens = normQuery.split('-').filter(t => t.length >= 3);
+          const nameTokens = normName.split('-').filter(t => t.length >= 3);
+          if (queryTokens.length > 0 && nameTokens.length > 0) {
+            const hasMatch = queryTokens.some(qt => nameTokens.includes(qt));
+            if (hasMatch) return true;
+          }
+
+          return false;
+        }) || null;
       }
 
       if (targetService) {
         setSelectedServices([targetService]);
-        setStep(2); // Avanzar directamente al selector de barbero/especialista y fecha/hora (cero fricción)
       } else if (loadedServices.length > 0) {
         setSelectedServices([loadedServices[0]]);
       } else {
@@ -263,16 +296,24 @@ export const BookingPage: React.FC = () => {
       }
 
       // Buscar si el cliente viene con una estilista/barbero específico
-      const paramStylistQuery = searchParams.get('stylistId') || searchParams.get('stylist') || searchParams.get('barber');
+      const paramStylistQuery = searchParams.get('stylistId') || searchParams.get('stylist') || searchParams.get('barber') || searchParams.get('especialista');
       let targetStylist: Stylist | null = null;
 
       if (paramStylistQuery && loadedStylists.length > 0) {
-        const cleanStylist = paramStylistQuery.toLowerCase().trim();
-        targetStylist = loadedStylists.find(st => 
-          st.id === cleanStylist || 
-          st.name.toLowerCase().replace(/[^a-z0-9]/g, '-').includes(cleanStylist) ||
-          st.name.toLowerCase().includes(cleanStylist)
-        ) || null;
+        const rawStylistQuery = paramStylistQuery.toLowerCase().trim();
+        const normStylistQuery = normalizeBookingSlug(paramStylistQuery);
+        const cleanAlphaStylistQuery = normStylistQuery.replace(/-/g, '');
+
+        targetStylist = loadedStylists.find(st => {
+          if (!st) return false;
+          if (st.id && (st.id.toLowerCase() === rawStylistQuery || normalizeBookingSlug(st.id) === normStylistQuery)) return true;
+          const normStName = normalizeBookingSlug(st.name);
+          if (normStName && normStName === normStylistQuery) return true;
+          const cleanAlphaStName = normStName.replace(/-/g, '');
+          if (cleanAlphaStName && cleanAlphaStylistQuery && cleanAlphaStName === cleanAlphaStylistQuery) return true;
+          if (normStName && normStylistQuery && (normStName.includes(normStylistQuery) || normStylistQuery.includes(normStName))) return true;
+          return false;
+        }) || null;
       }
 
       setStylists(loadedStylists);

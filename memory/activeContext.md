@@ -1,4 +1,4 @@
-- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Integración SaaS No Invasiva de Plantillas Web (respeto 100% a la maquetación nativa Mobile-First y 2 columnas del HTML base, eliminando overrides invasivos de CSS y consolidando el mapeo dinámico a `/reservar/:slug`, sincronización con Supabase, botón flotante de WhatsApp y catálogo extendido), Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles por Slug, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal, Biblioteca Multimedia CDN WebP y Onboarding Guiado en 3 Pasos.
+- **Fase del Proyecto**: Plataforma SaaS Multi-Tenant **Kowy** (`kowy.app`) con Integración SaaS No Invasiva de Plantillas Web (respeto 100% a la maquetación nativa Mobile-First y 2 columnas del HTML base, eliminando overrides invasivos de CSS y consolidando el mapeo dinámico a `/reservar/:slug`, sincronización con Supabase, botón flotante de WhatsApp y catálogo extendido), Preselección Precisa de Servicios vía URL (`?service=...`), Activación de Tenants B2B desde Superadmin, Landing Pages Puras sin Barras Superpuestas, Local Homepage Studio, Módulo de Caja POS Profesional, Generador de Afiches QR Imprimibles por Slug, Bloqueo Inteligente de Horarios Anti-Colisiones, Centro de Plantillas HSM/Email, Tablero Omnicanal, Biblioteca Multimedia CDN WebP y Onboarding Guiado en 3 Pasos.
 - **Marca y Dominio Oficial**: **`Kowy`** (`kowy.app`)
 - **URL de Producción en Vivo**: **[https://belleza2027.netlify.app](https://belleza2027.netlify.app)**
 - **Portal de Reservas Público**: **[https://belleza2027.netlify.app/reservar/:slug](https://belleza2027.netlify.app/reservar/:slug)**
@@ -15,6 +15,11 @@
 ---
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
+
+-1. **Motor Robusto de Preselección de Servicios y Especialistas vía URL ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+   - Se implementó la función normalizadora `normalizeBookingSlug` con descomposición NFD para eliminar diacríticos y tildes (`á` -> `a`, `é` -> `e`), permitiendo que URLs como `?service=corte-clasico-fade` o `?service=hair-tattoo-disenos` reconozcan con 100% de precisión servicios con acentos o caracteres especiales como *"Corte Clásico & Fade"*.
+   - Cascada de coincidencia en 5 niveles: ID exacto, slug normalizado exacto, coincidencia alfanumérica sin guiones, contención de subcadena y coincidencia por tokens de palabras clave.
+   - El agendador resalta con elegancia el servicio solicitado en el Paso 1 (con checkmark activo, borde coral y cálculo en tiempo real) y selecciona automáticamente al especialista si viene en la URL (`?stylist=...` o `?barber=...`).
 
 0. **Sistema de Slugs Únicos con Auto-Sufijo Incremental Anti-Colisiones ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
    - Funciones universales `generateUniqueProspectSlug` y `generateUniqueTenantSlug`.
