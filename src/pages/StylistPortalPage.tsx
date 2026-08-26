@@ -528,8 +528,33 @@ export const StylistPortalPage: React.FC = () => {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
-      <main className="max-w-6xl mx-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6 pb-28 sm:pb-12">
+      {/* MAIN CONTAINER (Mobile-First Thumb-Zone Optimized) */}
+      <main className="max-w-6xl mx-auto p-3 sm:p-6 space-y-3.5 sm:space-y-6 pb-36 sm:pb-12">
+
+        {/* STICKY ACTIVE APPOINTMENT WIDGET (Atención en Sillón en Vivo) */}
+        {inProgressAppointmentsToday.length > 0 && (
+          <div className="p-3.5 sm:p-4 rounded-3xl bg-gradient-to-r from-amber-500/25 via-orange-500/15 to-transparent border-2 border-amber-500/50 flex items-center justify-between gap-3 shadow-xl shadow-amber-500/15 animate-fade-in">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-lg shadow-amber-500/30 animate-pulse">
+                <Scissors className="w-5 h-5 stroke-[2.5]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase tracking-wider font-black text-amber-400 block">● En Sillón Ahora</span>
+                <strong className="text-sm font-black text-white block truncate">{inProgressAppointmentsToday[0].client_name}</strong>
+                <span className="text-xs text-slate-300 block truncate">{inProgressAppointmentsToday[0].service_name} • {inProgressAppointmentsToday[0].time}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleUpdateAppointmentStatus(inProgressAppointmentsToday[0].id, 'completada')}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-lg shadow-purple-600/30 shrink-0 flex items-center gap-1.5 cursor-pointer transition-transform"
+              title="Finalizar atención y enviar el turno a recepción/caja POS"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>✓ Enviar a Caja</span>
+            </button>
+          </div>
+        )}
 
         {/* HERO PROFILE 360° GLASS CARD */}
         <div className={`p-4 sm:p-6 rounded-3xl border relative overflow-hidden backdrop-blur-xl transition-all ${
@@ -942,8 +967,8 @@ export const StylistPortalPage: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Action Buttons for the Stylist */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                        {/* Action Buttons for the Stylist (Thumb-Zone Optimized) */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end pt-2.5 sm:pt-0 border-t sm:border-t-0 border-white/5">
                           {clientObj && (
                             <button
                               type="button"
@@ -951,7 +976,7 @@ export const StylistPortalPage: React.FC = () => {
                                 setSelectedClientForFormula(clientObj);
                                 setIsFormulaModalOpen(true);
                               }}
-                              className="text-xs font-bold px-3 py-2 rounded-xl border border-white/10 hover:border-[#FF5A36] bg-white/5 text-slate-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                              className="text-xs font-bold px-3 py-2.5 rounded-xl border border-white/10 hover:border-[#FF5A36] bg-white/5 text-slate-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px] active:scale-95"
                               title="Ver o registrar fórmula técnica"
                             >
                               <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
@@ -963,25 +988,25 @@ export const StylistPortalPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
-                              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
+                              className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px]"
                               title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
                             >
                               <CheckCircle2 className="w-4 h-4" />
-                              <span>✓ Terminado / Enviar a Caja</span>
+                              <span>✓ Terminado / A Caja</span>
                             </button>
                           ) : isWaitingPay ? (
-                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2 rounded-xl border border-purple-500/25 flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2.5 rounded-xl border border-purple-500/25 flex items-center justify-center gap-1.5 min-h-[42px]">
                               💳 Esperando Cobro en Recepción
                             </span>
                           ) : isDone ? (
-                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-2 rounded-xl border border-emerald-500/25 flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-2.5 rounded-xl border border-emerald-500/25 flex items-center justify-center gap-1.5 min-h-[42px]">
                               ✓ Liquidada en Caja
                             </span>
                           ) : (
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'en_atencion')}
-                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
+                              className="flex-1 sm:flex-initial bg-gradient-to-r from-amber-500 to-orange-500 active:scale-95 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px]"
                             >
                               <Scissors className="w-4 h-4 stroke-[2.5]" />
                               <span>Iniciar Atención</span>
@@ -1671,16 +1696,23 @@ export const StylistPortalPage: React.FC = () => {
         </div>
       )}
 
-      {/* FLOATING MOBILE APP BOTTOM NAVIGATION BAR (iOS / Android Native Feel) */}
-      <div className="sm:hidden fixed bottom-3 left-3 right-3 z-40 border border-white/10 backdrop-blur-2xl px-2 py-1.5 flex items-center justify-around bg-[#0B0F19]/90 rounded-3xl shadow-2xl shadow-black/80">
+      {/* FLOATING MOBILE APP BOTTOM NAVIGATION BAR (iOS / Android Native Feel with Live Badges) */}
+      <div className="sm:hidden fixed bottom-3 left-3 right-3 z-40 border border-white/10 backdrop-blur-2xl px-2 py-1.5 flex items-center justify-around bg-[#0B0F19]/95 rounded-3xl shadow-2xl shadow-black/90">
         <button
           type="button"
           onClick={() => setActiveTab('agenda')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer relative ${
             activeTab === 'agenda' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Calendar className="w-4 h-4" />
+          <div className="relative">
+            <Calendar className="w-4 h-4" />
+            {myAppointments.filter(a => a.date === todayStr && a.status !== 'cobrada').length > 0 && (
+              <span className="absolute -top-1 -right-2.5 w-3.5 h-3.5 rounded-full bg-[#FF5A36] text-white text-[8px] font-black flex items-center justify-center animate-pulse shadow-sm">
+                {myAppointments.filter(a => a.date === todayStr && a.status !== 'cobrada').length}
+              </span>
+            )}
+          </div>
           <span>Agenda</span>
         </button>
 
@@ -1709,11 +1741,16 @@ export const StylistPortalPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('availability')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer relative ${
             activeTab === 'availability' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <CalendarOff className="w-4 h-4" />
+          <div className="relative">
+            <CalendarOff className="w-4 h-4" />
+            {blockedSlots.length > 0 && (
+              <span className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-red-400" />
+            )}
+          </div>
           <span>Libres</span>
         </button>
       </div>
