@@ -33,17 +33,23 @@ export const BookingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const salonSlug = routeSlug || searchParams.get('salon') || '';
 
-  const [salonName, setSalonName] = useState<string>('Studio Glamour Spa');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [salonName, setSalonName] = useState<string>(() => {
+    if (salonSlug) {
+      return salonSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    return '';
+  });
   const [salonPhone, setSalonPhone] = useState<string>('');
   const [salonAddress, setSalonAddress] = useState<string>('');
   const [salonCurrency, setSalonCurrency] = useState<string>('COP');
-  const [services, setServices] = useState<Service[]>(initialServices);
-  const [stylists, setStylists] = useState<Stylist[]>(initialStylists);
+  const [services, setServices] = useState<Service[]>([]);
+  const [stylists, setStylists] = useState<Stylist[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<any[]>([]);
 
   const [step, setStep] = useState<number>(1);
-  const [selectedServices, setSelectedServices] = useState<Service[]>([initialServices[0]]);
-  const [selectedStylist, setSelectedStylist] = useState<Stylist | null>(initialStylists[0]);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [selectedStylist, setSelectedStylist] = useState<Stylist | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState<string>('02:00 PM');
   const [timeFilter, setTimeFilter] = useState<'all' | 'morning' | 'afternoon' | 'evening'>('all');
@@ -139,212 +145,202 @@ export const BookingPage: React.FC = () => {
 
   useEffect(() => {
     async function loadBookingData() {
-      let resolvedTenant: any = null;
-      let tid: string | undefined = undefined;
-      let prospectDataObj: any = null;
+      setIsLoading(true);
+      try {
+        let resolvedTenant: any = null;
+        let tid: string | undefined = undefined;
+        let prospectDataObj: any = null;
 
-      // 1. Si viene un slug en la URL (/reservar/:salonSlug)
-      if (salonSlug) {
-        try {
-          const cleanSlug = salonSlug.toLowerCase().trim();
-          
-          // A. Buscar tenant oficial en base de datos por slug exacto o parcial
-          resolvedTenant = await api.getTenantBySlug(cleanSlug);
-
-          // B. Buscar en prospect_sites por slug
-          const prospectSite = await api.getProspectSiteBySlug(cleanSlug);
-          if (prospectSite) {
-            prospectDataObj = prospectSite.business_data;
-            if (prospectSite.claimed_tenant_id && !resolvedTenant) {
-              resolvedTenant = await api.getTenantBySlug(prospectSite.slug);
-            }
-            if (!resolvedTenant) {
-              resolvedTenant = {
-                id: prospectSite.id,
-                name: prospectSite.business_name,
-                phone: prospectSite.phone_whatsapp,
-                address: prospectSite.address,
-                currency: 'COP',
-                prospectData: prospectSite.business_data
-              };
-            }
-          }
-        } catch (err) {}
-      }
-
-      // 2. Solo si NO viene slug en la URL, consultar tenant activo en sesión
-      if (!resolvedTenant && !salonSlug) {
-        const activeTenantRaw = localStorage.getItem('bf_tenant_active');
-        if (activeTenantRaw) {
+        // 1. Si viene un slug en la URL (/reservar/:salonSlug)
+        if (salonSlug) {
           try {
-            resolvedTenant = JSON.parse(activeTenantRaw);
-          } catch (e) {}
-        }
-      }
+            const cleanSlug = salonSlug.toLowerCase().trim();
+            
+            // A. Buscar tenant oficial en base de datos por slug exacto o parcial
+            resolvedTenant = await api.getTenantBySlug(cleanSlug);
 
-      // 3. Aplicar datos del negocio encontrado
-      if (resolvedTenant) {
-        tid = resolvedTenant.id;
-        if (resolvedTenant.name) setSalonName(resolvedTenant.name);
-        if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
-        if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
-        if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
-      }
-
-      let loadedServices: Service[] = [];
-      let loadedStylists: Stylist[] = [];
-
-      // 4. Cargar servicios y estilistas registrados para este tenant
-      if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
-        try {
-          const [srvList, styList, aptList] = await Promise.all([
-            api.getServices(tid),
-            api.getStylists(tid),
-            api.getAppointments(tid)
-          ]);
-          if (srvList && srvList.length > 0) loadedServices = srvList;
-          if (styList && styList.length > 0) loadedStylists = styList;
-          if (aptList && aptList.length > 0) setExistingAppointments(aptList);
-        } catch (err) {}
-
-        // Si no encontró por tid directo y tenemos un prospectSite con claimed_tenant_id o id alternativo
-        if (loadedServices.length === 0) {
-          try {
-            const altTid = resolvedTenant?.claimed_tenant_id || (resolvedTenant?.slug ? `tenant-${resolvedTenant.slug}` : undefined);
-            if (altTid && altTid !== tid) {
-              const altSrvs = await api.getServices(altTid);
-              if (altSrvs && altSrvs.length > 0) loadedServices = altSrvs;
-            }
-          } catch (e) {}
-        }
-      }
-
-      // Helper robusto para extraer el valor numérico de precios en cualquier formato (número, string con $ o texto descriptivo)
-      const parsePriceValue = (val: any, fallback: number = 50000): number => {
-        if (typeof val === 'number' && !isNaN(val) && val > 0) return val;
-        if (typeof val === 'string') {
-          // Extraer dígitos (ej: "Desde $450.000 COP" -> 450000, "$ 65.000" -> 65000)
-          const digitsOnly = val.replace(/\D/g, '');
-          if (digitsOnly) {
-            const parsed = parseInt(digitsOnly, 10);
-            if (!isNaN(parsed) && parsed > 0) return parsed;
-          }
-        }
-        return fallback;
-      };
-
-      // 5. Si no hay servicios creados en la base de datos, NO inyectar servicios ficticios
-      // El agendador mostrará limpiamente el estado "Catálogo de Servicios en Preparación" con botón directo a WhatsApp.
-
-      // Helper universal para normalizar nombres y slugs (remover tildes, caracteres especiales y guiones redundantes)
-      const normalizeBookingSlug = (str: string): string => {
-        if (!str) return '';
-        return str
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '') // Remover tildes y diacríticos (á->a, é->e, etc.)
-          .replace(/[^a-z0-9]+/g, '-')     // Reemplazar caracteres especiales y espacios por guión
-          .replace(/^-+|-+$/g, '');        // Limpiar guiones al inicio y final
-      };
-
-      // 6. Asignar estado final en memoria de React
-      setServices(loadedServices);
-      
-      // Buscar si el cliente viene con un servicio específico desde la tarjeta de la portada web
-      const paramServiceQuery = searchParams.get('serviceId') || searchParams.get('service') || searchParams.get('srv') || searchParams.get('servicio');
-      let targetService: Service | null = null;
-
-      if (paramServiceQuery && loadedServices.length > 0) {
-        const rawQuery = paramServiceQuery.toLowerCase().trim();
-        const normQuery = normalizeBookingSlug(paramServiceQuery);
-        const cleanAlphaQuery = normQuery.replace(/-/g, '');
-
-        // Pase 1: Coincidencia EXACTA de máxima prioridad (ID, Slug completo o Alfanumérico exacto)
-        targetService = loadedServices.find(s => {
-          if (!s) return false;
-          if (s.id && (s.id.toLowerCase() === rawQuery || normalizeBookingSlug(s.id) === normQuery)) return true;
-          const normName = normalizeBookingSlug(s.name);
-          if (normName && normName === normQuery) return true;
-          const cleanAlphaName = normName.replace(/-/g, '');
-          if (cleanAlphaName && cleanAlphaQuery && cleanAlphaName === cleanAlphaQuery) return true;
-          return false;
-        }) || null;
-
-        // Pase 2: Coincidencia por SUBCADENA estricta (si no hubo coincidencia exacta)
-        if (!targetService && normQuery.length >= 4) {
-          targetService = loadedServices.find(s => {
-            if (!s) return false;
-            const normName = normalizeBookingSlug(s.name);
-            return normName.includes(normQuery) || (normQuery.length > 6 && normQuery.includes(normName));
-          }) || null;
-        }
-
-        // Pase 3: Coincidencia por MAYOR PUNTUACIÓN DE PALABRAS CLAVE (Tokens Overlap)
-        if (!targetService) {
-          const queryTokens = normQuery.split('-').filter(t => t.length >= 3);
-          if (queryTokens.length > 0) {
-            let bestScore = 0;
-            let bestMatch: Service | null = null;
-            for (const s of loadedServices) {
-              const nameTokens = normalizeBookingSlug(s.name).split('-').filter(t => t.length >= 3);
-              const matchingTokens = queryTokens.filter(qt => nameTokens.includes(qt)).length;
-              if (matchingTokens > bestScore) {
-                bestScore = matchingTokens;
-                bestMatch = s;
+            // B. Buscar en prospect_sites por slug
+            const prospectSite = await api.getProspectSiteBySlug(cleanSlug);
+            if (prospectSite) {
+              prospectDataObj = prospectSite.business_data;
+              if (prospectSite.claimed_tenant_id && !resolvedTenant) {
+                resolvedTenant = await api.getTenantBySlug(prospectSite.slug);
+              }
+              if (!resolvedTenant) {
+                resolvedTenant = {
+                  id: prospectSite.id,
+                  name: prospectSite.business_name,
+                  phone: prospectSite.phone_whatsapp,
+                  address: prospectSite.address,
+                  currency: 'COP',
+                  prospectData: prospectSite.business_data
+                };
               }
             }
-            if (bestScore > 0 && bestMatch) {
-              targetService = bestMatch;
+          } catch (err) {}
+        }
+
+        // 2. Solo si NO viene slug en la URL, consultar tenant activo en sesión
+        if (!resolvedTenant && !salonSlug) {
+          const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+          if (activeTenantRaw) {
+            try {
+              resolvedTenant = JSON.parse(activeTenantRaw);
+            } catch (e) {}
+          }
+        }
+
+        // 3. Aplicar datos del negocio encontrado
+        if (resolvedTenant) {
+          tid = resolvedTenant.id;
+          if (resolvedTenant.name) setSalonName(resolvedTenant.name);
+          if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
+          if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
+          if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
+        }
+
+        let loadedServices: Service[] = [];
+        let loadedStylists: Stylist[] = [];
+
+        // 4. Cargar servicios y estilistas registrados para este tenant
+        if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
+          try {
+            const [srvList, styList, aptList] = await Promise.all([
+              api.getServices(tid),
+              api.getStylists(tid),
+              api.getAppointments(tid)
+            ]);
+            if (srvList && srvList.length > 0) loadedServices = srvList;
+            if (styList && styList.length > 0) loadedStylists = styList;
+            if (aptList && aptList.length > 0) setExistingAppointments(aptList);
+          } catch (err) {}
+
+          // Si no encontró por tid directo y tenemos un prospectSite con claimed_tenant_id o id alternativo
+          if (loadedServices.length === 0) {
+            try {
+              const altTid = resolvedTenant?.claimed_tenant_id || (resolvedTenant?.slug ? `tenant-${resolvedTenant.slug}` : undefined);
+              if (altTid && altTid !== tid) {
+                const altSrvs = await api.getServices(altTid);
+                if (altSrvs && altSrvs.length > 0) loadedServices = altSrvs;
+              }
+            } catch (e) {}
+          }
+        }
+
+        // Helper universal para normalizar nombres y slugs (remover tildes, caracteres especiales y guiones redundantes)
+        const normalizeBookingSlug = (str: string): string => {
+          if (!str) return '';
+          return str
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remover tildes y diacríticos (á->a, é->e, etc.)
+            .replace(/[^a-z0-9]+/g, '-')     // Reemplazar caracteres especiales y espacios por guión
+            .replace(/^-+|-+$/g, '');        // Limpiar guiones al inicio y final
+        };
+
+        // 6. Asignar estado final en memoria de React
+        setServices(loadedServices);
+        
+        // Buscar si el cliente viene con un servicio específico desde la tarjeta de la portada web
+        const paramServiceQuery = searchParams.get('serviceId') || searchParams.get('service') || searchParams.get('srv') || searchParams.get('servicio');
+        let targetService: Service | null = null;
+
+        if (paramServiceQuery && loadedServices.length > 0) {
+          const rawQuery = paramServiceQuery.toLowerCase().trim();
+          const normQuery = normalizeBookingSlug(paramServiceQuery);
+          const cleanAlphaQuery = normQuery.replace(/-/g, '');
+
+          // Pase 1: Coincidencia EXACTA de máxima prioridad (ID, Slug completo o Alfanumérico exacto)
+          targetService = loadedServices.find(s => {
+            if (!s) return false;
+            if (s.id && (s.id.toLowerCase() === rawQuery || normalizeBookingSlug(s.id) === normQuery)) return true;
+            const normName = normalizeBookingSlug(s.name);
+            if (normName && normName === normQuery) return true;
+            const cleanAlphaName = normName.replace(/-/g, '');
+            if (cleanAlphaName && cleanAlphaQuery && cleanAlphaName === cleanAlphaQuery) return true;
+            return false;
+          }) || null;
+
+          // Pase 2: Coincidencia por SUBCADENA estricta (si no hubo coincidencia exacta)
+          if (!targetService && normQuery.length >= 4) {
+            targetService = loadedServices.find(s => {
+              if (!s) return false;
+              const normName = normalizeBookingSlug(s.name);
+              return normName.includes(normQuery) || (normQuery.length > 6 && normQuery.includes(normName));
+            }) || null;
+          }
+
+          // Pase 3: Coincidencia por MAYOR PUNTUACIÓN DE PALABRAS CLAVE (Tokens Overlap)
+          if (!targetService) {
+            const queryTokens = normQuery.split('-').filter(t => t.length >= 3);
+            if (queryTokens.length > 0) {
+              let bestScore = 0;
+              let bestMatch: Service | null = null;
+              for (const s of loadedServices) {
+                const nameTokens = normalizeBookingSlug(s.name).split('-').filter(t => t.length >= 3);
+                const matchingTokens = queryTokens.filter(qt => nameTokens.includes(qt)).length;
+                if (matchingTokens > bestScore) {
+                  bestScore = matchingTokens;
+                  bestMatch = s;
+                }
+              }
+              if (bestScore > 0 && bestMatch) {
+                targetService = bestMatch;
+              }
             }
           }
         }
-      }
 
-      if (targetService) {
-        setSelectedServices([targetService]);
-      } else if (loadedServices.length > 0) {
-        setSelectedServices([loadedServices[0]]);
-      } else {
-        setSelectedServices([]);
-      }
+        if (targetService) {
+          setSelectedServices([targetService]);
+        } else if (loadedServices.length > 0) {
+          setSelectedServices([loadedServices[0]]);
+        } else {
+          setSelectedServices([]);
+        }
 
-      // Buscar si el cliente viene con una estilista/barbero específico
-      const paramStylistQuery = searchParams.get('stylistId') || searchParams.get('stylist') || searchParams.get('barber') || searchParams.get('especialista');
-      let targetStylist: Stylist | null = null;
+        // Buscar si el cliente viene con una estilista/barbero específico
+        const paramStylistQuery = searchParams.get('stylistId') || searchParams.get('stylist') || searchParams.get('barber') || searchParams.get('especialista');
+        let targetStylist: Stylist | null = null;
 
-      if (paramStylistQuery && loadedStylists.length > 0) {
-        const rawStylistQuery = paramStylistQuery.toLowerCase().trim();
-        const normStylistQuery = normalizeBookingSlug(paramStylistQuery);
-        const cleanAlphaStylistQuery = normStylistQuery.replace(/-/g, '');
+        if (paramStylistQuery && loadedStylists.length > 0) {
+          const rawStylistQuery = paramStylistQuery.toLowerCase().trim();
+          const normStylistQuery = normalizeBookingSlug(paramStylistQuery);
+          const cleanAlphaStylistQuery = normStylistQuery.replace(/-/g, '');
 
-        // Pase 1: Coincidencia EXACTA
-        targetStylist = loadedStylists.find(st => {
-          if (!st) return false;
-          if (st.id && (st.id.toLowerCase() === rawStylistQuery || normalizeBookingSlug(st.id) === normStylistQuery)) return true;
-          const normStName = normalizeBookingSlug(st.name);
-          if (normStName && normStName === normStylistQuery) return true;
-          const cleanAlphaStName = normStName.replace(/-/g, '');
-          if (cleanAlphaStName && cleanAlphaStylistQuery && cleanAlphaStName === cleanAlphaStylistQuery) return true;
-          return false;
-        }) || null;
-
-        // Pase 2: Subcadena
-        if (!targetStylist && normStylistQuery.length >= 4) {
+          // Pase 1: Coincidencia EXACTA
           targetStylist = loadedStylists.find(st => {
             if (!st) return false;
+            if (st.id && (st.id.toLowerCase() === rawStylistQuery || normalizeBookingSlug(st.id) === normStylistQuery)) return true;
             const normStName = normalizeBookingSlug(st.name);
-            return normStName.includes(normStylistQuery) || normStylistQuery.includes(normStName);
+            if (normStName && normStName === normStylistQuery) return true;
+            const cleanAlphaStName = normStName.replace(/-/g, '');
+            if (cleanAlphaStName && cleanAlphaStylistQuery && cleanAlphaStName === cleanAlphaStylistQuery) return true;
+            return false;
           }) || null;
-        }
-      }
 
-      setStylists(loadedStylists);
-      if (targetStylist) {
-        setSelectedStylist(targetStylist);
-      } else if (loadedStylists.length > 0) {
-        setSelectedStylist(loadedStylists[0]);
-      } else {
-        setSelectedStylist(null);
+          // Pase 2: Subcadena
+          if (!targetStylist && normStylistQuery.length >= 4) {
+            targetStylist = loadedStylists.find(st => {
+              if (!st) return false;
+              const normStName = normalizeBookingSlug(st.name);
+              return normStName.includes(normStylistQuery) || normStylistQuery.includes(normStName);
+            }) || null;
+          }
+        }
+
+        setStylists(loadedStylists);
+        if (targetStylist) {
+          setSelectedStylist(targetStylist);
+        } else if (loadedStylists.length > 0) {
+          setSelectedStylist(loadedStylists[0]);
+        } else {
+          setSelectedStylist(null);
+        }
+      } catch (err) {
+        console.error('Error loading booking data:', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadBookingData();
@@ -533,7 +529,26 @@ export const BookingPage: React.FC = () => {
               </span>
             </div>
 
-            {services.length === 0 ? (
+            {isLoading ? (
+              <div className="space-y-2.5">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="p-3.5 sm:p-4 rounded-2xl border border-white/5 bg-[#0E121B] animate-pulse flex justify-between items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white/5 shrink-0" />
+                      <div className="space-y-2 min-w-0 flex-1">
+                        <div className="h-4 bg-white/10 rounded-md w-2/5" />
+                        <div className="h-3 bg-white/5 rounded-md w-3/4" />
+                        <div className="h-2.5 bg-white/5 rounded-md w-1/4" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <div className="h-4 bg-white/10 rounded-md w-16" />
+                      <div className="w-6 h-6 rounded-full bg-white/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : services.length === 0 ? (
               <div className="text-center py-12 px-4 bg-white/[0.02] border border-white/10 rounded-3xl space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
                   <Scissors className="w-7 h-7" />
