@@ -16,13 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Rediseño Moderno del Paso 3 (Día & Horarios) y Preselección de Servicios ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
-   - **Carrusel de Días sin Barra Gris**: Se eliminó la barra de desplazamiento nativa (`scrollbar-none`), permitiendo un desplazamiento táctil suave y 100% integrado al Dark Mode.
-   - **Botones de Horario Compactos Tipo Chip**: Se eliminó el texto redundante *"✓ Libre"* y se implementaron chips modernos (`08:30 AM`) con icono de reloj y brillo coral al seleccionar.
-   - **Filtro de Franjas Prominente**: Selector segmentado en 4 píldoras (*✨ Todos*, *🌅 Mañana*, *☀️ Tarde*, *🌙 Noche*).
-   - **Resumen Inteligente de Finalización**: Al tocar un horario, calcula y muestra la hora exacta de terminación de la cita (ej. `08:30 AM ➔ 09:15 AM (45 min)`).
-   - **Eliminación Total del Parpadeo (FOUC)**: Skeleton loader oscuro mientras se consultan los servicios y estilistas en Supabase.
-   - **Normalización NFD & Búsqueda Multi-Pase**: Coincidencia exacta de servicios por slug desde URLs externas.
+-1. **Sincronización Automática de Clientas en CRM (`public.clients`) al Agendar Citas ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+   - **Upsert Inteligente en `public.clients`**: Cuando un cliente confirma una reserva online, el sistema busca por `tenant_id` y `phone_whatsapp`.
+     - *Si es nuevo*: Crea automáticamente su ficha en `public.clients` con `full_name`, `phone_whatsapp`, `email`, `status: 'nuevo'`, `visits_count: 1`, `last_visit_at` y `preferred_stylist_id`.
+     - *Si es recurrente*: Actualiza su última visita, incrementa el contador de visitas (`visits_count + 1`) y actualiza su email si no lo tenía registrado.
+   - **Vinculación Foránea con `public.appointments`**: La cita almacena el `client_id` (UUID real) del cliente, unificando el historial del CRM 360°, el radar de reactivación IA y la agenda.
+   - **Rediseño Moderno del Paso 3 (Día & Horarios)**: Chips compactos, scroll invisible, filtro por franjas y cálculo en tiempo real de hora de finalización.
 
 0. **Sistema de Slugs Únicos con Auto-Sufijo Incremental Anti-Colisiones ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
    - Funciones universales `generateUniqueProspectSlug` y `generateUniqueTenantSlug`.
