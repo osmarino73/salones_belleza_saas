@@ -14,9 +14,15 @@
 
 ---
 
-## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
+-1. **Rediseño Ultra-Moderno del Portal de Colaboradores / Especialistas ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+   - **Estética Dark Glassmorphic**: Fondo obsidiana `#080B11` con halos difusos neón `#FF5A36`, tarjetas translúcidas con bordes finos y sombras de elevación suaves.
+   - **Hero de Perfil con LED de Estado**: Anillo con indicador LED en vivo (*🟢 Disponible*, *🟡 En Sillón*, *⚪ Descanso*) y selector táctil rápido de 1 toque.
+   - **Métricas Financieras en Tiempo Real**: Billetera de hoy, comisiones en caja por liquidar, acumulado mensual y próximo cliente con botón a WhatsApp.
+   - **Timeline de Agenda con Filtros**: Selector táctil (*📅 Hoy*, *☀️ Mañana*, *✨ Todos*), botones de acción de 1 toque (*✂️ Iniciar Atención*, *💳 Terminar / Enviar a Caja*, *📝 Ficha / Fórmula*).
+   - **Fórmulas CRM & Disponibilidad**: Buscador en tiempo real de clientas, historial técnico de tinte/oxidante/Plex y bloqueador de vacaciones sincronizado con Flowy IA.
+   - **Bottom Navigation Bar Flotante**: Barra inferior tipo app móvil nativa con `rounded-3xl` e iconos brillantes.
 
--1. **Sincronización Automática de Clientas en CRM (`public.clients`) al Agendar Citas ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+0. **Sincronización Automática de Clientas en CRM (`public.clients`) al Agendar Citas ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
    - **Upsert Inteligente en `public.clients`**: Cuando un cliente confirma una reserva online, el sistema busca por `tenant_id` y `phone_whatsapp`.
      - *Si es nuevo*: Crea automáticamente su ficha en `public.clients` con `full_name`, `phone_whatsapp`, `email`, `status: 'nuevo'`, `visits_count: 1`, `last_visit_at` y `preferred_stylist_id`.
      - *Si es recurrente*: Actualiza su última visita, incrementa el contador de visitas (`visits_count + 1`) y actualiza su email si no lo tenía registrado.
