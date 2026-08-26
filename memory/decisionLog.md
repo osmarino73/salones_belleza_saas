@@ -36,3 +36,9 @@
 - **Contexto**: Las plantillas HTML base de los negocios ya vienen con diseño estético y responsive revisado. Cualquier alteración de CSS o inyección de subtítulos/clases artificiales (ej. en la sección de servicios) rompería la armonía original.
 - **Decisión**: Blindar en la skill `landing-html-injector` y en las reglas de desarrollo que el HTML base se mantiene 100% intacto en diseño, clases CSS y jerarquía visual. La integración SaaS opera únicamente a nivel funcional (enlaces `/reservar/:slug`, canal WhatsApp y sincronización con Supabase).
 
+## [ADR-007] Modelo de Acceso para Colaboradores Multi-Sede (Múltiples Correos Independientes)
+- **Fecha**: 2026-08-26
+- **Estado**: Aprobado e Implementado
+- **Contexto**: Un colaborador (barbero, estilista, etc.) puede trabajar en diferentes salones/sedes (ej. Lunes a Miércoles en un negocio y Jueves a Sábado en otro). Se evaluó cuenta unificada vs. cuentas independientes.
+- **Decisión**: Mantener cuentas con correos independientes por cada salón (ej. `carlos.crismar@gmail.com` y `carlos.milena@gmail.com` o alias `carlos+crismar@gmail.com`). Esto garantiza aislamiento 100% nativo por `tenant_id` en Supabase, privacidad absoluta de comisiones entre salones competidores y cero complejidad de sincronización.
+
