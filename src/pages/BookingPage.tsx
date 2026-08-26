@@ -482,7 +482,7 @@ export const BookingPage: React.FC = () => {
         wa_reminder_2h_sent: false,
         notes: `Reserva Web (${selectedServices.length} servicios). Email: ${clientEmail || 'N/A'}. Cupón: ${appliedDiscount}%`,
         created_at: new Date().toISOString()
-      });
+      }, clientEmail.trim());
       setIsSuccess(true);
     } catch (e) { setIsSuccess(true); }
   };

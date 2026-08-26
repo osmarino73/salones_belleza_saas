@@ -405,7 +405,7 @@ export const api = {
     return [];
   },
 
-  async createAppointment(apt: Appointment): Promise<Appointment> {
+  async createAppointment(apt: Appointment, clientEmail?: string): Promise<Appointment> {
     const tid = apt.tenant_id || getActiveTenantId();
     const generateUUID = () => {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -426,7 +426,104 @@ export const api = {
     const cleanTenantId = isValidUUID(tid) ? tid : getActiveTenantId();
     const cleanStylistId = isValidUUID(apt.stylist_id) ? apt.stylist_id : null;
     const cleanServiceId = isValidUUID(apt.service_id) ? apt.service_id : null;
-    const cleanClientId = isValidUUID(apt.client_id) ? apt.client_id : null;
+    let cleanClientId = isValidUUID(apt.client_id) ? apt.client_id : null;
+
+    const emailToSave = clientEmail?.trim() || (apt.notes?.includes('Email: ') ? apt.notes.split('Email: ')[1]?.split('.')[0]?.trim() : '') || null;
+    const cleanPhone = apt.client_phone?.trim() || '';
+
+    // =========================================================================
+    // CRM AUTO-SYNC: CREAR O VINCULAR CLIENTE EN TABLA public.clients
+    // =========================================================================
+    if (cleanPhone && cleanTenantId) {
+      try {
+        if (supabase && isSupabaseConfigured) {
+          // 1. Buscar si el cliente ya existe por tenant y teléfono
+          const { data: existingClient } = await supabase
+            .from('clients')
+            .select('id, full_name, visits_count, phone_whatsapp, email, preferred_stylist_id')
+            .eq('tenant_id', cleanTenantId)
+            .eq('phone_whatsapp', cleanPhone)
+            .maybeSingle();
+
+          if (existingClient?.id) {
+            cleanClientId = existingClient.id;
+            // Actualizar cliente recurrente (+1 visita, última visita y actualizar correo/nombre si aplica)
+            await supabase
+              .from('clients')
+              .update({
+                full_name: apt.client_name?.trim() || existingClient.full_name,
+                last_visit_at: apt.date || new Date().toISOString().split('T')[0],
+                visits_count: (existingClient.visits_count || 0) + 1,
+                email: emailToSave || existingClient.email || null,
+                preferred_stylist_id: cleanStylistId || existingClient.preferred_stylist_id
+              })
+              .eq('id', existingClient.id);
+          } else {
+            // 2. Crear nuevo cliente en la base de datos CRM
+            const newClientId = generateUUID();
+            const { data: createdClient, error: clientErr } = await supabase
+              .from('clients')
+              .insert([{
+                id: newClientId,
+                tenant_id: cleanTenantId,
+                full_name: apt.client_name?.trim() || 'Cliente Nuevo',
+                phone_whatsapp: cleanPhone,
+                email: emailToSave,
+                status: 'nuevo',
+                total_spent_usd: 0,
+                visits_count: 1,
+                preferred_stylist_id: cleanStylistId,
+                last_visit_at: apt.date || new Date().toISOString().split('T')[0],
+                created_at: new Date().toISOString()
+              }])
+              .select('id')
+              .single();
+
+            if (!clientErr && createdClient?.id) {
+              cleanClientId = createdClient.id;
+            } else {
+              cleanClientId = newClientId;
+            }
+          }
+        }
+
+        // Sincronizar también en memoria / localStorage local de clientes
+        const savedClients = localStorage.getItem(STORAGE_KEYS.CLIENTS);
+        let clientList: Client[] = savedClients ? JSON.parse(savedClients) : [];
+        const existingLocalIndex = clientList.findIndex(c => c.tenant_id === cleanTenantId && c.phone_whatsapp === cleanPhone);
+        if (existingLocalIndex >= 0) {
+          const c = clientList[existingLocalIndex];
+          clientList[existingLocalIndex] = {
+            ...c,
+            full_name: apt.client_name?.trim() || c.full_name,
+            last_visit_at: apt.date || new Date().toISOString().split('T')[0],
+            visits_count: (c.visits_count || 0) + 1,
+            email: emailToSave || c.email,
+            preferred_stylist_id: cleanStylistId || c.preferred_stylist_id
+          };
+          if (!cleanClientId) cleanClientId = c.id;
+        } else {
+          const newLocalId = cleanClientId || generateUUID();
+          if (!cleanClientId) cleanClientId = newLocalId;
+          clientList.unshift({
+            id: newLocalId,
+            tenant_id: cleanTenantId,
+            full_name: apt.client_name?.trim() || 'Cliente Nuevo',
+            phone_whatsapp: cleanPhone,
+            email: emailToSave || undefined,
+            status: 'nuevo',
+            total_spent_usd: 0,
+            visits_count: 1,
+            preferred_stylist_id: cleanStylistId || undefined,
+            last_visit_at: apt.date || new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+          });
+        }
+        localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clientList));
+      } catch (crmErr) {
+        console.warn('Notice syncing client CRM:', crmErr);
+      }
+    }
 
     const aptPayload = {
       id: cleanAptId,
