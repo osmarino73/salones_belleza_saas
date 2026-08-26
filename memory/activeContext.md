@@ -16,13 +16,13 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Motor Robusto de Preselección de Servicios y Especialistas vía URL ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
-   - Se implementó la función normalizadora `normalizeBookingSlug` con descomposición NFD para eliminar diacríticos y tildes (`á` -> `a`, `é` -> `e`), permitiendo que URLs como `?service=corte-clasico-fade`, `?service=corte-infantil-kids` o `?service=hair-tattoo-disenos` reconozcan con 100% de fidelidad los servicios respectivos.
-   - **Búsqueda Priorizada en 3 Pases (Sin falsos positivos por palabras compartidas como "corte")**:
-     - *Pase 1*: Coincidencia exacta estricta (ID, slug normalizado completo o texto alfanumérico).
+-1. **Motor Robusto de Preselección de Servicios & Eliminación del Parpadeo de Carga ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+   - **Eliminación Total del Parpadeo (FOUC)**: Se eliminó la precarga de servicios genéricos demo en el estado inicial de React, sustituyéndola por un **Skeleton Loader oscuro y elegante** (`animate-pulse`) mientras se consultan los datos reales en Supabase.
+   - **Normalización NFD & Búsqueda Multi-Pase**:
+     - *Pase 1*: Coincidencia exacta estricta (`"corte-infantil-kids"`).
      - *Pase 2*: Coincidencia por subcadena estricta.
-     - *Pase 3*: Ranking por mayor coincidencia de tokens (score de superposición).
-   - El agendador resalta con exactitud el servicio solicitado en el Paso 1 (con checkmark activo, borde coral y cálculo en tiempo real) y selecciona automáticamente al especialista si viene en la URL (`?stylist=...` o `?barber=...`).
+     - *Pase 3*: Ranking por mayor coincidencia de tokens compartidos.
+   - Resalta fielmente el servicio solicitado sin falsos positivos y carga instantáneamente la identidad del salón desde el slug.
 
 0. **Sistema de Slugs Únicos con Auto-Sufijo Incremental Anti-Colisiones ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
    - Funciones universales `generateUniqueProspectSlug` y `generateUniqueTenantSlug`.
