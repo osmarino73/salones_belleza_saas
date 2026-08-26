@@ -16,13 +16,13 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Motor Robusto de Preselección de Servicios & Eliminación del Parpadeo de Carga ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
-   - **Eliminación Total del Parpadeo (FOUC)**: Se eliminó la precarga de servicios genéricos demo en el estado inicial de React, sustituyéndola por un **Skeleton Loader oscuro y elegante** (`animate-pulse`) mientras se consultan los datos reales en Supabase.
-   - **Normalización NFD & Búsqueda Multi-Pase**:
-     - *Pase 1*: Coincidencia exacta estricta (`"corte-infantil-kids"`).
-     - *Pase 2*: Coincidencia por subcadena estricta.
-     - *Pase 3*: Ranking por mayor coincidencia de tokens compartidos.
-   - Resalta fielmente el servicio solicitado sin falsos positivos y carga instantáneamente la identidad del salón desde el slug.
+-1. **Rediseño Moderno del Paso 3 (Día & Horarios) y Preselección de Servicios ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+   - **Carrusel de Días sin Barra Gris**: Se eliminó la barra de desplazamiento nativa (`scrollbar-none`), permitiendo un desplazamiento táctil suave y 100% integrado al Dark Mode.
+   - **Botones de Horario Compactos Tipo Chip**: Se eliminó el texto redundante *"✓ Libre"* y se implementaron chips modernos (`08:30 AM`) con icono de reloj y brillo coral al seleccionar.
+   - **Filtro de Franjas Prominente**: Selector segmentado en 4 píldoras (*✨ Todos*, *🌅 Mañana*, *☀️ Tarde*, *🌙 Noche*).
+   - **Resumen Inteligente de Finalización**: Al tocar un horario, calcula y muestra la hora exacta de terminación de la cita (ej. `08:30 AM ➔ 09:15 AM (45 min)`).
+   - **Eliminación Total del Parpadeo (FOUC)**: Skeleton loader oscuro mientras se consultan los servicios y estilistas en Supabase.
+   - **Normalización NFD & Búsqueda Multi-Pase**: Coincidencia exacta de servicios por slug desde URLs externas.
 
 0. **Sistema de Slugs Únicos con Auto-Sufijo Incremental Anti-Colisiones ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
    - Funciones universales `generateUniqueProspectSlug` y `generateUniqueTenantSlug`.
