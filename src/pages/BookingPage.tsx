@@ -259,32 +259,45 @@ export const BookingPage: React.FC = () => {
         const normQuery = normalizeBookingSlug(paramServiceQuery);
         const cleanAlphaQuery = normQuery.replace(/-/g, '');
 
+        // Pase 1: Coincidencia EXACTA de máxima prioridad (ID, Slug completo o Alfanumérico exacto)
         targetService = loadedServices.find(s => {
           if (!s) return false;
-          // 1. Coincidencia por ID directo
           if (s.id && (s.id.toLowerCase() === rawQuery || normalizeBookingSlug(s.id) === normQuery)) return true;
-          
-          // 2. Coincidencia exacta de Slug Normalizado (ej: "corte-clasico-fade" === "corte-clasico-fade")
           const normName = normalizeBookingSlug(s.name);
           if (normName && normName === normQuery) return true;
-
-          // 3. Coincidencia alfanumérica sin guiones (ej: "corteclasicofade" === "corteclasicofade")
           const cleanAlphaName = normName.replace(/-/g, '');
           if (cleanAlphaName && cleanAlphaQuery && cleanAlphaName === cleanAlphaQuery) return true;
-
-          // 4. Contención de subcadena normalizada
-          if (normName && normQuery && (normName.includes(normQuery) || (normQuery.length > 3 && normQuery.includes(normName)))) return true;
-
-          // 5. Coincidencia por palabras clave significativas (tokens >= 3 letras)
-          const queryTokens = normQuery.split('-').filter(t => t.length >= 3);
-          const nameTokens = normName.split('-').filter(t => t.length >= 3);
-          if (queryTokens.length > 0 && nameTokens.length > 0) {
-            const hasMatch = queryTokens.some(qt => nameTokens.includes(qt));
-            if (hasMatch) return true;
-          }
-
           return false;
         }) || null;
+
+        // Pase 2: Coincidencia por SUBCADENA estricta (si no hubo coincidencia exacta)
+        if (!targetService && normQuery.length >= 4) {
+          targetService = loadedServices.find(s => {
+            if (!s) return false;
+            const normName = normalizeBookingSlug(s.name);
+            return normName.includes(normQuery) || (normQuery.length > 6 && normQuery.includes(normName));
+          }) || null;
+        }
+
+        // Pase 3: Coincidencia por MAYOR PUNTUACIÓN DE PALABRAS CLAVE (Tokens Overlap)
+        if (!targetService) {
+          const queryTokens = normQuery.split('-').filter(t => t.length >= 3);
+          if (queryTokens.length > 0) {
+            let bestScore = 0;
+            let bestMatch: Service | null = null;
+            for (const s of loadedServices) {
+              const nameTokens = normalizeBookingSlug(s.name).split('-').filter(t => t.length >= 3);
+              const matchingTokens = queryTokens.filter(qt => nameTokens.includes(qt)).length;
+              if (matchingTokens > bestScore) {
+                bestScore = matchingTokens;
+                bestMatch = s;
+              }
+            }
+            if (bestScore > 0 && bestMatch) {
+              targetService = bestMatch;
+            }
+          }
+        }
       }
 
       if (targetService) {
@@ -304,6 +317,7 @@ export const BookingPage: React.FC = () => {
         const normStylistQuery = normalizeBookingSlug(paramStylistQuery);
         const cleanAlphaStylistQuery = normStylistQuery.replace(/-/g, '');
 
+        // Pase 1: Coincidencia EXACTA
         targetStylist = loadedStylists.find(st => {
           if (!st) return false;
           if (st.id && (st.id.toLowerCase() === rawStylistQuery || normalizeBookingSlug(st.id) === normStylistQuery)) return true;
@@ -311,9 +325,17 @@ export const BookingPage: React.FC = () => {
           if (normStName && normStName === normStylistQuery) return true;
           const cleanAlphaStName = normStName.replace(/-/g, '');
           if (cleanAlphaStName && cleanAlphaStylistQuery && cleanAlphaStName === cleanAlphaStylistQuery) return true;
-          if (normStName && normStylistQuery && (normStName.includes(normStylistQuery) || normStylistQuery.includes(normStName))) return true;
           return false;
         }) || null;
+
+        // Pase 2: Subcadena
+        if (!targetStylist && normStylistQuery.length >= 4) {
+          targetStylist = loadedStylists.find(st => {
+            if (!st) return false;
+            const normStName = normalizeBookingSlug(st.name);
+            return normStName.includes(normStylistQuery) || normStylistQuery.includes(normStName);
+          }) || null;
+        }
       }
 
       setStylists(loadedStylists);
