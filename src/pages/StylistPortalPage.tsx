@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Scissors,
@@ -29,7 +29,12 @@ import {
   CalendarOff,
   AlertTriangle,
   Trash2,
-  Check
+  Check,
+  Search,
+  Zap,
+  Wallet,
+  Layers,
+  ChevronDown
 } from 'lucide-react';
 import { api, initialStylists } from '../lib/supabase';
 import { Appointment, Client, Stylist, ColorFormula, BlockedSlot } from '../types';
@@ -47,6 +52,10 @@ export const StylistPortalPage: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Agenda Filter
+  const [agendaFilter, setAgendaFilter] = useState<'today' | 'tomorrow' | 'all'>('today');
+  const [crmSearchQuery, setCrmSearchQuery] = useState('');
 
   // Availability & Blocked Slots State
   const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5, 6]);
@@ -143,16 +152,30 @@ export const StylistPortalPage: React.FC = () => {
   }, [stylistId]);
 
   // Filter appointments for current stylist
-  const myAppointments = appointments.filter(
-    a => a.stylist_id === currentStylist.id || a.stylist_name === currentStylist.name
-  );
+  const myAppointments = useMemo(() => {
+    return appointments.filter(
+      a => a.stylist_id === currentStylist.id || a.stylist_name === currentStylist.name
+    );
+  }, [appointments, currentStylist]);
 
   // Filter clients who have appointments or formulas with this stylist
-  const myClients = clients.filter(
-    c => c.preferred_stylist_id === currentStylist.id || 
-         (c.formulas && c.formulas.some(f => f.stylist_id === currentStylist.id || f.stylist_name === currentStylist.name)) ||
-         myAppointments.some(a => a.client_name === c.full_name)
-  );
+  const myClients = useMemo(() => {
+    return clients.filter(
+      c => c.preferred_stylist_id === currentStylist.id || 
+           (c.formulas && c.formulas.some(f => f.stylist_id === currentStylist.id || f.stylist_name === currentStylist.name)) ||
+           myAppointments.some(a => a.client_name === c.full_name)
+    );
+  }, [clients, currentStylist, myAppointments]);
+
+  // Search filtered CRM clients
+  const filteredCrmClients = useMemo(() => {
+    if (!crmSearchQuery.trim()) return myClients;
+    const q = crmSearchQuery.toLowerCase();
+    return myClients.filter(c => 
+      c.full_name.toLowerCase().includes(q) || 
+      c.phone_whatsapp.toLowerCase().includes(q)
+    );
+  }, [myClients, crmSearchQuery]);
 
   // Currency Formatter
   const formatCurrency = (val: number, cur: string = salonCurrency) => {
@@ -181,6 +204,10 @@ export const StylistPortalPage: React.FC = () => {
 
   // Citas efectivamente cobradas en caja hoy
   const todayStr = new Date().toISOString().split('T')[0];
+  const tomorrowObj = new Date();
+  tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+  const tomorrowStr = tomorrowObj.toISOString().split('T')[0];
+
   const billedAppointmentsToday = myAppointments.filter(
     a => a.status === 'cobrada' && a.date === todayStr
   );
@@ -203,9 +230,21 @@ export const StylistPortalPage: React.FC = () => {
   const totalBilledMonth = completedAppointmentsMonth.reduce((sum, a) => sum + (Number(a.price_usd || 0)), 0);
   const earnedMonthCommissions = (totalBilledMonth * serviceCommissionPct) / 100;
 
-  // Total acumulado esperando pago en caja (Mes)
-  const waitingPayAppointmentsMonth = myAppointments.filter(a => a.status === 'completada');
-  const waitingPayMonthCommissions = waitingPayAppointmentsMonth.reduce((sum, a) => sum + ((Number(a.price_usd || 0) * serviceCommissionPct) / 100), 0);
+  // Siguiente cita pendiente o en atención
+  const upcomingAppointment = useMemo(() => {
+    return myAppointments.find(a => a.date === todayStr && a.status !== 'cobrada' && a.status !== 'no_show') || myAppointments[0];
+  }, [myAppointments, todayStr]);
+
+  // Appointments filtered by day
+  const displayedAppointments = useMemo(() => {
+    if (agendaFilter === 'today') {
+      return myAppointments.filter(a => a.date === todayStr);
+    }
+    if (agendaFilter === 'tomorrow') {
+      return myAppointments.filter(a => a.date === tomorrowStr);
+    }
+    return myAppointments;
+  }, [myAppointments, agendaFilter, todayStr, tomorrowStr]);
 
   // Handler for appointment status update
   const handleUpdateAppointmentStatus = async (id: string, newStatus: Appointment['status']) => {
@@ -367,7 +406,6 @@ export const StylistPortalPage: React.FC = () => {
   // Handler: Remove a blocked slot
   const handleRemoveBlockedSlot = async (slotId: string, dateStr: string) => {
     const updatedSlots = blockedSlots.filter(s => s.id !== slotId);
-    // Check if other slots share the same date
     const dateStillHasSlots = updatedSlots.some(s => s.date === dateStr);
     const updatedDates = dateStillHasSlots
       ? blockedDates
@@ -389,53 +427,63 @@ export const StylistPortalPage: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen font-sans antialiased transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0A0D14] text-slate-100' : 'bg-[#F4F6F9] text-slate-800'
+    <div className={`min-h-screen font-sans antialiased transition-colors duration-300 relative ${
+      theme === 'dark' ? 'bg-[#080B11] text-slate-100' : 'bg-[#F4F6F9] text-slate-800'
     }`}>
 
-      {/* TOP COMPACT HEADER FOR MOBILE & DESKTOP */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 transition-colors ${
-        theme === 'dark' ? 'bg-[#0E121B]/95 border-white/10' : 'bg-white/95 border-black/5 shadow-sm'
+      {/* AMBIENT GLOW EFFECTS (Background Mesh) */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-64 right-10 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+      {/* TOP GLASS HEADER FOR MOBILE & DESKTOP */}
+      <header className={`sticky top-0 z-40 border-b backdrop-blur-2xl px-3.5 sm:px-6 py-2.5 sm:py-3 transition-colors ${
+        theme === 'dark' ? 'bg-[#0B0F19]/80 border-white/[0.08]' : 'bg-white/90 border-black/5 shadow-sm'
       }`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
           
           {/* Logo & Portal Badge */}
           <div className="flex items-center gap-2">
-            <Link to="/" className="flex items-center gap-1.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white shadow-md shadow-[#FF5A36]/30">
-                <Scissors className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white shadow-lg shadow-[#FF5A36]/25 group-hover:scale-105 transition-transform">
+                <Scissors className="w-4 h-4" />
               </div>
-              <span className="font-extrabold text-xs sm:text-sm tracking-tight">
-                BeautyFlow<span className="text-[#FF5A36]">.AI</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="font-black text-xs sm:text-sm tracking-tight leading-none">
+                  Kowy<span className="text-[#FF5A36]">.app</span>
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Portal Staff</span>
+              </div>
             </Link>
-
-            <span className="text-[9px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20 whitespace-nowrap">
-              Colaborador
-            </span>
           </div>
 
-          {/* Center Stylist Badge / Switcher */}
-          <div className="flex items-center gap-1">
+          {/* Center Stylist Switcher (Admin Mode) or Salon Chip */}
+          <div className="flex items-center gap-1.5">
             {isUserAdmin ? (
-              <select
-                value={currentStylist.id}
-                onChange={(e) => {
-                  const found = stylists.find(s => s.id === e.target.value);
-                  if (found) setCurrentStylist(found);
-                }}
-                className={`text-[11px] sm:text-xs font-bold border rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 focus:outline-none focus:border-[#FF5A36] max-w-[130px] sm:max-w-none truncate ${
-                  theme === 'dark' ? 'bg-[#141926] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/10 text-slate-900'
-                }`}
-                title="Modo Dueña: Seleccionar colaborador para previsualizar"
-              >
-                {stylists.map(s => (
-                  <option key={s.id} value={s.id}>{s.name.split(' ')[0]} ({s.specialty.split('&')[0].trim()})</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={currentStylist.id}
+                  onChange={(e) => {
+                    const found = stylists.find(s => s.id === e.target.value);
+                    if (found) setCurrentStylist(found);
+                  }}
+                  className={`text-xs font-bold border rounded-2xl pl-3 pr-7 py-1.5 focus:outline-none focus:border-[#FF5A36] max-w-[140px] sm:max-w-none truncate appearance-none cursor-pointer transition-all ${
+                    theme === 'dark' 
+                      ? 'bg-[#141926]/90 border-white/10 text-white hover:border-white/20' 
+                      : 'bg-slate-100 border-black/10 text-slate-900'
+                  }`}
+                  title="Modo Dueña: Cambiar colaborador para previsualizar"
+                >
+                  {stylists.map(s => (
+                    <option key={s.id} value={s.id} className="bg-[#0E121B] text-white">
+                      {s.name.split(' ')[0]} ({s.specialty.split('&')[0].trim()})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-2.5 pointer-events-none text-slate-400" />
+              </div>
             ) : (
               <span className={`text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full border ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10 text-slate-300' : 'bg-slate-100 border-black/5 text-slate-700'
+                theme === 'dark' ? 'bg-[#141926]/80 border-white/10 text-slate-300' : 'bg-slate-100 border-black/5 text-slate-700'
               }`}>
                 {salonName}
               </span>
@@ -447,33 +495,33 @@ export const StylistPortalPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border transition-all ${
-                theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-amber-400' : 'bg-[#F0F2F7] border-black/5 text-slate-700'
+              className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
+                theme === 'dark' ? 'bg-[#141926] border-white/10 text-amber-400 hover:border-amber-400/40' : 'bg-[#F0F2F7] border-black/5 text-slate-700'
               }`}
               title="Cambiar tema"
             >
-              {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
             {isUserAdmin && (
               <Link
                 to="/dashboard"
-                className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border hidden sm:flex items-center gap-1 transition-all ${
-                  theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 bg-white shadow-sm'
+                className={`text-xs font-bold px-3 py-1.5 rounded-xl border hidden sm:flex items-center gap-1.5 transition-all ${
+                  theme === 'dark' ? 'border-white/10 hover:border-[#FF5A36] bg-[#141926] text-white shadow-sm' : 'border-black/5 bg-white shadow-sm'
                 }`}
                 title="Volver al panel general de administración"
               >
-                <span>Panel Administrador</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>Panel Dueña</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#FF5A36]" />
               </Link>
             )}
 
             <Link
               to="/login"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500/10 transition-all"
+              className="w-8 h-8 rounded-xl border border-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/10 transition-all cursor-pointer"
               title="Cerrar Sesión"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-4 h-4" />
             </Link>
           </div>
 
@@ -481,190 +529,254 @@ export const StylistPortalPage: React.FC = () => {
       </header>
 
       {/* MAIN CONTAINER */}
-      <main className="max-w-6xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 sm:pb-8">
+      <main className="max-w-6xl mx-auto p-3.5 sm:p-6 space-y-4 sm:space-y-6 pb-28 sm:pb-12">
 
-        {/* PROFILE HERO CARD */}
-        <div className={`p-4 sm:p-6 rounded-2xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${
-          theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+        {/* HERO PROFILE 360° GLASS CARD */}
+        <div className={`p-4 sm:p-6 rounded-3xl border relative overflow-hidden backdrop-blur-xl transition-all ${
+          theme === 'dark' 
+            ? 'bg-gradient-to-r from-[#141926]/90 via-[#101420]/80 to-[#141926]/90 border-white/10 shadow-2xl shadow-black/40' 
+            : 'bg-white border-black/5 shadow-md'
         }`}>
-          <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
-            <img
-              src={currentStylist.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
-              alt={currentStylist.name}
-              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-[#FF5A36] shadow-md shadow-[#FF5A36]/20 shrink-0"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight truncate">
-                  {currentStylist.name}
-                </h1>
-                <span className="flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-amber-400 bg-amber-400/10 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-400/20">
-                  <Star className="w-3 h-3 fill-amber-400" />
-                  <span>{currentStylist.rating || '5.0'}</span>
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
-                {currentStylist.specialty}
-              </p>
+          {/* Subtle top accent gradient line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF5A36] to-transparent opacity-80" />
 
-              <div className="flex items-center gap-1.5 sm:gap-2 mt-2 text-[10px] sm:text-[11px] flex-wrap">
-                <span className="bg-[#FF5A36]/10 text-[#FF5A36] font-bold px-1.5 sm:px-2 py-0.5 rounded-md">
-                  {serviceCommissionPct}% Serv.
-                </span>
-                <span className="bg-emerald-500/10 text-emerald-500 font-bold px-1.5 sm:px-2 py-0.5 rounded-md">
-                  {retailCommissionPct}% Retail
-                </span>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            
+            {/* Avatar & Profile Info */}
+            <div className="flex items-center gap-3.5 sm:gap-4 w-full md:w-auto">
+              <div className="relative shrink-0">
+                <img
+                  src={currentStylist.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
+                  alt={currentStylist.name}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#FF5A36]/80 shadow-xl shadow-[#FF5A36]/25"
+                />
+                <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0B0F19] ${
+                  stylistStatus === 'disponible' ? 'bg-emerald-500 animate-pulse' :
+                  stylistStatus === 'en_atencion' ? 'bg-amber-500' : 'bg-slate-500'
+                }`} />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-2xl font-black tracking-tight truncate text-white">
+                    {currentStylist.name}
+                  </h1>
+                  <span className="flex items-center gap-1 text-[11px] font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shadow-sm">
+                    <Star className="w-3 h-3 fill-amber-400" />
+                    <span>{currentStylist.rating || '5.0'}</span>
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-400 mt-0.5 truncate font-medium">
+                  {currentStylist.specialty}
+                </p>
+
+                {/* Commission Badges & Password Quick Modal */}
+                <div className="flex items-center gap-2 mt-2 text-[10px] sm:text-[11px] flex-wrap">
+                  <span className="bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/20 font-black px-2 py-0.5 rounded-lg">
+                    {serviceCommissionPct}% Servicios
+                  </span>
+                  <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-black px-2 py-0.5 rounded-lg">
+                    {retailCommissionPct}% Retail
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsChangePasswordModalOpen(true)}
+                    className={`p-1 px-2.5 rounded-lg border text-[10px] sm:text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                      theme === 'dark' 
+                        ? 'bg-white/5 border-white/10 hover:border-[#FF5A36] text-slate-300' 
+                        : 'bg-slate-100 border-black/5 hover:border-[#FF5A36] text-slate-700'
+                    }`}
+                    title="Cambiar mi contraseña"
+                  >
+                    <Key className="w-3 h-3 text-[#FF5A36]" />
+                    <span>Clave</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Stylist Status Switcher Segmented Controller */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full md:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-white/5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado en Salón:</span>
+              <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 border border-white/10 rounded-2xl w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setStylistStatus('disponible')}
+                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    stylistStatus === 'disponible'
+                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 font-black'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-current animate-ping" />
+                  <span>Disponible</span>
+                </button>
 
                 <button
                   type="button"
-                  onClick={() => setIsChangePasswordModalOpen(true)}
-                  className={`p-1 px-2.5 rounded-md border text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 transition-all ${
-                    theme === 'dark' ? 'bg-[#1A2133] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-slate-100 border-black/5 hover:border-[#FF5A36] text-slate-700'
+                  onClick={() => setStylistStatus('en_atencion')}
+                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    stylistStatus === 'en_atencion'
+                      ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 font-black'
+                      : 'text-slate-400 hover:text-white'
                   }`}
-                  title="Cambiar mi contraseña"
                 >
-                  <Key className="w-3 h-3 text-[#FF5A36]" />
-                  <span>Cambiar Clave</span>
+                  <Scissors className="w-3 h-3" />
+                  <span>En Sillón</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStylistStatus('descanso')}
+                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    stylistStatus === 'descanso'
+                      ? 'bg-slate-700 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Clock className="w-3 h-3" />
+                  <span>Descanso</span>
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Live Stylist Status Switcher */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full md:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
-            <span className="text-[11px] sm:text-xs text-slate-400 font-semibold">Mi Estado:</span>
-            <div className={`p-1 rounded-xl border grid grid-cols-3 sm:flex items-center gap-1 w-full sm:w-auto ${
-              theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F5F6FA] border-black/5'
-            }`}>
-              <button
-                type="button"
-                onClick={() => setStylistStatus('disponible')}
-                className={`text-[11px] sm:text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
-                  stylistStatus === 'disponible'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span>Disponible</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStylistStatus('en_atencion')}
-                className={`text-[11px] sm:text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
-                  stylistStatus === 'en_atencion'
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Scissors className="w-3 h-3" />
-                <span>En Sillón</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setStylistStatus('descanso')}
-                className={`text-[11px] sm:text-xs font-bold px-2 sm:px-3 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-all ${
-                  stylistStatus === 'descanso'
-                    ? 'bg-slate-700 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Clock className="w-3 h-3" />
-                <span>Descanso</span>
-              </button>
-            </div>
           </div>
         </div>
 
-        {/* LIVE COMMISSIONS WALLET METRIC CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* 3 LIVE GLASS METRIC CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
           
-          {/* Card 1: Comisiones de Hoy */}
-          <div className={`p-5 rounded-2xl border flex flex-col justify-between ${
-            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+          {/* Card 1: Mi Comisión Cobrada Hoy */}
+          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
+            theme === 'dark' ? 'bg-[#141926]/90 border-emerald-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
           }`}>
-            <div className="flex justify-between items-center text-xs text-slate-400 font-semibold mb-2">
-              <span>Mi Comisión Cobrada Hoy</span>
-              <DollarSign className="w-4 h-4 text-emerald-500" />
+            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+              <span className="flex items-center gap-1.5">
+                <Wallet className="w-4 h-4 text-emerald-400" />
+                <span>Mi Billetera de Hoy</span>
+              </span>
+              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
+                {serviceCommissionPct}% comisión
+              </span>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-500 tracking-tight mb-1">
+
+            <div className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight my-1">
               {formatCurrency(earnedCommissionsToday, salonCurrency)}
             </div>
-            <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1 flex-wrap">
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+
+            <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1 flex-wrap pt-2 border-t border-white/5">
+              <span className="flex items-center gap-1 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{billedAppointmentsToday.length} turno(s) cobrado(s)</span>
               </span>
-              {inProgressAppointmentsToday.length > 0 && (
-                <span className="text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                  ⏳ {inProgressAppointmentsToday.length} en sillón
+              {waitingPayAppointmentsToday.length > 0 && (
+                <span className="text-purple-300 font-bold bg-purple-500/15 px-2 py-0.5 rounded-full border border-purple-500/20 text-[10px]">
+                  💳 +{formatCurrency(waitingPayCommissionsToday, salonCurrency)} en caja
                 </span>
               )}
             </div>
           </div>
 
-          {/* Card 2: Comisiones Acumuladas Mes */}
-          <div className={`p-5 rounded-2xl border flex flex-col justify-between ${
-            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+          {/* Card 2: Acumulado Quincena / Mes */}
+          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
+            theme === 'dark' ? 'bg-[#141926]/90 border-[#FF5A36]/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
           }`}>
-            <div className="flex justify-between items-center text-xs text-slate-400 font-semibold mb-2">
-              <span>Acumulado del Mes</span>
-              <TrendingUp className="w-4 h-4 text-[#FF5A36]" />
+            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+              <span className="flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-[#FF5A36]" />
+                <span>Acumulado del Mes</span>
+              </span>
+              <span className="text-[10px] bg-[#FF5A36]/10 text-[#FF5A36] px-2 py-0.5 rounded-full border border-[#FF5A36]/20">
+                Liquidación quincenal
+              </span>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-[#FF5A36] tracking-tight mb-1">
+
+            <div className="text-2xl sm:text-3xl font-black text-[#FF5A36] tracking-tight my-1">
               {formatCurrency(earnedMonthCommissions, salonCurrency)}
             </div>
-            <div className="text-[11px] text-slate-400">
-              {completedAppointmentsMonth.length} servicio(s) completado(s) • Liquidación quincenal
+
+            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
+              <span>{completedAppointmentsMonth.length} citas cobradas en el salón</span>
+              <span className="text-emerald-400 font-bold">100% transparente</span>
             </div>
           </div>
 
-          {/* Card 3: Próximo Turno */}
-          <div className={`p-5 rounded-2xl border flex flex-col justify-between ${
-            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+          {/* Card 3: Próximo Turno Inteligente */}
+          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
+            theme === 'dark' ? 'bg-[#141926]/90 border-blue-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
           }`}>
-            <div className="flex justify-between items-center text-xs text-slate-400 font-semibold mb-2">
-              <span>Próxima Cita Agendada</span>
-              <Clock className="w-4 h-4 text-blue-400" />
+            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <span>Próximo Cliente</span>
+              </span>
+              {upcomingAppointment && (
+                <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold">
+                  {upcomingAppointment.time}
+                </span>
+              )}
             </div>
-            <div>
-              <div className="text-lg font-bold truncate">
-                {myAppointments.length > 0 ? myAppointments[0].client_name : 'Sin citas pendientes'}
+
+            {upcomingAppointment ? (
+              <div>
+                <div className="text-base sm:text-lg font-black truncate text-white">
+                  {upcomingAppointment.client_name}
+                </div>
+                <div className="text-xs text-[#FF5A36] font-extrabold truncate mt-0.5">
+                  {upcomingAppointment.service_name}
+                </div>
               </div>
-              <div className="text-xs text-[#FF5A36] font-mono font-bold">
-                {myAppointments.length > 0 ? `${myAppointments[0].time} • ${myAppointments[0].service_name}` : 'Agenda libre'}
+            ) : (
+              <div className="text-slate-400 text-sm font-bold my-1">
+                Agenda libre por ahora
               </div>
+            )}
+
+            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
+              {upcomingAppointment?.client_phone ? (
+                <a
+                  href={`https://wa.me/${upcomingAppointment.client_phone.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 hover:underline flex items-center gap-1 font-bold"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Escribir por WhatsApp</span>
+                </a>
+              ) : (
+                <span>Esperando nuevos turnos</span>
+              )}
             </div>
           </div>
 
         </div>
 
-        {/* NAVIGATION SEGMENTED TABS (Solo Desktop, en móvil se usa el Bottom Nav) */}
-        <div className={`hidden sm:flex p-1.5 rounded-2xl border items-center gap-2 ${
-          theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+        {/* NAVIGATION SEGMENTED TABS (Desktop Bar) */}
+        <div className={`hidden sm:grid grid-cols-4 gap-1.5 p-1.5 rounded-2xl border ${
+          theme === 'dark' ? 'bg-[#0E121B]/90 border-white/10 shadow-lg' : 'bg-white border-black/5 shadow-sm'
         }`}>
           <button
             type="button"
             onClick={() => setActiveTab('agenda')}
-            className={`flex-1 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`text-xs font-black py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'agenda'
-                ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>Mi Agenda de Hoy ({myAppointments.length})</span>
+            <span>Mi Agenda ({displayedAppointments.length})</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('crm')}
-            className={`flex-1 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`text-xs font-black py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'crm'
-                ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -674,52 +786,419 @@ export const StylistPortalPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('wallet')}
-            className={`flex-1 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`text-xs font-black py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'wallet'
-                ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <DollarSign className="w-4 h-4" />
-            <span>Mi Billetera</span>
+            <span>Mi Billetera & Historial</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('availability')}
-            className={`flex-1 text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`text-xs font-black py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'availability'
-                ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <CalendarOff className="w-4 h-4" />
-            <span>Días No Disponibles ({blockedSlots.length})</span>
+            <span>Días Libres & Descansos ({blockedSlots.length})</span>
           </button>
         </div>
 
+        {/* ========================================================================= */}
+        {/* TAB 1: MI AGENDA INTERACTIVA (TIMELINE) */}
+        {/* ========================================================================= */}
+        {activeTab === 'agenda' && (
+          <div className="space-y-4 animate-fade-in">
+            
+            {/* Day Filter Chips */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h2 className="text-base font-black text-white flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#FF5A36]" />
+                  <span>Turnos de Trabajo</span>
+                </h2>
+                <p className="text-xs text-slate-400">Actualiza el estado de cada servicio con un toque desde tu celular.</p>
+              </div>
+
+              <div className="flex gap-1.5 p-1 bg-black/40 border border-white/10 rounded-2xl text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => setAgendaFilter('today')}
+                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    agendaFilter === 'today' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📅 Hoy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgendaFilter('tomorrow')}
+                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    agendaFilter === 'tomorrow' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ☀️ Mañana
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAgendaFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    agendaFilter === 'all' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ✨ Todos ({myAppointments.length})
+                </button>
+              </div>
+            </div>
+
+            {displayedAppointments.length === 0 ? (
+              <div className={`p-12 rounded-3xl border text-center space-y-3 backdrop-blur-xl ${
+                theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
+              }`}>
+                <Calendar className="w-12 h-12 text-slate-600 mx-auto" />
+                <h3 className="text-base font-black text-white">No tienes citas programadas para este filtro</h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  Las reservas de la web y de WhatsApp aparecerán aquí en tiempo real con alertas y recordatorios.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {displayedAppointments.map((apt) => {
+                  const clientObj = clients.find(c => c.full_name === apt.client_name || c.phone_whatsapp === apt.client_phone);
+                  const isOngoing = apt.status === 'en_atencion';
+                  const isWaitingPay = apt.status === 'completada';
+                  const isDone = apt.status === 'cobrada';
+
+                  return (
+                    <div
+                      key={apt.id}
+                      className={`p-4 sm:p-5 rounded-3xl border transition-all backdrop-blur-xl ${
+                        isOngoing
+                          ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30 shadow-xl shadow-amber-500/10'
+                          : isWaitingPay
+                          ? 'border-purple-500/40 bg-purple-500/10'
+                          : isDone
+                          ? 'border-emerald-500/30 bg-emerald-500/5 opacity-85'
+                          : theme === 'dark' ? 'bg-[#141926]/90 border-white/10 hover:border-white/20' : 'bg-white border-black/5 shadow-sm'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        
+                        {/* Time & Client info */}
+                        <div className="flex items-start gap-3.5 min-w-0">
+                          <div className={`p-3 rounded-2xl text-center min-w-[76px] shrink-0 border ${
+                            isOngoing 
+                              ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow-md' 
+                              : isWaitingPay 
+                              ? 'bg-purple-600 border-purple-500 text-white font-black' 
+                              : isDone
+                              ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400 font-bold'
+                              : 'bg-white/5 border-white/10 text-white'
+                          }`}>
+                            <span className="text-xs font-mono font-black block">{apt.time}</span>
+                            <span className="text-[10px] opacity-80 block mt-0.5">{apt.duration_minutes} min</span>
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <strong className="text-sm sm:text-base font-black block text-white truncate">{apt.client_name}</strong>
+                              <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                                isOngoing
+                                  ? 'bg-amber-500 text-slate-950 animate-pulse'
+                                  : isWaitingPay
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                  : isDone
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                              }`}>
+                                {isOngoing ? '● En Sillón' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isDone ? '✓ Cobrada & Liquidada' : '⏳ Confirmada'}
+                              </span>
+                            </div>
+
+                            <span className="text-xs text-[#FF5A36] font-extrabold block mt-0.5">
+                              {apt.service_name} • {formatCurrency(apt.price_usd, salonCurrency)}
+                            </span>
+
+                            <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1.5 flex-wrap">
+                              {apt.client_phone && (
+                                <a
+                                  href={`https://wa.me/${apt.client_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${apt.client_name}! Te saluda ${currentStylist.name} de ${salonName}. Ya tengo tu espacio listo 💖`)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20"
+                                >
+                                  <MessageCircle className="w-3 h-3" />
+                                  <span>WhatsApp</span>
+                                </a>
+                              )}
+                              <span className="text-[10px] text-slate-500">{apt.date}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons for the Stylist */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                          {clientObj && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedClientForFormula(clientObj);
+                                setIsFormulaModalOpen(true);
+                              }}
+                              className="text-xs font-bold px-3 py-2 rounded-xl border border-white/10 hover:border-[#FF5A36] bg-white/5 text-slate-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                              title="Ver o registrar fórmula técnica"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
+                              <span>Fórmula</span>
+                            </button>
+                          )}
+
+                          {isOngoing ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
+                              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
+                              title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>✓ Terminado / Enviar a Caja</span>
+                            </button>
+                          ) : isWaitingPay ? (
+                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2 rounded-xl border border-purple-500/25 flex items-center gap-1.5">
+                              💳 Esperando Cobro en Recepción
+                            </span>
+                          ) : isDone ? (
+                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-2 rounded-xl border border-emerald-500/25 flex items-center gap-1.5">
+                              ✓ Liquidada en Caja
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'en_atencion')}
+                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105"
+                            >
+                              <Scissors className="w-4 h-4 stroke-[2.5]" />
+                              <span>Iniciar Atención</span>
+                            </button>
+                          )}
+                        </div>
+
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 2: FÓRMULAS & CLIENTAS (CRM 360°) */}
+        {/* ========================================================================= */}
+        {activeTab === 'crm' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <h2 className="text-base font-black text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-[#FF5A36]" />
+                  <span>Mis Clientas & Expedientes de Color</span>
+                </h2>
+                <p className="text-xs text-slate-400">Consulta fórmulas exactas de tinte aplicadas en visitas anteriores.</p>
+              </div>
+
+              {/* Search input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  value={crmSearchQuery}
+                  onChange={(e) => setCrmSearchQuery(e.target.value)}
+                  placeholder="Buscar clienta..."
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36]"
+                />
+              </div>
+            </div>
+
+            {filteredCrmClients.length === 0 ? (
+              <div className="p-12 rounded-3xl border border-white/10 bg-[#141926]/90 text-center space-y-2 text-slate-400">
+                <FileText className="w-10 h-10 mx-auto text-slate-600" />
+                <strong className="text-white block">No se encontraron clientas</strong>
+                <p className="text-xs">Intenta con otro término de búsqueda.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredCrmClients.map((client) => {
+                  const clientFormulas = (client.formulas || []).filter(
+                    f => f.stylist_id === currentStylist.id || f.stylist_name === currentStylist.name
+                  );
+
+                  return (
+                    <div
+                      key={client.id}
+                      className={`p-5 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all ${
+                        theme === 'dark' ? 'bg-[#141926]/90 border-white/10 hover:border-white/20' : 'bg-white border-black/5 shadow-sm'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <strong className="text-sm font-black block text-white">{client.full_name}</strong>
+                            <span className="text-xs text-slate-400 font-mono">{client.phone_whatsapp}</span>
+                          </div>
+                          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/20 uppercase">
+                            {client.status || 'frecuente'}
+                          </span>
+                        </div>
+
+                        {/* Formulas List */}
+                        {clientFormulas.length > 0 ? (
+                          <div className="space-y-2 mb-3">
+                            {clientFormulas.map((form) => (
+                              <div
+                                key={form.id}
+                                className="p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/80 text-xs space-y-1.5"
+                              >
+                                <div className="flex justify-between text-[10px] text-[#FF5A36] font-black uppercase">
+                                  <span>Fórmula Registrada</span>
+                                  <span>{form.created_at}</span>
+                                </div>
+                                <p className="font-mono text-[11px] text-white font-bold">{form.formula_text}</p>
+                                <div className="text-[10px] text-slate-400 flex gap-3 pt-1 border-t border-white/5">
+                                  <span>Oxidante: <strong className="text-white">{form.developer_volume}</strong></span>
+                                  <span>Tiempo: <strong className="text-white">{form.exposure_minutes} min</strong></span>
+                                  <span>Plex: <strong className="text-emerald-400">{form.plex_used ? 'Sí' : 'No'}</strong></span>
+                                </div>
+                                {form.diagnostic_notes && (
+                                  <p className="text-[10px] text-slate-400 italic">"{form.diagnostic_notes}"</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-slate-400 italic p-4 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-2xl mb-3">
+                            Sin fórmulas registradas por ti aún.
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-3 border-t border-white/5 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedClientForFormula(client);
+                            setIsFormulaModalOpen(true);
+                          }}
+                          className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/25 cursor-pointer transition-all hover:scale-105"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Agregar Fórmula de Tinte
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: MI BILLETERA & LIQUIDACIÓN */}
+        {/* ========================================================================= */}
+        {activeTab === 'wallet' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+              theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
+            }`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-white/5 pb-4">
+                <div>
+                  <h2 className="text-base font-black text-white flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    <span>Liquidación de Comisiones & Transparencia</span>
+                  </h2>
+                  <p className="text-xs text-slate-400">Cada servicio completado se liquida en base a tu porcentaje acordado ({serviceCommissionPct}%).</p>
+                </div>
+                <span className="text-xs font-black px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-mono shadow-md">
+                  Acumulado Total: {formatCurrency(earnedMonthCommissions, salonCurrency)}
+                </span>
+              </div>
+
+              <div className="divide-y divide-white/5 text-xs">
+                {myAppointments.map((apt) => {
+                  const comAmount = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
+                  const isDone = apt.status === 'cobrada';
+                  const isWaitingPay = apt.status === 'completada';
+                  const isOngoing = apt.status === 'en_atencion';
+
+                  return (
+                    <div key={apt.id} className="py-3.5 flex justify-between items-center gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <strong className="block text-sm font-black text-white">{apt.service_name}</strong>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            isDone ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
+                            isWaitingPay ? 'bg-purple-500/15 text-purple-300 border border-purple-500/20' :
+                            isOngoing ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
+                            'bg-blue-500/10 text-slate-400'
+                          }`}>
+                            {isDone ? '✓ Cobrada en Caja' : isWaitingPay ? '💳 En Caja (Por Cobrar)' : isOngoing ? '● En Sillón' : 'Agendada'}
+                          </span>
+                        </div>
+                        <span className="text-slate-400 text-[11px] block mt-0.5">{apt.client_name} • {apt.date} {apt.time}</span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[11px] text-slate-400 block">Total: {formatCurrency(apt.price_usd, salonCurrency)}</span>
+                        {isDone ? (
+                          <strong className="text-sm text-emerald-400 font-black block font-mono">
+                            +{formatCurrency(comAmount, salonCurrency)} ({serviceCommissionPct}%)
+                          </strong>
+                        ) : isWaitingPay ? (
+                          <strong className="text-xs text-purple-300 font-bold block">
+                            {formatCurrency(comAmount, salonCurrency)} (Por Liquidar)
+                          </strong>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium block">
+                            {formatCurrency(comAmount, salonCurrency)} (Estimada)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
         {/* TAB 4: MI DISPONIBILIDAD & BLOQUEO DE DÍAS */}
+        {/* ========================================================================= */}
         {activeTab === 'availability' && (
           <div className="space-y-6 animate-fade-in">
             
             {/* Feedback notification message */}
             {availabilitySuccessMsg && (
-              <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-between shadow-lg">
+              <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black flex items-center justify-between shadow-xl animate-fade-in">
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
                   <span>{availabilitySuccessMsg}</span>
                 </div>
-                <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full">Sincronizado con Flowy IA</span>
+                <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full font-bold">Sincronizado con Flowy IA</span>
               </div>
             )}
 
             {/* SECTION 1: JORNADA Y DÍAS HABITUALES DE TRABAJO */}
-            <div className={`p-6 rounded-2xl border space-y-4 ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+            <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+              theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
             }`}>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3 border-black/5 dark:border-white/10">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3 border-white/5">
                 <div>
-                  <h3 className="text-base font-bold flex items-center gap-2">
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-[#FF5A36]" />
                     <span>Días Laborales Habituales</span>
                   </h3>
@@ -727,7 +1206,7 @@ export const StylistPortalPage: React.FC = () => {
                     Marca los días de la semana en los que normalmente atiendes en el salón.
                   </p>
                 </div>
-                <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                <span className="text-[11px] font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                   {workingDays.length} días de atención / semana
                 </span>
               </div>
@@ -751,14 +1230,12 @@ export const StylistPortalPage: React.FC = () => {
                       onClick={() => handleToggleWorkingDay(d.index)}
                       className={`p-3 rounded-2xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
                         isWorking
-                          ? 'bg-gradient-to-br from-[#FF5A36]/20 to-pink-500/10 border-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/10'
-                          : theme === 'dark'
-                            ? 'bg-[#0E121B] border-white/5 text-slate-500 hover:border-white/20'
-                            : 'bg-slate-100 border-slate-200 text-slate-400 hover:border-slate-300'
+                          ? 'bg-gradient-to-br from-[#FF5A36] to-pink-500 border-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/25 scale-105 font-black'
+                          : 'bg-[#0E121B] border-white/5 text-slate-500 hover:border-white/20'
                       }`}
                     >
-                      <span className="text-xs sm:text-sm font-extrabold">{d.label}</span>
-                      <span className={`text-[9px] mt-1 font-bold ${isWorking ? 'text-emerald-400' : 'text-slate-500'}`}>
+                      <span className="text-xs sm:text-sm font-black">{d.label}</span>
+                      <span className={`text-[9px] mt-1 font-bold ${isWorking ? 'text-white/90' : 'text-slate-500'}`}>
                         {isWorking ? 'Activo' : 'Libre'}
                       </span>
                     </button>
@@ -772,11 +1249,11 @@ export const StylistPortalPage: React.FC = () => {
               
               {/* Formulario Izquierda (5 cols) */}
               <div className="lg:col-span-5 space-y-4">
-                <div className={`p-6 rounded-2xl border space-y-4 ${
-                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+                <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+                  theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
-                  <div className="border-b pb-3 border-black/5 dark:border-white/10">
-                    <h3 className="text-base font-bold flex items-center gap-2">
+                  <div className="border-b pb-3 border-white/5">
+                    <h3 className="text-base font-black text-white flex items-center gap-2">
                       <Ban className="w-4 h-4 text-red-500" />
                       <span>Bloquear Días o Vacaciones</span>
                     </h3>
@@ -787,7 +1264,7 @@ export const StylistPortalPage: React.FC = () => {
 
                   {/* Preset Quick Buttons */}
                   <div>
-                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1.5">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
                       Motivos Rápidos
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -802,12 +1279,10 @@ export const StylistPortalPage: React.FC = () => {
                           key={idx}
                           type="button"
                           onClick={() => setNewBlockReason(item.reason)}
-                          className={`text-xs font-bold px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
+                          className={`text-xs font-black px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
                             newBlockReason === item.reason
-                              ? 'bg-[#FF5A36] text-white border-[#FF5A36]'
-                              : theme === 'dark'
-                                ? 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                                : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+                              ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md shadow-[#FF5A36]/25'
+                              : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                           }`}
                         >
                           {item.label}
@@ -831,9 +1306,7 @@ export const StylistPortalPage: React.FC = () => {
                               setNewBlockEndDate(e.target.value);
                             }
                           }}
-                          className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                            theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                          }`}
+                          className="w-full border rounded-xl p-2.5 bg-[#0E121B] border-white/10 text-white focus:outline-none focus:border-[#FF5A36]"
                           required
                         />
                       </div>
@@ -845,9 +1318,7 @@ export const StylistPortalPage: React.FC = () => {
                           value={newBlockEndDate}
                           min={newBlockStartDate}
                           onChange={(e) => setNewBlockEndDate(e.target.value)}
-                          className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                            theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                          }`}
+                          className="w-full border rounded-xl p-2.5 bg-[#0E121B] border-white/10 text-white focus:outline-none focus:border-[#FF5A36]"
                           required
                         />
                       </div>
@@ -861,9 +1332,7 @@ export const StylistPortalPage: React.FC = () => {
                         value={newBlockReason}
                         onChange={(e) => setNewBlockReason(e.target.value)}
                         placeholder="Ej. Vacaciones de Verano / Permiso personal"
-                        className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                          theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                        }`}
+                        className="w-full border rounded-xl p-2.5 bg-[#0E121B] border-white/10 text-white focus:outline-none focus:border-[#FF5A36]"
                         required
                       />
                     </div>
@@ -871,7 +1340,7 @@ export const StylistPortalPage: React.FC = () => {
                     {/* Todo el día switch */}
                     <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                       <div>
-                        <strong className="block text-xs font-bold">Bloquear Todo el Día</strong>
+                        <strong className="block text-xs font-bold text-white">Bloquear Todo el Día</strong>
                         <span className="text-[11px] text-slate-400">Sin citas durante toda la jornada</span>
                       </div>
                       <input
@@ -882,7 +1351,7 @@ export const StylistPortalPage: React.FC = () => {
                       />
                     </div>
 
-                    {/* Horas específicas con selector visual interactivo si no es todo el día */}
+                    {/* Horas específicas con selector visual si no es todo el día */}
                     {!newBlockFullDay && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 animate-fade-in">
                         <TimePickerSelect
@@ -902,7 +1371,7 @@ export const StylistPortalPage: React.FC = () => {
 
                     <button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-red-600 to-[#FF5A36] hover:opacity-95 text-white font-extrabold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-red-600 to-[#FF5A36] hover:opacity-95 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all cursor-pointer"
                     >
                       <Ban className="w-4 h-4" />
                       <span>Guardar Bloqueo de Días</span>
@@ -913,25 +1382,25 @@ export const StylistPortalPage: React.FC = () => {
 
               {/* Lista Derecha de Bloqueos Activos (7 cols) */}
               <div className="lg:col-span-7 space-y-4">
-                <div className={`p-6 rounded-2xl border space-y-4 ${
-                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+                <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+                  theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
-                  <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+                  <div className="flex justify-between items-center border-b pb-3 border-white/5">
                     <div>
-                      <h3 className="text-base font-bold flex items-center gap-2">
+                      <h3 className="text-base font-black text-white flex items-center gap-2">
                         <CalendarOff className="w-4 h-4 text-[#FF5A36]" />
                         <span>Días y Fechas Bloqueadas Activas ({blockedSlots.length})</span>
                       </h3>
                       <p className="text-xs text-slate-400">
-                        Fechas donde el bot y la web no permitirán agendar citas con {currentStylist.name.split(' ')[0]}.
+                        Fechas donde la web y Flowy IA no permitirán agendar citas con {currentStylist.name.split(' ')[0]}.
                       </p>
                     </div>
                   </div>
 
                   {blockedSlots.length === 0 ? (
-                    <div className="p-8 rounded-2xl text-center space-y-2 border border-dashed border-white/10 text-slate-400">
+                    <div className="p-10 rounded-2xl text-center space-y-2 border border-dashed border-white/10 text-slate-400">
                       <Calendar className="w-10 h-10 mx-auto text-emerald-500/40" />
-                      <strong className="text-sm block">Sin días bloqueados actualmente</strong>
+                      <strong className="text-sm block text-white">Sin días bloqueados actualmente</strong>
                       <p className="text-xs max-w-sm mx-auto">
                         Estás 100% disponible para recibir citas según tus días habituales de trabajo.
                       </p>
@@ -950,21 +1419,19 @@ export const StylistPortalPage: React.FC = () => {
                         return (
                           <div
                             key={slot.id}
-                            className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
-                              theme === 'dark' ? 'bg-[#0E121B] border-white/5 hover:border-white/15' : 'bg-slate-50 border-slate-200'
-                            }`}
+                            className="p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/80 flex items-center justify-between gap-3 transition-all hover:border-white/15"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-extrabold text-sm shrink-0">
+                              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-black text-sm shrink-0">
                                 {dateObj.getDate()}
                               </div>
 
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <strong className="text-xs capitalize font-bold">
+                                  <strong className="text-xs capitalize font-black text-white">
                                     {formattedDate}
                                   </strong>
-                                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
+                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
                                     {slot.reason || 'Día No Disponible'}
                                   </span>
                                 </div>
@@ -979,10 +1446,10 @@ export const StylistPortalPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleRemoveBlockedSlot(slot.id, slot.date)}
-                              className="p-2 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all cursor-pointer shrink-0"
+                              className="p-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all cursor-pointer shrink-0"
                               title="Desbloquear este día"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         );
@@ -991,8 +1458,8 @@ export const StylistPortalPage: React.FC = () => {
                   )}
 
                   {/* Flowy Banner */}
-                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-slate-300">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-slate-300">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div>
@@ -1010,309 +1477,22 @@ export const StylistPortalPage: React.FC = () => {
 
           </div>
         )}
-        {activeTab === 'agenda' && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-base font-bold">Turnos Programados para Hoy</h2>
-                <p className="text-xs text-slate-400">Actualiza el estado de cada servicio mientras atiendes en el sillón.</p>
-              </div>
-            </div>
-
-            {myAppointments.length === 0 ? (
-              <div className={`p-10 rounded-2xl border text-center space-y-2 ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
-              }`}>
-                <Calendar className="w-10 h-10 text-slate-400 mx-auto mb-2" />
-                <h3 className="text-sm font-bold">No tienes citas agendadas para hoy</h3>
-                <p className="text-xs text-slate-400">El bot de IA de WhatsApp agendará clientas automáticamente en tu horario disponible.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {myAppointments.map((apt) => {
-                  const clientObj = clients.find(c => c.full_name === apt.client_name);
-                  const isOngoing = apt.status === 'en_atencion';
-                  const isWaitingPay = apt.status === 'completada';
-                  const isDone = apt.status === 'cobrada';
-
-                  return (
-                    <div
-                      key={apt.id}
-                      className={`p-4 sm:p-5 rounded-2xl border transition-all ${
-                        isOngoing
-                          ? 'border-amber-500 bg-amber-500/5 ring-1 ring-amber-500/30'
-                          : isWaitingPay
-                          ? 'border-purple-500/40 bg-purple-500/5'
-                          : isDone
-                          ? 'border-emerald-500/30 bg-emerald-500/5 opacity-90'
-                          : theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        
-                        {/* Time & Client info */}
-                        <div className="flex items-start gap-3">
-                          <div className={`p-2.5 rounded-xl text-center min-w-[70px] ${
-                            isOngoing ? 'bg-amber-500 text-white' : isWaitingPay ? 'bg-purple-600 text-white' : theme === 'dark' ? 'bg-[#0E121B]' : 'bg-[#F0F2F7]'
-                          }`}>
-                            <span className="text-xs font-mono font-extrabold block">{apt.time}</span>
-                            <span className="text-[9px] opacity-75">{apt.duration_minutes} min</span>
-                          </div>
-
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <strong className="text-sm font-bold block">{apt.client_name}</strong>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                isOngoing
-                                  ? 'bg-amber-500 text-white animate-pulse'
-                                  : isWaitingPay
-                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                  : isDone
-                                  ? 'bg-emerald-500/20 text-emerald-500'
-                                  : 'bg-blue-500/20 text-blue-400'
-                              }`}>
-                                {isOngoing ? '● En Sillón' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isDone ? '✓ Cobrada & Liquidada' : 'Confirmada WA'}
-                              </span>
-                            </div>
-
-                            <span className="text-xs text-[#FF5A36] font-semibold block mt-0.5">
-                              {apt.service_name} • {formatCurrency(apt.price_usd, salonCurrency)}
-                            </span>
-
-                            <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
-                              <a
-                                href={`https://wa.me/${apt.client_phone.replace(/\D/g, '')}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex items-center gap-1 hover:text-emerald-400 transition-colors"
-                              >
-                                <Phone className="w-3 h-3 text-emerald-500" />
-                                <span>{apt.client_phone}</span>
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons for the Stylist */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
-                          {clientObj && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedClientForFormula(clientObj);
-                                setIsFormulaModalOpen(true);
-                              }}
-                              className={`text-xs font-semibold px-3 py-2 rounded-xl border flex items-center gap-1.5 transition-all ${
-                                theme === 'dark' ? 'bg-[#1A2133] border-white/10 hover:border-[#FF5A36]' : 'bg-[#F9FAFC] border-black/10 hover:border-[#FF5A36]'
-                              }`}
-                            >
-                              <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
-                              <span>Fórmula</span>
-                            </button>
-                          )}
-
-                          {isOngoing ? (
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
-                              className="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
-                              title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>✓ Terminado / Enviar a Caja</span>
-                            </button>
-                          ) : isWaitingPay ? (
-                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/10 px-3 py-1.5 rounded-xl border border-purple-500/20 flex items-center gap-1">
-                              💳 Esperando Cobro en Recepción
-                            </span>
-                          ) : isDone ? (
-                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20 flex items-center gap-1">
-                              ✓ Liquidada en Caja
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateAppointmentStatus(apt.id, 'en_atencion')}
-                              className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all cursor-pointer"
-                            >
-                              <Scissors className="w-3.5 h-3.5" />
-                              <span>Iniciar Atención</span>
-                            </button>
-                          )}
-                        </div>
-
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 2: FÓRMULAS & CLIENTAS (MI CRM) */}
-        {activeTab === 'crm' && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-base font-bold">Mis Clientas & Expedientes de Colorimetría</h2>
-                <p className="text-xs text-slate-400">Consulta fórmulas exactas de tinte aplicadas en visitas anteriores.</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {myClients.map((client) => {
-                const clientFormulas = (client.formulas || []).filter(
-                  f => f.stylist_id === currentStylist.id || f.stylist_name === currentStylist.name
-                );
-
-                return (
-                  <div
-                    key={client.id}
-                    className={`p-5 rounded-2xl border flex flex-col justify-between ${
-                      theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <strong className="text-sm font-bold block">{client.full_name}</strong>
-                          <span className="text-xs text-slate-400">{client.phone_whatsapp}</span>
-                        </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5A36]/10 text-[#FF5A36] uppercase">
-                          {client.status}
-                        </span>
-                      </div>
-
-                      {/* Formulas List */}
-                      {clientFormulas.length > 0 ? (
-                        <div className="space-y-2 mb-3">
-                          {clientFormulas.map((form) => (
-                            <div
-                              key={form.id}
-                              className={`p-3 rounded-xl border text-xs space-y-1 ${
-                                theme === 'dark' ? 'bg-[#0E121B] border-white/5' : 'bg-[#F9FAFC] border-black/5'
-                              }`}
-                            >
-                              <div className="flex justify-between text-[10px] text-[#FF5A36] font-bold">
-                                <span>Fórmula Registrada</span>
-                                <span>{form.created_at}</span>
-                              </div>
-                              <p className="font-mono text-[11px]">{form.formula_text}</p>
-                              <div className="text-[10px] text-slate-400 flex gap-3 pt-1">
-                                <span>Oxidante: <strong>{form.developer_volume}</strong></span>
-                                <span>Tiempo: <strong>{form.exposure_minutes} min</strong></span>
-                                <span>Plex: <strong>{form.plex_used ? 'Sí' : 'No'}</strong></span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-xs text-slate-400 italic p-3 text-center bg-slate-50 dark:bg-slate-800/30 rounded-xl mb-3">
-                          Sin fórmulas registradas por ti aún.
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedClientForFormula(client);
-                          setIsFormulaModalOpen(true);
-                        }}
-                        className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Agregar Fórmula de Tinte
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: MI BILLETERA & LIQUIDACIÓN */}
-        {activeTab === 'wallet' && (
-          <div className="space-y-6">
-            <div className={`p-6 rounded-2xl border space-y-4 ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-            }`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-bold">Transparencia en Liquidación de Comisiones</h2>
-                  <p className="text-xs text-slate-400">Cada servicio completado se liquida con tu porcentaje acordado.</p>
-                </div>
-                <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  Total Acumulado: {formatCurrency(earnedMonthCommissions, salonCurrency)}
-                </span>
-              </div>
-
-              <div className="divide-y divide-black/5 dark:divide-white/5 text-xs">
-                {myAppointments.map((apt) => {
-                  const comAmount = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
-                  const isDone = apt.status === 'cobrada';
-                  const isWaitingPay = apt.status === 'completada';
-                  const isOngoing = apt.status === 'en_atencion';
-
-                  return (
-                    <div key={apt.id} className="py-3.5 flex justify-between items-center gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <strong className="block text-sm font-bold">{apt.service_name}</strong>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isDone ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
-                            isWaitingPay ? 'bg-purple-500/15 text-purple-300 border border-purple-500/20' :
-                            isOngoing ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
-                            'bg-blue-500/10 text-slate-400'
-                          }`}>
-                            {isDone ? '✓ Cobrada en Caja' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isOngoing ? '● En Sillón' : 'Agendada'}
-                          </span>
-                        </div>
-                        <span className="text-slate-400 text-[11px] block mt-0.5">{apt.client_name} • {apt.date} {apt.time}</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[11px] text-slate-400 block">Total: {formatCurrency(apt.price_usd, salonCurrency)}</span>
-                        {isDone ? (
-                          <strong className="text-sm text-emerald-400 font-extrabold block">
-                            +{formatCurrency(comAmount, salonCurrency)} ({serviceCommissionPct}%)
-                          </strong>
-                        ) : isWaitingPay ? (
-                          <strong className="text-xs text-purple-300 font-bold block">
-                            {formatCurrency(comAmount, salonCurrency)} (Por Liquidar)
-                          </strong>
-                        ) : (
-                          <span className="text-xs text-slate-400 font-medium block">
-                            {formatCurrency(comAmount, salonCurrency)} (Estimada)
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
 
       </main>
 
       {/* MODAL REGISTRO DE FÓRMULA DE COLORIMETRÍA */}
       {isFormulaModalOpen && selectedClientForFormula && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
-          }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="border border-[#FF5A36]/40 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in bg-[#141926] text-white">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
-                <span className="text-[10px] text-[#FF5A36] font-bold uppercase tracking-wider">FÓRMULA TÉCNICA EN SILLÓN</span>
-                <h3 className="text-base font-bold">{selectedClientForFormula.full_name}</h3>
+                <span className="text-[10px] text-[#FF5A36] font-black uppercase tracking-wider">FÓRMULA TÉCNICA EN SILLÓN</span>
+                <h3 className="text-base font-black">{selectedClientForFormula.full_name}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsFormulaModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1326,9 +1506,7 @@ export const StylistPortalPage: React.FC = () => {
                   value={newFormulaText}
                   onChange={(e) => setNewFormulaText(e.target.value)}
                   placeholder="Ej. Igora Royal 8.1 (30g) + 0.22 (5g)"
-                  className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
+                  className="w-full border border-white/10 rounded-xl p-2.5 font-mono bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                   required
                 />
               </div>
@@ -1339,9 +1517,7 @@ export const StylistPortalPage: React.FC = () => {
                   <select
                     value={newDeveloperVol}
                     onChange={(e) => setNewDeveloperVol(e.target.value)}
-                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+                    className="w-full border border-white/10 rounded-xl p-2.5 bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                   >
                     <option value="10 Vol">10 Vol</option>
                     <option value="20 Vol">20 Vol</option>
@@ -1356,9 +1532,7 @@ export const StylistPortalPage: React.FC = () => {
                     type="number"
                     value={newExposureMin}
                     onChange={(e) => setNewExposureMin(Number(e.target.value))}
-                    className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+                    className="w-full border border-white/10 rounded-xl p-2.5 font-mono bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                   />
                 </div>
               </div>
@@ -1370,9 +1544,7 @@ export const StylistPortalPage: React.FC = () => {
                   value={newDiagnosticNotes}
                   onChange={(e) => setNewDiagnosticNotes(e.target.value)}
                   placeholder="Fondo de decoloración 9, aplicar matiz en húmedo..."
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
+                  className="w-full border border-white/10 rounded-xl p-2.5 bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                 />
               </div>
 
@@ -1384,24 +1556,24 @@ export const StylistPortalPage: React.FC = () => {
                   onChange={(e) => setIsPlexUsed(e.target.checked)}
                   className="rounded text-[#FF5A36] focus:ring-[#FF5A36]"
                 />
-                <label htmlFor="plex_checkbox" className="text-slate-400 text-xs cursor-pointer select-none">
+                <label htmlFor="plex_checkbox" className="text-slate-300 text-xs cursor-pointer select-none">
                   Protector Plex #1 añadido a la mezcla
                 </label>
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              <div className="pt-3 border-t border-white/10 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsFormulaModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                  className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>Guardar Fórmula</span>
                 </button>
               </div>
@@ -1412,26 +1584,24 @@ export const StylistPortalPage: React.FC = () => {
 
       {/* MODAL CAMBIAR CONTRASEÑA DEL COLABORADOR */}
       {isChangePasswordModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
-          }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="border border-[#FF5A36]/40 rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in bg-[#141926] text-white">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">Cambiar Mi Contraseña</h3>
+                <h3 className="text-base font-black">Cambiar Mi Contraseña</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsChangePasswordModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {passwordSuccessMessage ? (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center font-bold space-y-1">
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center font-bold space-y-1">
                 <CheckCircle2 className="w-6 h-6 mx-auto mb-1 text-emerald-400" />
                 <p>{passwordSuccessMessage}</p>
               </div>
@@ -1450,9 +1620,7 @@ export const StylistPortalPage: React.FC = () => {
                     value={currentPasswordInput}
                     onChange={(e) => setCurrentPasswordInput(e.target.value)}
                     placeholder="Tu clave actual..."
-                    className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+                    className="w-full border border-white/10 rounded-xl p-2.5 font-mono bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                     required
                   />
                 </div>
@@ -1464,9 +1632,7 @@ export const StylistPortalPage: React.FC = () => {
                     value={newPasswordInput}
                     onChange={(e) => setNewPasswordInput(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+                    className="w-full border border-white/10 rounded-xl p-2.5 font-mono bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                     required
                   />
                 </div>
@@ -1478,26 +1644,24 @@ export const StylistPortalPage: React.FC = () => {
                     value={confirmPasswordInput}
                     onChange={(e) => setConfirmPasswordInput(e.target.value)}
                     placeholder="Repite la nueva contraseña"
-                    className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+                    className="w-full border border-white/10 rounded-xl p-2.5 font-mono bg-[#0E121B] text-white focus:outline-none focus:border-[#FF5A36]"
                     required
                   />
                 </div>
 
-                <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+                <div className="pt-3 border-t border-white/10 flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setIsChangePasswordModalOpen(false)}
-                    className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                    className="px-4 py-2 rounded-xl text-slate-400 hover:text-white"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                    className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Save className="w-3.5 h-3.5" />
+                    <Save className="w-4 h-4" />
                     <span>Actualizar Clave</span>
                   </button>
                 </div>
@@ -1507,60 +1671,50 @@ export const StylistPortalPage: React.FC = () => {
         </div>
       )}
 
-      {/* FIXED MOBILE APP-LIKE BOTTOM NAVIGATION BAR */}
-      <div className={`sm:hidden fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl px-4 py-2 flex items-center justify-around transition-colors ${
-        theme === 'dark' ? 'bg-[#0E121B]/95 border-white/10 text-white' : 'bg-white/95 border-black/10 text-slate-800 shadow-2xl'
-      }`}>
+      {/* FLOATING MOBILE APP BOTTOM NAVIGATION BAR (iOS / Android Native Feel) */}
+      <div className="sm:hidden fixed bottom-3 left-3 right-3 z-40 border border-white/10 backdrop-blur-2xl px-2 py-1.5 flex items-center justify-around bg-[#0B0F19]/90 rounded-3xl shadow-2xl shadow-black/80">
         <button
           type="button"
           onClick={() => setActiveTab('agenda')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
-            activeTab === 'agenda' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'agenda' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <div className={`p-1.5 rounded-full ${activeTab === 'agenda' ? 'bg-[#FF5A36]/15' : ''}`}>
-            <Calendar className="w-4 h-4" />
-          </div>
-          <span>Mi Agenda</span>
+          <Calendar className="w-4 h-4" />
+          <span>Agenda</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('crm')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
-            activeTab === 'crm' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'crm' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <div className={`p-1.5 rounded-full ${activeTab === 'crm' ? 'bg-[#FF5A36]/15' : ''}`}>
-            <FileText className="w-4 h-4" />
-          </div>
+          <FileText className="w-4 h-4" />
           <span>Fórmulas</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('wallet')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
-            activeTab === 'wallet' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'wallet' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <div className={`p-1.5 rounded-full ${activeTab === 'wallet' ? 'bg-[#FF5A36]/15' : ''}`}>
-            <DollarSign className="w-4 h-4" />
-          </div>
+          <DollarSign className="w-4 h-4" />
           <span>Billetera</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('availability')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
-            activeTab === 'availability' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400'
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'availability' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <div className={`p-1.5 rounded-full ${activeTab === 'availability' ? 'bg-[#FF5A36]/15' : ''}`}>
-            <CalendarOff className="w-4 h-4" />
-          </div>
-          <span>Días Libres</span>
+          <CalendarOff className="w-4 h-4" />
+          <span>Libres</span>
         </button>
       </div>
 
