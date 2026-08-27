@@ -495,36 +495,44 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
   };
 
-  // Generar pitch de WhatsApp con Anclaje $680.000 COP -> Activación $50.000 COP + 1 Mes Plan Crecimiento
-  const generateWhatsAppPitch = (siteObj: ProspectSite) => {
+  // Estado del paso del pitch de prospección (1: Gancho Visual, 2: Oferta Patrocinada)
+  const [pitchStep, setPitchStep] = useState<1 | 2>(1);
+
+  // Generador de Mensajes en 2 Pasos (Gancho Visual + Oferta Patrocinada)
+  const generateStep1Pitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
-    const bookingUrl = `${window.location.origin}/reservar/${siteObj.slug}`;
-    const servicesText = siteObj.business_data?.servicios && siteObj.business_data.servicios.length > 0
-      ? ` para sus servicios de ${siteObj.business_data.servicios.slice(0, 2).map((s: any) => s.titulo).join(' y ')}`
-      : '';
+    return `¡Hola ${siteObj.business_name}! 👋 Vimos su salón en Google Maps y nos encantaron sus trabajos.
 
-    return `¡Hola ${siteObj.business_name}! 👋 Estuvimos viendo su salón en Google Maps y les preparamos un regalo especial para su negocio:
-
-🌐 Su Página Web Profesional (100% Gratis de por vida):
+Les preparamos un regalo especial para su negocio: su página web oficial lista para clientas:
 👉 ${siteUrl}
 
-(Pueden compartirla con sus clientas para mostrar fotos${servicesText}, dirección y horarios sin costo alguno).
+¿Qué les parece cómo quedó el diseño de su marca? 💖`;
+  };
 
-✨ Oportunidad de Digitalización con Kowy.app:
+  const generateStep2Pitch = (siteObj: ProspectSite) => {
+    const bookingUrl = `${window.location.origin}/reservar/${siteObj.slug}`;
+    return `¡Qué alegría que les haya gustado! 🎉
+
 El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
 
-🎁 Por un aporte único de activación de solo $50.000 COP (Nequi / Daviplata), reciben:
-1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
-2. ✅ Configuración total de su Catálogo de Servicios y Especialistas.
-3. ✅ 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
+🎁 Gracias a nuestro cupo de lanzamiento patrocinado, hoy pueden activarla por un aporte único de solo $50.000 COP (93% de descuento) por Nequi o Daviplata.
+
+Por esos mismos $50.000 COP reciben:
+1. ✅ Su Página Web Profesional y personalizada para su salón.
+2. ✅ Catálogo completo de servicios, fotos, horarios y ubicación.
+3. ✅ 1 MES COMPLETO INCLUIDO en nuestro Plan Crecimiento (Valor regular $120.000/mes):
    - 📅 Botón de reservas online para clientas (${bookingUrl}).
    - 👥 Colaboradoras / Especialistas ilimitadas.
-   - 📱 App móvil para que cada estilista vea su agenda y comisiones.
+   - 📱 App móvil para que cada estilista vea su agenda y comisiones del día.
    - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
 
-A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse solo con su web gratis sin permanencias.
+A partir del 2do mes ustedes tienen total libertad: pueden continuar con su sistema desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al AÑO de hosting.
 
-¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo me confirman su correo y les entrego sus accesos 📲`;
+Si desean activarla hoy mismo, me confirman su correo y les entregamos sus accesos de administración 📲`;
+  };
+
+  const generateWhatsAppPitch = (siteObj: ProspectSite) => {
+    return pitchStep === 1 ? generateStep1Pitch(siteObj) : generateStep2Pitch(siteObj);
   };
 
   // Manejador para abrir el Modal de Activación
@@ -1166,24 +1174,53 @@ A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse s
                     )}
                   </div>
 
-                  {/* Pitch WhatsApp Generator */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase flex items-center gap-1">
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        Mensaje de Prospección WhatsApp
-                      </span>
+                  {/* Pitch WhatsApp Generator (2-Step Strategy) */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/30 space-y-3">
+                    
+                    {/* Selector de Paso 1 vs Paso 2 */}
+                    <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPitchStep(1)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                            pitchStep === 1
+                              ? 'bg-emerald-500 text-slate-950 shadow-md'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          📸 Paso 1: Gancho Visual
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPitchStep(2)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                            pitchStep === 2
+                              ? 'bg-emerald-500 text-slate-950 shadow-md'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          🎁 Paso 2: Oferta $50k
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => handleCopy(generateWhatsAppPitch(createdSite), 'pitch')}
-                        className="text-[10px] text-emerald-300 hover:text-white font-bold flex items-center gap-1"
+                        className="text-[10px] text-emerald-300 hover:text-white font-bold flex items-center gap-1 shrink-0"
                       >
                         <Copy className="w-3 h-3" />
                         <span>Copiar Texto</span>
                       </button>
                     </div>
 
-                    <div className="bg-[#0A0D14]/80 p-3 rounded-xl border border-white/5 text-[11px] text-slate-300 font-sans whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
+                    <div className="text-[10px] text-slate-400 italic">
+                      {pitchStep === 1 
+                        ? '💡 Tip: Envía primero una captura de pantalla de su web en el celular y acompaña la imagen con este texto ultra corto:' 
+                        : '💡 Tip: Cuando la dueña responda diciendo que le gustó el diseño, envíale la propuesta del cupo de $50k:'}
+                    </div>
+
+                    <div className="bg-[#0A0D14]/90 p-3 rounded-xl border border-white/5 text-[11px] text-slate-200 font-sans whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
                       {generateWhatsAppPitch(createdSite)}
                     </div>
 
@@ -1199,7 +1236,7 @@ A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse s
                       className="w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
                     >
                       <MessageCircle className="w-4 h-4 fill-current" />
-                      <span>Enviar WhatsApp a la Dueña ({createdSite.phone_whatsapp})</span>
+                      <span>Enviar {pitchStep === 1 ? 'Paso 1' : 'Paso 2'} por WhatsApp ({createdSite.phone_whatsapp})</span>
                     </a>
                   </div>
 
