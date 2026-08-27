@@ -498,37 +498,29 @@ export const SuperadminDashboardPage: React.FC = () => {
   // Estado del paso del pitch de prospección (1: Gancho Visual, 2: Oferta Patrocinada)
   const [pitchStep, setPitchStep] = useState<1 | 2>(1);
 
-  // Generador de Mensajes en 2 Pasos (Gancho Visual + Oferta Patrocinada)
+  // Generador de Mensajes Oficiales en 2 Pasos (Gancho Visual + Oferta Jornada de Lanzamiento)
   const generateStep1Pitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
-    return `¡Hola ${siteObj.business_name}! 👋 Vimos su salón en Google Maps y nos encantaron sus trabajos.
-
-Les preparamos un regalo especial para su negocio: su página web oficial lista para clientas:
+    return `¡Hola ${siteObj.business_name}! 👋✨
+Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
 👉 ${siteUrl}
 
 ¿Qué les parece cómo quedó el diseño de su marca? 💖`;
   };
 
   const generateStep2Pitch = (siteObj: ProspectSite) => {
-    const bookingUrl = `${window.location.origin}/reservar/${siteObj.slug}`;
-    return `¡Qué alegría que les haya gustado! 🎉
+    return `¡Nos alegra mucho! 🎉 La diseñamos pensando en destacar la imagen de su salón.
 
-El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
+Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
 
-🎁 Gracias a nuestro cupo de lanzamiento patrocinado, hoy pueden activarla por un aporte único de solo $50.000 COP (93% de descuento) por Nequi o Daviplata.
+Por un aporte único de activación de $50.000 COP (vía Nequi o Daviplata), les entregamos:
 
-Por esos mismos $50.000 COP reciben:
-1. ✅ Su Página Web Profesional y personalizada para su salón.
-2. ✅ Catálogo completo de servicios, fotos, horarios y ubicación.
-3. ✅ 1 MES COMPLETO INCLUIDO en nuestro Plan Crecimiento (Valor regular $120.000/mes):
-   - 📅 Botón de reservas online para clientas (${bookingUrl}).
-   - 👥 Colaboradoras / Especialistas ilimitadas.
-   - 📱 App móvil para que cada estilista vea su agenda y comisiones del día.
-   - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
+🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp.
+🎁 1 Mes Completo Incluido del sistema de reservas online para clientas y app de agenda para sus estilistas.
 
-A partir del 2do mes ustedes tienen total libertad: pueden continuar con su sistema desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al AÑO de hosting.
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al año).
 
-Si desean activarla hoy mismo, me confirman su correo y les entregamos sus accesos de administración 📲`;
+Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨`;
   };
 
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {

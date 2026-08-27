@@ -57,41 +57,31 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 
 ## 📋 3. Banco de Plantillas Oficiales de WhatsApp
 
-### 🟢 Plantilla 1: Primer Contacto en Frío (Lead Magnet Patrocinado)
+### 🟢 Plantilla 1: Primer Contacto (Paso 1: Gancho Visual + Propuesta)
 ```text
-¡Hola [Nombre del Salón]! 👋 Estuvimos viendo su negocio en Google Maps y les diseñamos una propuesta de página web profesional para su marca:
-
-🌐 Pueden ver su demostración en vivo aquí:
+¡Hola [Nombre del Salón]! 👋✨
+Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
 👉 https://kowy.app/sitio/[slug]
 
-✨ Programa de Digitalización para Salones de Belleza:
-El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
-
-🎁 Gracias a nuestro cupo de lanzamiento patrocinado, hoy pueden activarla por un aporte único de solo $50.000 COP (93% de descuento) por Nequi o Daviplata.
-
-Por esos mismos $50.000 COP reciben:
-1. ✅ Su Página Web Profesional y personalizada para su salón.
-2. ✅ Catálogo completo de servicios, fotos, horarios y ubicación.
-3. ✅ 1 MES COMPLETO INCLUIDO en nuestro Plan Crecimiento (Valor regular $120.000/mes):
-   - 📅 Botón de reservas online para clientas (https://kowy.app/reservar/[slug]).
-   - 👥 Colaboradoras / Especialistas ilimitadas.
-   - 📱 App móvil para que cada estilista vea su agenda y comisiones del día.
-   - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
-
-A partir del 2do mes ustedes tienen total libertad: pueden continuar con su sistema desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al AÑO de hosting.
-
-¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo, me confirman su correo y les entregamos sus accesos de administración 📲
+¿Qué les parece cómo quedó el diseño de su marca? 💖
 ```
 
 ---
 
-### 🟡 Plantilla 2: Seguimiento de Cortesía a las 24 Horas (Bump de Interés)
+### 🎁 Plantilla 2: Respuesta al Interés (Paso 2: Jornada de Lanzamiento $50k)
 ```text
-¡Hola [Nombre]! 💖 Paso a saludarte para saber si tuviste oportunidad de ver la página web que te diseñamos para [Nombre del Salón]:
+¡Nos alegra mucho! 🎉 La diseñamos pensando en destacar la imagen de su salón.
 
-👉 https://kowy.app/sitio/[slug]
+Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
 
-¿Te gustaría que te cambiemos alguna foto, precio o agreguemos tus redes sociales antes de entregarte tus accesos? Quedo muy atenta para ayudarte 📲✨
+Por un aporte único de activación de $50.000 COP (vía Nequi o Daviplata), les entregamos:
+
+🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp.
+🎁 1 Mes Completo Incluido del sistema de reservas online para clientas y app de agenda para sus estilistas.
+
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al año).
+
+Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨
 ```
 
 ---
