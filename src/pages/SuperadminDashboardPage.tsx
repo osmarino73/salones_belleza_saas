@@ -498,6 +498,7 @@ export const SuperadminDashboardPage: React.FC = () => {
   // Generar pitch de WhatsApp con Anclaje $680.000 COP -> Activación $50.000 COP + 1 Mes Plan Crecimiento
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {
     const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
+    const bookingUrl = `${window.location.origin}/reservar/${siteObj.slug}`;
     const servicesText = siteObj.business_data?.servicios && siteObj.business_data.servicios.length > 0
       ? ` para sus servicios de ${siteObj.business_data.servicios.slice(0, 2).map((s: any) => s.titulo).join(' y ')}`
       : '';
@@ -509,14 +510,14 @@ export const SuperadminDashboardPage: React.FC = () => {
 
 (Pueden compartirla con sus clientas para mostrar fotos${servicesText}, dirección y horarios sin costo alguno).
 
-✨ Oportunidad de Digitalización Local:
+✨ Oportunidad de Digitalización con Kowy.app:
 El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
 
 🎁 Por un aporte único de activación de solo $50.000 COP (Nequi / Daviplata), reciben:
 1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
 2. ✅ Configuración total de su Catálogo de Servicios y Especialistas.
 3. ✅ 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
-   - 📅 Botón de reservas online para clientas (/reservar).
+   - 📅 Botón de reservas online para clientas (${bookingUrl}).
    - 👥 Colaboradoras / Especialistas ilimitadas.
    - 📱 App móvil para que cada estilista vea su agenda y comisiones.
    - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
@@ -582,7 +583,7 @@ A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse s
     const siteUrl = `${window.location.origin}/sitio/${data.prospect.slug}`;
     const bookingUrl = `${window.location.origin}/reservar/${data.prospect.slug}`;
 
-    return `¡Hola ${data.tenant.name}! 🎉 Ya activamos tu acceso de administración a tu plataforma BeautyFlow AI.
+    return `¡Hola ${data.tenant.name}! 🎉 Ya activamos tu acceso de administración a tu plataforma Kowy.app (Plan Crecimiento 1 Mes Incluido).
 
 🌐 Tu Panel de Administración:
 👉 ${loginUrl}
@@ -590,11 +591,16 @@ A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse s
 👤 Usuario / Correo: ${data.tenant.owner_email}
 🔑 Contraseña Temporal: ${data.tempPass}
 
-✨ Enlaces Oficiales de tu Salón:
+✨ Enlaces Oficiales de tu Negocio:
 🌐 Tu Página Web Oficial: ${siteUrl}
-📅 Tu Agendador de Citas: ${bookingUrl}
+📅 Tu Agendador de Citas Online: ${bookingUrl}
 
-Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de colaboradoras, cambiar las fotos de tu web y gestionar tu caja y agenda en tiempo real. ¡Muchos éxitos con tu negocio! 🚀`;
+📱 Próximos pasos recomendados:
+1. Ingresa a tu panel con tu correo y clave temporal.
+2. Revisa tus colaboradoras y catálogo de servicios.
+3. Comparte tu enlace de agendamiento (${bookingUrl}) en tu perfil de Instagram y estados de WhatsApp.
+
+¡Muchos éxitos y bienvenida a la familia Kowy! 🚀💖`;
   };
 
   const handleCopy = (text: string, type: 'link' | 'pitch' | 'credentials') => {

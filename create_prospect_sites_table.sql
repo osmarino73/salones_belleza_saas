@@ -17,13 +17,17 @@ CREATE TABLE IF NOT EXISTS public.prospect_sites (
   status TEXT DEFAULT 'prospecto', -- prospecto, contactado, reclamado, cliente_pago
   claimed_tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
   business_data JSONB, -- Estructura DATOS_NEGOCIO.json (servicios, especialistas, contacto, horario, etc.)
+  created_by TEXT, -- Correo o ID del Superadmin / Agente creador
+  creator_email TEXT, -- Correo del creador para trazabilidad y métricas
   views_count INT DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- Asegurar columna en caso de existir previamente
+-- Asegurar columnas en caso de existir previamente
 ALTER TABLE public.prospect_sites ADD COLUMN IF NOT EXISTS business_data JSONB;
+ALTER TABLE public.prospect_sites ADD COLUMN IF NOT EXISTS created_by TEXT;
+ALTER TABLE public.prospect_sites ADD COLUMN IF NOT EXISTS creator_email TEXT;
 
 -- Índices para búsquedas ultrarrápidas
 CREATE INDEX IF NOT EXISTS idx_prospect_sites_slug ON public.prospect_sites(slug);

@@ -258,16 +258,34 @@ export const HomepageStudioModal: React.FC<HomepageStudioModalProps> = ({
     }
   };
 
-  // Pitch de WhatsApp
+  // Pitch de WhatsApp de Alta Conversión alineado con la estrategia comercial Kowy
   const generatePitchText = () => {
     const slug = publishedSite?.slug || studioState.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const url = `${window.location.origin}/sitio/${slug}`;
-    return `Hola ${studioState.businessName}! 💖 Vimos su salón en Google Maps y notamos que no tenían una página web oficial vinculada.
+    const siteUrl = `${window.location.origin}/sitio/${slug}`;
+    const bookingUrl = `${window.location.origin}/reservar/${slug}`;
 
-Les creamos esta página web de regalo optimizada para posicionar en Google Maps y recibir citas online:
-👉 ${url}
+    return `¡Hola ${studioState.businessName}! 👋 Estuvimos viendo su salón en Google Maps y les preparamos un regalo especial para su negocio:
 
-Cuenta con botón directo a su WhatsApp (${studioState.phoneWhatsapp}) y catálogo interactivo. ¿Les gustaría que les ayudemos a activarla gratis?`;
+🌐 Su Página Web Profesional (100% Gratis de por vida):
+👉 ${siteUrl}
+
+(Pueden compartirla con sus clientas para mostrar fotos, dirección y horarios sin costo alguno).
+
+✨ Oportunidad de Digitalización con Kowy.app:
+El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
+
+🎁 Por un aporte único de activación de solo $50.000 COP (Nequi / Daviplata), reciben:
+1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
+2. ✅ Configuración total de su Catálogo de Servicios y Especialistas.
+3. ✅ 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
+   - 📅 Botón de reservas online para clientas (${bookingUrl}).
+   - 👥 Colaboradoras / Especialistas ilimitadas.
+   - 📱 App móvil para que cada estilista vea su agenda y comisiones.
+   - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
+
+A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse solo con su web gratis sin permanencias.
+
+¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo me confirman su correo y les entrego sus accesos 📲`;
   };
 
   return (
