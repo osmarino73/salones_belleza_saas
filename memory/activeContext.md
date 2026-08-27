@@ -16,7 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Trazabilidad Automática de Creador de Sitios de Prospección ([`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+-1. **Alineación de Mensajes de Prospección & Activación con la Estrategia Comercial ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+   - **Guión de Anclaje de Alto Valor ($680.000 ➔ $50.000 COP)**: Mensaje de WhatsApp optimizado que regala la web gratis de por vida e introduce la activación única de $50k con 1 mes completo incluido en el Plan Crecimiento ($120k/mes).
+   - **Mensaje Oficial de Bienvenida y Credenciales**: Envío automático de accesos al login de Kowy, URL de agendamiento online `/reservar/:slug` y pasos iniciales para la dueña del salón.
+   - **Consistencia de Marca Kowy**: Todos los guiones reflejan la marca oficial `Kowy.app`.
+
+0. **Trazabilidad Automática de Creador de Sitios de Prospección ([`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
    - **Captura Automática de Creador**: Cada vez que se publica un sitio gancho desde el Creador o desde el Homepage Studio, el sistema detecta y asocia automáticamente el correo del Súper Administrador / Agente logueado (`created_by` / `creator_email`).
    - **Badges Visuales en la Consola**: En la tabla de prospectos y en el banner de publicación confirmada se muestra la etiqueta con el creador (`👤 osmarino73@yahoo.es`).
    - **Búsqueda Filtrada por Creador**: La barra de búsqueda global del embudo ahora permite filtrar inmediatamente escribiendo el correo del creador.
