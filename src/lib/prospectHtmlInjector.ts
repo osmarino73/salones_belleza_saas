@@ -326,6 +326,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           // Si la tarjeta tiene pill/badge de acción, enlazarlo suavemente
           if (!linkInjected && /(<span\b[^>]*class=["'][^"']*(?:service-tag-pill|tag-pill|card-badge|btn-tag)[^"']*["'][^>]*>)([\s\S]*?)(<\/span>)/i.test(inner)) {
             inner = inner.replace(/(<span\b[^>]*class=["'][^"']*(?:service-tag-pill|tag-pill|card-badge|btn-tag)[^"']*["'][^>]*>)([\s\S]*?)(<\/span>)/i, `<a href="${srvBookingUrl}" style="text-decoration: none;" class="service-tag-link">$1$2$3</a>`);
+            linkInjected = true;
+          }
+
+          // Si el contenedor de imagen/avatar no está dentro de un enlace, enlazarlo para máxima facilidad táctil en móviles
+          if (/<div\b[^>]*class=["'][^"']*(?:service-avatar-wrap|service-img-wrap|service-photo|service-image)[^"']*["'][^>]*>/i.test(inner) && !inner.includes('service-img-link')) {
+            inner = inner.replace(
+              /(<(?:div|figure)\b[^>]*class=["'][^"']*(?:service-avatar-wrap|service-img-wrap|service-photo|service-image)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|figure)>)/i,
+              `<a href="${srvBookingUrl}" class="service-img-link" style="text-decoration: none; display: block; cursor: pointer;">$1$2$3</a>`
+            );
           }
 
           return `${cardOpen}${inner}${cardClose}`;
@@ -411,34 +420,71 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // 3. Reemplazar enlaces y botones de agendamiento nativos (#reserva, #reservas, #agendar, etc.)
   processed = processed.replace(
-    /href=["'](#reserva|#reservas|#agendar|#cita|#citas|#reservar)["']/gi,
+    /href=["'](#reserva|#reservas|#agendar|#cita|#citas|#reservar|#booking|#agenda)["']/gi,
     `href="${bookingUrl}"`
   );
 
-  // 4. Reemplazar enlaces <a> cuyo contenido, clase o atributos indiquen agendamiento
-  // IMPORTANTE: Tanto el botón del Header / Menú Superior como el del Hero / Footer y botones de CTA
-  // se transforman en enlaces directos a /reservar/:slug sin sobreescribir enlaces específicos de servicios (?service=) o especialistas (?stylistId=).
+  // 4. Reemplazar enlaces <a> y botones según la Regla de Oro:
+  // - TODO lo que indique "Reservar" / "Agendar" / "Cita" / "Turno" / "Book" -> /reservar/:slug (o con ?service= / ?stylistId=)
+  // - ÚNICAMENTE iconos o textos que explícitamente digan "WhatsApp" o sean el botón flotante verde -> WhatsApp (https://wa.me/:telefono)
   processed = processed.replace(
     /<a\b([^>]*?)>(.*?)<\/a>/gis,
     (fullTag, attrs, innerHtml) => {
-      // 1. Excluir explícitamente TODOS los enlaces y botones de WhatsApp, redes sociales, llamada (tel:), correo (mailto:) y mapas
-      const isWhatsAppOrContact = 
-        /wa\.me|api\.whatsapp\.com|web\.whatsapp\.com|whatsapp|wa-floating|btn-whatsapp|float-wa|floating-wa|wa-btn/i.test(attrs) ||
-        /whatsapp|wa-icon|whatsapp-icon|icono-wa/i.test(innerHtml) ||
-        /tel:|mailto:|maps\.google|goo\.gl\/maps|instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/i.test(attrs);
-
-      if (isWhatsAppOrContact) {
+      // 1. Si ya es un enlace con parámetro específico de agendador (?service= o ?stylistId=) o ya apunta a /reservar/, conservarlo
+      if (attrs.includes('?service=') || attrs.includes('?stylistId=') || attrs.includes(`/reservar/`)) {
         return fullTag;
       }
 
-      // Si el enlace ya tiene un parámetro específico como ?service= o ?stylistId=, NO sobreescribirlo
-      if (attrs.includes('?service=') || attrs.includes('?stylistId=')) {
-        return fullTag;
+      const textOnly = innerHtml.replace(/<[^>]*>/g, ' ').replace(/&[a-z0-9#]+;/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+      const combinedAttrs = attrs.toLowerCase();
+
+      // 2. Comprobar si es un elemento dedicado exclusivamente a WhatsApp:
+      const isFloatingWhatsApp = /(?:whatsapp-float|wa-floating|btn-whatsapp-float|floating-wa|wa-btn-floating|whatsapp-btn|wa-floating-btn)/i.test(combinedAttrs);
+      const hasWhatsAppIcon = /(?:fa-whatsapp|fab fa-whatsapp|fa-brands fa-whatsapp|lucide-whatsapp|whatsapp-icon|icono-wa|ri-whatsapp)/i.test(innerHtml) || /(?:fa-whatsapp|fab fa-whatsapp|fa-brands fa-whatsapp)/i.test(combinedAttrs);
+      const textExplicitlySaysWhatsApp = /\bwhatsapp\b/i.test(textOnly);
+
+      // 3. Comprobar si es un botón o enlace de Agendamiento / Reserva:
+      const hasBookingText = /(?:agendar|agend[aáeé]|reservar|reserv[aáeé]|reservas|cita|citas|separar\s*cita|pedir\s*cita|solicitar\s*cita|sacar\s*cita|turno|turnos|book|booking|agendamiento)/i.test(textOnly);
+      const hasBookingClass = /(?:btn-header|btn-primary|btn-booking|btn-reserve|btn-agendar|btn-hero|btn-cita|btn-agendar-cita|cta-book|btn-card)/i.test(combinedAttrs);
+      const hasBookingHash = /href=["']#(?:reserva|reservas|agendar|cita|citas|reservar|booking|agenda)["']/i.test(combinedAttrs);
+
+      // REGLA FUNDAMENTAL: Todo lo que diga reservar/agendar o tenga clase de botón de agendar DEBE llevar a /reservar/:slug
+      if ((hasBookingText || hasBookingClass || hasBookingHash) && !isFloatingWhatsApp) {
+        let newAttrs = attrs;
+        if (/href=["'][^"']*["']/i.test(newAttrs)) {
+          newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
+        } else {
+          newAttrs += ` href="${bookingUrl}"`;
+        }
+        // Quitar target="_blank" para navegación fluida en el agendador SaaS
+        newAttrs = newAttrs.replace(/\s*target=["'][^"']*["']/gi, '');
+        return `<a${newAttrs}>${innerHtml}</a>`;
       }
 
-      // Si es enlace a la sección de Servicios (e.g. "Ver Servicios", "Servicios", href="#servicios", href="#services")
-      const isServicesAnchor = /ver\s+servicios|nuestros\s+servicios|conoce\s+nuestros\s+servicios|carta\s+de\s+servicios|ver\s+carta|cat[aá]logo/i.test(innerHtml) ||
-        /href=["']#(?:servicios|services|menu|carta|catalogo)["']/i.test(attrs);
+      // Si es un ícono o texto que explícitamente dice WhatsApp (o el botón flotante de WhatsApp):
+      if (isFloatingWhatsApp || textExplicitlySaysWhatsApp || (hasWhatsAppIcon && !hasBookingText)) {
+        let newAttrs = attrs;
+        const targetWaUrl = `https://wa.me/${cleanPhone}`;
+        if (/href=["'][^"']*["']/i.test(newAttrs)) {
+          newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, (match: string) => {
+            if (/wa\.me|whatsapp\.com/i.test(match)) {
+              return match; // Se normalizará en el paso 5 con el teléfono limpio
+            }
+            return `href="${targetWaUrl}"`;
+          });
+        } else {
+          newAttrs += ` href="${targetWaUrl}"`;
+        }
+        // Asegurar target="_blank" para abrir WhatsApp en nueva pestaña
+        if (!/target=["'][^"']*["']/i.test(newAttrs)) {
+          newAttrs += ' target="_blank" rel="noopener noreferrer"';
+        }
+        return `<a${newAttrs}>${innerHtml}</a>`;
+      }
+
+      // 4. Si es enlace a la sección de Servicios (e.g. "Ver Servicios", "Servicios", href="#servicios")
+      const isServicesAnchor = /(?:ver\s+servicios|nuestros\s+servicios|conoce\s+nuestros\s+servicios|carta\s+de\s+servicios|ver\s+carta|cat[aá]logo|ver\s+tratamientos)/i.test(textOnly) ||
+        /href=["']#(?:servicios|services|menu|carta|catalogo|tratamientos)["']/i.test(combinedAttrs);
 
       if (isServicesAnchor) {
         let newAttrs = attrs;
@@ -450,34 +496,38 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
         return `<a${newAttrs}>${innerHtml}</a>`;
       }
 
-      // Detectar si el texto, clase, id o href indica agendamiento
-      const combined = `${attrs} ${innerHtml}`.toLowerCase();
-      const isBookingButton = 
-        /agend|reserv|turno|cita|separar|book|solicitar\s+cita|pedir\s+cita/i.test(combined) ||
-        /btn-header|btn-primary|btn-booking|btn-pill|btn-card|btn-book|btn-reserve/i.test(attrs);
-
-      // Excluir si es el enlace de soporte / contacto del topbar que explícitamente solo pide información
-      const isPureInfo = /solicitar\s+informaci[oó]n|chatear\s+con\s+recepci[oó]n/i.test(combined) && !/agend|reserv|cita|turno/i.test(innerHtml);
-
-      if (isBookingButton && !isPureInfo) {
-        // Reemplazar o actualizar href hacia la página de agendamiento
-        let newAttrs = attrs;
-        if (/href=["'][^"']*["']/i.test(newAttrs)) {
-          newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
-        } else {
-          newAttrs += ` href="${bookingUrl}"`;
-        }
-        // Remover target="_blank" para abrir dentro de la misma aplicación
-        newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
-
-        return `<a${newAttrs}>${innerHtml}</a>`;
+      // 5. Exclusiones de otros enlaces externos o contactos (tel:, mailto:, redes sociales, maps)
+      if (/tel:|mailto:|maps\.google|goo\.gl\/maps|instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com|youtube\.com/i.test(combinedAttrs)) {
+        return fullTag;
       }
 
       return fullTag;
     }
   );
 
-  // 4.1 REGLA ESTRICTA DE FOOTER: Todo botón o CTA dentro del Footer conduce a /reservar/:slug
+  // 4.05 Convertir cualquier <button> que contenga texto o clase de agendamiento en <a> hacia bookingUrl
+  processed = processed.replace(
+    /<button\b([^>]*?)>(.*?)<\/button>/gis,
+    (fullBtnTag, attrs, innerHtml) => {
+      // Si es el toggle del menú móvil, no tocar
+      if (/menu-toggle|nav-toggle|hamburger|navbar-toggler/i.test(attrs)) {
+        return fullBtnTag;
+      }
+      const textOnly = innerHtml.replace(/<[^>]*>/g, ' ').replace(/&[a-z0-9#]+;/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+      const combinedAttrs = attrs.toLowerCase();
+
+      const hasBookingText = /(?:agendar|agend[aáeé]|reservar|reserv[aáeé]|reservas|cita|citas|separar\s*cita|pedir\s*cita|solicitar\s*cita|sacar\s*cita|turno|turnos|book|booking)/i.test(textOnly);
+      const hasBookingClass = /(?:btn-header|btn-primary|btn-booking|btn-reserve|btn-agendar|btn-hero|btn-cita|btn-card)/i.test(combinedAttrs);
+
+      if (hasBookingText || hasBookingClass) {
+        return `<a href="${bookingUrl}" ${attrs} style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">${innerHtml}</a>`;
+      }
+
+      return fullBtnTag;
+    }
+  );
+
+  // 4.1 REGLA ESTRICTA DE FOOTER: Todo botón o CTA de reserva/agendamiento en el Footer conduce a /reservar/:slug
   // Procesa enlaces o botones dentro de etiquetas <footer>
   processed = processed.replace(
     /(<footer\b[^>]*>)([\s\S]*?)(<\/footer>)/gis,
@@ -488,30 +538,41 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       updatedFooter = updatedFooter.replace(
         /<a\b([^>]*?)>(.*?)<\/a>/gis,
         (tag: string, attrs: string, content: string) => {
-          // Excluir redes sociales, WhatsApp o contacto directo
-          if (/instagram\.com|facebook\.com|tiktok\.com|wa\.me|api\.whatsapp\.com|whatsapp|tel:|mailto:|maps\.google/i.test(attrs) || /whatsapp/i.test(content)) {
+          const textOnly = content.replace(/<[^>]*>/g, ' ').replace(/&[a-z0-9#]+;/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const combinedAttrs = attrs.toLowerCase();
+
+          // Excluir WhatsApp si dice explícitamente WhatsApp o tiene icono de WhatsApp y no dice agendar/reservar
+          const isWhatsApp = /\bwhatsapp\b/i.test(textOnly) || /(?:fa-whatsapp|fab fa-whatsapp|fa-brands fa-whatsapp|whatsapp-icon)/i.test(content) || /(?:wa\.me|api\.whatsapp\.com)/i.test(combinedAttrs);
+          if (isWhatsApp && !/(?:agendar|reservar|cita|turno)/i.test(textOnly)) {
             return tag;
           }
+
+          // Excluir redes sociales o contacto telefónico
+          if (/instagram\.com|facebook\.com|tiktok\.com|twitter\.com|tel:|mailto:|maps\.google/i.test(combinedAttrs)) {
+            return tag;
+          }
+
           // Si es un botón o link de acción en footer (agendar, newsletter, reservar)
-          if (/(?:btn|button|cta|agendar|reservar|cita|turno|suscrib|newsletter)/i.test(attrs) || /(?:Agendar|Reservar|Cita|Turno|Suscribir|Enviar)/i.test(content)) {
+          if (/(?:btn|button|cta|agendar|reservar|cita|turno|suscrib|newsletter)/i.test(combinedAttrs) || /(?:agendar|reservar|cita|turno|separar)/i.test(textOnly)) {
             let newAttrs = attrs;
             if (/href=["'][^"']*["']/i.test(newAttrs)) {
               newAttrs = newAttrs.replace(/href=["'][^"']*["']/i, `href="${bookingUrl}"`);
             } else {
               newAttrs += ` href="${bookingUrl}"`;
             }
-            newAttrs = newAttrs.replace(/target=["']_blank["']/i, '');
+            newAttrs = newAttrs.replace(/\s*target=["'][^"']*["']/gi, '');
             return `<a${newAttrs}>${content}</a>`;
           }
           return tag;
         }
       );
 
-      // Convertir <button> dentro del footer en enlace estilizado a bookingUrl
+      // Convertir <button> dentro del footer en enlace estilizado a bookingUrl si es de agendamiento
       updatedFooter = updatedFooter.replace(
         /<button\b([^>]*?)>(.*?)<\/button>/gis,
         (btnTag: string, attrs: string, content: string) => {
-          if (/(?:btn|button|newsletter|submit|agendar|reservar)/i.test(attrs) || /(?:Agendar|Reservar|Suscrib|Enviar|Unirme)/i.test(content)) {
+          const textOnly = content.replace(/<[^>]*>/g, ' ').toLowerCase();
+          if (/(?:btn|button|agendar|reservar)/i.test(attrs) || /(?:agendar|reservar|cita|turno|separar)/i.test(textOnly)) {
             return `<a href="${bookingUrl}" ${attrs} style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">${content}</a>`;
           }
           return btnTag;

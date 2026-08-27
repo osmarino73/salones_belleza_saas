@@ -18,12 +18,16 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
 - **Preservar el diseño revisado del HTML**: No forzar jerarquías visuales artificiales (ej. inyectar etiquetas de subtítulo adicionales o clases CSS inventadas como `.section-subtitle`) en secciones como `NUESTROS SERVICIOS` / `Servicios Populares` ni en ninguna otra parte del HTML.
 - Se respetan íntegramente las clases, colores, tipografías, encabezados y el diseño de las tarjetas (cards) del HTML original ya aprobado.
 
-### 2. Mapeo Estricto de Agendamiento a `/reservar/:slug`
-- **Botones de Header, Navbar, Hero y Footer**: Todo botón o CTA de reserva/agendamiento (`Agendar Cita`, `Reservar Cita`, `Turno`, `btn-primary`, `btn-header`) se enlaza directamente a `/reservar/:slug`.
-- **Botones en Tarjetas de Servicios**: Cada botón dentro de las tarjetas del catálogo se mapea a `/reservar/:slug?service=nombre-del-servicio`, eliminando `target="_blank"` para abrir fluidamente el agendador interactivo.
+### 2. Regla de Oro: Mapeo Estricto de Todo Agendamiento a `/reservar/:slug`
+- **Todo lo que diga reservar debe llevar a reservar**: Cualquier botón, enlace o CTA con textos como `Agendar`, `Reservar`, `Cita`, `Turno`, `Book`, `Separar Cita`, `Solicitar Cita` o clases como `.btn-header`, `.btn-primary`, `.btn-booking`, `.btn-card`, `.btn-hero`, `.btn-cita` en Header, Navbar, Hero, Tarjetas y Footer DEBE conducir inequívocamente al portal de reservas SaaS (`/reservar/:slug` o `/reservar/:slug?service=...` en servicios y `?stylistId=...` en especialistas).
+- **Eliminación de `wa.me` quemados**: Si el template HTML traía originalmente enlaces provisorios a `https://wa.me/...` en botones de agendar, el inyector los sustituye obligatoriamente por la URL de reserva SaaS y remueve `target="_blank"`.
 
-### 3. Canal Exclusivo de WhatsApp en Botón Flotante
-- Únicamente el **botón flotante verde** (`.whatsapp-float`, `.wa-floating`, etc.) y los enlaces de información pura del topbar se mantienen como chat de WhatsApp (`https://wa.me/:telefono`), normalizados con el número oficial del negocio.
+### 3. Exclusividad Estricta del Canal de WhatsApp
+- **Lo único que debe llevar a WhatsApp son íconos o textos que digan WhatsApp**:
+  1. El **botón flotante verde** (`.whatsapp-float`, `.wa-floating`, `.whatsapp-btn`).
+  2. Enlaces o íconos que contengan explícitamente el logo/icono de WhatsApp (`fa-brands fa-whatsapp`, `fa-whatsapp`, `lucide-whatsapp`) en la barra superior o redes sociales.
+  3. Textos que digan explícitamente la palabra *"WhatsApp"* (e.g. *"Escribir al WhatsApp"*, *"Chatear por WhatsApp"*).
+- Todos los enlaces válidos de WhatsApp se normalizan con el teléfono internacional del negocio (`https://wa.me/:telefono`) y se abren con `target="_blank"`.
 
 ### 4. Sincronización Reactiva de Servicios y Especialistas (Supabase)
 - **Sitios gancho / pendientes**: Muestran el catálogo y especialistas demostrativos de su HTML original sin romperse.

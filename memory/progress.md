@@ -1,3 +1,8 @@
+- [x] **Regla de Oro de Enlaces: Agendamiento Estricto vs Canal WhatsApp ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Todo botón o texto que indique `Agendar`, `Reservar`, `Cita`, `Turno`, `Book` o `Separar` en el Header, Navbar, Hero, Tarjetas o Footer dirige inequívocamente a `/reservar/:slug` (o con `?service=` / `?stylistId=`).
+  - Suprime enlaces `wa.me` quemados de plantillas previas y elimina `target="_blank"` para fluidez SaaS.
+  - WhatsApp queda reservado con exclusividad para íconos de WhatsApp (`fa-whatsapp`), botón flotante verde (`.whatsapp-float`) y textos que digan explícitamente "WhatsApp".
+
 - [x] **Preselección Inteligente de Servicios vía URL (`?service=...`) en Agendador SaaS ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
   - Función de normalización NFD `normalizeBookingSlug` anti-tildes y símbolos.
   - Reconocimiento 100% fiel de URLs como `/reservar/crismar-barbershop?service=corte-clasico-fade` para servicios con nombres como *"Corte Clásico & Fade"*.
