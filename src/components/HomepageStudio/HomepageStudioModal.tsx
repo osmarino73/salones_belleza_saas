@@ -258,7 +258,7 @@ export const HomepageStudioModal: React.FC<HomepageStudioModalProps> = ({
     }
   };
 
-  // Pitch de WhatsApp Oficial de Alta Conversión (Paso 1 + Paso 2 Kowy)
+  // Pitch de WhatsApp Oficial de Alta Conversión (Paso 1: Gancho Visual + Propuesta)
   const generatePitchText = () => {
     const slug = publishedSite?.slug || studioState.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const siteUrl = `${window.location.origin}/sitio/${slug}`;
@@ -266,6 +266,8 @@ export const HomepageStudioModal: React.FC<HomepageStudioModalProps> = ({
     return `¡Hola ${studioState.businessName}! 👋✨
 Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
 👉 ${siteUrl}
+
+📌 Nota: Si en su perfil de Google Maps tenían servicios o especialistas registrados, se reflejaron automáticamente. Si no, colocamos unos de muestra para que puedan ver la experiencia completa. ¡Todo es 100% editable!
 
 ¿Qué les parece cómo quedó el diseño de su marca? 💖`;
   };

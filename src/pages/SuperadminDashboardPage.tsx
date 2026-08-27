@@ -505,6 +505,8 @@ export const SuperadminDashboardPage: React.FC = () => {
 Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
 👉 ${siteUrl}
 
+📌 Nota: Si en su perfil de Google Maps tenían servicios o especialistas registrados, se reflejaron automáticamente. Si no, colocamos unos de muestra para que puedan ver la experiencia completa. ¡Todo es 100% editable!
+
 ¿Qué les parece cómo quedó el diseño de su marca? 💖`;
   };
 
