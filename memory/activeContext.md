@@ -16,7 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Estrategia Oficial de Prospección en 2 Pasos con Gancho Visual ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+-1. **Guiones Finales de Prospección WhatsApp en 2 Pasos ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+   - **Paso 1 (Captura + Propuesta)**: *"¡Hola [Salón]! 👋✨ Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online..."*
+   - **Paso 2 (Jornada de Lanzamiento $50k)**: *"Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona: Por un aporte único de $50.000 COP... (A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al año)... ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨"*
+
+0. **Estrategia Oficial de Prospección en 2 Pasos con Gancho Visual ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
    - **Paso 1 (📸 Gancho Visual + Regalo)**: Mensaje ultra corto para enviar junto con la captura de la web en el móvil. Cero venta y cero fricción. Pregunta suave de feedback.
    - **Paso 2 (🎁 Oferta Patrocinada $50.000 COP)**: Se envía cuando la dueña responde positivamente. Anclaje de $680.000 vs. $50.000 (93% de descuento) + 1 Mes Plan Crecimiento ($120.000) incluido + Opción Solo Web por $50.000/año de hosting.
    - **Selector Táctil en la Consola Superadmin**: Pestañas para alternar y copiar con 1 clic el Paso 1 o el Paso 2 con botón de apertura directa a WhatsApp.
