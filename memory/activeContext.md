@@ -16,7 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Seguridad y Control de Acceso Estricto al Súper Administrador ([`SuperadminGuard.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SuperadminGuard.tsx), [`App.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/App.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
+-1. **Trazabilidad Automática de Creador de Sitios de Prospección ([`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+   - **Captura Automática de Creador**: Cada vez que se publica un sitio gancho desde el Creador o desde el Homepage Studio, el sistema detecta y asocia automáticamente el correo del Súper Administrador / Agente logueado (`created_by` / `creator_email`).
+   - **Badges Visuales en la Consola**: En la tabla de prospectos y en el banner de publicación confirmada se muestra la etiqueta con el creador (`👤 osmarino73@yahoo.es`).
+   - **Búsqueda Filtrada por Creador**: La barra de búsqueda global del embudo ahora permite filtrar inmediatamente escribiendo el correo del creador.
+
+0. **Seguridad y Control de Acceso Estricto al Súper Administrador ([`SuperadminGuard.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SuperadminGuard.tsx), [`App.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/App.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
    - **Guardián de Rutas `SuperadminGuard`**: Protege la ruta `/superadmin`. Redirige a `/login` si no hay sesión activa.
    - **Pantalla 403 de Acceso Restringido**: Si un usuario común (dueña de salón o estilista) intenta acceder a `/superadmin`, se muestra una pantalla de bloqueo 403 que impide visualizar prospectos o tenants ajenos.
    - **Lista Blanca de Superadministración**: Validación estricta con `isSuperadmin` (`osmarino73@yahoo.es` y rol `superadmin`).
