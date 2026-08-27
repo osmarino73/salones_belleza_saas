@@ -421,14 +421,13 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   processed = processed.replace(
     /<a\b([^>]*?)>(.*?)<\/a>/gis,
     (fullTag, attrs, innerHtml) => {
-      // Excluir explícitamente el botón flotante fijo de WhatsApp o redes sociales externas
-      if (
-        attrs.includes('wa-floating') || 
-        attrs.includes('btn-whatsapp-float') ||
-        attrs.includes('whatsapp-float') ||
-        attrs.includes('whatsapp-btn') ||
-        /instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/i.test(attrs)
-      ) {
+      // 1. Excluir explícitamente TODOS los enlaces y botones de WhatsApp, redes sociales, llamada (tel:), correo (mailto:) y mapas
+      const isWhatsAppOrContact = 
+        /wa\.me|api\.whatsapp\.com|web\.whatsapp\.com|whatsapp|wa-floating|btn-whatsapp|float-wa|floating-wa|wa-btn/i.test(attrs) ||
+        /whatsapp|wa-icon|whatsapp-icon|icono-wa/i.test(innerHtml) ||
+        /tel:|mailto:|maps\.google|goo\.gl\/maps|instagram\.com|facebook\.com|tiktok\.com|twitter\.com|x\.com/i.test(attrs);
+
+      if (isWhatsAppOrContact) {
         return fullTag;
       }
 
@@ -455,8 +454,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       const combined = `${attrs} ${innerHtml}`.toLowerCase();
       const isBookingButton = 
         /agend|reserv|turno|cita|separar|book|solicitar\s+cita|pedir\s+cita/i.test(combined) ||
-        /btn-header|btn-primary|btn-booking|btn-pill|btn-card|btn-book|btn-reserve/i.test(attrs) ||
-        /text=.*(?:agendar|reservar|cita|turno|tratamiento)/i.test(attrs);
+        /btn-header|btn-primary|btn-booking|btn-pill|btn-card|btn-book|btn-reserve/i.test(attrs);
 
       // Excluir si es el enlace de soporte / contacto del topbar que explícitamente solo pide información
       const isPureInfo = /solicitar\s+informaci[oó]n|chatear\s+con\s+recepci[oó]n/i.test(combined) && !/agend|reserv|cita|turno/i.test(innerHtml);
@@ -490,8 +488,8 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       updatedFooter = updatedFooter.replace(
         /<a\b([^>]*?)>(.*?)<\/a>/gis,
         (tag: string, attrs: string, content: string) => {
-          // Excluir redes sociales o WhatsApp
-          if (/instagram\.com|facebook\.com|tiktok\.com|wa\.me|api\.whatsapp\.com/i.test(attrs)) {
+          // Excluir redes sociales, WhatsApp o contacto directo
+          if (/instagram\.com|facebook\.com|tiktok\.com|wa\.me|api\.whatsapp\.com|whatsapp|tel:|mailto:|maps\.google/i.test(attrs) || /whatsapp/i.test(content)) {
             return tag;
           }
           // Si es un botón o link de acción en footer (agendar, newsletter, reservar)
@@ -526,13 +524,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // 5. Normalizar todos los enlaces de WhatsApp (wa.me o api.whatsapp.com) con el teléfono oficial del negocio
   processed = processed.replace(
-    /https:\/\/(?:wa\.me|api\.whatsapp\.com\/send\?phone=)[/0-9]+/gi,
-    `https://wa.me/${cleanPhone}`
+    /https:\/\/wa\.me\/(?:\+?\d+)?(\?[^"'\s>]*)?/gi,
+    (_match, queryString) => {
+      const qs = queryString ? queryString : '';
+      return `https://wa.me/${cleanPhone}${qs}`;
+    }
   );
 
   processed = processed.replace(
-    /href=["']https:\/\/wa\.me\/\??text=/gi,
-    `href="https://wa.me/${cleanPhone}?text=`
+    /https:\/\/api\.whatsapp\.com\/send\?(?:phone=\+?\d+&?)?(?:&?text=([^"'\s>]*))?/gi,
+    (_match, textParam) => {
+      const text = textParam ? `?text=${textParam}` : '';
+      return `https://wa.me/${cleanPhone}${text}`;
+    }
   );
 
   // 6. Actualizar textos de teléfono visibles en el pie de página o barra de contacto
