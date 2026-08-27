@@ -2279,6 +2279,10 @@ export const api = {
     
     const targetId = isValidUUID(site.id) ? site.id! : generatedId;
     const targetSlug = await this.generateUniqueProspectSlug(site.slug || site.business_name || 'salon', site.id);
+    
+    // Capturar creador autenticado actual o fallback oficial
+    const currentUser = this.auth.getUser();
+    const creatorEmail = site.creator_email || site.created_by || currentUser?.email || 'osmarino73@yahoo.es';
 
     const newSite: ProspectSite = {
       id: targetId,
@@ -2293,6 +2297,8 @@ export const api = {
       category: site.category || 'salon',
       status: site.status || 'prospecto',
       business_data: site.business_data,
+      created_by: creatorEmail,
+      creator_email: creatorEmail,
       views_count: site.views_count || 0,
       created_at: site.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString()

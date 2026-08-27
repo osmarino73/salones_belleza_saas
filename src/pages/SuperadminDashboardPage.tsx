@@ -437,6 +437,9 @@ export const SuperadminDashboardPage: React.FC = () => {
         hero_image_url: heroImageUrl || businessData?.hero_image_url || undefined
       };
 
+      const currentUser = api.auth.getUser();
+      const creatorEmail = currentUser?.email || 'osmarino73@yahoo.es';
+
       const siteData: Partial<ProspectSite> = {
         business_name: businessName,
         phone_whatsapp: phoneWhatsapp || '+573001234567',
@@ -448,6 +451,8 @@ export const SuperadminDashboardPage: React.FC = () => {
         category,
         raw_html: finalHtml,
         business_data: updatedBusinessData,
+        created_by: creatorEmail,
+        creator_email: creatorEmail,
         status: 'prospecto'
       };
 
@@ -606,11 +611,13 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
     }
   };
 
-  // Filtro de prospectos
+  // Filtro de prospectos (Búsqueda por nombre, teléfono, ciudad o creador)
   const filteredProspects = prospectSites.filter(site => {
+    const creator = (site.created_by || site.creator_email || '').toLowerCase();
     const matchesSearch = site.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           site.phone_whatsapp.includes(searchTerm) ||
-                          site.city?.toLowerCase().includes(searchTerm.toLowerCase());
+                          site.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          creator.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || site.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -1106,14 +1113,19 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
             <div id="published-result-box" className="lg:col-span-5 space-y-5">
               {createdSite ? (
                 <div className="bg-[#121624] border-2 border-emerald-500/40 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-                      <CheckCircle2 className="w-6 h-6" />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">¡SITIO WEB PUBLICADO!</span>
+                        <h3 className="text-base font-black">{createdSite.business_name}</h3>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">¡SITIO WEB PUBLICADO!</span>
-                      <h3 className="text-base font-black">{createdSite.business_name}</h3>
-                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                      👤 {createdSite.created_by || createdSite.creator_email || 'osmarino73@yahoo.es'}
+                    </span>
                   </div>
 
                   {/* Link Box */}
@@ -1335,6 +1347,9 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
                               <div>
                                 <strong className="block text-white text-xs">{p.business_name}</strong>
                                 <span className="text-[11px] font-mono text-slate-400">/sitio/{p.slug}</span>
+                                <span className="text-[10px] font-mono text-amber-300/90 block mt-0.5 font-semibold">
+                                  👤 {p.created_by || p.creator_email || 'osmarino73@yahoo.es'}
+                                </span>
                               </div>
                             </div>
                           </td>

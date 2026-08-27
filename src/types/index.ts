@@ -378,6 +378,8 @@ export interface ProspectSite {
   status: 'prospecto' | 'contactado' | 'reclamado' | 'cliente_pago';
   claimed_tenant_id?: string;
   business_data?: BusinessDataPayload;
+  created_by?: string;
+  creator_email?: string;
   views_count: number;
   created_at: string;
   updated_at?: string;
