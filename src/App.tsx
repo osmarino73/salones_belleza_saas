@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { StylistPortalPage } from './pages/StylistPortalPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SuperadminDashboardPage } from './pages/SuperadminDashboardPage';
+import { SuperadminGuard } from './components/SuperadminGuard';
 import { PublicProspectSitePage } from './pages/PublicProspectSitePage';
 
 export const App: React.FC = () => {
@@ -23,7 +24,14 @@ export const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/colaborador" element={<StylistPortalPage />} />
         <Route path="/colaborador/:stylistId" element={<StylistPortalPage />} />
-        <Route path="/superadmin" element={<SuperadminDashboardPage />} />
+        <Route
+          path="/superadmin"
+          element={
+            <SuperadminGuard>
+              <SuperadminDashboardPage />
+            </SuperadminGuard>
+          }
+        />
         <Route path="/sitio/:slug" element={<PublicProspectSitePage />} />
         <Route path="/s/:slug" element={<PublicProspectSitePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,37 +9,45 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
     setLoading(true);
+
     try {
       const cleanEmail = email.toLowerCase().trim();
+      const authRes = await api.auth.signIn(cleanEmail, password);
 
-      // Redirección directa para Superadmin
-      if (cleanEmail === 'osmarino73@yahoo.es') {
-        try {
-          await api.auth.signIn(email, password);
-        } catch (e) {}
+      if (authRes?.error || !authRes?.user) {
+        setErrorMessage('Credenciales inválidas. Por favor verifica tu correo y contraseña.');
+        setLoading(false);
+        return;
+      }
+
+      const user = authRes.user;
+      const isSuperadmin = api.auth.isSuperadmin(user);
+
+      // 1. Si es Superadmin autenticado
+      if (isSuperadmin) {
+        const queryParams = new URLSearchParams(window.location.search);
+        const redirect = queryParams.get('redirect');
         setTimeout(() => {
           setLoading(false);
-          navigate('/superadmin');
+          navigate(redirect || '/superadmin');
         }, 300);
         return;
       }
 
-      const authRes = await api.auth.signIn(email, password);
-
-      // Verificar rol real del usuario desde Supabase / BD
+      // 2. Verificar si es Colaborador / Estilista
       let isCollaborator = false;
       let matchedStylistId: string | null = null;
 
-      // 1. Revisar metadata de autenticación
-      if (authRes?.user?.user_metadata?.role === 'colaborador') {
+      if (user?.user_metadata?.role === 'colaborador') {
         isCollaborator = true;
       }
 
-      // 2. Revisar lista de estilistas/colaboradores
       try {
         const allStylists = await api.getStylists();
         const found = allStylists.find(s => s.email?.toLowerCase().trim() === cleanEmail);
@@ -58,11 +66,11 @@ export const LoginPage: React.FC = () => {
         } else {
           navigate('/dashboard');
         }
-      }, 400);
-    } catch (err) {
-      console.warn('Login notice:', err);
+      }, 300);
+    } catch (err: any) {
+      console.warn('Login error:', err);
+      setErrorMessage('Ocurrió un error al iniciar sesión. Verifica tu conexión e intenta de nuevo.');
       setLoading(false);
-      navigate('/dashboard');
     }
   };
 
@@ -116,6 +124,14 @@ export const LoginPage: React.FC = () => {
             <h1 className="text-2xl font-extrabold text-white">Iniciar Sesión</h1>
             <p className="text-sm text-slate-400">Ingresa tus credenciales para acceder a tu panel.</p>
           </div>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-4 p-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+              <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

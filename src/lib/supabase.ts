@@ -1688,30 +1688,74 @@ export const api = {
       return { user: localUser, session: { access_token: 'mock-token' }, error: null };
     },
 
+    SUPERADMIN_EMAILS: ['osmarino73@yahoo.es'],
+
+    isSuperadmin(userOrEmail?: any): boolean {
+      let targetUser = userOrEmail;
+      if (!targetUser) {
+        targetUser = this.getUser();
+      }
+      if (!targetUser) return false;
+
+      const email = typeof targetUser === 'string' ? targetUser : (targetUser.email || '');
+      const cleanEmail = email.toLowerCase().trim();
+      
+      // 1. Validar lista blanca de correos de súper administración
+      if (this.SUPERADMIN_EMAILS.some(e => e.toLowerCase().trim() === cleanEmail)) {
+        return true;
+      }
+
+      // 2. Validar metadata de rol de Supabase
+      if (typeof targetUser === 'object') {
+        if (targetUser.user_metadata?.role === 'superadmin' || targetUser.app_metadata?.role === 'superadmin') {
+          return true;
+        }
+      }
+
+      return false;
+    },
+
     async signIn(email: string, password: string) {
+      const cleanEmail = email.toLowerCase().trim();
       let loggedUser: any = null;
+      let authSession: any = null;
+      let authError: any = null;
+
       if (supabase && isSupabaseConfigured) {
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
-            email,
+            email: cleanEmail,
             password
           });
-          if (!error && data.user) {
-            loggedUser = data.user;
-          }
           if (error) {
+            authError = error;
             console.warn('Supabase auth signIn notice:', error.message);
+          } else if (data && data.user) {
+            loggedUser = data.user;
+            authSession = data.session;
           }
         } catch (e: any) {
+          authError = e;
           console.warn('Supabase auth exception:', e.message);
+        }
+      }
+
+      // Si falló la contraseña real en Supabase para el Superadmin, bloquear y rechazar
+      if (authError && (this.isSuperadmin(cleanEmail) || isSupabaseConfigured)) {
+        // Solo permitir fallback local si NO está configurado Supabase
+        if (isSupabaseConfigured) {
+          return { user: null, session: null, error: authError };
         }
       }
 
       if (!loggedUser) {
         loggedUser = {
           id: `usr-${Date.now()}`,
-          email,
-          user_metadata: { name: email.split('@')[0] },
+          email: cleanEmail,
+          user_metadata: { 
+            name: cleanEmail.split('@')[0],
+            role: this.isSuperadmin(cleanEmail) ? 'superadmin' : 'admin'
+          },
           created_at: new Date().toISOString()
         };
       }
@@ -1721,13 +1765,13 @@ export const api = {
 
       // Sincronizar automáticamente el tenant perteneciente a este usuario
       try {
-        const tenant = await api.getTenantByUserEmail(email);
+        const tenant = await api.getTenantByUserEmail(cleanEmail);
         if (tenant) {
           localStorage.setItem('bf_tenant_active', JSON.stringify(tenant));
         }
       } catch (tErr) {}
 
-      return { user: loggedUser, session: { access_token: 'mock-token' }, error: null };
+      return { user: loggedUser, session: authSession || { access_token: 'mock-token' }, error: null };
     },
 
     async signOut() {

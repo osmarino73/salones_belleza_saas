@@ -42,7 +42,8 @@ import {
   Key,
   Mail,
   Lock,
-  UserCheck
+  UserCheck,
+  LogOut
 } from 'lucide-react';
 
 export const SuperadminDashboardPage: React.FC = () => {
@@ -669,13 +670,17 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
             <span>Ver Dashboard Dueña</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
-          <Link
-            to="/login"
-            className="w-8 h-8 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 flex items-center justify-center transition-all"
-            title="Cerrar Sesión"
+          <button
+            type="button"
+            onClick={async () => {
+              await api.auth.signOut();
+              window.location.href = '/login';
+            }}
+            className="w-8 h-8 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/15 flex items-center justify-center transition-all cursor-pointer"
+            title="Cerrar Sesión Superadmin"
           >
-            <ShieldCheck className="w-4 h-4" />
-          </Link>
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
