@@ -16,7 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--1. **Instalación de la Skill Oficial de Copywriting Persuasivo B2B ([`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+-1. **Estrategia Oficial de Prospección en 2 Pasos con Gancho Visual ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+   - **Paso 1 (📸 Gancho Visual + Regalo)**: Mensaje ultra corto para enviar junto con la captura de la web en el móvil. Cero venta y cero fricción. Pregunta suave de feedback.
+   - **Paso 2 (🎁 Oferta Patrocinada $50.000 COP)**: Se envía cuando la dueña responde positivamente. Anclaje de $680.000 vs. $50.000 (93% de descuento) + 1 Mes Plan Crecimiento ($120.000) incluido + Opción Solo Web por $50.000/año de hosting.
+   - **Selector Táctil en la Consola Superadmin**: Pestañas para alternar y copiar con 1 clic el Paso 1 o el Paso 2 con botón de apertura directa a WhatsApp.
+
+0. **Instalación de la Skill Oficial de Copywriting Persuasivo B2B ([`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
    - **Auditoría de Seguridad**: 100% limpia, declarativa en Markdown, sin scripts ejecutables ni fugas de datos.
    - **Frameworks de Conversión**: AIDA, PAS (Problema-Agitación-Solución), Hook-Story-Offer y Principios de Cialdini aplicados a la belleza.
    - **Alineación Comercial Kowy**: Anclaje de $680.000 COP ➔ Patrocinio de $50.000 COP (93% de descuento) + 1 Mes Plan Crecimiento ($120.000) incluido + Modalidad Solo Web por $50.000 COP al año de hosting.
