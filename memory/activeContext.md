@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-3. **Aislamiento Visual 100% Fiel de Sitios Gancho vía Iframe (`srcDoc`) ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+   - **Cero Contaminación de Color**: Se reemplazó el `<div dangerouslySetInnerHTML>` por un `<iframe srcDoc={renderedHtml}>` de ancho y alto completo (`w-full min-h-screen border-0 block`), aislando al 100% el contexto DOM y CSS.
+   - **Preservación Total de Fondos y Tipografías**: Se eliminó la herencia no deseada del Dark Mode `#090B10` de la app React. La sección de servicios y toda la maqueta conservan sus fondos crema/marfil nativos (`#FAF7F2`), tarjetas y tipografías oscuras exactamente idénticas a la maqueta base HTML original (Imagen 1).
+
 -2. **Regla de Oro de Enlaces: Agendamiento Estricto vs Canal WhatsApp ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
    - **Todo botón o texto de reserva/agendamiento conduce a `/reservar/:slug`**: Todo elemento con texto (`Agendar`, `Reservar`, `Cita`, `Turno`, `Book`, `Separar Cita`) o clases (`btn-header`, `btn-primary`, `btn-booking`, `btn-card`, `btn-hero`, `btn-cita`) se conecta directamente al portal de agendamiento interactivo SaaS (`/reservar/:slug` o `?service=` en tarjetas y `?stylistId=` en equipo), eliminando cualquier `wa.me` quemado proveniente de las plantillas base y suprimiendo `target="_blank"`.
    - **Exclusividad estricta para WhatsApp**: Los enlaces que dirigen a WhatsApp quedan reservados **únicamente** a iconos de WhatsApp (`fa-whatsapp`, `lucide-whatsapp`), textos que explícitamente mencionan la palabra "WhatsApp" o el botón flotante verde (`.whatsapp-float`).

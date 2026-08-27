@@ -115,10 +115,20 @@ export const PublicProspectSitePage: React.FC = () => {
   }
 
   return (
-    <div 
-      className="w-full min-h-screen prospect-site-wrapper"
-      dangerouslySetInnerHTML={{ __html: renderedHtml }} 
-    />
+    <div className="w-full min-h-screen bg-transparent">
+      <iframe 
+        title={`${site.business_name} | Sitio Oficial`}
+        srcDoc={renderedHtml}
+        className="w-full min-h-screen border-0 block"
+        style={{
+          width: '100%',
+          height: '100vh',
+          minHeight: '100vh',
+          border: 'none',
+          display: 'block'
+        }}
+      />
+    </div>
   );
 };
 
