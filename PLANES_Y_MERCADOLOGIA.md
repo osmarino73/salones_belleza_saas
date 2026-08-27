@@ -18,7 +18,7 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 | Nivel | Plan | Inversión Mensual ($ COP) | Enfoque & Propuesta de Valor |
 | :---: | :--- | :---: | :--- |
-| **0** | **🌐 Plan Gratuito** | **$0 / mes** *(Gratis de por vida)* | Vitrina digital de lujo en Google Maps con fotos, catálogo, horarios y botón directo a WhatsApp. |
+| **0** | **🌐 Modalidad Solo Web** | **$50.000 / AÑO** *(~$4.160/mes)* | Vitrina digital de lujo en Google Maps con fotos, catálogo, horarios, SSL y botón directo a WhatsApp. |
 | **1** | **🚀 Plan Inicio** | **$50.000 / mes** *(o $500k/año)* | Sistema interactivo de agendamiento online (`/reservar/:slug`) con hasta 4 colaboradores. |
 | **2** | **📈 Plan Crecimiento** ⭐ *(Regalo Mes 1)* | **$120.000 / mes** *(o $1.2M/año)* | Colaboradores ilimitados + App móvil para estilistas + Caja POS y liquidación de comisiones. |
 | **3** | **🤖 Plan Pro Flow (IA)** | **$240.000 / mes** *(o $2.4M/año)* | Agente Virtual Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal (IG/FB) + Recordatorios anti-plantón. |
@@ -31,16 +31,16 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 ---
 
-### 🌐 NIVEL 0: Plan Gratuito *(Free for Life)*
-* **Precio:** **$0 COP / mes** (Gratis de por vida).
-* **Objetivo:** Captación masiva y presencia de marca.
+### 🌐 NIVEL 0: Modalidad Solo Web *(Vitrina Digital + Hosting Seguro)*
+* **Precio:** **$50.000 COP / AÑO** *(equivalente a solo $4.160 COP/mes)*.
+* **Objetivo:** Para negocios que no desean SaaS ni agenda, pero quieren mantener su página web oficial en Google Maps.
 * **Características incluidas:**
   - ✅ **Página Web Profesional de Lujo** (`/sitio/:slug`) adaptada a móvil y desktop con diseño *Glassmorphism*.
   - ✅ Galería visual con fotos de referencia en alta definición.
   - ✅ Catálogo informativo de servicios con precios y duraciones.
   - ✅ Ficha de dirección física, horarios de atención y mapa interactivo de Google Maps.
   - ✅ **Botón Flotante Directo a WhatsApp** para contacto directo.
-  - ✅ Alojamiento web y certificado de seguridad SSL gratis de por vida.
+  - ✅ Alojamiento web en la nube de alta velocidad y certificado de seguridad SSL activo todo el año.
   - ❌ *Sin agendador online interactivo.*
   - ❌ *Sin panel de control ni gestión de turnos.*
 
