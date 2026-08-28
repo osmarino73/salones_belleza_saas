@@ -61,23 +61,24 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
     }
 
     // 4. Extraer Hero Slogan / H1 y Acento
-    const h1Match = html.match(/<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)?[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i);
+    const h1Match = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
     if (h1Match && h1Match[1]) {
       const h1Content = h1Match[1];
-      const accentMatch = h1Content.match(/<(?:span|em|i)\b[^>]*class=["'][^"']*(?:magenta-accent|accent-gold|accent)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|em|i)>/i)
+      const accentMatch = h1Content.match(/<(?:span|em|i)\b[^>]*class=["'][^"']*(?:magenta-accent|accent-gold|accent|highlight)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|em|i)>/i)
         || h1Content.match(/<(?:span|em|i)\b[^>]*>([\s\S]*?)<\/(?:span|em|i)>/i);
       
       if (accentMatch) {
-        result.titleAccent = accentMatch[1].replace(/<[^>]*>/g, '').trim();
-        const mainTitle = h1Content.replace(accentMatch[0], '').replace(/<[^>]*>/g, '').trim();
+        result.titleAccent = accentMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        const mainTitle = h1Content.replace(accentMatch[0], '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
         if (mainTitle) result.slogan = mainTitle;
       } else {
-        result.slogan = h1Content.replace(/<[^>]*>/g, '').trim();
+        result.slogan = h1Content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
     }
 
     // 5. Extraer Hero Subtitle
-    const subMatch = html.match(/<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+    const subMatch = html.match(/<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)
+      || html.match(/<header\b[^>]*>[\s\S]*?<p\b[^>]*>([\s\S]*?)<\/p>/i);
     if (subMatch && subMatch[1]) {
       result.subtitle = subMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }

@@ -219,16 +219,16 @@ export const DashboardPage: React.FC = () => {
     first_visit_discount_pct: 15,
     first_visit_discount_title: '',
     logo_icon: '🪄',
-    hero_eyebrow: 'Bienvenidas a ❤️',
-    slogan: 'Sandra Color´s',
-    title_accent: 'Centro de Estética',
-    subtitle: 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
+    hero_eyebrow: '',
+    slogan: '',
+    title_accent: '',
+    subtitle: '',
     about_image_url: '',
-    about_badge_text: 'VIP EXPERIENCIA SALÓN',
+    about_badge_text: '',
     about_eyebrow: 'Sobre Nosotros',
-    about_title: 'CUIDADO. DEFINICIÓN.',
-    about_title_accent: 'PASIÓN POR TU BELLEZA.',
-    about_description: 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
+    about_title: '',
+    about_title_accent: '',
+    about_description: '',
     about_years_exp: '+8',
     about_clients_count: '+3.5K',
     about_rating_text: '5.0',
@@ -248,9 +248,26 @@ export const DashboardPage: React.FC = () => {
           setProspectRawHtml(rawHtml);
         }
 
-        // Si el tenant no tiene aún ciertos campos guardados, extraerlos automáticamente del HTML base
+        // Extraer los datos reales directamente del HTML base de la plantilla
         const extracted = rawHtml ? extractWebsiteDataFromHtml(rawHtml) : {};
         const bData = (matched as any)?.business_data || {};
+
+        // Limpiar placeholders antiguos si provienen de datos de muestra
+        const cleanEyebrow = (activeTenantObj.hero_eyebrow && activeTenantObj.hero_eyebrow !== 'Bienvenidas a ❤️')
+          ? activeTenantObj.hero_eyebrow 
+          : (bData.hero_eyebrow && bData.hero_eyebrow !== 'Bienvenidas a ❤️' ? bData.hero_eyebrow : (extracted.heroEyebrow || ''));
+
+        const cleanTitleAccent = (activeTenantObj.title_accent && activeTenantObj.title_accent !== 'Centro de Estética')
+          ? activeTenantObj.title_accent
+          : (bData.title_accent && bData.title_accent !== 'Centro de Estética' ? bData.title_accent : (extracted.titleAccent || ''));
+
+        const cleanSlogan = (activeTenantObj.slogan && activeTenantObj.slogan !== 'Sandra Color´s' && activeTenantObj.slogan !== activeTenantObj.name)
+          ? activeTenantObj.slogan
+          : (extracted.slogan || bData.slogan || activeTenantObj.name || '');
+
+        const cleanSubtitle = (activeTenantObj.subtitle && !activeTenantObj.subtitle.includes('Sandra Color´s'))
+          ? activeTenantObj.subtitle
+          : (extracted.subtitle || bData.subtitle || '');
 
         setWebsiteForm({
           hero_image_url: activeTenantObj.hero_image_url || bData.hero_image_url || extracted.heroImageUrl || '',
@@ -260,16 +277,16 @@ export const DashboardPage: React.FC = () => {
           first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || bData.first_visit_discount_pct || 15,
           first_visit_discount_title: activeTenantObj.first_visit_discount_title || bData.first_visit_discount_title || '',
           logo_icon: activeTenantObj.logo_icon || bData.logo_icon || extracted.logoIcon || '🪄',
-          hero_eyebrow: activeTenantObj.hero_eyebrow || bData.hero_eyebrow || extracted.heroEyebrow || 'Bienvenidas a ❤️',
-          slogan: activeTenantObj.slogan || bData.slogan || extracted.slogan || activeTenantObj.name || 'Sandra Color´s',
-          title_accent: activeTenantObj.title_accent || bData.title_accent || extracted.titleAccent || 'Centro de Estética',
-          subtitle: activeTenantObj.subtitle || bData.subtitle || extracted.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
+          hero_eyebrow: cleanEyebrow,
+          slogan: cleanSlogan,
+          title_accent: cleanTitleAccent,
+          subtitle: cleanSubtitle,
           about_image_url: activeTenantObj.about_image_url || bData.about_image_url || extracted.aboutImageUrl || '',
-          about_badge_text: activeTenantObj.about_badge_text || bData.about_badge_text || extracted.aboutBadgeText || 'VIP EXPERIENCIA SALÓN',
+          about_badge_text: activeTenantObj.about_badge_text || bData.about_badge_text || extracted.aboutBadgeText || '',
           about_eyebrow: activeTenantObj.about_eyebrow || bData.about_eyebrow || extracted.aboutEyebrow || 'Sobre Nosotros',
-          about_title: activeTenantObj.about_title || bData.about_title || extracted.aboutTitle || 'CUIDADO. DEFINICIÓN.',
-          about_title_accent: activeTenantObj.about_title_accent || bData.about_title_accent || extracted.aboutTitleAccent || 'PASIÓN POR TU BELLEZA.',
-          about_description: activeTenantObj.about_description || bData.about_description || extracted.aboutDescription || 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
+          about_title: activeTenantObj.about_title || bData.about_title || extracted.aboutTitle || '',
+          about_title_accent: activeTenantObj.about_title_accent || bData.about_title_accent || extracted.aboutTitleAccent || '',
+          about_description: activeTenantObj.about_description || bData.about_description || extracted.aboutDescription || '',
           about_years_exp: activeTenantObj.about_years_exp || bData.about_years_exp || extracted.aboutYearsExp || '+8',
           about_clients_count: activeTenantObj.about_clients_count || bData.about_clients_count || extracted.aboutClientsCount || '+3.5K',
           about_rating_text: activeTenantObj.about_rating_text || bData.about_rating_text || extracted.aboutRatingText || '5.0',
@@ -1435,32 +1452,6 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      if (activeTenantObj) {
-                        setWebsiteForm(prev => ({
-                          ...prev,
-                          hero_image_url: activeTenantObj.hero_image_url || prev.hero_image_url || '',
-                          primary_color: activeTenantObj.primary_color || prev.primary_color || '#d92672',
-                          show_team_section: activeTenantObj.show_team_section !== false,
-                          show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : false,
-                          first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || 15,
-                          first_visit_discount_title: activeTenantObj.first_visit_discount_title || '',
-                          logo_icon: activeTenantObj.logo_icon || prev.logo_icon || '🪄',
-                          hero_eyebrow: activeTenantObj.hero_eyebrow || prev.hero_eyebrow || 'Bienvenidas a ❤️',
-                          slogan: activeTenantObj.slogan || activeTenantObj.name || prev.slogan || 'Sandra Color´s',
-                          title_accent: activeTenantObj.title_accent || prev.title_accent || 'Centro de Estética',
-                          subtitle: activeTenantObj.subtitle || prev.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
-                          about_image_url: activeTenantObj.about_image_url || prev.about_image_url || '',
-                          about_badge_text: activeTenantObj.about_badge_text || prev.about_badge_text || 'VIP EXPERIENCIA SALÓN',
-                          about_eyebrow: activeTenantObj.about_eyebrow || prev.about_eyebrow || 'Sobre Nosotros',
-                          about_title: activeTenantObj.about_title || prev.about_title || 'CUIDADO. DEFINICIÓN.',
-                          about_title_accent: activeTenantObj.about_title_accent || prev.about_title_accent || 'PASIÓN POR TU BELLEZA.',
-                          about_description: activeTenantObj.about_description || prev.about_description || 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
-                          about_years_exp: activeTenantObj.about_years_exp || prev.about_years_exp || '+8',
-                          about_clients_count: activeTenantObj.about_clients_count || prev.about_clients_count || '+3.5K',
-                          about_rating_text: activeTenantObj.about_rating_text || prev.about_rating_text || '5.0',
-                          show_about_section: activeTenantObj.show_about_section !== undefined ? activeTenantObj.show_about_section : (prev.show_about_section !== undefined ? prev.show_about_section : true)
-                        }));
-                      }
                       setIsWebsiteCustomizerOpen(true);
                       setIsProfileMenuOpen(false);
                     }}
