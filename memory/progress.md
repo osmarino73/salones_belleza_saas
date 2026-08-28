@@ -1,3 +1,6 @@
+- [x] **Eliminación de Pills/Badges Secundarias en Tarjetas de Servicios ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Eliminadas las pastillas intermedias de técnicas/ingredientes (*"Caída Natural & Lavado Botánico"*, *"Mantecas Naturales & Vapor"*, etc.) para lograr una presentación más limpia, espaciosa y minimalista de cada tarjeta de servicio (Foto, Título, Duración, Precio y Botón Agendar).
+
 - [x] **Mimetización Visual de Botón "Ver Todos los Servicios" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - Sustituido el fondo fucsia genérico por el gradiente dorado de lujo (`linear-gradient(135deg, #e5a95d 0%, #c48b47 100%)`) con texto obsidiana `#0d0d11`, tipografía heredada del proyecto en mayúsculas (`font-family: inherit; font-weight: 800; text-transform: uppercase`) y sombra dorada sutil.
   - Integradas las clases nativas `.btn-card` y `.btn-primary` junto con un icono SVG de flecha integrado.
