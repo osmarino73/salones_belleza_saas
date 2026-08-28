@@ -295,16 +295,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
-  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar (solo si fue modificado específicamente)
-  if (slogan) {
+  // Extraer valores base nativos para comparación de no-invasión
+  const baseline = extractWebsiteDataFromHtml(html);
+
+  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar (solo si fue modificado explícitamente)
+  if (slogan && slogan !== baseline.slogan) {
     processed = processed.replace(
       /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-name|logo-text|logo-title|brand-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi,
       `$1${slogan}$3`
     );
   }
 
-  // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow)
-  if (heroEyebrow) {
+  // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow) (solo si fue modificado)
+  if (heroEyebrow && heroEyebrow !== baseline.heroEyebrow) {
     processed = processed.replace(
       /(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i,
       `$1${heroEyebrow}$3`
@@ -312,28 +315,45 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   }
 
   // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
-  if (heroImageUrl) {
+  if (heroImageUrl && heroImageUrl !== baseline.heroImageUrl) {
     processed = processed.replace(
       /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
       `$1${heroImageUrl}$3`
     );
   }
 
-  // 1.4 Inyección Dinámica de Nombre / Título y Acento Fucsia en el Hero H1 (SOLO si el usuario configuró explícitamente titleAccent o un slogan personalizado que no sea el fallback del negocio)
-  if (titleAccent) {
-    const mainTitleName = slogan || '';
-    const accentText = `<span class="magenta-accent accent-gold">${titleAccent}</span>`;
-    
-    if (/(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
-      processed = processed.replace(
-        /(<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i,
-        `$1\n            ${mainTitleName ? mainTitleName + '\n' : ''}${accentText}\n          $3`
-      );
+  // 1.4 Inyección Fiel de Título y Acento en el Hero H1 (Preservando 100% las fuentes, cursivas y maquetación nativa)
+  const isTitleAccentChanged = titleAccent && titleAccent !== baseline.titleAccent;
+  const isSloganChanged = slogan && slogan !== baseline.slogan;
+
+  if (isTitleAccentChanged || isSloganChanged) {
+    if (/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
+      processed = processed.replace(/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i, (_match: string, h1Open: string, h1Inner: string, h1Close: string) => {
+        let updatedH1Inner = h1Inner;
+
+        // Si cambió el acento destacado y el H1 contiene un elemento hijo (span/em/i), actualizar SOLO su texto interior
+        if (isTitleAccentChanged) {
+          if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(updatedH1Inner)) {
+            updatedH1Inner = updatedH1Inner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
+          } else {
+            updatedH1Inner += ` <span class="magenta-accent accent-gold">${titleAccent}</span>`;
+          }
+        }
+
+        // Si cambió el título principal
+        if (isSloganChanged) {
+          if (/^([^<]+)/.test(updatedH1Inner)) {
+            updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+          }
+        }
+
+        return `${h1Open}${updatedH1Inner}${h1Close}`;
+      });
     }
   }
 
-  // 1.5 Inyección Dinámica de Subtítulo Descriptivo
-  if (subtitle) {
+  // 1.5 Inyección Dinámica de Subtítulo Descriptivo (solo si fue modificado)
+  if (subtitle && subtitle !== baseline.subtitle) {
     if (/(<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i.test(processed)) {
       processed = processed.replace(
         /(<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,
@@ -387,7 +407,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     processed = processed.replace(discountBannerRegex, '');
   }
 
-  // 1.7 Inyección y Actualización de la Sección Sobre Nosotros (Preservando al 100% el diseño original)
+  // 1.7 Inyección y Actualización de la Sección Sobre Nosotros (Preservando 100% el diseño y fuentes originales)
   const aboutSectionRegex = /(<section\b[^>]*?(?:id=["'](?:nosotros|about|sobre-nosotros|historia|nuestro-salon|quienes-somos)["']|class=["'][^"']*(?:about-section|sobre-nosotros|about-container|story-section|quienes-somos)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
   
   if (!showAboutSection) {
@@ -401,51 +421,64 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       (match, sectionOpen, sectionBody, sectionClose) => {
         let updatedBody = sectionBody;
 
-        // 1. Actualizar Foto de la Sección Sobre Nosotros
-        if (aboutImageUrl) {
+        // 1. Actualizar Foto de la Sección Sobre Nosotros (solo si cambió)
+        if (aboutImageUrl && aboutImageUrl !== baseline.aboutImageUrl) {
           updatedBody = updatedBody.replace(
             /(<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
             `$1${aboutImageUrl}$3`
           );
         }
 
-        // 2. Actualizar Badge VIP sobre la Foto
-        if (aboutBadgeText) {
-          const badgeRegex = /(<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|experience-badge|badge)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|strong)>)/i;
+        // 2. Actualizar Badge VIP sobre la Foto (solo si cambió)
+        if (aboutBadgeText && aboutBadgeText !== baseline.aboutBadgeText) {
+          const badgeRegex = /(<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|experience-badge|badge|curly|curls)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|strong)>)/i;
           if (badgeRegex.test(updatedBody)) {
             updatedBody = updatedBody.replace(badgeRegex, `$1${aboutBadgeText}$3`);
           }
         }
 
-        // 3. Actualizar Eyebrow / Saludo Superior
-        if (aboutEyebrow) {
+        // 3. Actualizar Eyebrow / Saludo Superior (solo si cambió)
+        if (aboutEyebrow && aboutEyebrow !== baseline.aboutEyebrow) {
           const eyebrowRegex = /(<(?:div|span|p|em)\b[^>]*class=["'][^"']*(?:section-subtitle|about-eyebrow|script-eyebrow|eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|em)>)/i;
           if (eyebrowRegex.test(updatedBody)) {
             updatedBody = updatedBody.replace(eyebrowRegex, `$1${aboutEyebrow}$3`);
           }
         }
 
-        // 4. Actualizar Título Principal & Acento
-        if (aboutTitle || aboutTitleAccent) {
-          const titleRegex = /(<(?:h2|h3|h4)\b[^>]*class=["'][^"']*(?:about-title|section-title|about-heading|main-title)?[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h2|h3|h4)>)/i;
+        // 4. Actualizar Título Principal & Acento (Preservando 100% las etiquetas, fuentes y clases nativas)
+        const isAboutTitleChanged = aboutTitle && aboutTitle !== baseline.aboutTitle;
+        const isAboutAccentChanged = aboutTitleAccent && aboutTitleAccent !== baseline.aboutTitleAccent;
+
+        if (isAboutTitleChanged || isAboutAccentChanged) {
+          const titleRegex = /(<(?:h2|h3|h4)\b[^>]*>)([\s\S]*?)(<\/(?:h2|h3|h4)>)/i;
           if (titleRegex.test(updatedBody)) {
-            const accentPart = aboutTitleAccent ? `<span class="accent-gold magenta-accent" style="display: block;">${aboutTitleAccent}</span>` : '';
-            const mainPart = aboutTitle ? `<span>${aboutTitle}</span>` : '';
-            const combined = `${mainPart} ${accentPart}`.trim();
-            updatedBody = updatedBody.replace(titleRegex, `$1\n            ${combined}\n          $3`);
+            updatedBody = updatedBody.replace(titleRegex, (_tMatch: string, tOpen: string, tInner: string, tClose: string) => {
+              let newInner = tInner;
+              if (isAboutAccentChanged) {
+                if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(newInner)) {
+                  newInner = newInner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${aboutTitleAccent}$3`);
+                }
+              }
+              if (isAboutTitleChanged) {
+                if (/^([^<]+)/.test(newInner)) {
+                  newInner = newInner.replace(/^([^<]+)/, `${aboutTitle} `);
+                }
+              }
+              return `${tOpen}${newInner}${tClose}`;
+            });
           }
         }
 
-        // 5. Actualizar Párrafo Descriptivo
-        if (aboutDescription) {
-          const pRegex = /(<p\b[^>]*class=["'][^"']*(?:about-desc|about-text|lead-text|description)?[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i;
+        // 5. Actualizar Párrafo Descriptivo (solo si cambió)
+        if (aboutDescription && aboutDescription !== baseline.aboutDescription) {
+          const pRegex = /(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i;
           if (pRegex.test(updatedBody)) {
             updatedBody = updatedBody.replace(pRegex, `$1${aboutDescription}$3`);
           }
         }
 
-        // 6. Actualizar Métricas / Estadísticas si existen
-        if (aboutYearsExp) {
+        // 6. Actualizar Métricas / Estadísticas si cambiaron
+        if (aboutYearsExp && aboutYearsExp !== baseline.aboutYearsExp) {
           updatedBody = updatedBody.replace(
             /(<(?:span|div|strong|h4)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4)>)/i,
             `$1${aboutYearsExp}$3`

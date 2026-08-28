@@ -69,6 +69,25 @@ export const PublicProspectSitePage: React.FC = () => {
       ? tenant.show_first_visit_discount
       : (bData.show_first_visit_discount !== undefined ? bData.show_first_visit_discount : false);
 
+    // Filtrar textos de muestra o fallbacks antiguos para no sobreescribir la plantilla base
+    const rawTitleAccent = tenant?.title_accent || bData.title_accent;
+    const cleanTitleAccent = rawTitleAccent && rawTitleAccent !== 'Centro de Estética' ? rawTitleAccent : undefined;
+
+    const rawEyebrow = tenant?.hero_eyebrow || bData.hero_eyebrow;
+    const cleanEyebrow = rawEyebrow && rawEyebrow !== 'Bienvenidas a ❤️' ? rawEyebrow : undefined;
+
+    const rawSlogan = tenant?.slogan || bData.slogan;
+    const cleanSlogan = rawSlogan && rawSlogan !== 'Sandra Color´s' && rawSlogan !== site.business_name ? rawSlogan : undefined;
+
+    const rawAboutBadge = tenant?.about_badge_text || bData.about_badge_text;
+    const cleanAboutBadge = rawAboutBadge && rawAboutBadge !== 'VIP EXPERIENCIA SALÓN' ? rawAboutBadge : undefined;
+
+    const rawAboutAccent = tenant?.about_title_accent || bData.about_title_accent;
+    const cleanAboutAccent = rawAboutAccent && rawAboutAccent !== 'PASIÓN POR TU BELLEZA.' ? rawAboutAccent : undefined;
+
+    const rawAboutDesc = tenant?.about_description || bData.about_description;
+    const cleanAboutDesc = rawAboutDesc && !rawAboutDesc.includes('Transformamos el cuidado') && !rawAboutDesc.startsWith('Especialistas certificadas') ? rawAboutDesc : undefined;
+
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
@@ -80,16 +99,16 @@ export const PublicProspectSitePage: React.FC = () => {
       firstVisitDiscountTitle: tenant?.first_visit_discount_title || bData.first_visit_discount_title || undefined,
       heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
       logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
-      heroEyebrow: tenant?.hero_eyebrow || bData.hero_eyebrow || undefined,
-      slogan: tenant?.slogan || bData.slogan || undefined,
-      titleAccent: tenant?.title_accent || bData.title_accent || undefined,
+      heroEyebrow: cleanEyebrow,
+      slogan: cleanSlogan,
+      titleAccent: cleanTitleAccent,
       subtitle: tenant?.subtitle || bData.subtitle || undefined,
       aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
-      aboutBadgeText: tenant?.about_badge_text || bData.about_badge_text || undefined,
+      aboutBadgeText: cleanAboutBadge,
       aboutEyebrow: tenant?.about_eyebrow || bData.about_eyebrow || undefined,
       aboutTitle: tenant?.about_title || bData.about_title || undefined,
-      aboutTitleAccent: tenant?.about_title_accent || bData.about_title_accent || undefined,
-      aboutDescription: tenant?.about_description || bData.about_description || undefined,
+      aboutTitleAccent: cleanAboutAccent,
+      aboutDescription: cleanAboutDesc,
       aboutYearsExp: tenant?.about_years_exp || bData.about_years_exp || undefined,
       aboutClientsCount: tenant?.about_clients_count || bData.about_clients_count || undefined,
       aboutRatingText: tenant?.about_rating_text || bData.about_rating_text || undefined,
