@@ -84,7 +84,9 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
     }
 
     // 6. Extraer Datos de la Sección Sobre Nosotros
-    const aboutSecMatch = html.match(/<section\b[^>]*?(?:id=["'](?:nosotros|about|sobre-nosotros|historia)["']|class=["'][^"']*(?:about-section|sobre-nosotros|about-container|about|story-section)[^"']*)[^>]*>([\s\S]*?)<\/section>/i);
+    const aboutSecMatch = html.match(/<section\b[^>]*?(?:id=["'][^"']*(?:nosotros|about|historia|experiencia)[^"']*|class=["'][^"']*(?:about|nosotros|historia|story|experience)[^"']*)[^>]*>([\s\S]*?)<\/section>/i)
+      || html.match(/<section\b[^>]*>([\s\S]*?(?:Sobre\s+Nosotros|Nuestra\s+Historia|Nuestra\s+Pasi[oó]n|Experiencia)[\s\S]*?)<\/section>/i);
+
     if (aboutSecMatch && aboutSecMatch[1]) {
       const aboutBody = aboutSecMatch[1];
       result.showAboutSection = true;
@@ -96,26 +98,26 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
       }
 
       // Badge VIP
-      const badgeMatch = aboutBody.match(/<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|badge|experience-badge)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|strong)>/i);
+      const badgeMatch = aboutBody.match(/<(?:div|span|p|strong|a)\b[^>]*class=["'][^"']*(?:vip|badge|gold|experience|curly|tag|curls)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|strong|a)>/i);
       if (badgeMatch && badgeMatch[1]) {
         result.aboutBadgeText = badgeMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
 
       // Eyebrow Sobre Nosotros
-      const aboutEyebrowMatch = aboutBody.match(/<(?:div|span|p|em)\b[^>]*class=["'][^"']*(?:section-subtitle|about-eyebrow|script-eyebrow|eyebrow)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|em)>/i);
+      const aboutEyebrowMatch = aboutBody.match(/<(?:div|span|p|em|h5|h6)\b[^>]*class=["'][^"']*(?:section-subtitle|about-eyebrow|script-eyebrow|eyebrow|subtitle)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|em|h5|h6)>/i);
       if (aboutEyebrowMatch && aboutEyebrowMatch[1]) {
         result.aboutEyebrow = aboutEyebrowMatch[1].replace(/<[^>]*>/g, '').trim();
       }
 
       // Título Sobre Nosotros
-      const aboutTitleMatch = aboutBody.match(/<(?:h2|h3|h4)\b[^>]*class=["'][^"']*(?:about-title|section-title|about-heading|main-title)?[^"']*["'][^>]*>([\s\S]*?)<\/(?:h2|h3|h4)>/i);
+      const aboutTitleMatch = aboutBody.match(/<(?:h2|h3|h4)\b[^>]*>([\s\S]*?)<\/(?:h2|h3|h4)>/i);
       if (aboutTitleMatch && aboutTitleMatch[1]) {
         const titleInner = aboutTitleMatch[1];
         const accentAboutMatch = titleInner.match(/<(?:span|em|i)\b[^>]*class=["'][^"']*(?:accent-gold|magenta-accent|accent|highlight)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|em|i)>/i)
           || titleInner.match(/<(?:span|em|i)\b[^>]*>([\s\S]*?)<\/(?:span|em|i)>/i);
         
         if (accentAboutMatch) {
-          result.aboutTitleAccent = accentAboutMatch[1].replace(/<[^>]*>/g, '').trim();
+          result.aboutTitleAccent = accentAboutMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
           const cleanMain = titleInner.replace(accentAboutMatch[0], '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
           if (cleanMain) result.aboutTitle = cleanMain;
         } else {
@@ -123,14 +125,14 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
         }
       }
 
-      // Descripción Sobre Nosotros
-      const aboutDescMatch = aboutBody.match(/<p\b[^>]*class=["'][^"']*(?:about-desc|about-text|lead-text|description)?[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+      // Descripción Sobre Nosotros (primer párrafo <p> en la sección)
+      const aboutDescMatch = aboutBody.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i);
       if (aboutDescMatch && aboutDescMatch[1]) {
         result.aboutDescription = aboutDescMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
 
       // Métricas (años, clientes, calificación)
-      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|stat-title)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4)>/gi)];
+      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4|p|b)>/gi)];
       if (statMatches.length > 0) {
         result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
         if (statMatches.length > 1) {

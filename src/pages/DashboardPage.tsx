@@ -269,6 +269,22 @@ export const DashboardPage: React.FC = () => {
           ? activeTenantObj.subtitle
           : (extracted.subtitle || bData.subtitle || '');
 
+        const cleanAboutBadgeText = (activeTenantObj.about_badge_text && activeTenantObj.about_badge_text !== 'VIP EXPERIENCIA SALÓN')
+          ? activeTenantObj.about_badge_text
+          : (bData.about_badge_text && bData.about_badge_text !== 'VIP EXPERIENCIA SALÓN' ? bData.about_badge_text : (extracted.aboutBadgeText || ''));
+
+        const cleanAboutTitle = (activeTenantObj.about_title && activeTenantObj.about_title !== 'CUIDADO. DEFINICIÓN.')
+          ? activeTenantObj.about_title
+          : (extracted.aboutTitle || bData.about_title || activeTenantObj.about_title || '');
+
+        const cleanAboutTitleAccent = (activeTenantObj.about_title_accent && activeTenantObj.about_title_accent !== 'PASIÓN POR TU BELLEZA.')
+          ? activeTenantObj.about_title_accent
+          : (bData.about_title_accent && bData.about_title_accent !== 'PASIÓN POR TU BELLEZA.' ? bData.about_title_accent : (extracted.aboutTitleAccent || ''));
+
+        const cleanAboutDescription = (activeTenantObj.about_description && !activeTenantObj.about_description.includes('Transformamos el cuidado') && !activeTenantObj.about_description.startsWith('Especialistas certificadas con amplia'))
+          ? activeTenantObj.about_description
+          : (extracted.aboutDescription || bData.about_description || activeTenantObj.about_description || '');
+
         setWebsiteForm({
           hero_image_url: activeTenantObj.hero_image_url || bData.hero_image_url || extracted.heroImageUrl || '',
           primary_color: activeTenantObj.primary_color || bData.primary_color || '#d92672',
@@ -282,11 +298,11 @@ export const DashboardPage: React.FC = () => {
           title_accent: cleanTitleAccent,
           subtitle: cleanSubtitle,
           about_image_url: activeTenantObj.about_image_url || bData.about_image_url || extracted.aboutImageUrl || '',
-          about_badge_text: activeTenantObj.about_badge_text || bData.about_badge_text || extracted.aboutBadgeText || '',
+          about_badge_text: cleanAboutBadgeText,
           about_eyebrow: activeTenantObj.about_eyebrow || bData.about_eyebrow || extracted.aboutEyebrow || 'Sobre Nosotros',
-          about_title: activeTenantObj.about_title || bData.about_title || extracted.aboutTitle || '',
-          about_title_accent: activeTenantObj.about_title_accent || bData.about_title_accent || extracted.aboutTitleAccent || '',
-          about_description: activeTenantObj.about_description || bData.about_description || extracted.aboutDescription || '',
+          about_title: cleanAboutTitle,
+          about_title_accent: cleanAboutTitleAccent,
+          about_description: cleanAboutDescription,
           about_years_exp: activeTenantObj.about_years_exp || bData.about_years_exp || extracted.aboutYearsExp || '+8',
           about_clients_count: activeTenantObj.about_clients_count || bData.about_clients_count || extracted.aboutClientsCount || '+3.5K',
           about_rating_text: activeTenantObj.about_rating_text || bData.about_rating_text || extracted.aboutRatingText || '5.0',
