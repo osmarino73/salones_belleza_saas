@@ -548,7 +548,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           const cleanServiceParam = nativeTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
           const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
 
-          // 4. Asignar el enlace respectivo de agendamiento directamente al botón/enlace nativo de la tarjeta
+          // 4. Eliminar pills / badges de técnicas secundarias para dejar la tarjeta completamente limpia
+          inner = inner.replace(/<(?:div|span|p|li)\b[^>]*class=["'][^"']*(?:service-tag-pill|tag-pill|card-badge|btn-tag|service-pill|feature-tag|service-feature|tech-pill|badge-pill|service-technique|card-tag|service-tag|service-benefit|benefit-tag|tech-tag|feature-pill|tag)[^"']*["'][^>]*>[\s\S]*?<\/(?:div|span|p|li)>/gi, '');
+          inner = inner.replace(/<(?:div|span|p|li)\b[^>]*>[\s\S]*?(?:Caída\s+Natural|Mantecas\s+Naturales|Exfoliaci[oó]n|Prote[ií]nas|Mano\s+Alzada|Fitagem)[\s\S]*?<\/(?:div|span|p|li)>/gi, '');
+
+          // 5. Asignar el enlace respectivo de agendamiento directamente al botón/enlace nativo de la tarjeta
           let linkInjected = false;
 
           // Si la tarjeta contiene enlaces <a>
@@ -876,6 +880,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // 7. Inyectar Script Técnico Ligero para Navegación Táctil Móvil y Compatibilidad en Iframes
   const interactionScript = `
+<style id="beautyflow-clean-cards">
+  .service-tag-pill, .tag-pill, .card-badge, .feature-tag, .service-pill, .service-feature, .tech-pill, .service-technique, .service-tag, .service-benefit, .benefit-tag, .tech-tag, .feature-pill {
+    display: none !important;
+  }
+</style>
 <script id="beautyflow-interaction-script">
   (function() {
     function initInteractions() {
