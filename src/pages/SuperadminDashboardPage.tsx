@@ -450,6 +450,7 @@ export const SuperadminDashboardPage: React.FC = () => {
         about_description: businessData?.about_description || extracted.aboutDescription || undefined,
         about_years_exp: businessData?.about_years_exp || extracted.aboutYearsExp || undefined,
         about_clients_count: businessData?.about_clients_count || extracted.aboutClientsCount || undefined,
+        about_stat3_text: businessData?.about_stat3_text || extracted.aboutStat3Text || undefined,
         about_rating_text: businessData?.about_rating_text || extracted.aboutRatingText || undefined,
         show_about_section: businessData?.show_about_section !== undefined ? businessData.show_about_section : (extracted.showAboutSection !== undefined ? extracted.showAboutSection : true)
       };

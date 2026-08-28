@@ -111,6 +111,7 @@ export const PublicProspectSitePage: React.FC = () => {
       aboutDescription: cleanAboutDesc,
       aboutYearsExp: tenant?.about_years_exp || bData.about_years_exp || undefined,
       aboutClientsCount: tenant?.about_clients_count || bData.about_clients_count || undefined,
+      aboutStat3Text: tenant?.about_stat3_text || bData.about_stat3_text || undefined,
       aboutRatingText: tenant?.about_rating_text || bData.about_rating_text || undefined,
       showAboutSection: showAbout,
       liveServices: liveServices.length > 0 ? liveServices : undefined,

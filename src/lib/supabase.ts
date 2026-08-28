@@ -1386,6 +1386,7 @@ export const api = {
             about_description: tenant.about_description || currentBData.about_description,
             about_years_exp: tenant.about_years_exp || currentBData.about_years_exp,
             about_clients_count: tenant.about_clients_count || currentBData.about_clients_count,
+            about_stat3_text: tenant.about_stat3_text || currentBData.about_stat3_text,
             about_rating_text: tenant.about_rating_text || currentBData.about_rating_text,
             show_about_section: tenant.show_about_section !== undefined ? tenant.show_about_section : currentBData.show_about_section
           };

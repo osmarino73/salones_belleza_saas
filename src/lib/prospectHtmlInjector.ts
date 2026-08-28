@@ -21,6 +21,7 @@ export interface ExtractedWebsiteData {
   aboutDescription?: string;
   aboutYearsExp?: string;
   aboutClientsCount?: string;
+  aboutStat3Text?: string;
   aboutRatingText?: string;
   showAboutSection?: boolean;
 }
@@ -131,16 +132,22 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
         result.aboutDescription = aboutDescMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
 
-      // Métricas (años, clientes, calificación)
-      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4|p|b)>/gi)];
-      if (statMatches.length > 0) {
+      // Métricas (años, clientes, productos limpios/especialidad, calificación)
+      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4|h3|h2|p|b)>/gi)];
+      if (statMatches.length >= 4) {
         result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        if (statMatches.length > 1) {
-          result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        }
-        if (statMatches.length > 3) {
-          result.aboutRatingText = statMatches[3]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        }
+        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        result.aboutStat3Text = statMatches[2]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        result.aboutRatingText = statMatches[3]?.[1]?.replace(/<[^>]*>/g, '').trim();
+      } else if (statMatches.length === 3) {
+        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        result.aboutRatingText = statMatches[2]?.[1]?.replace(/<[^>]*>/g, '').trim();
+      } else if (statMatches.length === 2) {
+        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
+      } else if (statMatches.length === 1) {
+        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
       }
     }
   } catch (err) {
@@ -174,6 +181,7 @@ export interface InjectProspectOptions {
   aboutDescription?: string;
   aboutYearsExp?: string;
   aboutClientsCount?: string;
+  aboutStat3Text?: string;
   aboutRatingText?: string;
   showAboutSection?: boolean;
   liveServices?: Array<{
@@ -224,6 +232,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     aboutDescription,
     aboutYearsExp,
     aboutClientsCount,
+    aboutStat3Text,
     aboutRatingText,
     showAboutSection = true,
     liveServices,
@@ -477,12 +486,67 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           }
         }
 
-        // 6. Actualizar Métricas / Estadísticas si cambiaron
-        if (aboutYearsExp && aboutYearsExp !== baseline.aboutYearsExp) {
-          updatedBody = updatedBody.replace(
-            /(<(?:span|div|strong|h4)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4)>)/i,
-            `$1${aboutYearsExp}$3`
-          );
+        // 6. Actualizar Métricas / Estadísticas Dinámicas (Años Exp., Clientas, Productos Limpios / Especialidad, Calificación ★)
+        const hasCustomStats = Boolean(
+          (aboutYearsExp && aboutYearsExp !== baseline.aboutYearsExp) ||
+          (aboutClientsCount && aboutClientsCount !== baseline.aboutClientsCount) ||
+          (aboutStat3Text && aboutStat3Text !== baseline.aboutStat3Text) ||
+          (aboutRatingText && aboutRatingText !== baseline.aboutRatingText) ||
+          aboutYearsExp || aboutClientsCount || aboutStat3Text || aboutRatingText
+        );
+
+        if (hasCustomStats) {
+          // A. Estrategia Semántica por etiquetas / keywords en las tarjetas de estadísticas
+          if (aboutYearsExp) {
+            updatedBody = updatedBody.replace(
+              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:AÑOS|Años|años|A[ñn]o|Exp|EXP|EXPERIENCIA|Experiencia)[\s\S]*?<\/(?:div|li|article)>)/gi,
+              `$1$2${aboutYearsExp}$4$5`
+            );
+          }
+
+          if (aboutClientsCount) {
+            updatedBody = updatedBody.replace(
+              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:CLIENT|Client|client|FELICES|Felices|felices|ATENDIDAS|Atendidas|Mujeres)[\s\S]*?<\/(?:div|li|article)>)/gi,
+              `$1$2${aboutClientsCount}$4$5`
+            );
+          }
+
+          if (aboutStat3Text) {
+            updatedBody = updatedBody.replace(
+              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:PRODUCT|Product|product|LIMPIO|Limpio|limpio|ORG[AÁ]NIC|Org[aá]nic|CALIDAD|Calidad|BOT[AÁ]NIC)[\s\S]*?<\/(?:div|li|article)>)/gi,
+              `$1$2${aboutStat3Text}$4$5`
+            );
+          }
+
+          if (aboutRatingText) {
+            updatedBody = updatedBody.replace(
+              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:CALIFICACI|Calificaci|calificaci|ESTRELLA|Estrella|estrella|★|RATING|Rating|rating|PUNTUACI)[\s\S]*?<\/(?:div|li|article)>)/gi,
+              `$1$2${aboutRatingText}$4$5`
+            );
+          }
+
+          // B. Estrategia Secuencial Universal (reemplaza ordenadamente los números de las tarjetas de métricas)
+          let statIdx = 0;
+          const statValuesMap = [
+            aboutYearsExp,
+            aboutClientsCount,
+            aboutStat3Text,
+            aboutRatingText
+          ].filter(v => v !== undefined && v !== '');
+
+          if (statValuesMap.length > 0) {
+            updatedBody = updatedBody.replace(
+              /(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|metric-value|metric-number|stat-count|number|num|val|metric)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)/gi,
+              (wholeMatch: string, openTag: string, _currentVal: string, closeTag: string) => {
+                const assignedVal = statValuesMap[statIdx];
+                statIdx++;
+                if (assignedVal !== undefined && assignedVal !== '') {
+                  return `${openTag}${assignedVal}${closeTag}`;
+                }
+                return wholeMatch;
+              }
+            );
+          }
         }
 
         return `${sectionOpen}${updatedBody}${sectionClose}`;

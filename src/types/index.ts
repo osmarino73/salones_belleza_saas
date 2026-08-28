@@ -57,6 +57,7 @@ export interface Tenant {
   about_description?: string; // Párrafo descriptivo o historia del negocio
   about_years_exp?: string; // Métricas rápidas (ej. '+8')
   about_clients_count?: string; // Métricas rápidas (ej. '+3.5K')
+  about_stat3_text?: string; // Métrica 3 (ej. '100%' o 'Productos Limpios')
   about_rating_text?: string; // Calificación (ej. '5.0')
   show_about_section?: boolean; // Controla si se muestra u oculta la sección Sobre Nosotros
   created_at: string;

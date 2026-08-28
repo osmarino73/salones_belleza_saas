@@ -209,6 +209,7 @@ export const DashboardPage: React.FC = () => {
     about_description: string;
     about_years_exp: string;
     about_clients_count: string;
+    about_stat3_text: string;
     about_rating_text: string;
     show_about_section: boolean;
   }>({
@@ -231,6 +232,7 @@ export const DashboardPage: React.FC = () => {
     about_description: '',
     about_years_exp: '+8',
     about_clients_count: '+3.5K',
+    about_stat3_text: '100%',
     about_rating_text: '5.0',
     show_about_section: true
   });
@@ -305,6 +307,7 @@ export const DashboardPage: React.FC = () => {
           about_description: cleanAboutDescription,
           about_years_exp: activeTenantObj.about_years_exp || bData.about_years_exp || extracted.aboutYearsExp || '+8',
           about_clients_count: activeTenantObj.about_clients_count || bData.about_clients_count || extracted.aboutClientsCount || '+3.5K',
+          about_stat3_text: activeTenantObj.about_stat3_text || bData.about_stat3_text || extracted.aboutStat3Text || '100%',
           about_rating_text: activeTenantObj.about_rating_text || bData.about_rating_text || extracted.aboutRatingText || '5.0',
           show_about_section: activeTenantObj.show_about_section !== undefined ? activeTenantObj.show_about_section : (bData.show_about_section !== undefined ? bData.show_about_section : true)
         });
@@ -338,6 +341,7 @@ export const DashboardPage: React.FC = () => {
       aboutDescription: websiteForm.about_description || undefined,
       aboutYearsExp: websiteForm.about_years_exp || undefined,
       aboutClientsCount: websiteForm.about_clients_count || undefined,
+      aboutStat3Text: websiteForm.about_stat3_text || undefined,
       aboutRatingText: websiteForm.about_rating_text || undefined,
       showAboutSection: websiteForm.show_about_section !== false,
       liveServices: services.length > 0 ? services : undefined,
@@ -5853,6 +5857,7 @@ export const DashboardPage: React.FC = () => {
                   about_description: websiteForm.about_description || activeTenantObj.about_description,
                   about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
                   about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
+                  about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
                   about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
                   show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
                 };
@@ -5883,6 +5888,7 @@ export const DashboardPage: React.FC = () => {
                         about_description: updatedTenant.about_description,
                         about_years_exp: updatedTenant.about_years_exp,
                         about_clients_count: updatedTenant.about_clients_count,
+                        about_stat3_text: updatedTenant.about_stat3_text,
                         about_rating_text: updatedTenant.about_rating_text,
                         show_about_section: updatedTenant.show_about_section,
                         show_team_section: updatedTenant.show_team_section,
@@ -6113,7 +6119,7 @@ export const DashboardPage: React.FC = () => {
                       </div>
 
                       {/* Métricas Rápidas */}
-                      <div className="grid grid-cols-3 gap-2 pt-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                         <div>
                           <label className="block text-slate-400 text-[11px] mb-1 font-semibold">Años Exp.</label>
                           <input
@@ -6134,6 +6140,18 @@ export const DashboardPage: React.FC = () => {
                             onChange={(e) => setWebsiteForm({ ...websiteForm, about_clients_count: e.target.value })}
                             placeholder="+3.5K"
                             className={`w-full border rounded-xl p-2 text-center font-bold focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 text-[11px] mb-1 font-semibold">Prod. Limpios</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_stat3_text}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_stat3_text: e.target.value })}
+                            placeholder="100%"
+                            className={`w-full border rounded-xl p-2 text-center font-bold text-emerald-400 focus:outline-none focus:border-[#FF5A36] ${
                               theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                             }`}
                           />
