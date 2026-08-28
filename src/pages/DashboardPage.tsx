@@ -5916,56 +5916,9 @@ export const DashboardPage: React.FC = () => {
                   />
                 </div>
 
-                {/* 2. Logo / Isotipo del Salón */}
+                {/* 2. Textos Principales del Hero */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
-                  <label className="block text-slate-300 font-bold text-xs">2. Logo / Isotipo de la Cabecera</label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {['🪄', '✨', '✂️', '👑', '💅', '🧖‍♀️'].map((ic) => (
-                      <button
-                        key={ic}
-                        type="button"
-                        onClick={() => setWebsiteForm({ ...websiteForm, logo_icon: ic })}
-                        className={`w-9 h-9 rounded-xl border text-base flex items-center justify-center transition-all cursor-pointer ${
-                          websiteForm.logo_icon === ic
-                            ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md shadow-[#FF5A36]/30'
-                            : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-700'
-                        }`}
-                      >
-                        {ic}
-                      </button>
-                    ))}
-
-                    <label className={`h-9 px-3.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all text-xs font-semibold ${
-                      websiteForm.logo_icon && (websiteForm.logo_icon.startsWith('http') || websiteForm.logo_icon.startsWith('data:image/'))
-                        ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md'
-                        : theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-slate-300 hover:border-white/20' : 'bg-slate-100 border-slate-200 text-slate-700'
-                    }`} title="Subir logo propio (PNG transparente / JPG / WebP)">
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>{websiteForm.logo_icon && (websiteForm.logo_icon.startsWith('http') || websiteForm.logo_icon.startsWith('data:image/')) ? 'Logo Subido ✓' : 'Subir Logo PNG/JPG'}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (uploadEvt) => {
-                              if (uploadEvt.target?.result) {
-                                setWebsiteForm({ ...websiteForm, logo_icon: uploadEvt.target.result as string });
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* 3. Textos Principales del Hero */}
-                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
-                  <strong className="text-slate-300 font-bold text-xs block">3. Mensaje Principal & Subtítulos (Header)</strong>
+                  <strong className="text-slate-300 font-bold text-xs block">2. Mensaje Principal & Subtítulos (Header)</strong>
                   
                   <div>
                     <label className="block text-slate-400 mb-1 font-semibold">Saludo Superior (Eyebrow)</label>
@@ -6023,10 +5976,10 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 4. Sección "Sobre Nosotros" (Tu Salón, Historia & Espacio) */}
+                {/* 3. Sección "Sobre Nosotros" (Tu Salón, Historia & Espacio) */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
                   <div className="flex items-center justify-between">
-                    <strong className="text-slate-300 font-bold text-xs block">4. Sección "Sobre Nosotros" (Salón & Experiencia)</strong>
+                    <strong className="text-slate-300 font-bold text-xs block">3. Sección "Sobre Nosotros" (Salón & Experiencia)</strong>
                     <button
                       type="button"
                       onClick={() => setWebsiteForm({ ...websiteForm, show_about_section: !websiteForm.show_about_section })}
@@ -6173,9 +6126,9 @@ export const DashboardPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* 5. Secciones Condicionales de la Página */}
+                {/* 4. Secciones Condicionales de la Página */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
-                  <strong className="text-slate-300 font-bold text-xs block">5. Secciones Opcionales de tu Web</strong>
+                  <strong className="text-slate-300 font-bold text-xs block">4. Secciones Opcionales de tu Web</strong>
 
                   {/* Switch de Especialistas / Equipo */}
                   <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">
@@ -6198,67 +6151,6 @@ export const DashboardPage: React.FC = () => {
                     >
                       <div className="w-4 h-4 rounded-full bg-white shadow-md" />
                     </button>
-                  </div>
-
-                  {/* Switch y Configuración de Descuento por Primera Visita */}
-                  <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <strong className="text-white text-xs block flex items-center gap-1.5">
-                          🎁 Publicar Banner de "Descuento Primera Visita"
-                        </strong>
-                        <span className="text-[10px] text-slate-400">
-                          {websiteForm.show_first_visit_discount 
-                            ? 'Banner promocional activo en la web para capturar clientas nuevas.' 
-                            : 'Desactivado por defecto. Actívalo si deseas ofrecer una oferta de bienvenida.'}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setWebsiteForm({ ...websiteForm, show_first_visit_discount: !websiteForm.show_first_visit_discount })}
-                        className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors cursor-pointer shrink-0 ${
-                          websiteForm.show_first_visit_discount ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
-                        }`}
-                      >
-                        <div className="w-4 h-4 rounded-full bg-white shadow-md" />
-                      </button>
-                    </div>
-
-                    {/* Campos si el descuento está activo */}
-                    {websiteForm.show_first_visit_discount && (
-                      <div className="pt-3 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in">
-                        <div className="sm:col-span-1">
-                          <label className="block text-slate-400 mb-1 font-semibold">% Descuento</label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              min="5"
-                              max="50"
-                              step="5"
-                              value={websiteForm.first_visit_discount_pct || 15}
-                              onChange={(e) => setWebsiteForm({ ...websiteForm, first_visit_discount_pct: Number(e.target.value) })}
-                              className={`w-full border rounded-xl p-2.5 pr-7 font-bold text-pink-400 focus:outline-none focus:border-[#FF5A36] ${
-                                theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                              }`}
-                            />
-                            <span className="absolute right-2.5 top-2.5 text-slate-400 font-bold">%</span>
-                          </div>
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="block text-slate-400 mb-1 font-semibold">Título Oferta (Opcional)</label>
-                          <input
-                            type="text"
-                            value={websiteForm.first_visit_discount_title}
-                            onChange={(e) => setWebsiteForm({ ...websiteForm, first_visit_discount_title: e.target.value })}
-                            placeholder={`¡Obtén un ${websiteForm.first_visit_discount_pct || 15}% OFF en tu Primera Visita!`}
-                            className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                            }`}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </form>

@@ -16,6 +16,14 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-6. **Simplificación del Personalizador Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+   - Se removió la sección de Logo / Isotipo y la sección del Banner de Descuento por Primera Visita del modal para mantener un formulario más conciso, directo y enfocado.
+   - Las secciones quedaron renumeradas limpiamente:
+     1. *Fotografía Principal del Header (Portada)*
+     2. *Mensaje Principal & Subtítulos (Header)*
+     3. *Sección "Sobre Nosotros" (Salón, Historia, Métricas)*
+     4. *Secciones Opcionales (Equipo de Especialistas)*
+
 -5. **Corrección Integral y Sincronización Dinámica de las 4 Métricas de "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
    - **Diagnóstico del Fallo**: Los campos de métricas (`about_clients_count`, `about_rating_text`, `about_stat3_text`) no tenían código de reemplazo en `injectProspectLinks` y `about_years_exp` usaba un regex estricto de una sola coincidencia que no coincidía con las clases nativas del HTML de las tarjetas de estadísticas.
    - **Solución Implementada**:
