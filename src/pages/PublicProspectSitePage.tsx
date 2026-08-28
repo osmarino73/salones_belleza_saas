@@ -61,6 +61,10 @@ export const PublicProspectSitePage: React.FC = () => {
       ? tenant.show_team_section 
       : (bData.show_team_section !== undefined ? bData.show_team_section : true);
 
+    const showAbout = tenant?.show_about_section !== undefined
+      ? tenant.show_about_section
+      : (bData.show_about_section !== undefined ? bData.show_about_section : true);
+
     const showDiscount = tenant?.show_first_visit_discount !== undefined
       ? tenant.show_first_visit_discount
       : (bData.show_first_visit_discount !== undefined ? bData.show_first_visit_discount : false);
@@ -80,6 +84,16 @@ export const PublicProspectSitePage: React.FC = () => {
       slogan: tenant?.slogan || bData.slogan || undefined,
       titleAccent: tenant?.title_accent || bData.title_accent || undefined,
       subtitle: tenant?.subtitle || bData.subtitle || undefined,
+      aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
+      aboutBadgeText: tenant?.about_badge_text || bData.about_badge_text || undefined,
+      aboutEyebrow: tenant?.about_eyebrow || bData.about_eyebrow || undefined,
+      aboutTitle: tenant?.about_title || bData.about_title || undefined,
+      aboutTitleAccent: tenant?.about_title_accent || bData.about_title_accent || undefined,
+      aboutDescription: tenant?.about_description || bData.about_description || undefined,
+      aboutYearsExp: tenant?.about_years_exp || bData.about_years_exp || undefined,
+      aboutClientsCount: tenant?.about_clients_count || bData.about_clients_count || undefined,
+      aboutRatingText: tenant?.about_rating_text || bData.about_rating_text || undefined,
+      showAboutSection: showAbout,
       liveServices: liveServices.length > 0 ? liveServices : undefined,
       liveStylists: liveStylists.length > 0 ? liveStylists : undefined
     });

@@ -1377,7 +1377,17 @@ export const api = {
             hero_eyebrow: tenant.hero_eyebrow || currentBData.hero_eyebrow,
             slogan: tenant.slogan || currentBData.slogan,
             title_accent: tenant.title_accent || currentBData.title_accent,
-            subtitle: tenant.subtitle || currentBData.subtitle
+            subtitle: tenant.subtitle || currentBData.subtitle,
+            about_image_url: tenant.about_image_url || currentBData.about_image_url,
+            about_badge_text: tenant.about_badge_text || currentBData.about_badge_text,
+            about_eyebrow: tenant.about_eyebrow || currentBData.about_eyebrow,
+            about_title: tenant.about_title || currentBData.about_title,
+            about_title_accent: tenant.about_title_accent || currentBData.about_title_accent,
+            about_description: tenant.about_description || currentBData.about_description,
+            about_years_exp: tenant.about_years_exp || currentBData.about_years_exp,
+            about_clients_count: tenant.about_clients_count || currentBData.about_clients_count,
+            about_rating_text: tenant.about_rating_text || currentBData.about_rating_text,
+            show_about_section: tenant.show_about_section !== undefined ? tenant.show_about_section : currentBData.show_about_section
           };
 
           const prospectPayload: any = { business_data: updatedBData };

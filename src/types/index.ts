@@ -49,6 +49,16 @@ export interface Tenant {
   show_first_visit_discount?: boolean; // Controla si se muestra el banner de descuento por primera visita (por defecto false)
   first_visit_discount_pct?: number; // Porcentaje de descuento (ej. 10, 15, 20)
   first_visit_discount_title?: string; // Texto personalizado del descuento
+  about_image_url?: string; // Fotografía del salón / espacio para la sección Sobre Nosotros
+  about_badge_text?: string; // Badge VIP sobre la foto (ej. 'VIP EXPERIENCIA CURLY')
+  about_eyebrow?: string; // Saludo superior de la sección (ej. 'Sobre Nosotros')
+  about_title?: string; // Título principal de la sección (ej. 'CUIDADO. DEFINICIÓN.')
+  about_title_accent?: string; // Acento destacado (ej. 'PASIÓN POR TUS RIZOS.')
+  about_description?: string; // Párrafo descriptivo o historia del negocio
+  about_years_exp?: string; // Métricas rápidas (ej. '+8')
+  about_clients_count?: string; // Métricas rápidas (ej. '+3.5K')
+  about_rating_text?: string; // Calificación (ej. '5.0')
+  show_about_section?: boolean; // Controla si se muestra u oculta la sección Sobre Nosotros
   created_at: string;
 }
 

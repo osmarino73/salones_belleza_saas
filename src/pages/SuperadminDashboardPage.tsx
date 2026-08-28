@@ -12,6 +12,7 @@ import {
 } from '../lib/beautyImageLibrary';
 import { HomepageStudioModal } from '../components/HomepageStudio/HomepageStudioModal';
 import { compressImage } from '../utils/imageCompressor';
+import { extractWebsiteDataFromHtml } from '../lib/prospectHtmlInjector';
 import {
   Crown,
   Sparkles,
@@ -432,9 +433,25 @@ export const SuperadminDashboardPage: React.FC = () => {
         );
       }
 
+      const extracted = extractWebsiteDataFromHtml(finalHtml);
       const updatedBusinessData = {
         ...(businessData || {}),
-        hero_image_url: heroImageUrl || businessData?.hero_image_url || undefined
+        hero_image_url: heroImageUrl || businessData?.hero_image_url || extracted.heroImageUrl || undefined,
+        logo_icon: businessData?.logo_icon || extracted.logoIcon || undefined,
+        hero_eyebrow: businessData?.hero_eyebrow || extracted.heroEyebrow || undefined,
+        slogan: businessData?.slogan || extracted.slogan || undefined,
+        title_accent: businessData?.title_accent || extracted.titleAccent || undefined,
+        subtitle: businessData?.subtitle || extracted.subtitle || undefined,
+        about_image_url: businessData?.about_image_url || extracted.aboutImageUrl || undefined,
+        about_badge_text: businessData?.about_badge_text || extracted.aboutBadgeText || undefined,
+        about_eyebrow: businessData?.about_eyebrow || extracted.aboutEyebrow || undefined,
+        about_title: businessData?.about_title || extracted.aboutTitle || undefined,
+        about_title_accent: businessData?.about_title_accent || extracted.aboutTitleAccent || undefined,
+        about_description: businessData?.about_description || extracted.aboutDescription || undefined,
+        about_years_exp: businessData?.about_years_exp || extracted.aboutYearsExp || undefined,
+        about_clients_count: businessData?.about_clients_count || extracted.aboutClientsCount || undefined,
+        about_rating_text: businessData?.about_rating_text || extracted.aboutRatingText || undefined,
+        show_about_section: businessData?.show_about_section !== undefined ? businessData.show_about_section : (extracted.showAboutSection !== undefined ? extracted.showAboutSection : true)
       };
 
       const currentUser = api.auth.getUser();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { injectProspectLinks } from '../lib/prospectHtmlInjector';
+import { injectProspectLinks, extractWebsiteDataFromHtml } from '../lib/prospectHtmlInjector';
 import {
   Scissors,
   Sparkles,
@@ -201,6 +201,16 @@ export const DashboardPage: React.FC = () => {
     slogan: string;
     title_accent: string;
     subtitle: string;
+    about_image_url: string;
+    about_badge_text: string;
+    about_eyebrow: string;
+    about_title: string;
+    about_title_accent: string;
+    about_description: string;
+    about_years_exp: string;
+    about_clients_count: string;
+    about_rating_text: string;
+    show_about_section: boolean;
   }>({
     hero_image_url: '',
     primary_color: '#d92672',
@@ -212,7 +222,17 @@ export const DashboardPage: React.FC = () => {
     hero_eyebrow: 'Bienvenidas a ❤️',
     slogan: 'Sandra Color´s',
     title_accent: 'Centro de Estética',
-    subtitle: 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
+    subtitle: 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
+    about_image_url: '',
+    about_badge_text: 'VIP EXPERIENCIA SALÓN',
+    about_eyebrow: 'Sobre Nosotros',
+    about_title: 'CUIDADO. DEFINICIÓN.',
+    about_title_accent: 'PASIÓN POR TU BELLEZA.',
+    about_description: 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
+    about_years_exp: '+8',
+    about_clients_count: '+3.5K',
+    about_rating_text: '5.0',
+    show_about_section: true
   });
 
   const [prospectRawHtml, setProspectRawHtml] = useState<string>('');
@@ -220,26 +240,41 @@ export const DashboardPage: React.FC = () => {
   // Sincronizar websiteForm y prospectRawHtml cuando activeTenantObj esté listo o al abrir el modal
   useEffect(() => {
     if (activeTenantObj) {
-      setWebsiteForm({
-        hero_image_url: activeTenantObj.hero_image_url || '',
-        primary_color: activeTenantObj.primary_color || '#d92672',
-        show_team_section: activeTenantObj.show_team_section !== undefined ? activeTenantObj.show_team_section : true,
-        show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : false,
-        first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || 15,
-        first_visit_discount_title: activeTenantObj.first_visit_discount_title || '',
-        logo_icon: activeTenantObj.logo_icon || '🪄',
-        hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
-        slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
-        title_accent: activeTenantObj.title_accent || 'Centro de Estética',
-        subtitle: activeTenantObj.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
-      });
-
-      // Cargar el HTML real del sitio del prospecto para el previsualizador
+      // 1. Cargar el HTML real del sitio del prospecto para el previsualizador y extracción de respaldo
       api.getProspectSites().then((pSites) => {
         const matched = pSites.find(p => p.slug === activeTenantObj.slug || p.claimed_tenant_id === activeTenantObj.id);
-        if (matched?.raw_html) {
-          setProspectRawHtml(matched.raw_html);
+        const rawHtml = matched?.raw_html || '';
+        if (rawHtml) {
+          setProspectRawHtml(rawHtml);
         }
+
+        // Si el tenant no tiene aún ciertos campos guardados, extraerlos automáticamente del HTML base
+        const extracted = rawHtml ? extractWebsiteDataFromHtml(rawHtml) : {};
+        const bData = (matched as any)?.business_data || {};
+
+        setWebsiteForm({
+          hero_image_url: activeTenantObj.hero_image_url || bData.hero_image_url || extracted.heroImageUrl || '',
+          primary_color: activeTenantObj.primary_color || bData.primary_color || '#d92672',
+          show_team_section: activeTenantObj.show_team_section !== undefined ? activeTenantObj.show_team_section : (bData.show_team_section !== undefined ? bData.show_team_section : true),
+          show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : (bData.show_first_visit_discount !== undefined ? bData.show_first_visit_discount : false),
+          first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || bData.first_visit_discount_pct || 15,
+          first_visit_discount_title: activeTenantObj.first_visit_discount_title || bData.first_visit_discount_title || '',
+          logo_icon: activeTenantObj.logo_icon || bData.logo_icon || extracted.logoIcon || '🪄',
+          hero_eyebrow: activeTenantObj.hero_eyebrow || bData.hero_eyebrow || extracted.heroEyebrow || 'Bienvenidas a ❤️',
+          slogan: activeTenantObj.slogan || bData.slogan || extracted.slogan || activeTenantObj.name || 'Sandra Color´s',
+          title_accent: activeTenantObj.title_accent || bData.title_accent || extracted.titleAccent || 'Centro de Estética',
+          subtitle: activeTenantObj.subtitle || bData.subtitle || extracted.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
+          about_image_url: activeTenantObj.about_image_url || bData.about_image_url || extracted.aboutImageUrl || '',
+          about_badge_text: activeTenantObj.about_badge_text || bData.about_badge_text || extracted.aboutBadgeText || 'VIP EXPERIENCIA SALÓN',
+          about_eyebrow: activeTenantObj.about_eyebrow || bData.about_eyebrow || extracted.aboutEyebrow || 'Sobre Nosotros',
+          about_title: activeTenantObj.about_title || bData.about_title || extracted.aboutTitle || 'CUIDADO. DEFINICIÓN.',
+          about_title_accent: activeTenantObj.about_title_accent || bData.about_title_accent || extracted.aboutTitleAccent || 'PASIÓN POR TU BELLEZA.',
+          about_description: activeTenantObj.about_description || bData.about_description || extracted.aboutDescription || 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
+          about_years_exp: activeTenantObj.about_years_exp || bData.about_years_exp || extracted.aboutYearsExp || '+8',
+          about_clients_count: activeTenantObj.about_clients_count || bData.about_clients_count || extracted.aboutClientsCount || '+3.5K',
+          about_rating_text: activeTenantObj.about_rating_text || bData.about_rating_text || extracted.aboutRatingText || '5.0',
+          show_about_section: activeTenantObj.show_about_section !== undefined ? activeTenantObj.show_about_section : (bData.show_about_section !== undefined ? bData.show_about_section : true)
+        });
       }).catch(() => {});
     }
   }, [activeTenantObj]);
@@ -262,6 +297,16 @@ export const DashboardPage: React.FC = () => {
       slogan: websiteForm.slogan || undefined,
       titleAccent: websiteForm.title_accent || undefined,
       subtitle: websiteForm.subtitle || undefined,
+      aboutImageUrl: websiteForm.about_image_url || undefined,
+      aboutBadgeText: websiteForm.about_badge_text || undefined,
+      aboutEyebrow: websiteForm.about_eyebrow || undefined,
+      aboutTitle: websiteForm.about_title || undefined,
+      aboutTitleAccent: websiteForm.about_title_accent || undefined,
+      aboutDescription: websiteForm.about_description || undefined,
+      aboutYearsExp: websiteForm.about_years_exp || undefined,
+      aboutClientsCount: websiteForm.about_clients_count || undefined,
+      aboutRatingText: websiteForm.about_rating_text || undefined,
+      showAboutSection: websiteForm.show_about_section !== false,
       liveServices: services.length > 0 ? services : undefined,
       liveStylists: stylists.length > 0 ? stylists : undefined
     });
@@ -1391,19 +1436,30 @@ export const DashboardPage: React.FC = () => {
                     type="button"
                     onClick={() => {
                       if (activeTenantObj) {
-                        setWebsiteForm({
-                          hero_image_url: activeTenantObj.hero_image_url || '',
-                          primary_color: activeTenantObj.primary_color || '#d92672',
+                        setWebsiteForm(prev => ({
+                          ...prev,
+                          hero_image_url: activeTenantObj.hero_image_url || prev.hero_image_url || '',
+                          primary_color: activeTenantObj.primary_color || prev.primary_color || '#d92672',
                           show_team_section: activeTenantObj.show_team_section !== false,
                           show_first_visit_discount: activeTenantObj.show_first_visit_discount !== undefined ? activeTenantObj.show_first_visit_discount : false,
                           first_visit_discount_pct: activeTenantObj.first_visit_discount_pct || 15,
                           first_visit_discount_title: activeTenantObj.first_visit_discount_title || '',
-                          logo_icon: activeTenantObj.logo_icon || '🪄',
-                          hero_eyebrow: activeTenantObj.hero_eyebrow || 'Bienvenidas a ❤️',
-                          slogan: activeTenantObj.slogan || activeTenantObj.name || 'Sandra Color´s',
-                          title_accent: activeTenantObj.title_accent || 'Centro de Estética',
-                          subtitle: activeTenantObj.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.'
-                        });
+                          logo_icon: activeTenantObj.logo_icon || prev.logo_icon || '🪄',
+                          hero_eyebrow: activeTenantObj.hero_eyebrow || prev.hero_eyebrow || 'Bienvenidas a ❤️',
+                          slogan: activeTenantObj.slogan || activeTenantObj.name || prev.slogan || 'Sandra Color´s',
+                          title_accent: activeTenantObj.title_accent || prev.title_accent || 'Centro de Estética',
+                          subtitle: activeTenantObj.subtitle || prev.subtitle || 'Especialistas en colorimetría de autor, balayage, alisados orgánicos, peinados de gala y spa capilar para mujeres modernas en Apartadó.',
+                          about_image_url: activeTenantObj.about_image_url || prev.about_image_url || '',
+                          about_badge_text: activeTenantObj.about_badge_text || prev.about_badge_text || 'VIP EXPERIENCIA SALÓN',
+                          about_eyebrow: activeTenantObj.about_eyebrow || prev.about_eyebrow || 'Sobre Nosotros',
+                          about_title: activeTenantObj.about_title || prev.about_title || 'CUIDADO. DEFINICIÓN.',
+                          about_title_accent: activeTenantObj.about_title_accent || prev.about_title_accent || 'PASIÓN POR TU BELLEZA.',
+                          about_description: activeTenantObj.about_description || prev.about_description || 'Transformamos el cuidado de tu imagen en una experiencia de bienestar, amor propio y exclusividad con técnicas de vanguardia y productos premium.',
+                          about_years_exp: activeTenantObj.about_years_exp || prev.about_years_exp || '+8',
+                          about_clients_count: activeTenantObj.about_clients_count || prev.about_clients_count || '+3.5K',
+                          about_rating_text: activeTenantObj.about_rating_text || prev.about_rating_text || '5.0',
+                          show_about_section: activeTenantObj.show_about_section !== undefined ? activeTenantObj.show_about_section : (prev.show_about_section !== undefined ? prev.show_about_section : true)
+                        }));
                       }
                       setIsWebsiteCustomizerOpen(true);
                       setIsProfileMenuOpen(false);
@@ -5781,7 +5837,17 @@ export const DashboardPage: React.FC = () => {
                   hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
                   slogan: websiteForm.slogan || activeTenantObj.slogan,
                   title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
-                  subtitle: websiteForm.subtitle || activeTenantObj.subtitle
+                  subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
+                  about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
+                  about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
+                  about_eyebrow: websiteForm.about_eyebrow || activeTenantObj.about_eyebrow,
+                  about_title: websiteForm.about_title || activeTenantObj.about_title,
+                  about_title_accent: websiteForm.about_title_accent || activeTenantObj.about_title_accent,
+                  about_description: websiteForm.about_description || activeTenantObj.about_description,
+                  about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
+                  about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
+                  about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
+                  show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
                 };
                 setActiveTenantObj(updatedTenant);
                 localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
@@ -5802,6 +5868,16 @@ export const DashboardPage: React.FC = () => {
                         slogan: updatedTenant.slogan,
                         title_accent: updatedTenant.title_accent,
                         subtitle: updatedTenant.subtitle,
+                        about_image_url: updatedTenant.about_image_url,
+                        about_badge_text: updatedTenant.about_badge_text,
+                        about_eyebrow: updatedTenant.about_eyebrow,
+                        about_title: updatedTenant.about_title,
+                        about_title_accent: updatedTenant.about_title_accent,
+                        about_description: updatedTenant.about_description,
+                        about_years_exp: updatedTenant.about_years_exp,
+                        about_clients_count: updatedTenant.about_clients_count,
+                        about_rating_text: updatedTenant.about_rating_text,
+                        show_about_section: updatedTenant.show_about_section,
                         show_team_section: updatedTenant.show_team_section,
                         show_first_visit_discount: updatedTenant.show_first_visit_discount,
                         first_visit_discount_pct: updatedTenant.first_visit_discount_pct,
@@ -5876,7 +5952,7 @@ export const DashboardPage: React.FC = () => {
 
                 {/* 3. Textos Principales del Hero */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
-                  <strong className="text-slate-300 font-bold text-xs block">3. Mensaje Principal & Subtítulos</strong>
+                  <strong className="text-slate-300 font-bold text-xs block">3. Mensaje Principal & Subtítulos (Header)</strong>
                   
                   <div>
                     <label className="block text-slate-400 mb-1 font-semibold">Saludo Superior (Eyebrow)</label>
@@ -5934,9 +6010,147 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 4. Secciones Condicionales de la Página */}
+                {/* 4. Sección "Sobre Nosotros" (Tu Salón, Historia & Espacio) */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-slate-300 font-bold text-xs block">4. Sección "Sobre Nosotros" (Salón & Experiencia)</strong>
+                    <button
+                      type="button"
+                      onClick={() => setWebsiteForm({ ...websiteForm, show_about_section: !websiteForm.show_about_section })}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full cursor-pointer transition-colors ${
+                        websiteForm.show_about_section ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-700 text-slate-400'
+                      }`}
+                    >
+                      {websiteForm.show_about_section ? 'Sección Activa ✓' : 'Sección Oculta'}
+                    </button>
+                  </div>
+
+                  {websiteForm.show_about_section && (
+                    <div className="space-y-3 pt-2">
+                      {/* Fotografía de la Sección Sobre Nosotros */}
+                      <ServiceImagePicker
+                        value={websiteForm.about_image_url}
+                        category="salon"
+                        onChange={(url) => setWebsiteForm({ ...websiteForm, about_image_url: url })}
+                        label="Fotografía del Salón / Espacio Físico"
+                      />
+
+                      {/* Badge VIP & Eyebrow */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Badge sobre la Foto</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_badge_text}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_badge_text: e.target.value })}
+                            placeholder="Ej. VIP EXPERIENCIA CURLY"
+                            className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Saludo Superior (Eyebrow)</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_eyebrow}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_eyebrow: e.target.value })}
+                            placeholder="Ej. Sobre Nosotros"
+                            className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Título Principal & Acento de Sobre Nosotros */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Título Principal</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_title}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_title: e.target.value })}
+                            placeholder="Ej. CUIDADO. DEFINICIÓN."
+                            className={`w-full border rounded-xl p-2.5 font-bold focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Acento Destacado (Dorado/Color)</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_title_accent}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_title_accent: e.target.value })}
+                            placeholder="Ej. PASIÓN POR TUS RIZOS."
+                            className={`w-full border rounded-xl p-2.5 font-bold text-amber-400 focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Párrafo Descriptivo / Historia */}
+                      <div>
+                        <label className="block text-slate-400 mb-1 font-semibold">Historia / Propuesta de Valor (Párrafo)</label>
+                        <textarea
+                          rows={3}
+                          value={websiteForm.about_description}
+                          onChange={(e) => setWebsiteForm({ ...websiteForm, about_description: e.target.value })}
+                          placeholder="Ej. En nuestro salón transformamos el cuidado de tu cabello en una experiencia de amor propio y libertad..."
+                          className={`w-full border rounded-xl p-2.5 leading-relaxed focus:outline-none focus:border-[#FF5A36] ${
+                            theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                          }`}
+                        />
+                      </div>
+
+                      {/* Métricas Rápidas */}
+                      <div className="grid grid-cols-3 gap-2 pt-1">
+                        <div>
+                          <label className="block text-slate-400 text-[11px] mb-1 font-semibold">Años Exp.</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_years_exp}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_years_exp: e.target.value })}
+                            placeholder="+8"
+                            className={`w-full border rounded-xl p-2 text-center font-bold focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 text-[11px] mb-1 font-semibold">Clientas</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_clients_count}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_clients_count: e.target.value })}
+                            placeholder="+3.5K"
+                            className={`w-full border rounded-xl p-2 text-center font-bold focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 text-[11px] mb-1 font-semibold">Calificación</label>
+                          <input
+                            type="text"
+                            value={websiteForm.about_rating_text}
+                            onChange={(e) => setWebsiteForm({ ...websiteForm, about_rating_text: e.target.value })}
+                            placeholder="5.0 ★"
+                            className={`w-full border rounded-xl p-2 text-center font-bold text-amber-400 focus:outline-none focus:border-[#FF5A36] ${
+                              theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Secciones Condicionales de la Página */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
-                  <strong className="text-slate-300 font-bold text-xs block">4. Secciones Opcionales de tu Web</strong>
+                  <strong className="text-slate-300 font-bold text-xs block">5. Secciones Opcionales de tu Web</strong>
 
                   {/* Switch de Especialistas / Equipo */}
                   <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">

@@ -1,3 +1,8 @@
+- [x] **Auto-Extracción y Personalización Completa de Header & Sección "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+  - Función `extractWebsiteDataFromHtml` para extraer fotos, títulos, acentos, descripciones, badge VIP y métricas directamente del HTML base.
+  - Formulario en el Personalizador Web con selector de fotos de salón/local, edición de badge, textos, historia y estadísticas.
+  - Sincronización en vivo con iframe `srcDoc` y base de datos Supabase.
+
 - [x] **Aislamiento Visual 100% Fiel de Sitios Gancho vía Iframe (`srcDoc`) ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
   - Reemplazado el `<div dangerouslySetInnerHTML>` por `<iframe srcDoc={renderedHtml}>` para aislar al 100% el árbol DOM y el CSS.
   - Elimina la contaminación del fondo oscuro `#090B10` de la app React; preserva íntegramente los fondos crema/marfil (`#FAF7F2`), tarjetas y tipografías oscuras de la maqueta base original (Imagen 1).

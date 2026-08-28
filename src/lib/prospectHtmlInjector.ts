@@ -6,6 +6,147 @@
  * preservando al 100% la estética original sin barras ni widgets flotantes molestos.
  */
 
+export interface ExtractedWebsiteData {
+  heroImageUrl?: string;
+  logoIcon?: string;
+  heroEyebrow?: string;
+  slogan?: string;
+  titleAccent?: string;
+  subtitle?: string;
+  aboutImageUrl?: string;
+  aboutBadgeText?: string;
+  aboutEyebrow?: string;
+  aboutTitle?: string;
+  aboutTitleAccent?: string;
+  aboutDescription?: string;
+  aboutYearsExp?: string;
+  aboutClientsCount?: string;
+  aboutRatingText?: string;
+  showAboutSection?: boolean;
+}
+
+/**
+ * Extrae automáticamente los datos iniciales de la Cabecera (Hero) y de la Sección Sobre Nosotros
+ * leyendo directamente la estructura HTML nativa de la plantilla.
+ */
+export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
+  if (!html) return {};
+  const result: ExtractedWebsiteData = {};
+
+  try {
+    // 1. Extraer Hero Image
+    const heroImgMatch = html.match(/(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap|hero-image)[^>]*>\s*<img\b[^>]*src=["']([^"']+)["']/i)
+      || html.match(/<header\b[^>]*>\s*[\s\S]*?<img\b[^>]*src=["']([^"']+)["']/i)
+      || html.match(/background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/i);
+    if (heroImgMatch && heroImgMatch[1]) {
+      result.heroImageUrl = heroImgMatch[1];
+    }
+
+    // 2. Extraer Logo Icon
+    const logoMatch = html.match(/<(?:div|span|a)\b[^>]*class=["'][^"']*(?:logo-silhouette-box|logo-box|logo-icon|logo-symbol|brand-icon)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|a)>/i);
+    if (logoMatch && logoMatch[1]) {
+      const imgInLogo = logoMatch[1].match(/<img\b[^>]*src=["']([^"']+)["']/i);
+      if (imgInLogo) {
+        result.logoIcon = imgInLogo[1];
+      } else {
+        const textLogo = logoMatch[1].replace(/<[^>]*>/g, '').trim();
+        if (textLogo) result.logoIcon = textLogo;
+      }
+    }
+
+    // 3. Extraer Hero Eyebrow
+    const eyebrowMatch = html.match(/<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow|hero-tag)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p)>/i);
+    if (eyebrowMatch && eyebrowMatch[1]) {
+      result.heroEyebrow = eyebrowMatch[1].replace(/<[^>]*>/g, '').trim();
+    }
+
+    // 4. Extraer Hero Slogan / H1 y Acento
+    const h1Match = html.match(/<h1\b[^>]*class=["'][^"']*(?:hero-main-title|hero-title|main-title)?[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i);
+    if (h1Match && h1Match[1]) {
+      const h1Content = h1Match[1];
+      const accentMatch = h1Content.match(/<(?:span|em|i)\b[^>]*class=["'][^"']*(?:magenta-accent|accent-gold|accent)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|em|i)>/i)
+        || h1Content.match(/<(?:span|em|i)\b[^>]*>([\s\S]*?)<\/(?:span|em|i)>/i);
+      
+      if (accentMatch) {
+        result.titleAccent = accentMatch[1].replace(/<[^>]*>/g, '').trim();
+        const mainTitle = h1Content.replace(accentMatch[0], '').replace(/<[^>]*>/g, '').trim();
+        if (mainTitle) result.slogan = mainTitle;
+      } else {
+        result.slogan = h1Content.replace(/<[^>]*>/g, '').trim();
+      }
+    }
+
+    // 5. Extraer Hero Subtitle
+    const subMatch = html.match(/<p\b[^>]*class=["'][^"']*(?:hero-subtitle|hero-desc|hero-description|lead-text)[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+    if (subMatch && subMatch[1]) {
+      result.subtitle = subMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    // 6. Extraer Datos de la Sección Sobre Nosotros
+    const aboutSecMatch = html.match(/<section\b[^>]*?(?:id=["'](?:nosotros|about|sobre-nosotros|historia)["']|class=["'][^"']*(?:about-section|sobre-nosotros|about-container|about|story-section)[^"']*)[^>]*>([\s\S]*?)<\/section>/i);
+    if (aboutSecMatch && aboutSecMatch[1]) {
+      const aboutBody = aboutSecMatch[1];
+      result.showAboutSection = true;
+
+      // Foto de Sobre Nosotros
+      const aboutImgMatch = aboutBody.match(/<img\b[^>]*src=["']([^"']+)["']/i);
+      if (aboutImgMatch && aboutImgMatch[1]) {
+        result.aboutImageUrl = aboutImgMatch[1];
+      }
+
+      // Badge VIP
+      const badgeMatch = aboutBody.match(/<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|badge|experience-badge)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|strong)>/i);
+      if (badgeMatch && badgeMatch[1]) {
+        result.aboutBadgeText = badgeMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+
+      // Eyebrow Sobre Nosotros
+      const aboutEyebrowMatch = aboutBody.match(/<(?:div|span|p|em)\b[^>]*class=["'][^"']*(?:section-subtitle|about-eyebrow|script-eyebrow|eyebrow)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p|em)>/i);
+      if (aboutEyebrowMatch && aboutEyebrowMatch[1]) {
+        result.aboutEyebrow = aboutEyebrowMatch[1].replace(/<[^>]*>/g, '').trim();
+      }
+
+      // Título Sobre Nosotros
+      const aboutTitleMatch = aboutBody.match(/<(?:h2|h3|h4)\b[^>]*class=["'][^"']*(?:about-title|section-title|about-heading|main-title)?[^"']*["'][^>]*>([\s\S]*?)<\/(?:h2|h3|h4)>/i);
+      if (aboutTitleMatch && aboutTitleMatch[1]) {
+        const titleInner = aboutTitleMatch[1];
+        const accentAboutMatch = titleInner.match(/<(?:span|em|i)\b[^>]*class=["'][^"']*(?:accent-gold|magenta-accent|accent|highlight)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|em|i)>/i)
+          || titleInner.match(/<(?:span|em|i)\b[^>]*>([\s\S]*?)<\/(?:span|em|i)>/i);
+        
+        if (accentAboutMatch) {
+          result.aboutTitleAccent = accentAboutMatch[1].replace(/<[^>]*>/g, '').trim();
+          const cleanMain = titleInner.replace(accentAboutMatch[0], '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          if (cleanMain) result.aboutTitle = cleanMain;
+        } else {
+          result.aboutTitle = titleInner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+      }
+
+      // Descripción Sobre Nosotros
+      const aboutDescMatch = aboutBody.match(/<p\b[^>]*class=["'][^"']*(?:about-desc|about-text|lead-text|description)?[^"']*["'][^>]*>([\s\S]*?)<\/p>/i);
+      if (aboutDescMatch && aboutDescMatch[1]) {
+        result.aboutDescription = aboutDescMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+
+      // Métricas (años, clientes, calificación)
+      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|stat-title)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4)>/gi)];
+      if (statMatches.length > 0) {
+        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        if (statMatches.length > 1) {
+          result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        }
+        if (statMatches.length > 3) {
+          result.aboutRatingText = statMatches[3]?.[1]?.replace(/<[^>]*>/g, '').trim();
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error extracting website data from HTML:', err);
+  }
+
+  return result;
+}
+
 export interface InjectProspectOptions {
   slug: string;
   businessName: string;
@@ -22,6 +163,16 @@ export interface InjectProspectOptions {
   slogan?: string;
   titleAccent?: string;
   subtitle?: string;
+  aboutImageUrl?: string;
+  aboutBadgeText?: string;
+  aboutEyebrow?: string;
+  aboutTitle?: string;
+  aboutTitleAccent?: string;
+  aboutDescription?: string;
+  aboutYearsExp?: string;
+  aboutClientsCount?: string;
+  aboutRatingText?: string;
+  showAboutSection?: boolean;
   liveServices?: Array<{
     id: string;
     name: string;
@@ -62,6 +213,16 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     slogan,
     titleAccent,
     subtitle,
+    aboutImageUrl,
+    aboutBadgeText,
+    aboutEyebrow,
+    aboutTitle,
+    aboutTitleAccent,
+    aboutDescription,
+    aboutYearsExp,
+    aboutClientsCount,
+    aboutRatingText,
+    showAboutSection = true,
     liveServices,
     liveStylists
   } = options;
@@ -221,6 +382,76 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   } else {
     // Si está desactivado, eliminar cualquier sección de descuento / oferta residual del HTML maquetado
     processed = processed.replace(discountBannerRegex, '');
+  }
+
+  // 1.7 Inyección y Actualización de la Sección Sobre Nosotros (Preservando al 100% el diseño original)
+  const aboutSectionRegex = /(<section\b[^>]*?(?:id=["'](?:nosotros|about|sobre-nosotros|historia|nuestro-salon|quienes-somos)["']|class=["'][^"']*(?:about-section|sobre-nosotros|about-container|story-section|quienes-somos)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
+  
+  if (!showAboutSection) {
+    // Si la administradora decidió ocultar la sección Sobre Nosotros
+    processed = processed.replace(aboutSectionRegex, '');
+    processed = processed.replace(/<li\b[^>]*>\s*<a\b[^>]*href=["']#(?:nosotros|about|sobre-nosotros|historia|nuestro-salon|quienes-somos)["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, '');
+    processed = processed.replace(/<a\b[^>]*href=["']#(?:nosotros|about|sobre-nosotros|historia|nuestro-salon|quienes-somos)["'][^>]*>[\s\S]*?<\/a>/gi, '');
+  } else if (aboutSectionRegex.test(processed)) {
+    processed = processed.replace(
+      aboutSectionRegex,
+      (match, sectionOpen, sectionBody, sectionClose) => {
+        let updatedBody = sectionBody;
+
+        // 1. Actualizar Foto de la Sección Sobre Nosotros
+        if (aboutImageUrl) {
+          updatedBody = updatedBody.replace(
+            /(<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+            `$1${aboutImageUrl}$3`
+          );
+        }
+
+        // 2. Actualizar Badge VIP sobre la Foto
+        if (aboutBadgeText) {
+          const badgeRegex = /(<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|experience-badge|badge)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|strong)>)/i;
+          if (badgeRegex.test(updatedBody)) {
+            updatedBody = updatedBody.replace(badgeRegex, `$1${aboutBadgeText}$3`);
+          }
+        }
+
+        // 3. Actualizar Eyebrow / Saludo Superior
+        if (aboutEyebrow) {
+          const eyebrowRegex = /(<(?:div|span|p|em)\b[^>]*class=["'][^"']*(?:section-subtitle|about-eyebrow|script-eyebrow|eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|em)>)/i;
+          if (eyebrowRegex.test(updatedBody)) {
+            updatedBody = updatedBody.replace(eyebrowRegex, `$1${aboutEyebrow}$3`);
+          }
+        }
+
+        // 4. Actualizar Título Principal & Acento
+        if (aboutTitle || aboutTitleAccent) {
+          const titleRegex = /(<(?:h2|h3|h4)\b[^>]*class=["'][^"']*(?:about-title|section-title|about-heading|main-title)?[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h2|h3|h4)>)/i;
+          if (titleRegex.test(updatedBody)) {
+            const accentPart = aboutTitleAccent ? `<span class="accent-gold magenta-accent" style="display: block;">${aboutTitleAccent}</span>` : '';
+            const mainPart = aboutTitle ? `<span>${aboutTitle}</span>` : '';
+            const combined = `${mainPart} ${accentPart}`.trim();
+            updatedBody = updatedBody.replace(titleRegex, `$1\n            ${combined}\n          $3`);
+          }
+        }
+
+        // 5. Actualizar Párrafo Descriptivo
+        if (aboutDescription) {
+          const pRegex = /(<p\b[^>]*class=["'][^"']*(?:about-desc|about-text|lead-text|description)?[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i;
+          if (pRegex.test(updatedBody)) {
+            updatedBody = updatedBody.replace(pRegex, `$1${aboutDescription}$3`);
+          }
+        }
+
+        // 6. Actualizar Métricas / Estadísticas si existen
+        if (aboutYearsExp) {
+          updatedBody = updatedBody.replace(
+            /(<(?:span|div|strong|h4)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4)>)/i,
+            `$1${aboutYearsExp}$3`
+          );
+        }
+
+        return `${sectionOpen}${updatedBody}${sectionClose}`;
+      }
+    );
   }
 
   // 2. Inyección y Actualización de Servicios (Preservando al 100% el diseño original, precios, tiempos y asignando el link respectivo al botón nativo)

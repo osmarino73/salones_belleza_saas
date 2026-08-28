@@ -16,6 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-4. **Auto-Extracción y Personalización Completa de Header & Sección "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+   - **Extractor Automático (`extractWebsiteDataFromHtml`)**: Lee directamente la estructura HTML nativa de la plantilla y extrae los datos reales de la cabecera (foto de portada, logo, eyebrow, título, acento, subtítulo) y de la sección "Sobre Nosotros" (foto del espacio físico, badge VIP dorado, saludo, título principal, acento, párrafo descriptivo y métricas de años/clientas/calificación).
+   - **Pre-Poblado Inteligente**: Al activar un salón en Superadmin o al abrir el Personalizador Web en el Dashboard, los campos del formulario se inicializan automáticamente con la información real de la plantilla sin requerir reescrituras manuales.
+   - **Nuevo Bloque de Edición "Sobre Nosotros"**: Selector multimedia con carga de fotos propias y CDN, inputs de títulos/badge, textarea de historia/propuesta de valor, métricas y switch para mostrar/ocultar la sección.
+   - **Inyector Dinámico No Invasivo**: Actualiza limpiamente los elementos en la web (`/sitio/:slug`) preservando al 100% las fuentes, estilos y maquetación nativa de la plantilla.
+
 -3. **Aislamiento Visual 100% Fiel de Sitios Gancho vía Iframe (`srcDoc`) ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
    - **Cero Contaminación de Color**: Se reemplazó el `<div dangerouslySetInnerHTML>` por un `<iframe srcDoc={renderedHtml}>` de ancho y alto completo (`w-full min-h-screen border-0 block`), aislando al 100% el contexto DOM y CSS.
    - **Preservación Total de Fondos y Tipografías**: Se eliminó la herencia no deseada del Dark Mode `#090B10` de la app React. La sección de servicios y toda la maqueta conservan sus fondos crema/marfil nativos (`#FAF7F2`), tarjetas y tipografías oscuras exactamente idénticas a la maqueta base HTML original (Imagen 1).
