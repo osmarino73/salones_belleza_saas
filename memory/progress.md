@@ -1,3 +1,7 @@
+- [x] **Mimetización Visual de Botón "Ver Todos los Servicios" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Sustituido el fondo fucsia genérico por el gradiente dorado de lujo (`linear-gradient(135deg, #e5a95d 0%, #c48b47 100%)`) con texto obsidiana `#0d0d11`, tipografía heredada del proyecto en mayúsculas (`font-family: inherit; font-weight: 800; text-transform: uppercase`) y sombra dorada sutil.
+  - Integradas las clases nativas `.btn-card` y `.btn-primary` junto con un icono SVG de flecha integrado.
+
 - [x] **Auto-Extracción y Personalización Completa de Header & Sección "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
   - Función `extractWebsiteDataFromHtml` para extraer fotos, títulos, acentos, descripciones, badge VIP y métricas directamente del HTML base.
   - Formulario en el Personalizador Web con selector de fotos de salón/local, edición de badge, textos, historia y estadísticas.

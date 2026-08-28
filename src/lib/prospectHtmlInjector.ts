@@ -511,55 +511,44 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
         // El encabezado nativo (section-header) se preserva 100% intacto con sus clases y colores originales
 
-        // Función auxiliar para actualizar una tarjeta individual
+        // Función auxiliar para actualizar una tarjeta individual respetando 100% la maquetación nativa
         const processSingleCard = (cardOpen: string, cardInner: string, cardClose: string): string => {
           const idx = cardIndex++;
           let inner = cardInner;
 
-          // Si hay liveServices de base de datos, sincronizar datos
-          const srv = (liveServices && liveServices.length > idx) ? liveServices[idx] : null;
-          if (srv) {
-            const serviceImg = srv.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
-            
-            // 1. Actualizar imagen
-            inner = inner.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
-              let updated = imgTag.replace(/src=["'][^"']*["']/i, `src="${serviceImg}"`);
-              updated = updated.replace(/alt=["'][^"']*["']/i, `alt="${srv.name}"`);
-              return updated;
-            });
+          // 1. Extraer el nombre nativo del servicio de la tarjeta
+          const titleMatch = inner.match(/<(?:h[1-6]|div|span|p)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[1-6]|div|span|p)>/i)
+            || inner.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
+          const nativeTitle = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`;
 
-            // 2. Actualizar título del servicio
-            inner = inner.replace(/(<(?:h[1-6]|div|span)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:h[1-6]|div|span)>)/i, `$1${srv.name}$3`);
-            if (!inner.includes(srv.name)) {
-              inner = inner.replace(/(<h[1-6]\b[^>]*>)([\s\S]*?)(<\/h[1-6]>)/i, `$1${srv.name}$3`);
-            }
+          // 2. Buscar si existe un servicio en base de datos que coincida por nombre (evitando sobreescrituras ciegas por índice)
+          const normNative = nativeTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+          const matchingSrv = liveServices ? liveServices.find(s => {
+            const normSrv = s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+            return normSrv === normNative || normSrv.includes(normNative) || normNative.includes(normSrv);
+          }) : null;
 
-            // 3. Actualizar descripción
-            if (srv.description) {
-              inner = inner.replace(/(<(?:p|span|div)\b[^>]*class=["'][^"']*(?:service-desc|service-desc-text|desc|description)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:p|span|div)>)/i, `$1${srv.description}$3`);
-            }
-
-            // 4. Actualizar precio si la tarjeta lo muestra
-            const priceVal = srv.price_cop || srv.price || srv.price_usd;
+          if (matchingSrv) {
+            // Actualizar precio si fue modificado en base de datos
+            const priceVal = matchingSrv.price_cop || matchingSrv.price || matchingSrv.price_usd;
             if (priceVal) {
               const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
               inner = inner.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
             }
 
-            // 5. Actualizar duración si la tarjeta la muestra
-            if (srv.duration_minutes) {
-              const durationText = `${srv.duration_minutes} mins`;
-              inner = inner.replace(/(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:duration|duracion|time)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i, `$1${durationText}$3`);
+            // Actualizar imagen solo si tiene una foto propia cargada
+            if (matchingSrv.image_url) {
+              inner = inner.replace(/<img\b[^>]*src=["'][^"']*["'][^>]*>/i, (imgTag: string) => {
+                return imgTag.replace(/src=["'][^"']*["']/i, `src="${matchingSrv.image_url}"`);
+              });
             }
           }
 
-          // Extraer nombre del servicio de la tarjeta para el enlace si no viene de liveServices
-          const titleMatch = inner.match(/<(?:h[1-6]|div|span|p)\b[^>]*class=["'][^"']*(?:service-title|service-title-text|title|service-name|name)[^"']*["'][^>]*>([\s\S]*?)<\/(?:h[1-6]|div|span|p)>/i) || inner.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i);
-          const extractedTitle = srv?.name || (titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `servicio-${idx + 1}`);
-          const cleanServiceParam = extractedTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          // 3. Generar enlace de agendamiento directo al servicio
+          const cleanServiceParam = nativeTitle.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
           const srvBookingUrl = `${bookingUrl}?service=${encodeURIComponent(cleanServiceParam)}`;
 
-          // 6. Asignar el enlace respectivo de agendamiento directamente al botón/enlace nativo de la tarjeta
+          // 4. Asignar el enlace respectivo de agendamiento directamente al botón/enlace nativo de la tarjeta
           let linkInjected = false;
 
           // Si la tarjeta contiene enlaces <a>
