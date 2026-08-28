@@ -622,13 +622,18 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
           );
         }
 
-        // 7. Si hay más servicios registrados que los mostrados en portada, agregar botón centrado "Ver todos los servicios"
+        // 7. Si hay más servicios registrados que los mostrados en portada, agregar botón centrado "Ver todos los servicios" mimetizado con la identidad del proyecto
         if (liveServices && liveServices.length > cardIndex && !updatedSectionBody.includes('btn-view-all-services')) {
-          const promoColor = primaryColor || '#c82d5a';
+          const isDefaultPink = !primaryColor || primaryColor === '#d92672' || primaryColor === '#c82d5a';
+          const btnBg = isDefaultPink ? 'linear-gradient(135deg, #e5a95d 0%, #c48b47 100%)' : primaryColor;
+          const btnTextColor = isDefaultPink ? '#0d0d11' : '#ffffff';
+          const btnShadow = isDefaultPink ? '0 8px 24px rgba(229, 169, 93, 0.28)' : '0 8px 24px rgba(0,0,0,0.15)';
+
           const viewAllBtnHtml = `
-          <div style="margin-top: 36px; text-align: center; width: 100%;">
-            <a href="${bookingUrl}" class="btn-view-all-services" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 28px; border-radius: 999px; background: ${promoColor}; color: #ffffff; font-size: 0.92rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,0.12); transition: transform 0.2s ease;">
-              Ver todos los servicios (${liveServices.length}) →
+          <div class="view-all-services-container" style="margin-top: 40px; margin-bottom: 16px; text-align: center; width: 100%; display: flex; justify-content: center;">
+            <a href="${bookingUrl}" class="btn-view-all-services btn-card btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 34px; border-radius: 12px; background: ${btnBg}; color: ${btnTextColor}; font-family: inherit; font-size: 0.95rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-shadow: ${btnShadow}; border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease; cursor: pointer;">
+              <span>Ver todos los servicios (${liveServices.length})</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
           </div>`;
           updatedSectionBody = updatedSectionBody + viewAllBtnHtml;
