@@ -133,21 +133,33 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
       }
 
       // Métricas (años, clientes, productos limpios/especialidad, calificación)
-      const statMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4|h3|h2|p|b)>/gi)];
-      if (statMatches.length >= 4) {
-        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutStat3Text = statMatches[2]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutRatingText = statMatches[3]?.[1]?.replace(/<[^>]*>/g, '').trim();
-      } else if (statMatches.length === 3) {
-        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutRatingText = statMatches[2]?.[1]?.replace(/<[^>]*>/g, '').trim();
-      } else if (statMatches.length === 2) {
-        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
-        result.aboutClientsCount = statMatches[1]?.[1]?.replace(/<[^>]*>/g, '').trim();
-      } else if (statMatches.length === 1) {
-        result.aboutYearsExp = statMatches[0]?.[1]?.replace(/<[^>]*>/g, '').trim();
+      const metricItemMatches = [...aboutBody.matchAll(/<(?:div|li|article)\b[^>]*class=["'][^"']*(?:metric-item|stat-item|stat-card|about-stat|metric-card|stat-box)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|li|article)>/gi)];
+      let rawStatValues: string[] = [];
+
+      if (metricItemMatches.length > 0) {
+        rawStatValues = metricItemMatches.map(m => {
+          const firstTagMatch = m[1].match(/<(?:strong|span|h4|h3|h2|b|p|div)\b[^>]*>([\s\S]*?)<\/(?:strong|span|h4|h3|h2|b|p|div)>/i);
+          return (firstTagMatch ? firstTagMatch[1] : m[1]).replace(/<[^>]*>/g, '').trim();
+        });
+      } else {
+        const directStatMatches = [...aboutBody.matchAll(/<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|metric-value|metric-number|stat-count|counter|number)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|strong|h4|h3|h2|p|b)>/gi)];
+        rawStatValues = directStatMatches.map(m => m[1].replace(/<[^>]*>/g, '').trim());
+      }
+
+      if (rawStatValues.length >= 4) {
+        result.aboutYearsExp = rawStatValues[0];
+        result.aboutClientsCount = rawStatValues[1];
+        result.aboutStat3Text = rawStatValues[2];
+        result.aboutRatingText = rawStatValues[3];
+      } else if (rawStatValues.length === 3) {
+        result.aboutYearsExp = rawStatValues[0];
+        result.aboutClientsCount = rawStatValues[1];
+        result.aboutRatingText = rawStatValues[2];
+      } else if (rawStatValues.length === 2) {
+        result.aboutYearsExp = rawStatValues[0];
+        result.aboutClientsCount = rawStatValues[1];
+      } else if (rawStatValues.length === 1) {
+        result.aboutYearsExp = rawStatValues[0];
       }
     }
   } catch (err) {
@@ -488,64 +500,53 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
         // 6. Actualizar Métricas / Estadísticas Dinámicas (Años Exp., Clientas, Productos Limpios / Especialidad, Calificación ★)
         const hasCustomStats = Boolean(
-          (aboutYearsExp && aboutYearsExp !== baseline.aboutYearsExp) ||
-          (aboutClientsCount && aboutClientsCount !== baseline.aboutClientsCount) ||
-          (aboutStat3Text && aboutStat3Text !== baseline.aboutStat3Text) ||
-          (aboutRatingText && aboutRatingText !== baseline.aboutRatingText) ||
           aboutYearsExp || aboutClientsCount || aboutStat3Text || aboutRatingText
         );
 
         if (hasCustomStats) {
-          // A. Estrategia Semántica por etiquetas / keywords en las tarjetas de estadísticas
-          if (aboutYearsExp) {
-            updatedBody = updatedBody.replace(
-              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:AÑOS|Años|años|A[ñn]o|Exp|EXP|EXPERIENCIA|Experiencia)[\s\S]*?<\/(?:div|li|article)>)/gi,
-              `$1$2${aboutYearsExp}$4$5`
-            );
-          }
+          // Si el HTML contiene tarjetas individuales de métricas (ej. <div class="metric-item"><strong>+8</strong><span>Años Exp.</span></div>)
+          const metricItemRegex = /(<(?:div|li|article)\b[^>]*class=["'][^"']*(?:metric-item|stat-item|stat-card|about-stat|metric-card|stat-box)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|li|article)>)/gi;
 
-          if (aboutClientsCount) {
-            updatedBody = updatedBody.replace(
-              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:CLIENT|Client|client|FELICES|Felices|felices|ATENDIDAS|Atendidas|Mujeres)[\s\S]*?<\/(?:div|li|article)>)/gi,
-              `$1$2${aboutClientsCount}$4$5`
-            );
-          }
+          if (metricItemRegex.test(updatedBody)) {
+            updatedBody = updatedBody.replace(metricItemRegex, (wholeItem: string, openTag: string, itemInner: string, closeTag: string) => {
+              let updatedInner = itemInner;
+              const textUpper = itemInner.toUpperCase();
 
-          if (aboutStat3Text) {
-            updatedBody = updatedBody.replace(
-              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:PRODUCT|Product|product|LIMPIO|Limpio|limpio|ORG[AÁ]NIC|Org[aá]nic|CALIDAD|Calidad|BOT[AÁ]NIC)[\s\S]*?<\/(?:div|li|article)>)/gi,
-              `$1$2${aboutStat3Text}$4$5`
-            );
-          }
-
-          if (aboutRatingText) {
-            updatedBody = updatedBody.replace(
-              /(<(?:div|li|article)\b[^>]*>[\s\S]*?)(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat|num|val|count|metric|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)([\s\S]*?(?:CALIFICACI|Calificaci|calificaci|ESTRELLA|Estrella|estrella|★|RATING|Rating|rating|PUNTUACI)[\s\S]*?<\/(?:div|li|article)>)/gi,
-              `$1$2${aboutRatingText}$4$5`
-            );
-          }
-
-          // B. Estrategia Secuencial Universal (reemplaza ordenadamente los números de las tarjetas de métricas)
-          let statIdx = 0;
-          const statValuesMap = [
-            aboutYearsExp,
-            aboutClientsCount,
-            aboutStat3Text,
-            aboutRatingText
-          ].filter(v => v !== undefined && v !== '');
-
-          if (statValuesMap.length > 0) {
-            updatedBody = updatedBody.replace(
-              /(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|metric-value|metric-number|stat-count|number|num|val|metric)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)/gi,
-              (wholeMatch: string, openTag: string, _currentVal: string, closeTag: string) => {
-                const assignedVal = statValuesMap[statIdx];
-                statIdx++;
-                if (assignedVal !== undefined && assignedVal !== '') {
-                  return `${openTag}${assignedVal}${closeTag}`;
-                }
-                return wholeMatch;
+              if ((textUpper.includes('AÑO') || textUpper.includes('EXP')) && aboutYearsExp) {
+                updatedInner = updatedInner.replace(/(<(?:strong|span|h4|h3|h2|b|p|div)\b[^>]*>)([\s\S]*?)(<\/(?:strong|span|h4|h3|h2|b|p|div)>)/i, `$1${aboutYearsExp}$3`);
+              } else if ((textUpper.includes('CLIENT') || textUpper.includes('FELICES') || textUpper.includes('ATENDID')) && aboutClientsCount) {
+                updatedInner = updatedInner.replace(/(<(?:strong|span|h4|h3|h2|b|p|div)\b[^>]*>)([\s\S]*?)(<\/(?:strong|span|h4|h3|h2|b|p|div)>)/i, `$1${aboutClientsCount}$3`);
+              } else if ((textUpper.includes('PRODUCT') || textUpper.includes('LIMPIO') || textUpper.includes('ORG') || textUpper.includes('CALIDAD') || textUpper.includes('BOTANIC')) && aboutStat3Text) {
+                updatedInner = updatedInner.replace(/(<(?:strong|span|h4|h3|h2|b|p|div)\b[^>]*>)([\s\S]*?)(<\/(?:strong|span|h4|h3|h2|b|p|div)>)/i, `$1${aboutStat3Text}$3`);
+              } else if ((textUpper.includes('CALIFICACI') || textUpper.includes('ESTRELLA') || textUpper.includes('★') || textUpper.includes('RATING') || textUpper.includes('PUNTUAC')) && aboutRatingText) {
+                updatedInner = updatedInner.replace(/(<(?:strong|span|h4|h3|h2|b|p|div)\b[^>]*>)([\s\S]*?)(<\/(?:strong|span|h4|h3|h2|b|p|div)>)/i, `$1${aboutRatingText}$3`);
               }
-            );
+
+              return `${openTag}${updatedInner}${closeTag}`;
+            });
+          } else {
+            // Fallback para plantillas que usan clases directas tipo stat-number, metric-number, etc.
+            let statIdx = 0;
+            const statValuesMap = [
+              aboutYearsExp,
+              aboutClientsCount,
+              aboutStat3Text,
+              aboutRatingText
+            ].filter(v => v !== undefined && v !== '');
+
+            if (statValuesMap.length > 0) {
+              updatedBody = updatedBody.replace(
+                /(<(?:span|div|strong|h4|h3|h2|p|b)\b[^>]*class=["'][^"']*(?:stat-num|stat-number|stat-value|metric-value|metric-number|stat-count|counter|number)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|strong|h4|h3|h2|p|b)>)/gi,
+                (wholeMatch: string, openTag: string, _currentVal: string, closeTag: string) => {
+                  const assignedVal = statValuesMap[statIdx];
+                  statIdx++;
+                  if (assignedVal !== undefined && assignedVal !== '') {
+                    return `${openTag}${assignedVal}${closeTag}`;
+                  }
+                  return wholeMatch;
+                }
+              );
+            }
           }
         }
 

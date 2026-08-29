@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-7. **Aislamiento y Preservación Exacta del Grid de Métricas "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+   - **Diagnóstico del Fallo Visual**: Las expresiones regulares anteriores con patrones `[\s\S]*?` cruzaban múltiples etiquetas `<div>`, borrando las etiquetas de cierre de las tarjetas de métricas del grid nativo y amontonando los números en la esquina inferior.
+   - **Solución Implementada**: Se reestructuró el inyector para procesar tarjeta por tarjeta (`.metric-item` / `.stat-item`) de forma estrictamente acotada, actualizando únicamente el contenido del tag de texto interno (`<strong>...</strong>`) sin modificar ningún contenedor `<div>` ni alterar el CSS flex/grid original.
+
 -6. **Simplificación del Personalizador Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
    - Se removió la sección de Logo / Isotipo y la sección del Banner de Descuento por Primera Visita del modal para mantener un formulario más conciso, directo y enfocado.
    - Las secciones quedaron renumeradas limpiamente:
