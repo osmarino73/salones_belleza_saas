@@ -20,7 +20,7 @@
     - **Barra de Sub-pestañas**: Se añadió `overflow-x-auto no-scrollbar max-w-full shrink-0` y `whitespace-nowrap` a los botones (*Profesionales*, *Servicios*, *Categorías*, *Productos*) evitando el corte o desborde horizontal en vista móvil.
     - **Cabeceras de Sub-secciones**: Se actualizó a `flex-col sm:flex-row justify-between items-start sm:items-center gap-3` para que el botón principal de acción no colisione con el título.
     - **Tarjetas de Profesionales**: Se ajustó `min-w-0 flex-1` en el contenedor de datos y `truncate` en nombres/emails/teléfonos para evitar que el correo empuje y monte los badges.
-    - **Badges de Rol & Estado**: Se configuraron con `whitespace-nowrap inline-flex items-center shrink-0` y separación `gap-1.5`, eliminando la rotura en dos líneas del badge *"✂️ Atiende Citas"*.
+    - **Avatar de Profesionales**: Se aplicó `w-14 h-14 min-w-[56px] min-h-[56px] max-w-[56px] max-h-[56px] aspect-square rounded-full` para garantizar una forma perfectamente circular y tamaño de avatar en móviles y desktops sin distorsión.
 
 -20. **Guía Interactiva y Consejos dentro del Personalizador de Página Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - Se incorporó el botón interactivo **`💡 Guía y Consejos`** en la cabecera del Personalizador de Página Web pública.

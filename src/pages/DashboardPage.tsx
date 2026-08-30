@@ -3366,7 +3366,7 @@ export const DashboardPage: React.FC = () => {
                             <img
                               src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                               alt={sty.name}
-                              className="w-13 h-13 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform shrink-0"
+                              className="w-14 h-14 min-w-[56px] min-h-[56px] max-w-[56px] max-h-[56px] rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform shrink-0 aspect-square"
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
