@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-28. **Corrección de Contraste y Legibilidad en Ficha 360° ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Causa Raíz**: En modo claro, los textos de las fórmulas dentro de tarjetas con fondo oscuro heredaban colores oscuros, haciéndolos invisibles o de bajísimo contraste.
+    - **Corrección**: Se aplicó una paleta de alto contraste explícita tanto para modo claro (tarjetas blancas con texto oscuro nítido) como para modo oscuro (`#141926` con texto blanco puro y acentos legibles), y se estilizó el botón *"Cerrar"*.
+
 -27. **Solución y Persistencia en Expedientes de Colorimetría ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Causa Raíz**: Supabase rechazaba el `insert` de fórmulas porque se enviaba un ID `"form-..."` en lugar de permitir la autogeneración de UUID de Postgres, y faltaba mapear `tenant_id`.
     - **Corrección**: Se sanitizó el payload de `addColorFormula` para que envíe `tenant_id` y `client_id` válidos, permitiendo que Supabase o el almacenamiento local persistan la fórmula correctamente. Se añadió actualización reactiva instantánea del estado de clientes y feedback visual de guardado (`isSavingFormula`).

@@ -3955,63 +3955,103 @@ export const DashboardPage: React.FC = () => {
           ========================================================================= */}
       {selectedClientForFormula && !isNewFormulaModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+          <div className={`border rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
+            theme === 'dark' ? 'bg-[#0E131F] border-white/15 text-white' : 'bg-white border-slate-200 text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
+            <div className={`flex justify-between items-center border-b pb-3.5 ${
+              theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+            }`}>
               <div>
-                <span className="text-[10px] text-[#FF5A36] font-bold uppercase tracking-wider">EXPEDIENTE 360° & FORMULACIÓN</span>
-                <h3 className="text-lg font-bold">{selectedClientForFormula.full_name}</h3>
-                <span className="text-xs text-slate-400">{selectedClientForFormula.phone_whatsapp}</span>
+                <span className="text-[10px] text-[#FF5A36] font-black uppercase tracking-wider block">EXPEDIENTE 360° & FORMULACIÓN</span>
+                <h3 className={`text-lg font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{selectedClientForFormula.full_name}</h3>
+                <span className="text-xs text-slate-400 font-mono">{selectedClientForFormula.phone_whatsapp}</span>
               </div>
-              <button type="button" onClick={() => setSelectedClientForFormula(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <button
+                type="button"
+                onClick={() => setSelectedClientForFormula(null)}
+                className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                  theme === 'dark' ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-slate-800 hover:bg-slate-100'
+                }`}
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {selectedClientForFormula.formulas && selectedClientForFormula.formulas.length > 0 ? (
-              <div className={`space-y-3 p-4 rounded-xl text-xs max-h-72 overflow-y-auto ${
-                theme === 'dark' ? 'bg-[#0E121B]' : 'bg-[#F9FAFC]'
+              <div className={`space-y-3 p-3.5 rounded-2xl text-xs max-h-72 overflow-y-auto ${
+                theme === 'dark' ? 'bg-[#080B12] border border-white/10' : 'bg-slate-50 border border-slate-200/80'
               }`}>
                 {selectedClientForFormula.formulas.map((form, idx) => (
-                  <div key={form.id || idx} className="p-3 bg-white dark:bg-[#141926] rounded-xl border border-black/5 dark:border-white/10 space-y-2 mb-2">
-                    <div className="flex justify-between text-[10px] text-[#FF5A36] font-bold">
-                      <span>Fórmula #{selectedClientForFormula.formulas!.length - idx}</span>
-                      <span>{form.created_at}</span>
+                  <div
+                    key={form.id || idx}
+                    className={`p-3.5 rounded-xl border space-y-2 mb-2 transition-all ${
+                      theme === 'dark'
+                        ? 'bg-[#141926] border-white/10 text-white'
+                        : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex justify-between text-[11px] font-bold">
+                      <span className="text-[#FF5A36]">Fórmula #{selectedClientForFormula.formulas!.length - idx}</span>
+                      <span className="text-slate-400 font-mono text-[10px]">{form.created_at}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Mezcla Exacta:</span>
-                      <strong className="font-mono text-xs block">{form.formula_text}</strong>
+                      <span className="text-slate-400 block text-[10px] uppercase font-semibold">Mezcla Exacta:</span>
+                      <strong className={`font-mono text-xs block mt-0.5 ${
+                        theme === 'dark' ? 'text-white' : 'text-slate-900'
+                      }`}>{form.formula_text}</strong>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-[11px] pt-1 border-t border-black/5 dark:border-white/5">
-                      <div><span className="text-slate-400 block text-[9px]">Oxidante:</span> <strong className="text-[#FF5A36]">{form.developer_volume}</strong></div>
-                      <div><span className="text-slate-400 block text-[9px]">Tiempo:</span> <strong>{form.exposure_minutes} min</strong></div>
-                      <div><span className="text-slate-400 block text-[9px]">Plex:</span> <strong className="text-emerald-500">Sí</strong></div>
+                    <div className={`grid grid-cols-3 gap-2 text-[11px] pt-2 border-t ${
+                      theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+                    }`}>
+                      <div>
+                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Oxidante:</span>
+                        <strong className="text-[#FF5A36] font-bold">{form.developer_volume}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Tiempo:</span>
+                        <strong className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{form.exposure_minutes} min</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Plex:</span>
+                        <strong className="text-emerald-500 font-bold">Sí</strong>
+                      </div>
                     </div>
                     {form.diagnostic_notes && (
-                      <p className="text-[11px] text-slate-400 pt-1 border-t border-black/5 dark:border-white/5">{form.diagnostic_notes}</p>
+                      <div className={`pt-2 border-t text-[11px] ${
+                        theme === 'dark' ? 'border-white/10 text-slate-300' : 'border-slate-100 text-slate-600'
+                      }`}>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Diagnóstico:</span>
+                        <p className="mt-0.5">{form.diagnostic_notes}</p>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-6 rounded-xl text-center text-xs text-slate-400">
+              <div className={`p-6 rounded-2xl text-center text-xs border border-dashed ${
+                theme === 'dark' ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500'
+              }`}>
                 Esta clienta no tiene fórmulas registradas aún.
               </div>
             )}
 
-            <div className="flex justify-between pt-2">
+            <div className="flex justify-between items-center pt-2">
               <button
                 type="button"
                 onClick={() => setIsNewFormulaModalOpen(true)}
-                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs px-4 py-2 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30"
+                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 cursor-pointer"
               >
-                <Plus className="w-4 h-4" /> Agregar Nueva Fórmula
+                <Plus className="w-4 h-4" />
+                <span>Agregar Nueva Fórmula</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedClientForFormula(null)}
-                className="bg-slate-200 dark:bg-slate-800 text-xs px-4 py-2 rounded-full font-semibold"
+                className={`text-xs px-5 py-2.5 rounded-full font-bold transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200'
+                }`}
               >
                 Cerrar
               </button>
