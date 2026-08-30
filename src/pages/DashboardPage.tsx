@@ -88,6 +88,8 @@ import { TimePickerSelect } from '../components/TimePickerSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { ServiceImagePicker } from '../components/ServiceImagePicker';
 import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
+import { PlanUpgradeModal } from '../components/PlanUpgradeModal';
+import { getPlanConfig, canAddMoreStylists, SubscriptionPlan } from '../lib/planPermissions';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -112,6 +114,18 @@ export const DashboardPage: React.FC = () => {
 
   // Catalog & Team Sub-tab State
   const [catalogSubTab, setCatalogSubTab] = useState<'stylists' | 'services' | 'categories' | 'products'>('stylists');
+
+  // Modal de Upgrade de Plan (Feature Gating)
+  const [upgradeModalState, setUpgradeModalState] = useState<{
+    isOpen: boolean;
+    requiredPlan: SubscriptionPlan;
+    featureName: string;
+    featureDescription?: string;
+  }>({
+    isOpen: false,
+    requiredPlan: 'crecimiento',
+    featureName: ''
+  });
 
   const [isStylistModalOpen, setIsStylistModalOpen] = useState(false);
   const [showStylistGuide, setShowStylistGuide] = useState(false);
@@ -726,6 +740,17 @@ export const DashboardPage: React.FC = () => {
 
   // STYLIST CRUD HANDLERS
   const handleOpenNewStylist = () => {
+    const check = canAddMoreStylists(stylists.length, activeTenantObj?.plan_tier);
+    if (!check.allowed) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'crecimiento',
+        featureName: 'Colaboradoras Ilimitadas',
+        featureDescription: check.message
+      });
+      return;
+    }
+
     setEditingStylist(null);
     setStylistForm({
       name: '',
@@ -1274,6 +1299,52 @@ export const DashboardPage: React.FC = () => {
 
   const cartTotal = cartItems.reduce((acc, curr) => acc + curr.price, 0);
 
+  const handleNavigateTab = (targetTab: typeof activeTab) => {
+    const planConfig = getPlanConfig(activeTenantObj?.plan_tier);
+
+    if (targetTab === 'crm' && !planConfig.can_use_color_crm) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'crecimiento',
+        featureName: 'CRM Colorimetría 360°',
+        featureDescription: 'Lleva el historial técnico y fórmulas exactas de tinte de cada clienta para fidelizar y garantizar resultados consistentes.'
+      });
+      return;
+    }
+
+    if (targetTab === 'pos' && !planConfig.can_use_pos) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'crecimiento',
+        featureName: 'Caja POS & Liquidación de Comisiones',
+        featureDescription: 'Factura servicios, gestiona arqueo Z de caja y liquida comisiones diarias a tus colaboradoras sin cálculos manuales.'
+      });
+      return;
+    }
+
+    if (targetTab === 'ai_settings' && !planConfig.can_use_ai_whatsapp) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'pro_ia',
+        featureName: 'Recepcionista Virtual IA 24/7 en WhatsApp',
+        featureDescription: 'Automatiza el agendamiento y respuestas inteligentes por WhatsApp con IA de última generación (ChatGPT/Gemini).'
+      });
+      return;
+    }
+
+    if (targetTab === 'loyalty' && !planConfig.can_use_color_crm) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'crecimiento',
+        featureName: 'Motor de Fidelización & Reactivación (+35D)',
+        featureDescription: 'Identifica automáticamente a clientas que llevan más de 35 días sin visitar tu salón y reactívalas en 1 clic.'
+      });
+      return;
+    }
+
+    setActiveTab(targetTab);
+  };
+
   return (
     <div className={`min-h-screen font-body transition-colors duration-200 ${
       theme === 'dark' ? 'bg-[#090B10] text-white' : 'bg-[#F5F6FA] text-[#111827]'
@@ -1298,17 +1369,17 @@ export const DashboardPage: React.FC = () => {
             theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F5F6FA] border-black/5'
           }`}>
             {[
-              { id: 'overview', label: 'Overview', icon: Layers },
-              { id: 'crm', label: 'CRM Colorimetría', icon: Users },
-              { id: 'whatsapp', label: 'Mensajes & WhatsApp', icon: MessageSquare }
+              { id: 'overview', label: 'Overview', icon: Layers, locked: false },
+              { id: 'crm', label: 'CRM Colorimetría', icon: Users, locked: !getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm },
+              { id: 'whatsapp', label: 'Mensajes & WhatsApp', icon: MessageSquare, locked: false }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                  onClick={() => handleNavigateTab(tab.id as any)}
+                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
                     isActive
                       ? theme === 'dark'
                         ? 'bg-[#2E374D] text-white shadow-md'
@@ -1318,6 +1389,7 @@ export const DashboardPage: React.FC = () => {
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{tab.label}</span>
+                  {tab.locked && <span className="text-[10px] text-amber-400 font-bold ml-0.5">🔒</span>}
                 </button>
               );
             })}
@@ -1441,10 +1513,10 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveTab('catalog_team');
                       setIsProfileMenuOpen(false);
+                      handleNavigateTab('catalog_team');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'catalog_team'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
@@ -1457,26 +1529,33 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveTab('loyalty');
                       setIsProfileMenuOpen(false);
+                      handleNavigateTab('loyalty');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'loyalty'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Heart className="w-4 h-4 text-pink-500 fill-current" />
-                    <span>Fidelización & Reactivación (+35D)</span>
+                    <div className="flex items-center gap-2.5">
+                      <Heart className="w-4 h-4 text-pink-500 fill-current" />
+                      <span>Fidelización & Reactivación (+35D)</span>
+                    </div>
+                    {!getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm && (
+                      <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
+                        🔒 Crecimiento
+                      </span>
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveTab('templates');
                       setIsProfileMenuOpen(false);
+                      handleNavigateTab('templates');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'templates'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
@@ -1489,17 +1568,24 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveTab('ai_settings');
                       setIsProfileMenuOpen(false);
+                      handleNavigateTab('ai_settings');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'ai_settings'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Bot className="w-4 h-4 text-[#FF5A36]" />
-                    <span>Configuración Agente IA</span>
+                    <div className="flex items-center gap-2.5">
+                      <Bot className="w-4 h-4 text-[#FF5A36]" />
+                      <span>Configuración Agente IA</span>
+                    </div>
+                    {!getPlanConfig(activeTenantObj?.plan_tier).can_use_ai_whatsapp && (
+                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                        🔒 Pro IA
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -7105,6 +7191,17 @@ export const DashboardPage: React.FC = () => {
             setActiveTab(tab as any);
           }
         }}
+      />
+
+      {/* MODAL DE UPGRADE Y DESBLOQUEO DE FUNCIONES SAAS */}
+      <PlanUpgradeModal
+        isOpen={upgradeModalState.isOpen}
+        onClose={() => setUpgradeModalState(prev => ({ ...prev, isOpen: false }))}
+        requiredPlan={upgradeModalState.requiredPlan}
+        currentPlan={activeTenantObj?.plan_tier}
+        featureName={upgradeModalState.featureName}
+        featureDescription={upgradeModalState.featureDescription}
+        salonName={salonName}
       />
 
     </div>

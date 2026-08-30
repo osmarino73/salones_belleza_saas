@@ -16,6 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-22. **Sistema de Control de Permisos y Bloqueo de Opciones por Plan SaaS (Feature Gating) ([`planPermissions.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/planPermissions.ts) & [`PlanUpgradeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/PlanUpgradeModal.tsx))**:
+    - **Lógica de Permisos**: Se crearon las matrices de límites para los 4 planes oficiales ($0 Gratis, $50k Inicio, $120k Crecimiento, $240k Pro IA).
+    - **Control Cuantitativo de Equipo**: Validación en `handleOpenNewStylist` para restringir hasta 4 colaboradoras en Plan Inicio y sugerir upgrade a Crecimiento para ilimitadas.
+    - **Navegación Protegida (`handleNavigateTab`)**: Al hacer clic en módulos exclusivos (*CRM Colorimetría*, *Caja POS*, *Fidelización*, *Agente IA en WhatsApp*), se despliega el modal interactivo de Upgrade con beneficios claros, sin permanencia y botón directo a WhatsApp oficial (+57 311 419 5123).
+    - **Indicadores Visuales 🔒**: Candados e insignias informativas en la barra de navegación y el menú de perfil para máxima claridad.
+
 -21. **Corrección de Responsividad y Solapamiento de Badges en Tarjetas de Estilistas ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Barra de Sub-pestañas**: Se añadió `overflow-x-auto no-scrollbar max-w-full shrink-0` y `whitespace-nowrap` a los botones (*Profesionales*, *Servicios*, *Categorías*, *Productos*) evitando el corte o desborde horizontal en vista móvil.
     - **Cabeceras de Sub-secciones**: Se actualizó a `flex-col sm:flex-row justify-between items-start sm:items-center gap-3` para que el botón principal de acción no colisione con el título.
