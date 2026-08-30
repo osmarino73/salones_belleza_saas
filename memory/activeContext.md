@@ -21,7 +21,7 @@
     - Despliega un panel didáctico con 4 consejos de oro para la identidad digital:
       1. 🎨 *Portada & Lema*: Importancia de subir fotos de alta resolución del salón y redactar un lema claro.
       2. 🕒 *Horarios de Atención*: Sincronización automática de horas de apertura y cierre con los turnos del agendador.
-      3. 🎁 *Banner 1ra Visita*: Cómo activar descuentos de bienvenida (10%, 15%, 20%) para atraer nuevos clientes.
+      3. 👥 *Sección de Equipo*: Cómo activar o desactivar la sección de colaboradoras en la web.
       4. 👁️ *Vista Previa en Vivo*: Uso de la columna derecha para validar cambios visuales antes de publicar.
       5. ⭐ *Tip Pro Publicación*: Confirmación de actualización inmediata en `kowy.app/sitio/:slug`.
 

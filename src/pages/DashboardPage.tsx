@@ -6046,9 +6046,9 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
-                    <strong className="text-white block">3. 🎁 Banner 1ra Visita</strong>
+                    <strong className="text-white block">3. 👥 Sección de Equipo</strong>
                     <p className="text-slate-400 leading-snug">
-                      Activa el descuento especial (ej. 15% o 20%) para incentivar a nuevas clientas a reservar su primera cita.
+                      Activa o desactiva la sección de colaboradoras para mostrar a tus especialistas en la web.
                     </p>
                   </div>
 
