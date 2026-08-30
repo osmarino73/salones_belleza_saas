@@ -16,6 +16,19 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-12. **Integración Inteligente del Horario de Atención en el Motor de Reserva ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - Se implementó el motor de cálculo y parser `getSalonScheduleForDate`:
+      1. **Detección de Días Abiertos / Cerrados**: Lee el horario configurado del negocio (ej. *"Lunes a Sábado: 8:00 AM - 7:00 PM"*, *"Lun a Vie + Sáb"*, *"Todos los días"*). Si un día no se atiende (ej. Domingo en un salón de Lun a Sáb), el carrusel de 14 días lo marca con el badge *"Cerrado"*, y al seleccionarlo muestra una tarjeta explicativa amigable con el horario oficial.
+      2. **Generación Dinámica de Turnos (`allAvailableSlots`)**: Ya no utiliza un array estático, sino que calcula automáticamente las franjas horarias cada 30 minutos desde la hora de apertura hasta la hora de cierre configurada por la dueña del salón.
+      3. **Badge del Horario Oficial**: En el Paso 3 (Elige Día y Horario) se muestra de forma prominente el horario oficial del establecimiento.
+
+-11. **Indicador Visual de Carga y Sincronización en "Guardar y Publicar" ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se agregó el estado de carga `isSavingWebsite` al Personalizador Web.
+    - Al pulsar "Guardar y Publicar":
+      1. El botón se desactiva contra doble clic, cambia de color/cursor e integra un spinner animado con el texto *"Guardando y Publicando..."*.
+      2. Se despliega un banner superior animado con degradado: *"Guardando cambios y publicando tu página web en Supabase..."*.
+      3. El botón de cancelar y la cruz de cierre quedan deshabilitados durante el proceso para evitar estados corruptos.
+
 -10. **Corrección de Persistencia en Supabase para `navbar_tagline` y `business_hours` ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Diagnóstico**: En la función `updateTenant` de `supabase.ts`, el objeto `updatedBData` que se sincronizaba hacia `prospect_sites.business_data` no incluía `navbar_tagline`, `business_hours` ni `horario_atencion`, lo que provocaba que al guardar no se persistiera en la base de datos de Supabase.
     - **Solución**: Se agregaron los campos faltantes a `updatedBData` en `updateTenant`, a `SuperadminDashboardPage.tsx` y se verificó la hidratación y lectura en todas las vistas públicas y privadas.

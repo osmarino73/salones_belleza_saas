@@ -28,6 +28,96 @@ import {
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
 import { Service, Stylist } from '../types';
 
+interface DayScheduleResult {
+  isOpen: boolean;
+  openMinutes: number;
+  closeMinutes: number;
+  reason?: string;
+}
+
+export function getSalonScheduleForDate(scheduleSummary: string, dateStr: string): DayScheduleResult {
+  if (!scheduleSummary) {
+    return { isOpen: true, openMinutes: 480, closeMinutes: 1140 }; // 8:00 AM - 7:00 PM default
+  }
+
+  const d = new Date(dateStr + 'T00:00:00');
+  const dayOfWeek = d.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  const cleanSummary = scheduleSummary.toLowerCase();
+
+  const parseTimeToMin = (str: string, defaultMin: number): number => {
+    if (!str) return defaultMin;
+    const match = str.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if (!match) return defaultMin;
+    let h = parseInt(match[1], 10);
+    const m = match[2] ? parseInt(match[2], 10) : 0;
+    const p = match[3] ? match[3].toLowerCase() : '';
+    if (p === 'pm' && h < 12) h += 12;
+    if (p === 'am' && h === 12) h = 0;
+    return h * 60 + m;
+  };
+
+  // 1. Revisar especificaciones para días concretos (ej. Sábados o Domingos separados por | o comas)
+  const segments = scheduleSummary.split(/[|\n]/).map(s => s.trim());
+  for (const seg of segments) {
+    const segLower = seg.toLowerCase();
+    
+    // Sábado
+    if (dayOfWeek === 6 && (segLower.includes('sáb') || segLower.includes('sab'))) {
+      const times = seg.split(/[-–—a]/i);
+      if (times.length >= 2) {
+        return {
+          isOpen: true,
+          openMinutes: parseTimeToMin(times[0], 540),
+          closeMinutes: parseTimeToMin(times[1], 1020)
+        };
+      }
+    }
+
+    // Domingo
+    if (dayOfWeek === 0 && (segLower.includes('dom') || segLower.includes('domingo'))) {
+      if (segLower.includes('cerrado') || segLower.includes('descanso')) {
+        return { isOpen: false, openMinutes: 0, closeMinutes: 0, reason: 'Cerrado los domingos' };
+      }
+      const times = seg.split(/[-–—a]/i);
+      if (times.length >= 2) {
+        return {
+          isOpen: true,
+          openMinutes: parseTimeToMin(times[0], 540),
+          closeMinutes: parseTimeToMin(times[1], 1080)
+        };
+      }
+    }
+  }
+
+  // 2. Reglas generales de días abiertos
+  if ((cleanSummary.includes('lunes a s') || cleanSummary.includes('lun a s')) && !cleanSummary.includes('domingo')) {
+    if (dayOfWeek === 0) {
+      return { isOpen: false, openMinutes: 0, closeMinutes: 0, reason: 'El salón no abre los domingos' };
+    }
+  }
+
+  if ((cleanSummary.includes('lunes a v') || cleanSummary.includes('lun a v')) && !cleanSummary.includes('sáb') && !cleanSummary.includes('sab')) {
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      return { isOpen: false, openMinutes: 0, closeMinutes: 0, reason: 'Cerrado fines de semana' };
+    }
+  }
+
+  if (cleanSummary.includes('martes a d') || cleanSummary.includes('mar a d')) {
+    if (dayOfWeek === 1) {
+      return { isOpen: false, openMinutes: 0, closeMinutes: 0, reason: 'El salón descansa los lunes' };
+    }
+  }
+
+  const mainTimesMatch = scheduleSummary.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:[-–—]|a)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  if (mainTimesMatch) {
+    const openMin = parseTimeToMin(mainTimesMatch[1], 480);
+    const closeMin = parseTimeToMin(mainTimesMatch[2], 1140);
+    return { isOpen: true, openMinutes: openMin, closeMinutes: closeMin };
+  }
+
+  return { isOpen: true, openMinutes: 480, closeMinutes: 1140 };
+}
+
 export const BookingPage: React.FC = () => {
   const { slug: routeSlug } = useParams<{ slug?: string }>();
   const [searchParams] = useSearchParams();
@@ -43,6 +133,7 @@ export const BookingPage: React.FC = () => {
   const [salonPhone, setSalonPhone] = useState<string>('');
   const [salonAddress, setSalonAddress] = useState<string>('');
   const [salonCurrency, setSalonCurrency] = useState<string>('COP');
+  const [salonHours, setSalonHours] = useState<string>('Lunes a Sábado: 8:00 AM - 7:00 PM');
   const [services, setServices] = useState<Service[]>([]);
   const [stylists, setStylists] = useState<Stylist[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<any[]>([]);
@@ -63,7 +154,7 @@ export const BookingPage: React.FC = () => {
   const [couponMessage, setCouponMessage] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  // Lista de próximos 14 días para selección visual rápida
+  // Lista de próximos 14 días para selección visual rápida con estado de apertura
   const next14Days = useMemo(() => {
     const days = [];
     const today = new Date();
@@ -74,10 +165,11 @@ export const BookingPage: React.FC = () => {
       const dayName = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : d.toLocaleDateString('es-CO', { weekday: 'short' });
       const dayNum = d.getDate();
       const monthName = d.toLocaleDateString('es-CO', { month: 'short' });
-      days.push({ iso, dayName, dayNum, monthName });
+      const daySchedule = getSalonScheduleForDate(salonHours, iso);
+      days.push({ iso, dayName, dayNum, monthName, isOpen: daySchedule.isOpen });
     }
     return days;
-  }, []);
+  }, [salonHours]);
 
   useEffect(() => {
     const savedName = localStorage.getItem('bf_client_name');
@@ -197,6 +289,9 @@ export const BookingPage: React.FC = () => {
           if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
           if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
           if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
+          
+          const rawHours = resolvedTenant.business_hours?.summary || prospectDataObj?.business_hours?.summary || prospectDataObj?.horario_atencion || 'Lunes a Sábado: 8:00 AM - 7:00 PM';
+          setSalonHours(rawHours);
         }
 
         let loadedServices: Service[] = [];
@@ -346,7 +441,32 @@ export const BookingPage: React.FC = () => {
     loadBookingData();
   }, [salonSlug, searchParams]);
 
-  const allAvailableSlots = ['08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM', '07:00 PM'];
+  // Obtener estado de apertura y horario para la fecha seleccionada
+  const salonScheduleForSelectedDate = useMemo(() => {
+    return getSalonScheduleForDate(salonHours, selectedDate);
+  }, [salonHours, selectedDate]);
+
+  // Generar turnos dinámicos en base al horario real del salón
+  const allAvailableSlots = useMemo(() => {
+    if (!salonScheduleForSelectedDate.isOpen) return [];
+    
+    const slots: string[] = [];
+    const { openMinutes, closeMinutes } = salonScheduleForSelectedDate;
+    
+    // Generar turnos cada 30 minutos respetando el margen de cierre
+    for (let min = openMinutes; min <= closeMinutes - 30; min += 30) {
+      let h = Math.floor(min / 60);
+      const m = min % 60;
+      const period = (h >= 12 && h < 24) ? 'PM' : 'AM';
+      if (h > 12) h -= 12;
+      if (h === 0) h = 12;
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      slots.push(`${hh}:${mm} ${period}`);
+    }
+    
+    return slots;
+  }, [salonScheduleForSelectedDate]);
 
   // Helper para convertir hora ("02:30 PM") a minutos del día (ej. 870)
   const timeToMinutes = (timeStr: string): number => {
@@ -751,14 +871,22 @@ export const BookingPage: React.FC = () => {
         {/* Step 3: Date and Time with 14-Day Visual Carousel & Turn Segmentation */}
         {step === 3 && (
           <div className="space-y-5 animate-fade-in">
-            <div>
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-[#FF5A36]" />
-                Elige Día y Horario
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Toca cualquier día para ver sus turnos disponibles al instante.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h2 className="text-lg font-black text-white flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-[#FF5A36]" />
+                  Elige Día y Horario
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Toca cualquier día para ver sus turnos disponibles al instante.
+                </p>
+              </div>
+
+              {/* Badge de Horario Oficial del Salón */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 w-fit">
+                <Clock className="w-3.5 h-3.5 text-[#FF5A36] shrink-0" />
+                <span>Horario: <strong className="text-white">{salonHours}</strong></span>
+              </div>
             </div>
 
             {/* Carrusel Táctil Horizontal de 14 Días (Scrollbar oculta) */}
@@ -775,18 +903,25 @@ export const BookingPage: React.FC = () => {
                       className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer min-w-[72px] ${
                         isSelected
                           ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/35 scale-105 ring-2 ring-[#FF5A36]/20'
-                          : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/30 hover:bg-white/[0.04]'
+                          : !d.isOpen
+                            ? 'border-white/5 bg-[#0A0D14] text-slate-500 opacity-60 hover:opacity-90'
+                            : 'border-white/10 bg-[#0E121B] text-slate-300 hover:border-white/30 hover:bg-white/[0.04]'
                       }`}
                     >
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : !d.isOpen ? 'text-slate-500' : 'text-slate-400'}`}>
                         {d.dayName}
                       </span>
                       <span className="text-lg font-black my-0.5">
                         {d.dayNum}
                       </span>
-                      <span className={`text-[9px] uppercase font-semibold ${isSelected ? 'text-white/90' : 'text-slate-500'}`}>
+                      <span className={`text-[9px] uppercase font-semibold ${isSelected ? 'text-white/90' : !d.isOpen ? 'text-slate-500' : 'text-slate-500'}`}>
                         {d.monthName}
                       </span>
+                      {!d.isOpen && (
+                        <span className={`text-[8px] font-bold px-1 rounded mt-0.5 ${isSelected ? 'bg-black/30 text-white' : 'text-amber-400/80 bg-amber-400/10'}`}>
+                          Cerrado
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -805,8 +940,18 @@ export const BookingPage: React.FC = () => {
               />
             </div>
 
-            {/* Warning if Stylist is on Vacation or Off Day */}
-            {stylistAvailability.blocked ? (
+            {/* Warning if Salon is Closed on Selected Date */}
+            {!salonScheduleForSelectedDate.isOpen ? (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-1.5 animate-fade-in">
+                <div className="flex items-center gap-2 font-bold text-amber-400">
+                  <Ban className="w-4 h-4 shrink-0" />
+                  <span>{salonScheduleForSelectedDate.reason || 'El salón se encuentra cerrado este día'}</span>
+                </div>
+                <p className="text-[11px] text-slate-300">
+                  Horario habitual de atención: <strong className="text-white">{salonHours}</strong>. Por favor selecciona otro día habilitado en el calendario de arriba.
+                </p>
+              </div>
+            ) : stylistAvailability.blocked ? (
               <div className="p-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs space-y-1.5 animate-fade-in">
                 <div className="flex items-center gap-2 font-bold text-red-400">
                   <Ban className="w-4 h-4 shrink-0" />

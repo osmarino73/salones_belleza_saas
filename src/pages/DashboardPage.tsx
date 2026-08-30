@@ -37,6 +37,7 @@ import {
   Filter,
   Bot,
   Save,
+  Loader2,
   Trash2,
   HelpCircle,
   MapPin,
@@ -189,6 +190,7 @@ export const DashboardPage: React.FC = () => {
 
   // Personalización del Sitio Web Público
   const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
+  const [isSavingWebsite, setIsSavingWebsite] = useState(false);
   const [websiteForm, setWebsiteForm] = useState<{
     hero_image_url: string;
     primary_color: string;
@@ -5823,24 +5825,35 @@ export const DashboardPage: React.FC = () => {
             theme === 'dark' ? 'bg-[#121622] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'
           }`}>
             {/* Header del Modal */}
-            <div className="flex justify-between items-center px-6 py-4 border-b border-black/5 dark:border-white/10 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center shadow-lg shadow-pink-500/20 text-white">
-                  <Palette className="w-5 h-5" />
-                </div>
+            <div className="px-6 py-4 border-b border-black/5 dark:border-white/10 flex justify-between items-center bg-black/10 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl">✨</span>
                 <div>
-                  <h3 className="text-base font-black tracking-tight">Personalizador de tu Página Web</h3>
-                  <span className="text-xs text-slate-400">Edita los textos, portada y promociones con vista previa en vivo</span>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Personalizador de tu Página Web
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Edita el diseño, textos, fotos y activa o desactiva secciones con previsualización en vivo
+                  </p>
                 </div>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setIsWebsiteCustomizerOpen(false)} 
-                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              <button
+                type="button"
+                disabled={isSavingWebsite}
+                onClick={() => setIsWebsiteCustomizerOpen(false)}
+                className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Banner de Carga / Sincronización en Progreso */}
+            {isSavingWebsite && (
+              <div className="bg-gradient-to-r from-[#FF5A36]/20 via-pink-500/20 to-emerald-500/20 border-b border-white/10 px-6 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-white animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin text-[#FF5A36]" />
+                <span>Guardando cambios y publicando tu página web en Supabase...</span>
+              </div>
+            )}
 
             {/* Contenido en 2 Columnas (Formulario + Vista Previa) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -5848,36 +5861,38 @@ export const DashboardPage: React.FC = () => {
               <form id="website-customizer-form" onSubmit={async (e) => {
                 e.preventDefault();
                 if (!activeTenantObj) return;
-                const updatedTenant: Tenant = {
-                  ...activeTenantObj,
-                  hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
-                  primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
-                  show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
-                  show_first_visit_discount: websiteForm.show_first_visit_discount !== undefined ? websiteForm.show_first_visit_discount : false,
-                  first_visit_discount_pct: Number(websiteForm.first_visit_discount_pct || 15),
-                  first_visit_discount_title: websiteForm.first_visit_discount_title || undefined,
-                  logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
-                  hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
-                  slogan: websiteForm.slogan || activeTenantObj.slogan,
-                  title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
-                  navbar_tagline: websiteForm.navbar_tagline || activeTenantObj.navbar_tagline,
-                  subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
-                  about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
-                  about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
-                  about_eyebrow: websiteForm.about_eyebrow || activeTenantObj.about_eyebrow,
-                  about_title: websiteForm.about_title || activeTenantObj.about_title,
-                  about_title_accent: websiteForm.about_title_accent || activeTenantObj.about_title_accent,
-                  about_description: websiteForm.about_description || activeTenantObj.about_description,
-                  about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
-                  about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
-                  about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
-                  about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
-                  business_hours: { summary: websiteForm.business_hours_text || activeTenantObj.business_hours?.summary || 'Lunes a Sábado: 8:00 AM - 7:00 PM' },
-                  show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
-                };
-                setActiveTenantObj(updatedTenant);
-                localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+                setIsSavingWebsite(true);
                 try {
+                  const updatedTenant: Tenant = {
+                    ...activeTenantObj,
+                    hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
+                    primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
+                    show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
+                    show_first_visit_discount: websiteForm.show_first_visit_discount !== undefined ? websiteForm.show_first_visit_discount : false,
+                    first_visit_discount_pct: Number(websiteForm.first_visit_discount_pct || 15),
+                    first_visit_discount_title: websiteForm.first_visit_discount_title || undefined,
+                    logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
+                    hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
+                    slogan: websiteForm.slogan || activeTenantObj.slogan,
+                    title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
+                    navbar_tagline: websiteForm.navbar_tagline || activeTenantObj.navbar_tagline,
+                    subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
+                    about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
+                    about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
+                    about_eyebrow: websiteForm.about_eyebrow || activeTenantObj.about_eyebrow,
+                    about_title: websiteForm.about_title || activeTenantObj.about_title,
+                    about_title_accent: websiteForm.about_title_accent || activeTenantObj.about_title_accent,
+                    about_description: websiteForm.about_description || activeTenantObj.about_description,
+                    about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
+                    about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
+                    about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
+                    about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
+                    business_hours: { summary: websiteForm.business_hours_text || activeTenantObj.business_hours?.summary || 'Lunes a Sábado: 8:00 AM - 7:00 PM' },
+                    show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
+                  };
+                  setActiveTenantObj(updatedTenant);
+                  localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+
                   await api.updateTenant(updatedTenant);
                   const pSites = await api.getProspectSites();
                   const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
@@ -5916,11 +5931,15 @@ export const DashboardPage: React.FC = () => {
                     };
                     await api.updateProspectSite(matched.id, updatedSite);
                   }
+                  setIsWebsiteCustomizerOpen(false);
+                  alert('✨ ¡Tu página web ha sido actualizada y publicada con éxito!');
                 } catch (err) {
                   console.warn('Error saving website config in Supabase:', err);
+                  alert('⚠️ Hubo un detalle al guardar en la nube, pero tus cambios quedaron almacenados localmente.');
+                  setIsWebsiteCustomizerOpen(false);
+                } finally {
+                  setIsSavingWebsite(false);
                 }
-                setIsWebsiteCustomizerOpen(false);
-                alert('✨ ¡Tu página web ha sido actualizada y publicada con éxito!');
               }} className="lg:col-span-7 space-y-4 text-xs">
 
                 {/* 1. Selector de Fotografía de Portada (Hero) */}
@@ -6295,18 +6314,31 @@ export const DashboardPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   type="button"
+                  disabled={isSavingWebsite}
                   onClick={() => setIsWebsiteCustomizerOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
+                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer text-xs disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   form="website-customizer-form"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-6 py-2 rounded-full shadow-lg shadow-[#FF5A36]/30 flex items-center gap-2 transition-transform active:scale-95 cursor-pointer text-xs"
+                  disabled={isSavingWebsite}
+                  className={`bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-6 py-2 rounded-full shadow-lg shadow-[#FF5A36]/30 flex items-center gap-2 text-xs transition-all ${
+                    isSavingWebsite ? 'opacity-70 cursor-wait' : 'active:scale-95 cursor-pointer'
+                  }`}
                 >
-                  <Save className="w-4 h-4" />
-                  <span>Guardar y Publicar</span>
+                  {isSavingWebsite ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Guardando y Publicando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Guardar y Publicar</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
