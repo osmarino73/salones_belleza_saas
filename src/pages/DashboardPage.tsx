@@ -1322,6 +1322,16 @@ export const DashboardPage: React.FC = () => {
       return;
     }
 
+    if (targetTab === 'templates' && !planConfig.can_use_templates) {
+      setUpgradeModalState({
+        isOpen: true,
+        requiredPlan: 'pro_ia',
+        featureName: 'Centro de Plantillas WhatsApp & Email',
+        featureDescription: 'Accede a plantillas HSM aprobadas por Meta para envíos y confirmaciones automáticas de alto impacto.'
+      });
+      return;
+    }
+
     if (targetTab === 'ai_settings' && !planConfig.can_use_ai_whatsapp) {
       setUpgradeModalState({
         isOpen: true,
@@ -1332,10 +1342,10 @@ export const DashboardPage: React.FC = () => {
       return;
     }
 
-    if (targetTab === 'loyalty' && !planConfig.can_use_color_crm) {
+    if (targetTab === 'loyalty' && !planConfig.can_use_loyalty_reactivation) {
       setUpgradeModalState({
         isOpen: true,
-        requiredPlan: 'crecimiento',
+        requiredPlan: 'pro_ia',
         featureName: 'Motor de Fidelización & Reactivación (+35D)',
         featureDescription: 'Identifica automáticamente a clientas que llevan más de 35 días sin visitar tu salón y reactívalas en 1 clic.'
       });
@@ -1542,9 +1552,9 @@ export const DashboardPage: React.FC = () => {
                       <Heart className="w-4 h-4 text-pink-500 fill-current" />
                       <span>Fidelización & Reactivación (+35D)</span>
                     </div>
-                    {!getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm && (
-                      <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-                        🔒 Crecimiento
+                    {!getPlanConfig(activeTenantObj?.plan_tier).can_use_loyalty_reactivation && (
+                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                        🔒 Pro IA
                       </span>
                     )}
                   </button>
@@ -1555,14 +1565,21 @@ export const DashboardPage: React.FC = () => {
                       setIsProfileMenuOpen(false);
                       handleNavigateTab('templates');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'templates'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <span>Plantillas WhatsApp & Email</span>
+                    <div className="flex items-center gap-2.5">
+                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                      <span>Plantillas WhatsApp & Email</span>
+                    </div>
+                    {!getPlanConfig(activeTenantObj?.plan_tier).can_use_templates && (
+                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                        🔒 Pro IA
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -3214,7 +3231,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('templates')}
+                    onClick={() => handleNavigateTab('templates')}
                     className="text-xs font-bold px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20 flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
                   >
                     <span>Abrir Plantillas</span>

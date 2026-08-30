@@ -13,6 +13,8 @@ export interface PlanFeatureConfig {
   can_use_inventory: boolean;
   can_use_stylist_portal: boolean;
   can_use_color_crm: boolean;
+  can_use_loyalty_reactivation: boolean;
+  can_use_templates: boolean;
   can_use_ai_whatsapp: boolean;
   can_use_automatic_reminders: boolean;
   description: string;
@@ -32,6 +34,8 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     can_use_inventory: false,
     can_use_stylist_portal: false,
     can_use_color_crm: false,
+    can_use_loyalty_reactivation: false,
+    can_use_templates: false,
     can_use_ai_whatsapp: false,
     can_use_automatic_reminders: false,
     description: 'Página web profesional completa con catálogo de fotos, dirección en Google Maps y botón de WhatsApp.'
@@ -49,6 +53,8 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     can_use_inventory: false,
     can_use_stylist_portal: false,
     can_use_color_crm: false,
+    can_use_loyalty_reactivation: false,
+    can_use_templates: false,
     can_use_ai_whatsapp: false,
     can_use_automatic_reminders: false,
     description: 'Agendador interactivo 24/7 y control de citas del día para hasta 4 colaboradoras.'
@@ -66,6 +72,8 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     can_use_inventory: true,
     can_use_stylist_portal: true,
     can_use_color_crm: true,
+    can_use_loyalty_reactivation: false,
+    can_use_templates: false,
     can_use_ai_whatsapp: false,
     can_use_automatic_reminders: false,
     description: 'Colaboradoras ilimitadas, App móvil para estilistas (/colaborador), Caja POS, liquidación automática de comisiones y CRM.'
@@ -83,9 +91,11 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     can_use_inventory: true,
     can_use_stylist_portal: true,
     can_use_color_crm: true,
+    can_use_loyalty_reactivation: true,
+    can_use_templates: true,
     can_use_ai_whatsapp: true,
     can_use_automatic_reminders: true,
-    description: 'Automatización total con recepcionista IA en WhatsApp 24/7, recordatorios anti-plantón y bandeja unificada.'
+    description: 'Automatización total con recepcionista IA en WhatsApp 24/7, recordatorios anti-plantón, centro de plantillas y radar de reactivación.'
   }
 };
 
