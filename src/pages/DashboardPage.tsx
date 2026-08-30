@@ -79,6 +79,7 @@ import { api, initialStylists, initialServices, initialProducts, getActiveTenant
 import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { SalonOnboardingModal } from '../components/SalonOnboardingModal';
+import { WelcomeModal } from '../components/WelcomeModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
 import { MessagesBoardPage } from '../components/MessagesBoardPage';
@@ -102,6 +103,7 @@ export const DashboardPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTenantObj, setActiveTenantObj] = useState<Tenant | null>(null);
   const [isSalonOnboardingOpen, setIsSalonOnboardingOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [aiSettings, setAiSettings] = useState<TenantAISettings | null>(null);
   const [isZernioOnboardingOpen, setIsZernioOnboardingOpen] = useState(false);
   const [isSavingAiSettings, setIsSavingAiSettings] = useState(false);
@@ -575,6 +577,25 @@ export const DashboardPage: React.FC = () => {
                                (targetTenantId && localStorage.getItem(`bf_onboarding_done_${targetTenantId}`) === 'true');
         if (!onboardingDone || (srvs && srvs.length === 0)) {
           setIsSalonOnboardingOpen(true);
+        } else {
+          // WELCOME TRIGGER: Si ya completó onboarding pero no ha visto el mensaje de bienvenida
+          const welcomeSeen = localStorage.getItem(`bf_welcome_seen_${cleanE}`) === 'true' ||
+                              (targetTenantId && localStorage.getItem(`bf_welcome_seen_${targetTenantId}`) === 'true');
+          if (!welcomeSeen) {
+            setTimeout(() => {
+              setIsWelcomeModalOpen(true);
+            }, 500);
+          }
+        }
+      } else if (currentEmail) {
+        // Para dueña activa por primera vez
+        const cleanE = currentEmail.toLowerCase().trim();
+        const welcomeSeen = localStorage.getItem(`bf_welcome_seen_${cleanE}`) === 'true' ||
+                            (targetTenantId && localStorage.getItem(`bf_welcome_seen_${targetTenantId}`) === 'true');
+        if (!welcomeSeen) {
+          setTimeout(() => {
+            setIsWelcomeModalOpen(true);
+          }, 500);
         }
       }
 
@@ -1400,6 +1421,20 @@ export const DashboardPage: React.FC = () => {
                   </div>
 
                   {/* Menu Items */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsWelcomeModalOpen(true);
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                      theme === 'dark' ? 'hover:bg-white/5 text-pink-300 font-bold bg-pink-500/5' : 'hover:bg-pink-50 text-pink-700 font-bold'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-pink-400 animate-pulse" />
+                    <span>🎉 Bienvenida & Enlaces de mi Salón</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -6848,7 +6883,11 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL ONBOARDING INICIAL PARA NUEVOS SALONES (BIENVENIDA GUIADA) */}
       <SalonOnboardingModal
         isOpen={isSalonOnboardingOpen}
-        onClose={() => setIsSalonOnboardingOpen(false)}
+        onClose={() => {
+          setIsSalonOnboardingOpen(false);
+          // Si cierra el onboarding guiado, abrir el mensaje de bienvenida
+          setIsWelcomeModalOpen(true);
+        }}
         tenant={activeTenantObj}
         ownerEmail={ownerEmail}
         salonCurrency={salonCurrency}
@@ -6879,6 +6918,34 @@ export const DashboardPage: React.FC = () => {
             }
           } catch (err) {
             console.error('Error reloading after onboarding:', err);
+          }
+          // Mostrar mensaje de bienvenida al completar onboarding
+          setIsWelcomeModalOpen(true);
+        }}
+      />
+
+      {/* MODAL DE BIENVENIDA VIP PARA NUEVOS USUARIOS */}
+      <WelcomeModal
+        isOpen={isWelcomeModalOpen}
+        onClose={() => {
+          setIsWelcomeModalOpen(false);
+          if (ownerEmail) {
+            localStorage.setItem(`bf_welcome_seen_${ownerEmail.toLowerCase().trim()}`, 'true');
+          }
+          if (activeTenantObj?.id) {
+            localStorage.setItem(`bf_welcome_seen_${activeTenantObj.id}`, 'true');
+          }
+        }}
+        tenant={activeTenantObj}
+        ownerName={ownerName}
+        onOpenCustomizer={() => setIsWebsiteCustomizerOpen(true)}
+        onNavigateTab={(tab) => {
+          if (tab === 'servicios' || tab === 'especialistas') {
+            setActiveTab('catalog_team');
+            if (tab === 'servicios') setCatalogSubTab('services');
+            if (tab === 'especialistas') setCatalogSubTab('stylists');
+          } else {
+            setActiveTab(tab as any);
           }
         }}
       />

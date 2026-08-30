@@ -16,6 +16,15 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-13. **Mensaje de Bienvenida VIP y Guía de Primer Ingreso ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se creó el componente `WelcomeModal` con diseño Glassmorphism Dark Mode y acentos Rose Gold / Neón Kowy.
+    - Se activa automáticamente la primera vez que la dueña entra a su Dashboard (`bf_welcome_seen_${email}`).
+    - Presenta de forma clara los 3 pilares activos:
+      1. 🌐 **Página Web Oficial** (con enlace directo).
+      2. 📅 **Agendador Online 24/7** (con enlace directo).
+      3. 👥 **Control de Equipo & Caja POS**.
+    - Incluye acceso directo a *"Personalizar mi Página Web"* y la opción *"🎉 Bienvenida & Enlaces de mi Salón"* en el menú de perfil para volver a consultarlo en cualquier momento.
+
 -12. **Integración Inteligente del Horario de Atención en el Motor de Reserva ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
     - Se implementó el motor de cálculo y parser `getSalonScheduleForDate`:
       1. **Detección de Días Abiertos / Cerrados**: Lee el horario configurado del negocio (ej. *"Lunes a Sábado: 8:00 AM - 7:00 PM"*, *"Lun a Vie + Sáb"*, *"Todos los días"*). Si un día no se atiende (ej. Domingo en un salón de Lun a Sáb), el carrusel de 14 días lo marca con el badge *"Cerrado"*, y al seleccionarlo muestra una tarjeta explicativa amigable con el horario oficial.
