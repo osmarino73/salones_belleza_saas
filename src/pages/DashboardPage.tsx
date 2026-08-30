@@ -1439,7 +1439,7 @@ export const DashboardPage: React.FC = () => {
                   : theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 hover:border-black/20 bg-white shadow-sm'
               }`}
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF5A36] to-pink-500 text-white font-bold text-xs flex items-center justify-center border border-[#FF5A36] shadow-sm">
+              <div className="w-7 h-7 rounded-full bg-[#FF5A36] text-white font-bold text-xs flex items-center justify-center border border-[#FF5A36]/40 shadow-sm">
                 {ownerName ? ownerName.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className="hidden md:block text-left text-xs leading-tight">
@@ -1463,19 +1463,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="px-3 py-2.5 border-b border-black/5 dark:border-white/10">
                     <div className="flex items-center justify-between">
                       <strong className="text-xs font-bold block">{ownerName}</strong>
-                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${
-                        activeTenantObj?.plan_tier === 'crecimiento'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10'
-                          : activeTenantObj?.plan_tier === 'inicio'
-                          ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                          : activeTenantObj?.plan_tier === 'pro_ia'
-                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                          : activeTenantObj?.plan_tier === 'escala'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                          : activeTenantObj?.plan_tier === 'agencia'
-                          ? 'bg-pink-500/20 text-pink-300 border-pink-500/40'
-                          : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
-                      }`}>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase border bg-white/5 border-white/10 text-slate-300">
                         {activeTenantObj?.plan_tier === 'crecimiento' ? '📈 Crecimiento ($120k)' :
                          activeTenantObj?.plan_tier === 'inicio' ? '🚀 Inicio ($50k)' :
                          activeTenantObj?.plan_tier === 'pro_ia' ? '🤖 Pro Flow IA ($240k)' :
@@ -1483,22 +1471,22 @@ export const DashboardPage: React.FC = () => {
                          activeTenantObj?.plan_tier === 'agencia' ? '👑 Agencia VIP ($1.4M)' : '🌐 Plan Gratis ($0)'}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400 block truncate">{ownerEmail}</span>
+                    <span className="text-[11px] text-slate-400 block truncate mt-0.5">{ownerEmail}</span>
                   </div>
 
-                  {/* Menu Items */}
+                  {/* Menu Items (Paleta Sobria & Unificada) */}
                   <button
                     type="button"
                     onClick={() => {
                       setIsWelcomeModalOpen(true);
                       setIsProfileMenuOpen(false);
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
-                      theme === 'dark' ? 'hover:bg-white/5 text-pink-300 font-bold bg-pink-500/5' : 'hover:bg-pink-50 text-pink-700 font-bold'
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
+                      theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Sparkles className="w-4 h-4 text-pink-400 animate-pulse" />
-                    <span>🎉 Bienvenida & Enlaces de mi Salón</span>
+                    <Sparkles className="w-4 h-4 text-[#FF5A36]" />
+                    <span>Bienvenida & Enlaces de mi Salón</span>
                   </button>
 
                   <button
@@ -1507,17 +1495,17 @@ export const DashboardPage: React.FC = () => {
                       setIsPlanModalOpen(true);
                       setIsProfileMenuOpen(false);
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
-                      theme === 'dark' ? 'hover:bg-white/5 text-amber-300 font-bold bg-amber-500/5' : 'hover:bg-amber-50 text-amber-700 font-bold'
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                      theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Crown className="w-4 h-4 text-amber-400" />
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2.5">
+                      <Crown className="w-4 h-4 text-slate-400" />
                       <span>Mi Plan & Suscripción</span>
-                      <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-black">
-                        30 Días
-                      </span>
                     </div>
+                    <span className="text-[10px] bg-white/5 border border-white/10 text-slate-400 px-1.5 py-0.5 rounded font-semibold">
+                      30 Días
+                    </span>
                   </button>
 
                   <button
@@ -1526,13 +1514,13 @@ export const DashboardPage: React.FC = () => {
                       setIsProfileMenuOpen(false);
                       handleNavigateTab('catalog_team');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'catalog_team'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Scissors className="w-4 h-4 text-cyan-400" />
+                    <Scissors className="w-4 h-4 text-slate-400" />
                     <span>Equipo, Servicios & Stock</span>
                   </button>
 
@@ -1542,18 +1530,18 @@ export const DashboardPage: React.FC = () => {
                       setIsProfileMenuOpen(false);
                       handleNavigateTab('loyalty');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'loyalty'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Heart className="w-4 h-4 text-pink-500 fill-current" />
+                      <Heart className="w-4 h-4 text-slate-400" />
                       <span>Fidelización & Reactivación (+35D)</span>
                     </div>
                     {!getPlanConfig(activeTenantObj?.plan_tier).can_use_loyalty_reactivation && (
-                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                      <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
                         🔒 Pro IA
                       </span>
                     )}
@@ -1565,18 +1553,18 @@ export const DashboardPage: React.FC = () => {
                       setIsProfileMenuOpen(false);
                       handleNavigateTab('templates');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'templates'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                      <Sparkles className="w-4 h-4 text-slate-400" />
                       <span>Plantillas WhatsApp & Email</span>
                     </div>
                     {!getPlanConfig(activeTenantObj?.plan_tier).can_use_templates && (
-                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                      <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
                         🔒 Pro IA
                       </span>
                     )}
@@ -1588,18 +1576,18 @@ export const DashboardPage: React.FC = () => {
                       setIsProfileMenuOpen(false);
                       handleNavigateTab('ai_settings');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
                       activeTab === 'ai_settings'
                         ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
                         : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Bot className="w-4 h-4 text-[#FF5A36]" />
+                      <Bot className="w-4 h-4 text-slate-400" />
                       <span>Configuración Agente IA</span>
                     </div>
                     {!getPlanConfig(activeTenantObj?.plan_tier).can_use_ai_whatsapp && (
-                      <span className="text-[9px] font-bold text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded border border-purple-400/20">
+                      <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
                         🔒 Pro IA
                       </span>
                     )}
@@ -1611,11 +1599,11 @@ export const DashboardPage: React.FC = () => {
                       setIsWebsiteCustomizerOpen(true);
                       setIsProfileMenuOpen(false);
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
                       theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Palette className="w-4 h-4 text-pink-400" />
+                    <Palette className="w-4 h-4 text-slate-400" />
                     <span>Personalizar Página Web (Portada)</span>
                   </button>
 
@@ -1625,22 +1613,22 @@ export const DashboardPage: React.FC = () => {
                       setIsBusinessSettingsModalOpen(true);
                       setIsProfileMenuOpen(false);
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
                       theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Building2 className="w-4 h-4 text-emerald-500" />
+                    <Building2 className="w-4 h-4 text-slate-400" />
                     <span>Configuración del Negocio</span>
                   </button>
 
                   <Link
                     to="/colaborador"
                     onClick={() => setIsProfileMenuOpen(false)}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all ${
                       theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <User className="w-4 h-4 text-purple-400" />
+                    <User className="w-4 h-4 text-slate-400" />
                     <span>Portal de Colaborador (Estilistas)</span>
                   </Link>
 
@@ -1648,11 +1636,11 @@ export const DashboardPage: React.FC = () => {
                     to="/reservas"
                     target="_blank"
                     onClick={() => setIsProfileMenuOpen(false)}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-2.5 transition-all ${
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all ${
                       theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <Sparkles className="w-4 h-4 text-slate-400" />
                     <span>Portal Público de Citas</span>
                   </Link>
 
@@ -1665,7 +1653,7 @@ export const DashboardPage: React.FC = () => {
                         localStorage.clear();
                         navigate('/login');
                       }}
-                      className="w-full text-left text-xs font-bold px-3 py-2.5 rounded-xl flex items-center gap-2.5 text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
+                      className="w-full text-left text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2.5 text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                     >
                       <LogOut className="w-4 h-4 text-red-500" />
                       <span>Cerrar Sesión</span>

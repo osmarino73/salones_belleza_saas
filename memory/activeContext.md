@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-23. **Eliminación Total del Multicolor y Unificación Estética Sobria B2B ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Menú Desplegable de Perfil**: Se eliminó el arcoíris de íconos de colores discordantes (rosa, cian, amarillo, verde, morado) y se reemplazó por una paleta monocromática elegante en tono `slate-400` con acentos de marca Kowy (`#FF5A36`).
+    - **Insignias y Badges**: Los badges de planes y de bloqueo `🔒 Pro IA` pasaron a un diseño minimalista y sobrio (`bg-white/5 border border-white/10 text-slate-300`).
+    - **Avatar de Usuario**: Reemplazado el degradado por el color oficial de Kowy (`bg-[#FF5A36] text-white`).
+
 -22. **Sistema de Control de Permisos y Bloqueo de Opciones por Plan SaaS (Feature Gating) ([`planPermissions.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/planPermissions.ts) & [`PlanUpgradeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/PlanUpgradeModal.tsx))**:
     - **Lógica de Permisos Actualizada**: En el **Plan Crecimiento ($120k)** quedan restringidos los 3 módulos avanzados de marketing y automatización:
       1. `Configuración Agente IA` (🔒 Pro IA)
