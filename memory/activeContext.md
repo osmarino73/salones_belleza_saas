@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-27. **Solución y Persistencia en Expedientes de Colorimetría ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Causa Raíz**: Supabase rechazaba el `insert` de fórmulas porque se enviaba un ID `"form-..."` en lugar de permitir la autogeneración de UUID de Postgres, y faltaba mapear `tenant_id`.
+    - **Corrección**: Se sanitizó el payload de `addColorFormula` para que envíe `tenant_id` y `client_id` válidos, permitiendo que Supabase o el almacenamiento local persistan la fórmula correctamente. Se añadió actualización reactiva instantánea del estado de clientes y feedback visual de guardado (`isSavingFormula`).
+
 -26. **Unificación y Corrección de Moneda a Pesos Colombianos (COP) ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx) & [`MessagesBoardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/MessagesBoardPage.tsx))**:
     - Se corrigió el valor de *Total Facturado* en las fichas del CRM de clientas para que utilice `formatCurrency` formateando en `$ COP` (ej. `$ 0 COP`) en lugar del texto fijo `$0 USD`.
     - Se actualizaron las etiquetas de productos y los mensajes de demostración de IA en la bandeja para mostrar montos en Pesos Colombianos (`$ COP`).

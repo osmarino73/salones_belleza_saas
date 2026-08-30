@@ -446,6 +446,7 @@ export const DashboardPage: React.FC = () => {
   const [selectedClientForFormula, setSelectedClientForFormula] = useState<Client | null>(null);
   const [isNewAppointmentOpen, setIsNewAppointmentOpen] = useState(false);
   const [isNewFormulaModalOpen, setIsNewFormulaModalOpen] = useState(false);
+  const [isSavingFormula, setIsSavingFormula] = useState(false);
 
   // New Appointment Form State
   const [newClientName, setNewClientName] = useState('');
@@ -1254,27 +1255,62 @@ export const DashboardPage: React.FC = () => {
 
   const handleSaveFormula = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClientForFormula) return;
+    if (!selectedClientForFormula || isSavingFormula) return;
 
-    const newFormula: ColorFormula = {
-      id: `form-${Date.now()}`,
-      client_id: selectedClientForFormula.id,
-      stylist_id: 'sty-1',
-      stylist_name: 'Sofía Restrepo',
-      formula_text: newFormulaText,
-      developer_volume: newDeveloperVol,
-      exposure_minutes: newExposureMin,
-      plex_used: true,
-      porosity_level: 'media',
-      diagnostic_notes: newDiagnosticNotes,
-      created_at: new Date().toISOString().split('T')[0]
-    };
+    try {
+      setIsSavingFormula(true);
+      const targetTenantId = selectedClientForFormula.tenant_id || activeTenantObj?.id;
+      const targetStylist = stylists.find(s => s.id === selectedClientForFormula.preferred_stylist_id) || stylists[0];
 
-    await api.addColorFormula(selectedClientForFormula.id, newFormula);
-    const updatedClients = await api.getClients();
-    setClients(updatedClients);
-    setSelectedClientForFormula(updatedClients.find(c => c.id === selectedClientForFormula.id) || null);
-    setIsNewFormulaModalOpen(false);
+      const formulaPayload: Partial<ColorFormula> = {
+        client_id: selectedClientForFormula.id,
+        tenant_id: targetTenantId,
+        stylist_id: targetStylist?.id,
+        stylist_name: targetStylist?.name || ownerName || 'Colorista',
+        formula_text: newFormulaText.trim(),
+        developer_volume: newDeveloperVol,
+        exposure_minutes: Number(newExposureMin) || 35,
+        plex_used: true,
+        porosity_level: 'media',
+        diagnostic_notes: newDiagnosticNotes.trim(),
+        created_at: new Date().toISOString().split('T')[0]
+      };
+
+      const savedFormula = await api.addColorFormula(selectedClientForFormula.id, formulaPayload);
+
+      // Actualizar reactivamente la lista de clientes en memoria
+      setClients(prevClients => {
+        return prevClients.map(c => {
+          if (c.id === selectedClientForFormula.id) {
+            const existingFormulas = c.formulas || [];
+            return {
+              ...c,
+              formulas: [savedFormula, ...existingFormulas.filter(f => f.id !== savedFormula.id)]
+            };
+          }
+          return c;
+        });
+      });
+
+      // Actualizar el cliente seleccionado en el modal
+      setSelectedClientForFormula(prev => {
+        if (!prev) return null;
+        const existingFormulas = prev.formulas || [];
+        return {
+          ...prev,
+          formulas: [savedFormula, ...existingFormulas.filter(f => f.id !== savedFormula.id)]
+        };
+      });
+
+      setIsNewFormulaModalOpen(false);
+      setNewFormulaText('');
+      setNewDiagnosticNotes('');
+    } catch (error) {
+      console.error('Error guardando formula:', error);
+      alert('Hubo un error al guardar la fórmula. Por favor intenta de nuevo.');
+    } finally {
+      setIsSavingFormula(false);
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -4065,9 +4101,17 @@ export const DashboardPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30"
+                  disabled={isSavingFormula}
+                  className="bg-[#FF5A36] hover:bg-[#E54E07] disabled:opacity-50 text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
                 >
-                  Guardar en Expediente
+                  {isSavingFormula ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <span>Guardar en Expediente</span>
+                  )}
                 </button>
               </div>
             </form>

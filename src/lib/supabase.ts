@@ -633,19 +633,85 @@ export const api = {
     localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
   },
 
-  async addColorFormula(clientId: string, formula: ColorFormula): Promise<void> {
-    if (supabase && isSupabaseConfigured) {
-      await supabase.from('color_formulas').insert([formula]);
+  async addColorFormula(clientId: string, formula: Partial<ColorFormula>): Promise<ColorFormula> {
+    const tid = (formula as any).tenant_id || getActiveTenantId();
+    const isUuid = (str?: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str || '');
+
+    const dbPayload: any = {
+      tenant_id: isUuid(tid) ? tid : '00000000-0000-0000-0000-000000000001',
+      client_id: clientId,
+      formula_text: formula.formula_text || '',
+      developer_volume: formula.developer_volume || '20 Vol',
+      exposure_minutes: Number(formula.exposure_minutes) || 35,
+      plex_used: formula.plex_used !== false,
+      porosity_level: formula.porosity_level || 'media',
+      diagnostic_notes: formula.diagnostic_notes || '',
+      stylist_name: formula.stylist_name || 'Colorista'
+    };
+
+    if (formula.stylist_id && isUuid(formula.stylist_id)) {
+      dbPayload.stylist_id = formula.stylist_id;
     }
-    const current = await this.getClients();
-    const updated = current.map(c => {
+
+    let savedFormula: ColorFormula = {
+      id: formula.id && isUuid(formula.id) ? formula.id : `form-${Date.now()}`,
+      client_id: clientId,
+      stylist_id: dbPayload.stylist_id || 'sty-1',
+      stylist_name: dbPayload.stylist_name,
+      formula_text: dbPayload.formula_text,
+      developer_volume: dbPayload.developer_volume,
+      exposure_minutes: dbPayload.exposure_minutes,
+      plex_used: dbPayload.plex_used,
+      porosity_level: dbPayload.porosity_level,
+      diagnostic_notes: dbPayload.diagnostic_notes,
+      created_at: formula.created_at || new Date().toISOString().split('T')[0]
+    };
+
+    if (supabase && isSupabaseConfigured && isUuid(clientId) && isUuid(dbPayload.tenant_id)) {
+      try {
+        const { data, error } = await supabase.from('color_formulas').insert([dbPayload]).select().single();
+        if (error) {
+          console.warn('Advertencia insertando formula en Supabase:', error.message || error);
+        } else if (data) {
+          savedFormula = {
+            id: data.id,
+            client_id: data.client_id,
+            stylist_id: data.stylist_id || 'sty-1',
+            stylist_name: data.stylist_name || 'Colorista',
+            formula_text: data.formula_text,
+            developer_volume: data.developer_volume,
+            exposure_minutes: data.exposure_minutes,
+            plex_used: data.plex_used,
+            porosity_level: data.porosity_level || 'media',
+            diagnostic_notes: data.diagnostic_notes || '',
+            created_at: data.created_at ? data.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+          };
+        }
+      } catch (err) {
+        console.warn('Error catch insertando formula:', err);
+      }
+    }
+
+    // Actualizar localStorage
+    const saved = localStorage.getItem(STORAGE_KEYS.CLIENTS);
+    let allClients: Client[] = saved ? JSON.parse(saved) : [];
+    
+    // Si el cliente no está en localStorage aún, obtenerlo de memoria o crearlo
+    const clientExists = allClients.some(c => c.id === clientId);
+    if (!clientExists) {
+      allClients = await this.getClients(tid);
+    }
+
+    const updated = allClients.map(c => {
       if (c.id === clientId) {
         const existing = c.formulas || [];
-        return { ...c, formulas: [formula, ...existing] };
+        return { ...c, formulas: [savedFormula, ...existing.filter(f => f.id !== savedFormula.id)] };
       }
       return c;
     });
+
     localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
+    return savedFormula;
   },
 
   // STYLISTS

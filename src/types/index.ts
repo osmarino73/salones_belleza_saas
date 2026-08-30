@@ -143,6 +143,7 @@ export interface Product {
 
 export interface ColorFormula {
   id: string;
+  tenant_id?: string;
   client_id: string;
   stylist_id: string;
   stylist_name?: string;
