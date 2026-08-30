@@ -3275,13 +3275,13 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               {/* Sub-tab Pill Switcher */}
-              <div className={`p-1 rounded-full border flex items-center gap-1 ${
+              <div className={`p-1 rounded-2xl border flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full shrink-0 ${
                 theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F5F6FA] border-black/5'
               }`}>
                 <button
                   type="button"
                   onClick={() => setCatalogSubTab('stylists')}
-                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                     catalogSubTab === 'stylists'
                       ? 'bg-[#FF5A36] text-white shadow-md'
                       : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -3294,7 +3294,7 @@ export const DashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogSubTab('services')}
-                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                     catalogSubTab === 'services'
                       ? 'bg-[#FF5A36] text-white shadow-md'
                       : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -3307,7 +3307,7 @@ export const DashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogSubTab('categories')}
-                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                     catalogSubTab === 'categories'
                       ? 'bg-[#FF5A36] text-white shadow-md'
                       : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -3320,7 +3320,7 @@ export const DashboardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCatalogSubTab('products')}
-                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${
+                  className={`text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
                     catalogSubTab === 'products'
                       ? 'bg-[#FF5A36] text-white shadow-md'
                       : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -3335,7 +3335,7 @@ export const DashboardPage: React.FC = () => {
             {/* SUBTAB 1: PROFESIONALES / ESTILISTAS */}
             {catalogSubTab === 'stylists' && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="text-base font-bold">Equipo de Estilistas & Especialistas</h3>
                     <p className="text-xs text-slate-400">Control de porcentaje de comisiones por servicio y venta de productos.</p>
@@ -3343,7 +3343,7 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleOpenNewStylist}
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all"
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0"
                   >
                     <Plus className="w-4 h-4" /> Agregar Profesional
                   </button>
@@ -3361,44 +3361,44 @@ export const DashboardPage: React.FC = () => {
                       }`}
                     >
                       <div>
-                        <div className="flex items-start justify-between pb-3 border-b border-black/5 dark:border-white/10 mb-4">
-                          <div className="flex items-center gap-3">
+                        <div className="flex items-start justify-between pb-3 border-b border-black/5 dark:border-white/10 mb-4 gap-2">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <img
                               src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                               alt={sty.name}
-                              className="w-14 h-14 rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform"
+                              className="w-13 h-13 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform shrink-0"
                             />
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <strong className="text-sm font-bold block group-hover:text-[#FF5A36] transition-colors">{sty.name}</strong>
-                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-[#FF5A36] transition-all" />
+                                <strong className="text-sm font-bold block truncate group-hover:text-[#FF5A36] transition-colors">{sty.name}</strong>
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-[#FF5A36] transition-all shrink-0" />
                               </div>
-                              <span className="text-xs text-slate-400 block">{sty.specialty}</span>
+                              <span className="text-xs text-slate-400 block truncate">{sty.specialty}</span>
                               {sty.email && <span className="text-[11px] text-[#FF5A36] block truncate font-mono">{sty.email}</span>}
-                              {sty.phone && <span className="text-[10px] text-slate-500 block">WhatsApp: {sty.phone}</span>}
+                              {sty.phone && <span className="text-[10px] text-slate-500 block truncate">WhatsApp: {sty.phone}</span>}
                               <div className="flex items-center gap-1 text-[11px] text-amber-400 font-bold mt-0.5">
-                                <Star className="w-3 h-3 fill-amber-400" />
+                                <Star className="w-3 h-3 fill-amber-400 shrink-0" />
                                 <span>{sty.rating || '5.0'}</span>
                                 <span className="text-slate-400 font-normal">({sty.reviews_count || 0} reseñas)</span>
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-1">
+                          <div className="flex flex-col items-end gap-1.5 shrink-0">
                             {sty.is_owner || sty.role === 'admin' ? (
-                              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1">
+                              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 whitespace-nowrap">
                                 👑 Dueña / Admin
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 whitespace-nowrap">
                                 Colaborador
                               </span>
                             )}
                             {sty.attends_clients === false ? (
-                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
                                 💼 Solo Gestión
                               </span>
                             ) : (
-                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 whitespace-nowrap">
                                 ✂️ Atiende Citas
                               </span>
                             )}
@@ -3519,7 +3519,7 @@ export const DashboardPage: React.FC = () => {
             {/* SUBTAB 2: SERVICIOS */}
             {catalogSubTab === 'services' && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="text-base font-bold">Catálogo Oficial de Servicios</h3>
                     <p className="text-xs text-slate-400">Tarifas, tiempos de ejecución y requerimientos para el agendamiento y el bot IA.</p>
@@ -3527,7 +3527,7 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleOpenNewService}
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all"
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Agregar Servicio
                   </button>
@@ -3610,7 +3610,7 @@ export const DashboardPage: React.FC = () => {
             {/* SUBTAB 3: GESTIÓN DE CATEGORÍAS */}
             {catalogSubTab === 'categories' && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="text-base font-bold">Categorías de Servicios</h3>
                     <p className="text-xs text-slate-400">Organiza tus tratamientos, especialidades y filtros para el agendamiento público.</p>
@@ -3618,7 +3618,7 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleOpenNewCategory}
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all cursor-pointer"
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all cursor-pointer shrink-0"
                   >
                     <Plus className="w-4 h-4" /> Nueva Categoría
                   </button>
@@ -3683,7 +3683,7 @@ export const DashboardPage: React.FC = () => {
             {/* SUBTAB 4: PRODUCTOS & INVENTARIO */}
             {catalogSubTab === 'products' && (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <h3 className="text-base font-bold">Inventario Retail & Productos de Salón</h3>
                     <p className="text-xs text-slate-400">Control de stock, alertas de reposición, precios y margen de rentabilidad.</p>
@@ -3691,7 +3691,7 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleOpenNewProduct}
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all"
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Agregar Producto
                   </button>

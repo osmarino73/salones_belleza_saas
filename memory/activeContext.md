@@ -16,6 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-21. **Corrección de Responsividad y Solapamiento de Badges en Tarjetas de Estilistas ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Barra de Sub-pestañas**: Se añadió `overflow-x-auto no-scrollbar max-w-full shrink-0` y `whitespace-nowrap` a los botones (*Profesionales*, *Servicios*, *Categorías*, *Productos*) evitando el corte o desborde horizontal en vista móvil.
+    - **Cabeceras de Sub-secciones**: Se actualizó a `flex-col sm:flex-row justify-between items-start sm:items-center gap-3` para que el botón principal de acción no colisione con el título.
+    - **Tarjetas de Profesionales**: Se ajustó `min-w-0 flex-1` en el contenedor de datos y `truncate` en nombres/emails/teléfonos para evitar que el correo empuje y monte los badges.
+    - **Badges de Rol & Estado**: Se configuraron con `whitespace-nowrap inline-flex items-center shrink-0` y separación `gap-1.5`, eliminando la rotura en dos líneas del badge *"✂️ Atiende Citas"*.
+
 -20. **Guía Interactiva y Consejos dentro del Personalizador de Página Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - Se incorporó el botón interactivo **`💡 Guía y Consejos`** en la cabecera del Personalizador de Página Web pública.
     - Despliega un panel didáctico con 4 consejos de oro para la identidad digital:
