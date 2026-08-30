@@ -114,6 +114,7 @@ export const DashboardPage: React.FC = () => {
   const [catalogSubTab, setCatalogSubTab] = useState<'stylists' | 'services' | 'categories' | 'products'>('stylists');
 
   const [isStylistModalOpen, setIsStylistModalOpen] = useState(false);
+  const [showStylistGuide, setShowStylistGuide] = useState(false);
   const [editingStylist, setEditingStylist] = useState<Stylist | null>(null);
   const [stylistForm, setStylistForm] = useState<{
     name: string;
@@ -191,6 +192,7 @@ export const DashboardPage: React.FC = () => {
 
   // Personalización del Sitio Web Público
   const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
+  const [showWebsiteGuide, setShowWebsiteGuide] = useState(false);
   const [isSavingWebsite, setIsSavingWebsite] = useState(false);
   const [websiteForm, setWebsiteForm] = useState<{
     hero_image_url: string;
@@ -4428,14 +4430,81 @@ export const DashboardPage: React.FC = () => {
                   {editingStylist ? 'Editar Profesional' : 'Agregar Nuevo Profesional'}
                 </h3>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setIsStylistModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowStylistGuide(!showStylistGuide)}
+                  className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1 rounded-lg border border-[#FF5A36]/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{showStylistGuide ? 'Ocultar Guía' : '💡 Guía y Consejos'}</span>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsStylistModalOpen(false);
+                    setShowStylistGuide(false);
+                  }} 
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
+
+            {/* Panel Interactivo de la Guía Paso a Paso */}
+            {showStylistGuide && (
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-[#181F33] to-[#0E1322] border border-[#FF5A36]/40 text-xs space-y-3 animate-fade-in text-slate-200">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <span className="font-extrabold text-[#FF5A36] flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Guía de Éxito: Cómo Registrar a tu Equipo
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowStylistGuide(false)}
+                    className="text-slate-400 hover:text-white text-[10px] font-bold"
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px]">
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">1. 👑 Rol & ¿Atiende Citas?</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Activa <em>"¿Atiende citas?"</em> para que aparezca en el agendador. Si es socia administrativa, desactívalo.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">2. 📱 Acceso Móvil (/colaborador)</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Con su <strong>Email</strong> y <strong>Contraseña</strong> podrá consultar sus citas y comisiones desde su propio celular.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">3. ✂️ Categorías Asignadas</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Selecciona los servicios que domina (ej. Color, Uñas). El agendador solo le asignará citas de esas áreas.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">4. 💵 % Comisiones Claras</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Configura el porcentaje acordado (ej. 45% o 50%). Kowy calculará sus ganancias diarias automáticamente.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-[#FF5A36]/10 border border-[#FF5A36]/20 flex items-center gap-2 text-[11px]">
+                  <Star className="w-4 h-4 text-[#FF5A36] shrink-0 fill-current" />
+                  <span><strong>Tip Pro:</strong> Sube una foto nítida y activa <em>"Mostrar en Portada Web"</em> para darle prestigio a tu equipo.</span>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSaveStylist} className="space-y-3.5 text-xs">
               
@@ -5921,15 +5990,82 @@ export const DashboardPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                disabled={isSavingWebsite}
-                onClick={() => setIsWebsiteCustomizerOpen(false)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowWebsiteGuide(!showWebsiteGuide)}
+                  className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1 rounded-lg border border-[#FF5A36]/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{showWebsiteGuide ? 'Ocultar Guía' : '💡 Guía y Consejos'}</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingWebsite}
+                  onClick={() => {
+                    setIsWebsiteCustomizerOpen(false);
+                    setShowWebsiteGuide(false);
+                  }}
+                  className="p-1.5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
+
+            {/* Panel Interactivo de la Guía Paso a Paso para la Web */}
+            {showWebsiteGuide && (
+              <div className="mx-6 mt-4 p-4 rounded-2xl bg-gradient-to-b from-[#181F33] to-[#0E1322] border border-[#FF5A36]/40 text-xs space-y-3 animate-fade-in text-slate-200">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <span className="font-extrabold text-[#FF5A36] flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Guía de Éxito: Cómo Personalizar tu Página Web
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowWebsiteGuide(false)}
+                    className="text-slate-400 hover:text-white text-[10px] font-bold"
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-[11px]">
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">1. 🎨 Portada & Lema</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Sube una foto de alta calidad de tu salón y define un lema claro (ej. <em>"Especialistas en Balayage y Spa"</em>).
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">2. 🕒 Horarios de Atención</strong>
+                    <p className="text-slate-400 leading-snug">
+                      El horario que indiques aquí se reflejará en los turnos del agendador y en la barra superior de tu web.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">3. 🎁 Banner 1ra Visita</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Activa el descuento especial (ej. 15% o 20%) para incentivar a nuevas clientas a reservar su primera cita.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">4. 👁️ Vista Previa en Vivo</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Observa en la columna derecha cómo se ve tu web en tiempo real antes de presionar <em>"Publicar Cambios"</em>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-[#FF5A36]/10 border border-[#FF5A36]/20 flex items-center gap-2 text-[11px]">
+                  <Star className="w-4 h-4 text-[#FF5A36] shrink-0 fill-current" />
+                  <span><strong>Tip Pro:</strong> Al hacer clic en <em>"Guardar & Publicar"</em>, tu web se actualiza al instante en <code>kowy.app/sitio/:tu-salon</code>.</span>
+                </div>
+              </div>
+            )}
 
             {/* Banner de Carga / Sincronización en Progreso */}
             {isSavingWebsite && (

@@ -16,6 +16,24 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-20. **Guía Interactiva y Consejos dentro del Personalizador de Página Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se incorporó el botón interactivo **`💡 Guía y Consejos`** en la cabecera del Personalizador de Página Web pública.
+    - Despliega un panel didáctico con 4 consejos de oro para la identidad digital:
+      1. 🎨 *Portada & Lema*: Importancia de subir fotos de alta resolución del salón y redactar un lema claro.
+      2. 🕒 *Horarios de Atención*: Sincronización automática de horas de apertura y cierre con los turnos del agendador.
+      3. 🎁 *Banner 1ra Visita*: Cómo activar descuentos de bienvenida (10%, 15%, 20%) para atraer nuevos clientes.
+      4. 👁️ *Vista Previa en Vivo*: Uso de la columna derecha para validar cambios visuales antes de publicar.
+      5. ⭐ *Tip Pro Publicación*: Confirmación de actualización inmediata en `kowy.app/sitio/:slug`.
+
+-19. **Guía Interactiva y Consejos dentro del Modal de Creación/Edición de Profesionales ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se incorporó el botón interactivo **`💡 Guía y Consejos`** en la cabecera del modal de Profesionales / Colaboradoras.
+    - Despliega un panel con 4 consejos de oro para el registro y gestión del equipo:
+      1. 👑 *Rol & ¿Atiende Citas?*: Explica la diferencia entre rol administrativo y colaboradora visible en el agendador.
+      2. 📱 *Acceso Móvil (/colaborador)*: Recuerda que con su email y clave pueden consultar turnos y comisiones desde su teléfono.
+      3. ✂️ *Categorías Asignadas*: Cómo asignar las áreas que domina para que el agendador solo le asigne esos servicios.
+      4. 💵 *% Comisiones Claras*: Configuración del porcentaje de servicio y producto para liquidación automática.
+      5. ⭐ *Tip Pro Portada Web*: Sugiere subir foto de rostro y activar la casilla para mostrar a la colaboradora en la portada.
+
 -18. **Guía Interactiva y Consejos dentro del Modal de Creación/Edición de Servicios ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - Se incorporó un botón interactivo **`💡 Guía y Consejos`** en la cabecera del modal de servicios.
     - Al pulsar el botón, se despliega un panel pedagógico con 4 consejos de oro para la dueña del salón:
