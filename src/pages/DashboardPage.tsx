@@ -2331,20 +2331,32 @@ export const DashboardPage: React.FC = () => {
                           </div>
                         )}
 
-                        {client.formulas && client.formulas.length > 0 ? (
-                          <div className="p-3 rounded-xl bg-[#FF5A36]/5 border border-[#FF5A36]/20 text-xs space-y-1">
-                            <div className="text-[10px] text-[#FF5A36] font-bold uppercase">Última Mezcla Guardada:</div>
-                            <p className="font-mono text-[11px] line-clamp-2">{client.formulas[0].formula_text}</p>
-                            <div className="text-[10px] text-slate-400 flex justify-between pt-1">
-                              <span>{client.formulas[0].developer_volume} • {client.formulas[0].exposure_minutes} min</span>
-                              <span className="text-emerald-500 font-bold">{client.formulas[0].created_at}</span>
+                        {(() => {
+                          const sortedFormulas = (client.formulas || []).slice().sort((a, b) => {
+                            const timeA = new Date(a.created_at || 0).getTime();
+                            const timeB = new Date(b.created_at || 0).getTime();
+                            return timeB - timeA;
+                          });
+                          const latest = sortedFormulas[0];
+                          if (!latest) {
+                            return (
+                              <div className="text-xs text-slate-400 italic p-2 text-center">
+                                Sin fórmulas técnicas guardadas
+                              </div>
+                            );
+                          }
+                          const cleanDate = latest.created_at ? latest.created_at.split('T')[0] : '';
+                          return (
+                            <div className="p-3 rounded-xl bg-[#FF5A36]/5 border border-[#FF5A36]/20 text-xs space-y-1">
+                              <div className="text-[10px] text-[#FF5A36] font-bold uppercase">Última Mezcla Guardada:</div>
+                              <p className="font-mono text-[11px] font-bold line-clamp-2">{latest.formula_text}</p>
+                              <div className="text-[10px] text-slate-400 flex justify-between pt-1">
+                                <span>{latest.developer_volume} • {latest.exposure_minutes} min</span>
+                                <span className="text-emerald-500 font-bold">{cleanDate}</span>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="text-xs text-slate-400 italic p-2 text-center">
-                            Sin fórmulas técnicas guardadas
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
 
                       <div className="pt-4 border-t border-black/5 dark:border-white/10 mt-4 flex gap-1.5">
@@ -3981,51 +3993,61 @@ export const DashboardPage: React.FC = () => {
               <div className={`space-y-3 p-3.5 rounded-2xl text-xs max-h-72 overflow-y-auto ${
                 theme === 'dark' ? 'bg-[#080B12] border border-white/10' : 'bg-slate-50 border border-slate-200/80'
               }`}>
-                {selectedClientForFormula.formulas.map((form, idx) => (
-                  <div
-                    key={form.id || idx}
-                    className={`p-3.5 rounded-xl border space-y-2 mb-2 transition-all ${
-                      theme === 'dark'
-                        ? 'bg-[#141926] border-white/10 text-white'
-                        : 'bg-white border-slate-200 text-slate-900 shadow-sm'
-                    }`}
-                  >
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span className="text-[#FF5A36]">Fórmula #{selectedClientForFormula.formulas!.length - idx}</span>
-                      <span className="text-slate-400 font-mono text-[10px]">{form.created_at}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px] uppercase font-semibold">Mezcla Exacta:</span>
-                      <strong className={`font-mono text-xs block mt-0.5 ${
-                        theme === 'dark' ? 'text-white' : 'text-slate-900'
-                      }`}>{form.formula_text}</strong>
-                    </div>
-                    <div className={`grid grid-cols-3 gap-2 text-[11px] pt-2 border-t ${
-                      theme === 'dark' ? 'border-white/10' : 'border-slate-100'
-                    }`}>
-                      <div>
-                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Oxidante:</span>
-                        <strong className="text-[#FF5A36] font-bold">{form.developer_volume}</strong>
+                {(() => {
+                  const sorted = selectedClientForFormula.formulas.slice().sort((a, b) => {
+                    const timeA = new Date(a.created_at || 0).getTime();
+                    const timeB = new Date(b.created_at || 0).getTime();
+                    return timeB - timeA;
+                  });
+                  return sorted.map((form, idx) => {
+                    const cleanDate = form.created_at ? form.created_at.split('T')[0] : '';
+                    return (
+                      <div
+                        key={form.id || idx}
+                        className={`p-3.5 rounded-xl border space-y-2 mb-2 transition-all ${
+                          theme === 'dark'
+                            ? 'bg-[#141926] border-white/10 text-white'
+                            : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                        }`}
+                      >
+                        <div className="flex justify-between text-[11px] font-bold">
+                          <span className="text-[#FF5A36]">Fórmula #{sorted.length - idx}</span>
+                          <span className="text-slate-400 font-mono text-[10px]">{cleanDate}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[10px] uppercase font-semibold">Mezcla Exacta:</span>
+                          <strong className={`font-mono text-xs block mt-0.5 ${
+                            theme === 'dark' ? 'text-white' : 'text-slate-900'
+                          }`}>{form.formula_text}</strong>
+                        </div>
+                        <div className={`grid grid-cols-3 gap-2 text-[11px] pt-2 border-t ${
+                          theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+                        }`}>
+                          <div>
+                            <span className="text-slate-400 block text-[9px] uppercase font-semibold">Oxidante:</span>
+                            <strong className="text-[#FF5A36] font-bold">{form.developer_volume}</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px] uppercase font-semibold">Tiempo:</span>
+                            <strong className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{form.exposure_minutes} min</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[9px] uppercase font-semibold">Plex:</span>
+                            <strong className="text-emerald-500 font-bold">Sí</strong>
+                          </div>
+                        </div>
+                        {form.diagnostic_notes && (
+                          <div className={`pt-2 border-t text-[11px] ${
+                            theme === 'dark' ? 'border-white/10 text-slate-300' : 'border-slate-100 text-slate-600'
+                          }`}>
+                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Diagnóstico:</span>
+                            <p className="mt-0.5">{form.diagnostic_notes}</p>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Tiempo:</span>
-                        <strong className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{form.exposure_minutes} min</strong>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 block text-[9px] uppercase font-semibold">Plex:</span>
-                        <strong className="text-emerald-500 font-bold">Sí</strong>
-                      </div>
-                    </div>
-                    {form.diagnostic_notes && (
-                      <div className={`pt-2 border-t text-[11px] ${
-                        theme === 'dark' ? 'border-white/10 text-slate-300' : 'border-slate-100 text-slate-600'
-                      }`}>
-                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Diagnóstico:</span>
-                        <p className="mt-0.5">{form.diagnostic_notes}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                  });
+                })()}
               </div>
             ) : (
               <div className={`p-6 rounded-2xl text-center text-xs border border-dashed ${

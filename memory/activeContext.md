@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-29. **Ordenamiento de Fórmulas y Visualización de la Última Mezcla ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Causa Raíz**: Supabase devolvía las fórmulas relacionadas en orden de inserción ascendente, por lo que la tarjeta del CRM leía la primera creada en lugar de la última guardada, y la fecha mostraba la cadena ISO completa.
+    - **Corrección**: Se ordenan explícitamente las fórmulas por fecha descendente (`new Date(created_at).getTime()`) tanto en la consulta a Supabase como en la tarjeta del CRM y en el modal de la Ficha 360°, garantizando que siempre se vea la última mezcla guardada y la fecha limpia (`YYYY-MM-DD`).
+
 -28. **Corrección de Contraste y Legibilidad en Ficha 360° ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Causa Raíz**: En modo claro, los textos de las fórmulas dentro de tarjetas con fondo oscuro heredaban colores oscuros, haciéndolos invisibles o de bajísimo contraste.
     - **Corrección**: Se aplicó una paleta de alto contraste explícita tanto para modo claro (tarjetas blancas con texto oscuro nítido) como para modo oscuro (`#141926` con texto blanco puro y acentos legibles), y se estilizó el botón *"Cerrar"*.

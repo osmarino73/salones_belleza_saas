@@ -583,7 +583,16 @@ export const api = {
         .select('*, formulas:color_formulas(*)')
         .eq('tenant_id', tid)
         .order('created_at', { ascending: false });
-      if (!error && data) return data as Client[];
+      if (!error && data) {
+        return (data as Client[]).map(c => ({
+          ...c,
+          formulas: (c.formulas || []).sort((a, b) => {
+            const timeA = new Date(a.created_at || 0).getTime();
+            const timeB = new Date(b.created_at || 0).getTime();
+            return timeB - timeA;
+          })
+        }));
+      }
     }
     const saved = localStorage.getItem(STORAGE_KEYS.CLIENTS);
     if (saved) {
