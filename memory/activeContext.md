@@ -16,6 +16,9 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-25. **Depuración del Menú Secundario de Perfil ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se eliminó el enlace a *Portal de Colaborador (Estilistas)* del menú desplegable del perfil, manteniendo una lista de opciones concisa y relevante para la dueña del salón.
+
 -24. **Corrección de Desborde Móvil y Unificación Estética del Modal de Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
     - **Alineación y Responsividad de Enlace 24/7**: Se eliminó el desborde del ícono del calendario a la izquierda; el contenedor ahora es `flex-col sm:flex-row items-start sm:items-center` con `w-full`, `break-all` y botones de "Copiar" y "Probar" adaptados en ancho completo en móviles.
     - **Eliminación de Colores Discordantes**: Se suprimieron los fondos y bordes cyan, emerald y fucsia, aplicando la paleta sobria oficial de Kowy (`bg-white/5`, `border-white/10`, `text-slate-300` y acentos en `#FF5A36`).

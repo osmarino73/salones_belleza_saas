@@ -1622,17 +1622,6 @@ export const DashboardPage: React.FC = () => {
                   </button>
 
                   <Link
-                    to="/colaborador"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all ${
-                      theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
-                    }`}
-                  >
-                    <User className="w-4 h-4 text-slate-400" />
-                    <span>Portal de Colaborador (Estilistas)</span>
-                  </Link>
-
-                  <Link
                     to="/reservas"
                     target="_blank"
                     onClick={() => setIsProfileMenuOpen(false)}
