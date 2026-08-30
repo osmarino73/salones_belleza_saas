@@ -406,10 +406,10 @@ export const DashboardPage: React.FC = () => {
   const [salonAddress, setSalonAddress] = useState('');
   const [salonHours, setSalonHours] = useState('Lun - Sáb: 08:00 AM - 08:00 PM');
 
-  const formatCurrency = (amount: number | undefined | null, currency: string = salonCurrency || 'COP') => {
+  const formatCurrency = (amount: number | string | undefined | null, currency: string = salonCurrency || 'COP') => {
     const num = Number(amount ?? 0);
-    if (currency === 'COP' || (!currency && num > 1000)) {
-      return `$ ${num.toLocaleString('es-CO')} COP`;
+    if (currency === 'USD') {
+      return `$ ${num.toLocaleString('en-US')} USD`;
     }
     if (currency === 'MXN') {
       return `$ ${num.toLocaleString('es-MX')} MXN`;
@@ -417,7 +417,7 @@ export const DashboardPage: React.FC = () => {
     if (currency === 'EUR') {
       return `€ ${num.toLocaleString('es-ES')} EUR`;
     }
-    return `$ ${num.toLocaleString('en-US')} USD`;
+    return `$ ${num.toLocaleString('es-CO')} COP`;
   };
 
   // CRM Client State & Modals
@@ -2285,7 +2285,7 @@ export const DashboardPage: React.FC = () => {
                           </div>
                           <div>
                             <span className="text-slate-400 block text-[10px]">Total Facturado:</span>
-                            <strong className="text-emerald-500">${client.total_spent_usd} USD</strong>
+                            <strong className="text-emerald-500">{formatCurrency(client.total_spent_usd || 0, salonCurrency)}</strong>
                           </div>
                         </div>
 
@@ -5953,12 +5953,12 @@ export const DashboardPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Precio de Venta ($ USD) *</label>
+                  <label className="block text-slate-400 mb-1 font-semibold">Precio de Venta (COP $) *</label>
                   <div className="relative">
                     <input
                       type="number"
-                      min="0.5"
-                      step="0.5"
+                      min="1000"
+                      step="500"
                       value={productForm.price_usd}
                       onChange={(e) => setProductForm({ ...productForm, price_usd: Number(e.target.value) })}
                       className={`w-full border rounded-xl p-2.5 pl-6 font-bold text-[#FF5A36] focus:outline-none focus:border-[#FF5A36] ${
@@ -5971,12 +5971,12 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Costo ($ USD)</label>
+                  <label className="block text-slate-400 mb-1 font-semibold">Costo (COP $)</label>
                   <div className="relative">
                     <input
                       type="number"
                       min="0"
-                      step="0.5"
+                      step="500"
                       value={productForm.cost_price_usd}
                       onChange={(e) => setProductForm({ ...productForm, cost_price_usd: Number(e.target.value) })}
                       className={`w-full border rounded-xl p-2.5 pl-6 focus:outline-none focus:border-[#FF5A36] ${

@@ -158,7 +158,7 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
           id: 'm-102',
           sender: 'ai',
           senderName: aiSettings?.agent_name || 'Flowy',
-          text: '¡Hola María Fernanda! ✨ Qué alegría saludarte. Con gusto te ayudo. Sofía Restrepo tiene un espacio disponible hoy a las 02:00 PM para Balayage + Olaplex ($110 USD). ¿Te reservo ese horario?',
+          text: '¡Hola María Fernanda! ✨ Qué alegría saludarte. Con gusto te ayudo. Sofía Restrepo tiene un espacio disponible hoy a las 02:00 PM para Balayage + Olaplex ($120.000 COP). ¿Te reservo ese horario?',
           timestamp: '11:39 AM',
           status: 'read'
         },
@@ -288,7 +288,7 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
           id: 'm-402',
           sender: 'ai',
           senderName: 'Flowy',
-          text: '¡Hola Valentina! 💅 Nuestras Uñas Esculpidas en Poligel + Nail Art tienen un valor de $55 USD e incluyen manicura rusa combinada y diseño personalizado con Laura Valencia (duración 75 min). ¿Te gustaría agendar una cita?',
+          text: '¡Hola Valentina! 💅 Nuestras Uñas Esculpidas en Poligel + Nail Art tienen un valor de $65.000 COP e incluyen manicura rusa combinada y diseño personalizado con Laura Valencia (duración 75 min). ¿Te gustaría agendar una cita?',
           timestamp: '07:16 PM',
           status: 'read'
         }
@@ -320,7 +320,7 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
           id: 'm-502',
           sender: 'ai',
           senderName: 'Flowy',
-          text: '¡Hola Isabella! 🌿 Qué gusto saludarte por Instagram. Nuestra Keratina Orgánica Antifrizz es 100% libre de formol y deja un brillo espejo por 4 meses ($75 USD). Para este sábado tenemos cupos a las 10:00 AM y 03:00 PM. ¿Cuál horario te queda mejor?',
+          text: '¡Hola Isabella! 🌿 Qué gusto saludarte por Instagram. Nuestra Keratina Orgánica Antifrizz es 100% libre de formol y deja un brillo espejo por 4 meses ($85.000 COP). Para este sábado tenemos cupos a las 10:00 AM y 03:00 PM. ¿Cuál horario te queda mejor?',
           timestamp: '10:06 AM',
           status: 'delivered'
         }
@@ -406,7 +406,7 @@ export const MessagesBoardPage: React.FC<MessagesBoardPageProps> = ({
       id: 'sb-2',
       sender: 'ai',
       senderName: aiSettings?.agent_name || 'Flowy',
-      text: `¡Hola! ✨ Con gusto te informo. Estamos ubicados en ${aiSettings?.address_instructions || 'Carrera 43A # 1-50, El Poblado'}. Nuestro servicio de Balayage Rubio Cenizo + Olaplex tiene un valor de $110 USD e incluye matizado, brushing y protector capilar. ¿Deseas agendar tu cita?`,
+      text: `¡Hola! ✨ Con gusto te informo. Estamos ubicados en ${aiSettings?.address_instructions || 'Carrera 43A # 1-50, El Poblado'}. Nuestro servicio de Balayage Rubio Cenizo + Olaplex tiene un valor de $120.000 COP e incluye matizado, brushing y protector capilar. ¿Deseas agendar tu cita?`,
       timestamp: '02:01 PM',
       status: 'read'
     }

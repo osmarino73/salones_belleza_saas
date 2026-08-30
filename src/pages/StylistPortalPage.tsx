@@ -178,10 +178,10 @@ export const StylistPortalPage: React.FC = () => {
   }, [myClients, crmSearchQuery]);
 
   // Currency Formatter
-  const formatCurrency = (val: number, cur: string = salonCurrency) => {
+  const formatCurrency = (val: number, cur: string = salonCurrency || 'COP') => {
     const num = Number(val || 0);
-    if (cur === 'COP') {
-      return `$ ${Math.round(num).toLocaleString('es-CO')} COP`;
+    if (cur === 'USD') {
+      return `$ ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
     }
     if (cur === 'MXN') {
       return `$ ${num.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
@@ -195,7 +195,7 @@ export const StylistPortalPage: React.FC = () => {
     if (cur === 'EUR') {
       return `€ ${num.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
-    return `$ ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+    return `$ ${Math.round(num).toLocaleString('es-CO')} COP`;
   };
 
   // Commission Calculations (100% reales basadas en las citas efectivamente COBRADAS)

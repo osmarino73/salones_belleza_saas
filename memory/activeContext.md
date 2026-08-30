@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-26. **Unificación y Corrección de Moneda a Pesos Colombianos (COP) ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx) & [`MessagesBoardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/MessagesBoardPage.tsx))**:
+    - Se corrigió el valor de *Total Facturado* en las fichas del CRM de clientas para que utilice `formatCurrency` formateando en `$ COP` (ej. `$ 0 COP`) en lugar del texto fijo `$0 USD`.
+    - Se actualizaron las etiquetas de productos y los mensajes de demostración de IA en la bandeja para mostrar montos en Pesos Colombianos (`$ COP`).
+
 -25. **Depuración del Menú Secundario de Perfil ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - Se eliminó el enlace a *Portal de Colaborador (Estilistas)* del menú desplegable del perfil, manteniendo una lista de opciones concisa y relevante para la dueña del salón.
 
