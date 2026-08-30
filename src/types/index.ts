@@ -42,7 +42,8 @@ export interface Tenant {
   logo_icon?: string; // Emoji o icono (ej. '✨', '✂️', '🪄', '👑', '💅', '🧖‍♀️')
   hero_eyebrow?: string; // Saludo superior (ej. 'Bienvenidas a ❤️')
   slogan?: string; // Nombre o título principal
-  title_accent?: string; // Subtítulo fucsia (ej. 'Centro de Estética')
+  title_accent?: string; // Subtítulo fucsia/dorado (ej. 'Centro de Estética' o 'Urabá')
+  navbar_tagline?: string; // Lema o subtítulo de la barra de navegación (ej. 'Especialistas en Rizos • Apartadó')
   subtitle?: string; // Párrafo descriptivo de servicios
   primary_color?: string; // Color hexadecimal principal de la marca (ej. '#d92672')
   show_team_section?: boolean; // Controla si se muestra u oculta la sección Nosotros/Equipo en la web

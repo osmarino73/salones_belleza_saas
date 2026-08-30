@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-8. **Personalización Dinámica de Marca y Subtítulo en la Barra de Navegación / Navbar ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
+   - Se añadió el campo `navbar_tagline` al modelo de `Tenant`, al formulario del personalizador y al motor de inyección no invasiva.
+   - El personalizador permite ahora configurar y previsualizar en vivo el **Nombre Principal**, el **Acento Destacado** (cursiva / dorado) y el **Lema / Subtítulo del Logo** (`.brand-tagline` / `.brand-subtitle`, ej. *"ESPECIALISTAS EN RIZOS • APARTADÓ"*), preservando el 100% de la tipografía y diseño bicromático nativo.
+
 -7. **Aislamiento y Preservación Exacta del Grid de Métricas "Sobre Nosotros" ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
    - **Diagnóstico del Fallo Visual**: Las expresiones regulares anteriores con patrones `[\s\S]*?` cruzaban múltiples etiquetas `<div>`, borrando las etiquetas de cierre de las tarjetas de métricas del grid nativo y amontonando los números en la esquina inferior.
    - **Solución Implementada**: Se reestructuró el inyector para procesar tarjeta por tarjeta (`.metric-item` / `.stat-item`) de forma estrictamente acotada, actualizando únicamente el contenido del tag de texto interno (`<strong>...</strong>`) sin modificar ningún contenedor `<div>` ni alterar el CSS flex/grid original.

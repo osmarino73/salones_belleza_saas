@@ -12,6 +12,7 @@ export interface ExtractedWebsiteData {
   heroEyebrow?: string;
   slogan?: string;
   titleAccent?: string;
+  navbarTagline?: string;
   subtitle?: string;
   aboutImageUrl?: string;
   aboutBadgeText?: string;
@@ -53,6 +54,12 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
         const textLogo = logoMatch[1].replace(/<[^>]*>/g, '').trim();
         if (textLogo) result.logoIcon = textLogo;
       }
+    }
+
+    // 2.5 Extraer Lema / Subtítulo del Logo en el Navbar
+    const taglineMatch = html.match(/<(?:span|div|p|small)\b[^>]*class=["'][^"']*(?:brand-tagline|brand-subtitle|logo-subtitle|brand-desc|logo-desc|brand-tag)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|p|small)>/i);
+    if (taglineMatch && taglineMatch[1]) {
+      result.navbarTagline = taglineMatch[1].replace(/<[^>]*>/g, '').trim();
     }
 
     // 3. Extraer Hero Eyebrow
@@ -184,6 +191,7 @@ export interface InjectProspectOptions {
   heroEyebrow?: string;
   slogan?: string;
   titleAccent?: string;
+  navbarTagline?: string;
   subtitle?: string;
   aboutImageUrl?: string;
   aboutBadgeText?: string;
@@ -235,6 +243,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     heroEyebrow,
     slogan,
     titleAccent,
+    navbarTagline,
     subtitle,
     aboutImageUrl,
     aboutBadgeText,
@@ -319,11 +328,37 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // Extraer valores base nativos para comparación de no-invasión
   const baseline = extractWebsiteDataFromHtml(html);
 
-  // 1.15 Inyección Dinámica del Nombre / Slogan en el Navbar (solo si fue modificado explícitamente)
-  if (slogan && slogan !== baseline.slogan) {
+  // 1.15 Inyección Dinámica de Marca (Nombre, Acento y Lema) en el Navbar
+  const isNavbarBrandChanged = (slogan && slogan !== baseline.slogan) || (titleAccent && titleAccent !== baseline.titleAccent);
+  if (isNavbarBrandChanged) {
+    const brandTitleRegex = /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-title|brand-name|logo-text|logo-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi;
+    if (brandTitleRegex.test(processed)) {
+      processed = processed.replace(brandTitleRegex, (_match: string, openTag: string, innerContent: string, closeTag: string) => {
+        let newBrandInner = innerContent;
+        if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(newBrandInner)) {
+          if (titleAccent) {
+            newBrandInner = newBrandInner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
+          }
+          if (slogan) {
+            newBrandInner = newBrandInner.replace(/^([^<]+)/, `${slogan} `);
+          }
+        } else {
+          if (slogan && titleAccent) {
+            newBrandInner = `${slogan} <span>${titleAccent}</span>`;
+          } else if (slogan) {
+            newBrandInner = slogan;
+          }
+        }
+        return `${openTag}${newBrandInner}${closeTag}`;
+      });
+    }
+  }
+
+  // Inyección Dinámica del Lema / Subtítulo del Logo en el Navbar
+  if (navbarTagline && navbarTagline !== baseline.navbarTagline) {
     processed = processed.replace(
-      /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-name|logo-text|logo-title|brand-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi,
-      `$1${slogan}$3`
+      /(<(?:span|div|p|small)\b[^>]*class=["'][^"']*(?:brand-tagline|brand-subtitle|logo-subtitle|brand-desc|logo-desc|brand-tag)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p|small)>)/gi,
+      `$1${navbarTagline}$3`
     );
   }
 

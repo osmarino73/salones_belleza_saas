@@ -200,6 +200,7 @@ export const DashboardPage: React.FC = () => {
     hero_eyebrow: string;
     slogan: string;
     title_accent: string;
+    navbar_tagline: string;
     subtitle: string;
     about_image_url: string;
     about_badge_text: string;
@@ -223,6 +224,7 @@ export const DashboardPage: React.FC = () => {
     hero_eyebrow: '',
     slogan: '',
     title_accent: '',
+    navbar_tagline: '',
     subtitle: '',
     about_image_url: '',
     about_badge_text: '',
@@ -263,6 +265,8 @@ export const DashboardPage: React.FC = () => {
           ? activeTenantObj.title_accent
           : (bData.title_accent && bData.title_accent !== 'Centro de Estética' ? bData.title_accent : (extracted.titleAccent || ''));
 
+        const cleanNavbarTagline = activeTenantObj.navbar_tagline || bData.navbar_tagline || extracted.navbarTagline || '';
+
         const cleanSlogan = (activeTenantObj.slogan && activeTenantObj.slogan !== 'Sandra Color´s' && activeTenantObj.slogan !== activeTenantObj.name)
           ? activeTenantObj.slogan
           : (extracted.slogan || bData.slogan || activeTenantObj.name || '');
@@ -298,6 +302,7 @@ export const DashboardPage: React.FC = () => {
           hero_eyebrow: cleanEyebrow,
           slogan: cleanSlogan,
           title_accent: cleanTitleAccent,
+          navbar_tagline: cleanNavbarTagline,
           subtitle: cleanSubtitle,
           about_image_url: activeTenantObj.about_image_url || bData.about_image_url || extracted.aboutImageUrl || '',
           about_badge_text: cleanAboutBadgeText,
@@ -332,6 +337,7 @@ export const DashboardPage: React.FC = () => {
       heroEyebrow: websiteForm.hero_eyebrow || undefined,
       slogan: websiteForm.slogan || undefined,
       titleAccent: websiteForm.title_accent || undefined,
+      navbarTagline: websiteForm.navbar_tagline || undefined,
       subtitle: websiteForm.subtitle || undefined,
       aboutImageUrl: websiteForm.about_image_url || undefined,
       aboutBadgeText: websiteForm.about_badge_text || undefined,
@@ -5848,6 +5854,7 @@ export const DashboardPage: React.FC = () => {
                   hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
                   slogan: websiteForm.slogan || activeTenantObj.slogan,
                   title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
+                  navbar_tagline: websiteForm.navbar_tagline || activeTenantObj.navbar_tagline,
                   subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
                   about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
                   about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
@@ -5879,6 +5886,7 @@ export const DashboardPage: React.FC = () => {
                         hero_eyebrow: updatedTenant.hero_eyebrow,
                         slogan: updatedTenant.slogan,
                         title_accent: updatedTenant.title_accent,
+                        navbar_tagline: updatedTenant.navbar_tagline,
                         subtitle: updatedTenant.subtitle,
                         about_image_url: updatedTenant.about_image_url,
                         about_badge_text: updatedTenant.about_badge_text,
@@ -5916,7 +5924,7 @@ export const DashboardPage: React.FC = () => {
                   />
                 </div>
 
-                {/* 2. Textos Principales del Hero */}
+                {/* 2. Textos Principales del Hero & Barra de Navegación */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
                   <strong className="text-slate-300 font-bold text-xs block">2. Mensaje Principal & Subtítulos (Header)</strong>
                   
@@ -5960,6 +5968,19 @@ export const DashboardPage: React.FC = () => {
                         }`}
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Lema / Subtítulo de la Barra de Navegación (Navbar)</label>
+                    <input
+                      type="text"
+                      value={websiteForm.navbar_tagline}
+                      onChange={(e) => setWebsiteForm({ ...websiteForm, navbar_tagline: e.target.value })}
+                      placeholder="Ej. Especialistas en Rizos • Apartadó"
+                      className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                    />
                   </div>
 
                   <div>
