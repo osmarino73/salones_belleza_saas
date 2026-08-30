@@ -6,7 +6,6 @@ import {
   Calendar,
   Gift,
   Clock,
-  Award,
   ChevronDown,
   ArrowRight,
   Star,
@@ -18,14 +17,10 @@ import {
   Crown,
   Users,
   Smartphone,
-  TrendingUp,
   X,
-  Play,
   Copy,
-  DollarSign,
-  HelpCircle,
-  Heart,
-  ChevronRight
+  TrendingUp,
+  DollarSign
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
@@ -34,7 +29,6 @@ export const LandingPage: React.FC = () => {
   
   // Estado para el Simulador Instantáneo "Tu Salón en 5 Segundos"
   const [simSalonName, setSimSalonName] = useState('');
-  const [simNiche, setSimNiche] = useState('Salón de Belleza & Color');
   const [simGeneratedSlug, setSimGeneratedSlug] = useState('');
   const [isSimModalOpen, setIsSimModalOpen] = useState(false);
 
@@ -82,7 +76,7 @@ export const LandingPage: React.FC = () => {
 
     // Preparar mensaje de WhatsApp preformateado
     const message = encodeURIComponent(
-      `¡Hola Kowy! 🚀 Deseo reclamar la oferta de lanzamiento de mi Salón:\n\n` +
+      `¡Hola Kowy! 🚀 Deseo reclamar la oferta de activación para mi Salón:\n\n` +
       `🏢 Negocio: ${formData.businessName}\n` +
       `👤 Responsable: ${formData.ownerName}\n` +
       `📱 WhatsApp: ${formData.whatsapp}\n` +
@@ -99,7 +93,7 @@ export const LandingPage: React.FC = () => {
     <div className="min-h-screen bg-[#07090E] text-white font-body selection:bg-[#FF5A36] selection:text-white">
       
       {/* Top Announcement Bar */}
-      <div className="bg-black/90 border-b border-white/10 py-2 text-xs text-slate-400 hidden sm:block">
+      <div className="bg-[#0A0D15] border-b border-white/5 py-2 text-xs text-slate-400 hidden sm:block">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5 text-slate-300">
@@ -107,7 +101,7 @@ export const LandingPage: React.FC = () => {
               Página Web Profesional de Regalo + Agendador Online 24/7
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+              <Clock className="w-3.5 h-3.5 text-[#FF5A36]" />
               Instalación Lista en 48 Horas
             </span>
           </div>
@@ -116,7 +110,7 @@ export const LandingPage: React.FC = () => {
               href="https://wa.me/573114195123?text=Hola%20Kowy,%20deseo%20asesoria%20para%20mi%20salon"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 text-[#FF5A36] hover:text-orange-400 font-bold transition-colors"
+              className="flex items-center gap-1.5 text-[#FF5A36] hover:text-[#ff785a] font-bold transition-colors"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               WhatsApp Oficial: +57 311 419 5123
@@ -132,7 +126,7 @@ export const LandingPage: React.FC = () => {
             <img
               src="/kowy-logo.jpg"
               alt="Kowy Logo"
-              className="w-8 h-8 rounded-xl object-contain shadow-md shadow-[#FF5A36]/30 border border-white/10"
+              className="w-8 h-8 rounded-xl object-contain shadow-md shadow-[#FF5A36]/20 border border-white/10"
             />
             <span className="tracking-tight">Kowy<span className="text-[#FF5A36]">.app</span></span>
           </Link>
@@ -165,7 +159,7 @@ export const LandingPage: React.FC = () => {
 
             <a
               href="#solicitar"
-              className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/30 transition-all active:scale-95"
+              className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/25 transition-all active:scale-95"
             >
               <Gift className="w-3.5 h-3.5" />
               <span>Activar Mi Salón</span>
@@ -174,44 +168,43 @@ export const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* 1. HERO SECTION SPLIT-SCREEN CON MOCKUP INTERACTIVO */}
-      <section className="relative pt-10 sm:pt-16 pb-16 sm:pb-24 overflow-hidden">
-        {/* Glows de fondo */}
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-20 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* 1. HERO SECTION CON ESTILO OSCURO SOBRIO & ELEGANTE */}
+      <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-hidden">
+        {/* Glow unificado Kowy */}
+        <div className="absolute top-10 left-1/3 -translate-x-1/2 w-[550px] h-[350px] bg-[#FF5A36]/10 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Columna Izquierda: Copy Persuasivo */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FF5A36]/15 border border-[#FF5A36]/30 text-[#FF5A36] text-xs font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              <span>La Plataforma #1 para Salones, Barberías & Spas en Colombia</span>
+          <div className="lg:col-span-7 space-y-6 text-left relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FF5A36]/10 border border-[#FF5A36]/25 text-[#FF5A36] text-xs font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>La Plataforma #1 para Salones, Barberías & Spas</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1]">
               Llena la agenda de tu Salón <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-[#FF5A36] via-pink-500 to-amber-400 bg-clip-text text-transparent">
+              <span className="text-[#FF5A36]">
                 en automático las 24 Horas
               </span>
             </h1>
 
             <p className="text-slate-300 text-sm sm:text-base sm:leading-relaxed max-w-2xl">
-              Te entregamos tu <strong>Página Web de Lujo 100% Gratis</strong> y un sistema de agendamiento inteligente que elimina los plantones, te ahorra 15 horas de WhatsApp a la semana y permite a tus clientas reservar solas en 30 segundos.
+              Te entregamos tu <strong>Página Web Profesional 100% Gratis</strong> y un sistema de agendamiento inteligente que elimina los plantones, te ahorra 15 horas de WhatsApp a la semana y permite a tus clientas reservar solas en 30 segundos.
             </p>
 
             {/* Badges de Confianza Rápidos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs text-slate-300">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0" />
                 <span>0% comisión por cita</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0" />
                 <span>Sin contratos de amarre</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0" />
                 <span>Entrega en 48 horas</span>
               </div>
             </div>
@@ -220,7 +213,7 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3.5 pt-2">
               <a
                 href="#solicitar"
-                className="bg-gradient-to-r from-[#FF5A36] via-pink-500 to-amber-500 hover:opacity-95 text-white font-black px-7 py-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 transition-all hover:scale-[1.02] text-sm cursor-pointer"
+                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-7 py-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-xl shadow-[#FF5A36]/30 transition-all hover:scale-[1.02] text-sm cursor-pointer"
               >
                 <Gift className="w-5 h-5" />
                 <span>Reclamar Web Gratis + 30 Días de Regalo</span>
@@ -228,7 +221,7 @@ export const LandingPage: React.FC = () => {
 
               <Link
                 to="/reservar/demo"
-                className="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-bold px-6 py-4 rounded-2xl flex items-center justify-center gap-2 text-sm transition-all"
+                className="bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold px-6 py-4 rounded-2xl flex items-center justify-center gap-2 text-sm transition-all"
               >
                 <Calendar className="w-4 h-4 text-[#FF5A36]" />
                 <span>Probar Agendador en Vivo</span>
@@ -244,7 +237,7 @@ export const LandingPage: React.FC = () => {
                 <img className="w-8 h-8 rounded-full border-2 border-[#07090E] object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Barbero" />
               </div>
               <div>
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className="flex items-center gap-1 text-[#FF5A36]">
                   {'★★★★★'} <strong className="text-white font-bold ml-1">4.9 / 5.0</strong>
                 </div>
                 <span>Más de 85 salones y barberías digitalizados en Colombia</span>
@@ -252,19 +245,19 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Columna Derecha: Mockup Interactivo de Celular con Notificaciones en Vivo */}
+          {/* Columna Derecha: Mockup Interactivo de Celular */}
           <div className="lg:col-span-5 relative" id="demo">
             {/* Marco de Teléfono Glassmorphism */}
-            <div className="relative mx-auto w-full max-w-[340px] bg-[#0E1322] border-4 border-white/15 rounded-[42px] p-3.5 shadow-2xl shadow-black/90 ring-1 ring-white/10">
+            <div className="relative mx-auto w-full max-w-[340px] bg-[#0E1322] border-4 border-white/10 rounded-[42px] p-3.5 shadow-2xl shadow-black/90 ring-1 ring-white/5">
               
-              {/* Notificación Flotante Superior (Simulación WhatsApp) */}
-              <div className="absolute -top-5 -left-4 sm:-left-8 z-20 bg-[#141A29]/95 border border-emerald-500/40 rounded-2xl p-3 shadow-2xl backdrop-blur-md max-w-[260px] animate-bounce-subtle">
+              {/* Notificación Flotante Superior */}
+              <div className="absolute -top-5 -left-4 sm:-left-8 z-20 bg-[#141A29]/95 border border-[#FF5A36]/40 rounded-2xl p-3 shadow-2xl backdrop-blur-md max-w-[260px]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30">
-                    <MessageCircle className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-[#FF5A36] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF5A36]/30">
+                    <Calendar className="w-4 h-4" />
                   </div>
                   <div className="min-w-0 text-left">
-                    <span className="text-[10px] text-emerald-400 font-extrabold uppercase block leading-none">Nueva Cita Confirmada</span>
+                    <span className="text-[10px] text-[#FF5A36] font-extrabold uppercase block leading-none">Nueva Cita Confirmada</span>
                     <strong className="text-xs text-white block truncate leading-tight mt-0.5">Balayage Deluxe ($180k)</strong>
                     <span className="text-[9px] text-slate-400 block">Mañana 2:30 PM • Valentina R.</span>
                   </div>
@@ -283,10 +276,10 @@ export const LandingPage: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D16] via-black/40 to-transparent p-3.5 flex flex-col justify-between">
                     <div className="flex justify-between items-center">
-                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-black/60 text-emerald-400 border border-emerald-500/30">
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-black/70 text-slate-200 border border-white/10">
                         ● Abierto Ahora
                       </span>
-                      <span className="text-[10px] bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-white font-bold">
+                      <span className="text-[10px] bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full text-white font-bold">
                         ⭐ 5.0 (140)
                       </span>
                     </div>
@@ -307,13 +300,13 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   {/* Servicio 1 */}
-                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-2 text-left">
+                  <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2 text-left">
                     <div>
                       <strong className="text-xs font-bold text-white block">Balayage Deluxe</strong>
                       <span className="text-[10px] text-slate-400">120 min • Con Mascarilla</span>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-xs font-black text-emerald-400 block">$180.000</span>
+                      <span className="text-xs font-black text-white block">$180.000</span>
                       <Link
                         to="/reservar/demo?service=balayage"
                         className="text-[9px] font-extrabold px-2 py-1 rounded-lg bg-[#FF5A36] text-white inline-block mt-0.5"
@@ -324,13 +317,13 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   {/* Servicio 2 */}
-                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-2 text-left">
+                  <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2 text-left">
                     <div>
                       <strong className="text-xs font-bold text-white block">Corte & Cepillado Spa</strong>
                       <span className="text-[10px] text-slate-400">45 min • Lavado Masaje</span>
                     </div>
                     <div className="text-right shrink-0">
-                      <span className="text-xs font-black text-emerald-400 block">$60.000</span>
+                      <span className="text-xs font-black text-white block">$60.000</span>
                       <Link
                         to="/reservar/demo?service=corte"
                         className="text-[9px] font-extrabold px-2 py-1 rounded-lg bg-white/10 text-white inline-block mt-0.5 hover:bg-[#FF5A36]"
@@ -341,15 +334,15 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Botón WhatsApp Verde Oficial */}
+                {/* Botón WhatsApp Oficial */}
                 <div className="px-3 pt-1">
                   <a
                     href="https://wa.me/573114195123?text=Hola%20Studio%20Glamour,%20vi%20su%20demo%20y%20quiero%20informacion"
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-green-500/20 transition-all"
+                    className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition-all"
                   >
-                    <MessageCircle className="w-3.5 h-3.5" />
+                    <MessageCircle className="w-3.5 h-3.5 text-[#FF5A36]" />
                     <span>WhatsApp del Salón</span>
                   </a>
                 </div>
@@ -365,7 +358,7 @@ export const LandingPage: React.FC = () => {
                 </Link>
                 <Link
                   to="/reservar/demo"
-                  className="flex-1 py-2 rounded-xl bg-[#FF5A36]/20 hover:bg-[#FF5A36]/30 text-[#FF5A36] text-[11px] font-bold text-center border border-[#FF5A36]/30 transition-colors"
+                  className="flex-1 py-2 rounded-xl bg-[#FF5A36]/15 hover:bg-[#FF5A36]/25 text-[#FF5A36] text-[11px] font-bold text-center border border-[#FF5A36]/30 transition-colors"
                 >
                   📅 Probar Citas
                 </Link>
@@ -378,9 +371,9 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 2. WIDGET SIMULADOR: TU SALÓN EN KOWY EN 5 SEGUNDOS */}
-      <section className="py-12 bg-gradient-to-r from-[#FF5A36]/10 via-purple-600/10 to-transparent border-y border-white/10">
+      <section className="py-12 bg-[#0A0D15] border-y border-white/5">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="bg-[#0E1322] border border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
             
             <div className="space-y-1.5 text-center md:text-left max-w-md">
               <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase text-[#FF5A36] bg-[#FF5A36]/10 px-2.5 py-0.5 rounded-full border border-[#FF5A36]/20">
@@ -403,11 +396,11 @@ export const LandingPage: React.FC = () => {
                 value={simSalonName}
                 onChange={(e) => setSimSalonName(e.target.value)}
                 placeholder="Ej. Sandra Color´s Studio"
-                className="flex-1 bg-[#07090E] border border-white/15 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36]"
+                className="flex-1 bg-[#07090E] border border-white/10 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF5A36]"
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black text-xs px-5 py-3 rounded-2xl shadow-lg shadow-[#FF5A36]/30 transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
+                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black text-xs px-5 py-3 rounded-2xl shadow-lg shadow-[#FF5A36]/25 transition-transform active:scale-95 cursor-pointer whitespace-nowrap"
               >
                 ⚡ Simular Mi Web
               </button>
@@ -429,8 +422,8 @@ export const LandingPage: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-12 h-12 rounded-2xl bg-[#FF5A36] text-white flex items-center justify-center mx-auto font-black text-xl shadow-lg shadow-[#FF5A36]/40">
-              🎉
+            <div className="w-12 h-12 rounded-2xl bg-[#FF5A36] text-white flex items-center justify-center mx-auto font-black text-xl shadow-lg shadow-[#FF5A36]/30">
+              ✨
             </div>
 
             <h3 className="text-xl font-black text-white">
@@ -439,16 +432,16 @@ export const LandingPage: React.FC = () => {
 
             <div className="p-3 rounded-2xl bg-[#07090E] border border-white/10 text-left space-y-1">
               <span className="text-[10px] text-slate-400 block font-semibold">Tus enlaces oficiales reservados:</span>
-              <div className="text-xs font-mono text-emerald-400 font-bold truncate">
+              <div className="text-xs font-mono text-[#FF5A36] font-bold truncate">
                 kowy.app/sitio/{simGeneratedSlug}
               </div>
-              <div className="text-xs font-mono text-[#FF5A36] font-bold truncate">
+              <div className="text-xs font-mono text-slate-300 font-bold truncate">
                 kowy.app/reservar/{simGeneratedSlug}
               </div>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              Para personalizar los colores, fotos, horarios y conectar tu WhatsApp oficial a estos enlaces, reclama tu activación hoy.
+              Para personalizar tus fotos, servicios, horarios y conectar tu WhatsApp oficial a estos enlaces, reclama tu activación hoy.
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
@@ -473,7 +466,7 @@ export const LandingPage: React.FC = () => {
         </div>
       )}
 
-      {/* 3. LOS 4 PILARES DEL ECOSISTEMA KOWY */}
+      {/* 3. LOS 4 PILARES DEL ECOSISTEMA KOWY (DISEÑO UNIFICADO) */}
       <section id="pilares" className="py-16 sm:py-24 max-w-7xl mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <div className="inline-flex items-center gap-1.5 text-xs font-black text-[#FF5A36] uppercase tracking-wider bg-[#FF5A36]/10 px-3 py-1 rounded-full border border-[#FF5A36]/20">
@@ -492,9 +485,9 @@ export const LandingPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Pilar 1 */}
-          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-pink-500/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
+          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-[#FF5A36]/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
             <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-pink-500/15 border border-pink-500/30 text-pink-400 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF5A36]/10 border border-[#FF5A36]/25 text-[#FF5A36] flex items-center justify-center font-bold">
                 <Smartphone className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-white">1. Página Web de Lujo</h3>
@@ -502,7 +495,7 @@ export const LandingPage: React.FC = () => {
                 Diseñada con estética de alta costura, galería de resultados, ubicación georreferenciada en Google Maps y catálogo visual optimizado para móviles.
               </p>
             </div>
-            <Link to="/sitio/demo" className="text-xs font-bold text-pink-400 hover:text-pink-300 flex items-center gap-1 pt-2">
+            <Link to="/sitio/demo" className="text-xs font-bold text-[#FF5A36] hover:text-white flex items-center gap-1 pt-2">
               <span>Explorar Web Demo</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -511,7 +504,7 @@ export const LandingPage: React.FC = () => {
           {/* Pilar 2 */}
           <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-[#FF5A36]/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
             <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#FF5A36]/15 border border-[#FF5A36]/30 text-[#FF5A36] flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF5A36]/10 border border-[#FF5A36]/25 text-[#FF5A36] flex items-center justify-center font-bold">
                 <Calendar className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-white">2. Agendador 24/7</h3>
@@ -519,16 +512,16 @@ export const LandingPage: React.FC = () => {
                 Tus clientas eligen día, turno disponible y su estilista favorita sin interrumpir tu trabajo. El motor respeta tus horarios de atención automáticamente.
               </p>
             </div>
-            <Link to="/reservar/demo" className="text-xs font-bold text-[#FF5A36] hover:text-orange-400 flex items-center gap-1 pt-2">
+            <Link to="/reservar/demo" className="text-xs font-bold text-[#FF5A36] hover:text-white flex items-center gap-1 pt-2">
               <span>Probar Agendador</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {/* Pilar 3 */}
-          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-emerald-500/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
+          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-[#FF5A36]/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
             <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF5A36]/10 border border-[#FF5A36]/25 text-[#FF5A36] flex items-center justify-center font-bold">
                 <MessageCircle className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-white">3. Recordatorios Anti-Plantón</h3>
@@ -536,24 +529,24 @@ export const LandingPage: React.FC = () => {
                 Mensajes automáticos por WhatsApp 24 horas y 2 horas antes de cada cita. Reduce el 80% de cancelaciones y recupera turnos a tiempo.
               </p>
             </div>
-            <a href="#calculadora" className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 pt-2">
+            <a href="#calculadora" className="text-xs font-bold text-[#FF5A36] hover:text-white flex items-center gap-1 pt-2">
               <span>Calcular Ahorro</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
 
           {/* Pilar 4 */}
-          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-cyan-500/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
+          <div className="p-6 rounded-3xl bg-[#0E1322] border border-white/10 hover:border-[#FF5A36]/40 transition-all space-y-4 shadow-xl flex flex-col justify-between group">
             <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center font-bold">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF5A36]/10 border border-[#FF5A36]/25 text-[#FF5A36] flex items-center justify-center font-bold">
                 <Users className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-white">4. Equipo, Comisiones & POS</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Cada colaboradora ve sus citas en su propio teléfono (<code className="text-cyan-300">/colaborador</code>). Liquidación automática de comisiones y caja diaria en 1 clic.
+                Cada colaboradora ve sus citas en su propio teléfono (<code className="text-[#FF5A36]">/colaborador</code>). Liquidación automática de comisiones y caja diaria en 1 clic.
               </p>
             </div>
-            <Link to="/colaborador/sty-demo-1" className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 pt-2">
+            <Link to="/colaborador/sty-demo-1" className="text-xs font-bold text-[#FF5A36] hover:text-white flex items-center gap-1 pt-2">
               <span>Ver App Estilista</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -563,15 +556,12 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 4. CALCULADORA INTERACTIVA DE PÉRDIDAS POR PLANTONES */}
-      <section id="calculadora" className="py-16 sm:py-24 bg-gradient-to-b from-[#07090E] via-[#0D121F] to-[#07090E] border-t border-white/10">
+      <section id="calculadora" className="py-16 sm:py-24 bg-[#0A0D15] border-t border-white/5">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-[#111728] border-2 border-emerald-500/30 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 relative overflow-hidden">
             
-            {/* Glow verde */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
             <div className="text-center space-y-2">
-              <span className="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
+              <span className="text-[10px] font-black uppercase text-[#FF5A36] bg-[#FF5A36]/10 px-3 py-1 rounded-full border border-[#FF5A36]/20">
                 💰 CALCULADORA FINANCIERA PARA SALONES
               </span>
               <h2 className="text-2xl sm:text-4xl font-black text-white">
@@ -586,10 +576,10 @@ export const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               
               {/* Slider 1: Citas no confirmadas */}
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-300 font-semibold">Citas perdidas por mes:</span>
-                  <strong className="text-lg font-black text-amber-400">{lostAppointments} clientas</strong>
+                  <strong className="text-lg font-black text-[#FF5A36]">{lostAppointments} clientas</strong>
                 </div>
                 <input
                   type="range"
@@ -604,10 +594,10 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Slider 2: Ticket Promedio */}
-              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+              <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-3">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-300 font-semibold">Precio promedio por servicio:</span>
-                  <strong className="text-lg font-black text-emerald-400">
+                  <strong className="text-lg font-black text-white">
                     ${avgTicketPrice.toLocaleString('es-CO')} COP
                   </strong>
                 </div>
@@ -618,7 +608,7 @@ export const LandingPage: React.FC = () => {
                   step="5000"
                   value={avgTicketPrice}
                   onChange={(e) => setAvgTicketPrice(Number(e.target.value))}
-                  className="w-full accent-emerald-500 cursor-pointer"
+                  className="w-full accent-[#FF5A36] cursor-pointer"
                 />
                 <span className="text-[10px] text-slate-500 block">Desde manicure ($35k) hasta balayage ($200k+)</span>
               </div>
@@ -626,9 +616,9 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Resultado Financiero Impactante */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-red-500/15 via-rose-500/10 to-transparent border border-red-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <div>
-                <span className="text-xs text-rose-300 font-bold block">Pérdida mensual estimada en tu salón:</span>
+                <span className="text-xs text-slate-400 font-bold block">Pérdida mensual estimada en tu salón:</span>
                 <strong className="text-2xl sm:text-3xl font-black text-white block">
                   -${monthlyLostMoney.toLocaleString('es-CO')} COP <span className="text-xs font-normal text-slate-400">/ mes</span>
                 </strong>
@@ -637,9 +627,9 @@ export const LandingPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="shrink-0 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl p-4 text-center">
-                <span className="text-[10px] text-emerald-300 font-black uppercase block">Con Kowy ($50k/mes):</span>
-                <strong className="text-lg font-black text-emerald-400 block mt-0.5">¡Se paga solo!</strong>
+              <div className="shrink-0 bg-[#FF5A36]/15 border border-[#FF5A36]/30 rounded-2xl p-4 text-center">
+                <span className="text-[10px] text-[#FF5A36] font-black uppercase block">Con Kowy ($50k/mes):</span>
+                <strong className="text-lg font-black text-white block mt-0.5">¡Se paga solo!</strong>
                 <span className="text-[10px] text-slate-300 block">Con solo 1 cita recuperada al mes.</span>
               </div>
             </div>
@@ -665,35 +655,35 @@ export const LandingPage: React.FC = () => {
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.02]">
                   <th className="p-4 sm:p-5 font-bold text-slate-400 w-2/5">Desafío en el Salón</th>
-                  <th className="p-4 sm:p-5 font-bold text-rose-400 w-3/10">❌ Agenda de Papel / WhatsApp</th>
-                  <th className="p-4 sm:p-5 font-black text-emerald-400 w-3/10 bg-emerald-500/10">✅ Con Kowy (kowy.app)</th>
+                  <th className="p-4 sm:p-5 font-bold text-slate-400 w-3/10">❌ Agenda de Papel / WhatsApp</th>
+                  <th className="p-4 sm:p-5 font-black text-[#FF5A36] w-3/10 bg-[#FF5A36]/5">✅ Con Kowy (kowy.app)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-slate-300">
                 <tr>
                   <td className="p-4 sm:p-5 font-semibold text-white">Citas a deshoras (11:00 PM)</td>
                   <td className="p-4 sm:p-5 text-slate-400">Mensajes sin responder o responder cansada</td>
-                  <td className="p-4 sm:p-5 text-emerald-300 font-bold bg-emerald-500/5">Agendador 24/7 automático</td>
+                  <td className="p-4 sm:p-5 text-white font-bold bg-[#FF5A36]/5">Agendador 24/7 automático</td>
                 </tr>
                 <tr>
                   <td className="p-4 sm:p-5 font-semibold text-white">Cruces de turnos y errores</td>
                   <td className="p-4 sm:p-5 text-slate-400">Citas dobles y clientas esperando enojadas</td>
-                  <td className="p-4 sm:p-5 text-emerald-300 font-bold bg-emerald-500/5">Agenda blindada por especialista</td>
+                  <td className="p-4 sm:p-5 text-white font-bold bg-[#FF5A36]/5">Agenda blindada por especialista</td>
                 </tr>
                 <tr>
                   <td className="p-4 sm:p-5 font-semibold text-white">Plantones y No-Shows</td>
                   <td className="p-4 sm:p-5 text-slate-400">Pérdida del 20% al 30% de las citas</td>
-                  <td className="p-4 sm:p-5 text-emerald-300 font-bold bg-emerald-500/5">Recordatorios WhatsApp 24h y 2h antes</td>
+                  <td className="p-4 sm:p-5 text-white font-bold bg-[#FF5A36]/5">Recordatorios WhatsApp 24h y 2h antes</td>
                 </tr>
                 <tr>
                   <td className="p-4 sm:p-5 font-semibold text-white">Liquidación de Comisiones</td>
                   <td className="p-4 sm:p-5 text-slate-400">Horas con calculadora y discusiones</td>
-                  <td className="p-4 sm:p-5 text-emerald-300 font-bold bg-emerald-500/5">Cálculo exacto automático en 1 clic</td>
+                  <td className="p-4 sm:p-5 text-white font-bold bg-[#FF5A36]/5">Cálculo exacto automático en 1 clic</td>
                 </tr>
                 <tr>
                   <td className="p-4 sm:p-5 font-semibold text-white">Presencia en Google e Internet</td>
                   <td className="p-4 sm:p-5 text-slate-400">Invisible o página web costosa ($1M+)</td>
-                  <td className="p-4 sm:p-5 text-emerald-300 font-bold bg-emerald-500/5">Página Web Profesional de Regalo</td>
+                  <td className="p-4 sm:p-5 text-white font-bold bg-[#FF5A36]/5">Página Web Profesional de Regalo</td>
                 </tr>
               </tbody>
             </table>
@@ -702,12 +692,12 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 6. ESCALERA DE PLANES Y PRECIOS TRANSPARENTES ($ COP) */}
-      <section id="planes" className="py-16 sm:py-24 bg-gradient-to-b from-[#07090E] via-[#0E1322] to-[#07090E] border-t border-white/10">
+      <section id="planes" className="py-16 sm:py-24 bg-[#0A0D15] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4">
           
           <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
             <div className="inline-flex items-center gap-1.5 text-xs font-black text-[#FF5A36] uppercase tracking-wider bg-[#FF5A36]/10 px-3 py-1 rounded-full border border-[#FF5A36]/20">
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <Crown className="w-3.5 h-3.5" />
               <span>PLANES EN PESOS COLOMBIANOS ($ COP) SIN PERMANENCIA</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
@@ -732,10 +722,10 @@ export const LandingPage: React.FC = () => {
                   $0 <span className="text-xs font-normal text-slate-400">/ mes (De por vida)</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Página Web Profesional completa (móvil y PC)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Botón flotante directo a tu WhatsApp</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Página Web Profesional completa (móvil y PC)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Botón flotante directo a tu WhatsApp</span></li>
                 </ul>
               </div>
               <a
@@ -747,9 +737,9 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Plan 1: Inicio */}
-            <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-xl">
+            <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">
                   BARBERÍAS & INDEPENDIENTES
                 </span>
                 <h3 className="text-xl font-extrabold text-white mt-3">🚀 Plan Inicio</h3>
@@ -758,11 +748,11 @@ export const LandingPage: React.FC = () => {
                   $50.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Todo lo del Plan Gratuito</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Agendador Interactivo 24/7 (<strong className="text-white">/reservar/:slug</strong>)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Hasta 4 Colaboradores con agenda</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Enlace para Bio de Instagram & TikTok</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> <span>Panel de control de citas del día</span></li>
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Todo lo del Plan Gratuito</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Agendador Interactivo 24/7 (<strong className="text-white">/reservar/:slug</strong>)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Hasta 4 Colaboradores con agenda</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Enlace para Bio de Instagram & TikTok</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Panel de control de citas del día</span></li>
                 </ul>
               </div>
               <a
@@ -774,57 +764,57 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Plan 2: Crecimiento (ESTRELLA - MES 1 INCLUIDO) */}
-            <div className="bg-gradient-to-b from-[#181F33] to-[#101424] border-2 border-amber-400 rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-amber-500/15 relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black uppercase px-3.5 py-1 rounded-full tracking-wider shadow-lg flex items-center gap-1">
+            <div className="bg-[#121829] border-2 border-[#FF5A36] rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-[#FF5A36]/15 relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FF5A36] text-white text-[10px] font-black uppercase px-3.5 py-1 rounded-full tracking-wider shadow-lg flex items-center gap-1">
                 <Crown className="w-3 h-3" /> 30 DÍAS DE REGALO
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30">
                   MÁS POPULAR • CAJA & COMISIONES
                 </span>
-                <h3 className="text-xl font-extrabold text-amber-300 mt-3">📈 Plan Crecimiento</h3>
+                <h3 className="text-xl font-extrabold text-white mt-3">📈 Plan Crecimiento</h3>
                 <p className="text-xs text-slate-400 mt-1">Para salones medianos y spas</p>
                 <div className="text-3xl font-black text-white my-4">
                   $120.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-200 mb-6">
-                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Colaboradores ILIMITADOS</span></li>
-                  <li className="flex items-start gap-2 font-bold text-amber-200"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>App Móvil para Estilistas (<strong className="text-white">/colaborador</strong>)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Caja POS Profesional & Arqueo Z</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Liquidación automática de comisiones</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> <span>Inventario y venta de productos</span></li>
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Colaboradores ILIMITADOS</span></li>
+                  <li className="flex items-start gap-2 font-bold text-slate-200"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>App Móvil para Estilistas (<strong className="text-white">/colaborador</strong>)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Caja POS Profesional & Arqueo Z</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Liquidación automática de comisiones</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Inventario y venta de productos</span></li>
                 </ul>
               </div>
               <a
                 href="#solicitar"
-                className="w-full text-center py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF5A36] hover:opacity-95 text-slate-950 text-xs font-black shadow-lg shadow-orange-500/30 transition-all hover:scale-[1.02]"
+                className="w-full text-center py-3.5 rounded-2xl bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-black shadow-lg shadow-[#FF5A36]/30 transition-all hover:scale-[1.02]"
               >
                 Reclamar con Mes 1 de Regalo
               </a>
             </div>
 
             {/* Plan 3: Pro Flow IA */}
-            <div className="bg-gradient-to-b from-[#1C1226] to-[#120B1A] border border-purple-500/50 rounded-3xl p-6 flex flex-col justify-between hover:border-purple-400 transition-all shadow-xl">
+            <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">
                   AUTOMATIZACIÓN IA 24/7
                 </span>
-                <h3 className="text-xl font-extrabold text-purple-300 mt-3">🤖 Plan Pro Flow IA</h3>
+                <h3 className="text-xl font-extrabold text-white mt-3">🤖 Plan Pro Flow IA</h3>
                 <p className="text-xs text-slate-400 mt-1">Recepcionista virtual con IA</p>
                 <div className="text-3xl font-black text-white my-4">
                   $240.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-200 mb-6">
-                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Todo lo del Plan Crecimiento</span></li>
-                  <li className="flex items-start gap-2 font-bold text-purple-300"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Asistente IA en WhatsApp 24/7</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Bandeja Omnicanal (WhatsApp + IG + FB)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Recordatorios WhatsApp anti-plantón (24h y 2h)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" /> <span>Control humano en 1 clic</span></li>
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Todo lo del Plan Crecimiento</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Asistente IA en WhatsApp 24/7</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Bandeja Omnicanal (WhatsApp + IG + FB)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Recordatorios WhatsApp anti-plantón</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Control humano en 1 clic</span></li>
                 </ul>
               </div>
               <a
                 href="#solicitar"
-                className="w-full text-center py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all"
+                className="w-full text-center py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-black transition-all border border-white/10"
               >
                 Activar Kowy IA
               </a>
@@ -835,7 +825,7 @@ export const LandingPage: React.FC = () => {
           {/* Banner Planes VIP: Escala & Agencia */}
           <div className="mt-8 p-6 rounded-3xl bg-[#0E1322] border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-1 text-center md:text-left">
-              <span className="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="text-[10px] font-black uppercase text-[#FF5A36] bg-[#FF5A36]/10 px-2.5 py-0.5 rounded-full border border-[#FF5A36]/20">
                 PLANES PARA CADENAS & SPAS DE ALTO VOLUMEN
               </span>
               <h4 className="text-lg font-black text-white">¿Buscas Pauta en Meta Ads o Gestión Llave en Mano?</h4>
@@ -857,29 +847,29 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 7. OFERTA DE LANZAMIENTO & FORMULARIO DE CAPTURA ($50k) */}
-      <section id="solicitar" className="py-16 sm:py-24 bg-gradient-to-b from-[#07090E] to-[#0A0E18] border-t border-white/10">
+      <section id="solicitar" className="py-16 sm:py-24 bg-[#07090E] border-t border-white/5">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-[#0E1322] border-2 border-[#FF5A36]/40 rounded-3xl p-6 sm:p-12 shadow-2xl relative overflow-hidden text-center">
+          <div className="bg-[#0E1322] border border-[#FF5A36]/30 rounded-3xl p-6 sm:p-12 shadow-2xl relative overflow-hidden text-center">
             
             {/* Background Glow */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#FF5A36]/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="max-w-2xl mx-auto mb-8 space-y-2">
-              <div className="inline-flex items-center gap-1.5 text-xs font-black text-amber-300 bg-amber-500/10 px-3.5 py-1 rounded-full border border-amber-500/30 uppercase tracking-wider">
-                <Gift className="w-4 h-4 text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 text-xs font-black text-[#FF5A36] bg-[#FF5A36]/10 px-3.5 py-1 rounded-full border border-[#FF5A36]/20 uppercase tracking-wider">
+                <Gift className="w-4 h-4 text-[#FF5A36]" />
                 <span>OFERTA DE LANZAMIENTO LOCAL EN COLOMBIA</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-                Reclama la <span className="bg-gradient-to-r from-[#FF5A36] to-pink-500 bg-clip-text text-transparent">Página Web de tu Salón</span>
+                Reclama la <span className="text-[#FF5A36]">Página Web de tu Salón</span>
               </h2>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                El desarrollo y configuración comercial regular cuesta <strong className="text-rose-400 line-through">$680.000 COP</strong>. Por un aporte simbólico de activación de solo <strong className="text-emerald-400 font-extrabold">$50.000 COP</strong>, te entregamos tu web personalizada lista en 48 horas con el <strong className="text-amber-300">Plan Crecimiento de Regalo durante tus primeros 30 días</strong>.
+                El desarrollo y configuración comercial regular cuesta <strong className="text-slate-400 line-through">$680.000 COP</strong>. Por un aporte simbólico de activación de solo <strong className="text-white font-extrabold">$50.000 COP</strong>, te entregamos tu web personalizada lista en 48 horas con el <strong className="text-[#FF5A36]">Plan Crecimiento de Regalo durante tus primeros 30 días</strong>.
               </p>
             </div>
 
             {submitted ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-8 text-center space-y-3 animate-fade-in">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+              <div className="bg-[#07090E] border border-white/10 rounded-2xl p-8 text-center space-y-3 animate-fade-in">
+                <CheckCircle2 className="w-12 h-12 text-[#FF5A36] mx-auto" />
                 <h3 className="text-xl font-black text-white">¡Solicitud Enviada a WhatsApp!</h3>
                 <p className="text-xs text-slate-300 max-w-md mx-auto">
                   Se ha abierto la conversación oficial con nuestro equipo. Si no se abrió automáticamente, pulsa el botón de abajo.
@@ -888,7 +878,7 @@ export const LandingPage: React.FC = () => {
                   href={`https://wa.me/573114195123?text=Hola%20Kowy,%20registre%20mi%20negocio%20${encodeURIComponent(formData.businessName)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#25D366] text-white font-black px-6 py-3 rounded-2xl text-xs shadow-lg"
+                  className="inline-flex items-center gap-2 bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-3 rounded-2xl text-xs shadow-lg shadow-[#FF5A36]/30"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Abrir Chat de WhatsApp (+57 311 419 5123)</span>
@@ -943,13 +933,13 @@ export const LandingPage: React.FC = () => {
                 <div className="sm:col-span-2 pt-3">
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-[#FF5A36] via-pink-500 to-amber-500 hover:opacity-95 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-orange-500/30 transition-all hover:scale-[1.01] text-sm cursor-pointer"
+                    className="w-full bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-[#FF5A36]/30 transition-all hover:scale-[1.01] text-sm cursor-pointer"
                   >
                     <Gift className="w-5 h-5" />
                     <span>Reclamar Mi Web Gratis + 30 Días de Plan Crecimiento</span>
                   </button>
                   <p className="text-[11px] text-slate-500 text-center mt-2 flex items-center justify-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#FF5A36]" />
                     <span>Cero riesgo • Sin contratos de permanencia • Soporte local en Colombia</span>
                   </p>
                 </div>
@@ -1041,7 +1031,7 @@ export const LandingPage: React.FC = () => {
           href="https://wa.me/573114195123?text=Hola%20Kowy,%20estoy%20viendo%20la%20pagina%20web%20y%20deseo%20asesoria"
           target="_blank"
           rel="noreferrer"
-          className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center justify-center shadow-2xl shadow-green-500/40 transition-all hover:scale-110 active:scale-95 group"
+          className="w-14 h-14 rounded-full bg-[#FF5A36] hover:bg-[#E54E07] text-white flex items-center justify-center shadow-2xl shadow-[#FF5A36]/40 transition-all hover:scale-110 active:scale-95 group"
           title="Hablar con un Asesor Kowy por WhatsApp"
         >
           <MessageCircle className="w-7 h-7" />
