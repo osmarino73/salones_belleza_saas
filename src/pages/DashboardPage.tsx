@@ -167,6 +167,7 @@ export const DashboardPage: React.FC = () => {
   const [quickCategoryIcon, setQuickCategoryIcon] = useState('✨');
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [showServiceGuide, setShowServiceGuide] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [serviceForm, setServiceForm] = useState<{
     name: string;
@@ -5364,14 +5365,81 @@ export const DashboardPage: React.FC = () => {
                   {editingService ? 'Editar Servicio' : 'Agregar Nuevo Servicio'}
                 </h3>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setIsServiceModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowServiceGuide(!showServiceGuide)}
+                  className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1 rounded-lg border border-[#FF5A36]/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{showServiceGuide ? 'Ocultar Guía' : '💡 Guía y Consejos'}</span>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setIsServiceModalOpen(false);
+                    setShowServiceGuide(false);
+                  }} 
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
+
+            {/* Panel Interactivo de la Guía Paso a Paso */}
+            {showServiceGuide && (
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-[#181F33] to-[#0E1322] border border-[#FF5A36]/40 text-xs space-y-3 animate-fade-in text-slate-200">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <span className="font-extrabold text-[#FF5A36] flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Guía de Éxito: Cómo Configurar tu Servicio
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowServiceGuide(false)}
+                    className="text-slate-400 hover:text-white text-[10px] font-bold"
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px]">
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">1. 🏷️ Nombre Atractivo</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Usa nombres que transmitan valor (ej. <em className="text-[#FF5A36]">"Balayage Deluxe + Matiz"</em> en vez de <em className="line-through">"Tinte"</em>).
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">2. ⏱️ Duración Exacta</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Coloca el tiempo real en minutos (ej. 45 o 90 min) para que el agendador no cruce turnos con otras clientas.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">3. 💵 Precio en COP</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Coloca el valor base que verá la clienta. Si varía por largo o volumen, explícalo en la descripción.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
+                    <strong className="text-white block">4. 📸 Fotografía</strong>
+                    <p className="text-slate-400 leading-snug">
+                      Elige una foto del banco profesional o sube una foto real de tus trabajos para generar más confianza.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2 rounded-xl bg-[#FF5A36]/10 border border-[#FF5A36]/20 flex items-center gap-2 text-[11px]">
+                  <Star className="w-4 h-4 text-[#FF5A36] shrink-0 fill-current" />
+                  <span><strong>Tip Pro:</strong> Marca la casilla <em>"Mostrar como Destacado"</em> para que aparezca en la portada de tu web.</span>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSaveService} className="space-y-3.5 text-xs">
               <div>

@@ -16,6 +16,20 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-18. **Guía Interactiva y Consejos dentro del Modal de Creación/Edición de Servicios ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - Se incorporó un botón interactivo **`💡 Guía y Consejos`** en la cabecera del modal de servicios.
+    - Al pulsar el botón, se despliega un panel pedagógico con 4 consejos de oro para la dueña del salón:
+      1. 🏷️ *Nombre Atractivo*: Cómo formular nombres comerciales con alto valor percibido.
+      2. ⏱️ *Duración Exacta*: Definición de tiempos reales en minutos para evitar cruces en la agenda.
+      3. 💵 *Precio en COP*: Claridad de precios base que verá la clienta en el agendador.
+      4. 📸 *Fotografía*: Uso del banco de fotos profesional o fotos reales para generar confianza.
+      5. ⭐ *Tip Destacado*: Recordatorio para activar la estrella y mostrar el servicio en la portada web.
+
+-17. **Unificación Estética y Eliminación de Gradientes Multicolor en la Landing Page ([`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
+    - Se eliminaron todos los degradados arcoíris y mezclas multicolor (rosa, púrpura, cian, ámbar).
+    - Se adoptó una identidad visual **Luxury Dark Mode** sobria, limpia y profesional con acento uniforme de marca Kowy: **Naranja Kowy (`#FF5A36`)** sobre fondos oscuros profundos (`#07090E`, `#0A0D15`, `#0E1322`), con bordes tenues `border-white/10` y tipografía blanca nítida.
+    - Botones de acción, badges, tarjetas de pilares y planes de precios ahora mantienen una coherencia monocromática de alto nivel.
+
 -16. **Optimización de Márgenes Verticales y Scroll Móvil en el Modal de Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
     - Se solucionó el problema de corte visual superior e inferior en dispositivos móviles o pantallas verticales estrechas.
     - Se aplicó `overflow-y-auto px-4 py-8 sm:py-12 flex justify-center items-start sm:items-center` con `my-auto` en el modal.
