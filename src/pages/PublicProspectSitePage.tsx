@@ -103,6 +103,7 @@ export const PublicProspectSitePage: React.FC = () => {
       slogan: cleanSlogan,
       titleAccent: cleanTitleAccent,
       navbarTagline: tenant?.navbar_tagline || bData.navbar_tagline || undefined,
+      businessHours: tenant?.business_hours?.summary || bData.business_hours?.summary || bData.horario_atencion || undefined,
       subtitle: tenant?.subtitle || bData.subtitle || undefined,
       aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
       aboutBadgeText: cleanAboutBadge,

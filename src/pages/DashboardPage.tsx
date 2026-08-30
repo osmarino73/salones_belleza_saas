@@ -201,6 +201,7 @@ export const DashboardPage: React.FC = () => {
     slogan: string;
     title_accent: string;
     navbar_tagline: string;
+    business_hours_text: string;
     subtitle: string;
     about_image_url: string;
     about_badge_text: string;
@@ -225,6 +226,7 @@ export const DashboardPage: React.FC = () => {
     slogan: '',
     title_accent: '',
     navbar_tagline: '',
+    business_hours_text: 'Lunes a Sábado: 8:00 AM - 7:00 PM',
     subtitle: '',
     about_image_url: '',
     about_badge_text: '',
@@ -267,6 +269,8 @@ export const DashboardPage: React.FC = () => {
 
         const cleanNavbarTagline = activeTenantObj.navbar_tagline || bData.navbar_tagline || extracted.navbarTagline || '';
 
+        const cleanBusinessHours = activeTenantObj.business_hours?.summary || bData.business_hours?.summary || bData.horario_atencion || extracted.businessHours || 'Lunes a Sábado: 8:00 AM - 7:00 PM';
+
         const cleanSlogan = (activeTenantObj.slogan && activeTenantObj.slogan !== 'Sandra Color´s' && activeTenantObj.slogan !== activeTenantObj.name)
           ? activeTenantObj.slogan
           : (extracted.slogan || bData.slogan || activeTenantObj.name || '');
@@ -303,6 +307,7 @@ export const DashboardPage: React.FC = () => {
           slogan: cleanSlogan,
           title_accent: cleanTitleAccent,
           navbar_tagline: cleanNavbarTagline,
+          business_hours_text: cleanBusinessHours,
           subtitle: cleanSubtitle,
           about_image_url: activeTenantObj.about_image_url || bData.about_image_url || extracted.aboutImageUrl || '',
           about_badge_text: cleanAboutBadgeText,
@@ -338,6 +343,7 @@ export const DashboardPage: React.FC = () => {
       slogan: websiteForm.slogan || undefined,
       titleAccent: websiteForm.title_accent || undefined,
       navbarTagline: websiteForm.navbar_tagline || undefined,
+      businessHours: websiteForm.business_hours_text || undefined,
       subtitle: websiteForm.subtitle || undefined,
       aboutImageUrl: websiteForm.about_image_url || undefined,
       aboutBadgeText: websiteForm.about_badge_text || undefined,
@@ -5866,6 +5872,7 @@ export const DashboardPage: React.FC = () => {
                   about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
                   about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
                   about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
+                  business_hours: { summary: websiteForm.business_hours_text || activeTenantObj.business_hours?.summary || 'Lunes a Sábado: 8:00 AM - 7:00 PM' },
                   show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
                 };
                 setActiveTenantObj(updatedTenant);
@@ -5888,6 +5895,8 @@ export const DashboardPage: React.FC = () => {
                         title_accent: updatedTenant.title_accent,
                         navbar_tagline: updatedTenant.navbar_tagline,
                         subtitle: updatedTenant.subtitle,
+                        business_hours: updatedTenant.business_hours,
+                        horario_atencion: websiteForm.business_hours_text,
                         about_image_url: updatedTenant.about_image_url,
                         about_badge_text: updatedTenant.about_badge_text,
                         about_eyebrow: updatedTenant.about_eyebrow,
@@ -6147,9 +6156,57 @@ export const DashboardPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* 4. Secciones Condicionales de la Página */}
+                {/* 4. Horarios de Atención al Público (Días y Horas) */}
+                <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <strong className="text-slate-300 font-bold text-xs block flex items-center gap-1.5">
+                      🕒 4. Horario de Atención (Días y Horas)
+                    </strong>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, business_hours_text: 'Lunes a Sábado: 8:00 AM - 7:00 PM' })}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold cursor-pointer transition-colors"
+                      >
+                        Estándar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, business_hours_text: 'Lunes a Domingo: 9:00 AM - 8:00 PM' })}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold cursor-pointer transition-colors"
+                      >
+                        Todos los días
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, business_hours_text: 'Lun a Vie: 9:00 AM - 7:00 PM | Sáb: 9:00 AM - 5:00 PM' })}
+                        className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold cursor-pointer transition-colors"
+                      >
+                        Fin de semana
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Texto Visible en la Página Web</label>
+                    <input
+                      type="text"
+                      value={websiteForm.business_hours_text}
+                      onChange={(e) => setWebsiteForm({ ...websiteForm, business_hours_text: e.target.value })}
+                      placeholder="Ej. Lunes a Sábado: 8:00 AM - 7:00 PM"
+                      className={`w-full border rounded-xl p-2.5 font-semibold focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                    />
+                    <span className="text-[10px] text-slate-500 mt-1 block">
+                      Se actualiza automáticamente en la sección de Ubicación & Contacto, en el pie de página y en tu motor de citas.
+                    </span>
+                  </div>
+                </div>
+
+                {/* 5. Secciones Condicionales de la Página */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
-                  <strong className="text-slate-300 font-bold text-xs block">4. Secciones Opcionales de tu Web</strong>
+                  <strong className="text-slate-300 font-bold text-xs block">5. Secciones Opcionales de tu Web</strong>
 
                   {/* Switch de Especialistas / Equipo */}
                   <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">

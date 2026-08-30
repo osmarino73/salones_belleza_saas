@@ -16,6 +16,15 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-10. **Corrección de Persistencia en Supabase para `navbar_tagline` y `business_hours` ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Diagnóstico**: En la función `updateTenant` de `supabase.ts`, el objeto `updatedBData` que se sincronizaba hacia `prospect_sites.business_data` no incluía `navbar_tagline`, `business_hours` ni `horario_atencion`, lo que provocaba que al guardar no se persistiera en la base de datos de Supabase.
+    - **Solución**: Se agregaron los campos faltantes a `updatedBData` en `updateTenant`, a `SuperadminDashboardPage.tsx` y se verificó la hidratación y lectura en todas las vistas públicas y privadas.
+
+-9. **Personalización Dinámica de Horarios de Atención / Días y Horas ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+   - Se integró la nueva **Sección 4: Horario de Atención (Días y Horas)** en el Personalizador de la Página Web con presets rápidos de un solo clic (*Estándar*, *Todos los días*, *Fin de semana*) e input completamente editable.
+   - El motor de inyección no invasiva (`prospectHtmlInjector.ts`) extrae y actualiza automáticamente el horario en la tarjeta de contacto / ubicación (`.contact-item`, `.schedule-box`, etc.) y en el pie de página.
+   - Sincronizado en tiempo real con la previsualización en vivo del Dashboard y con la página web pública oficial `/sitio/:slug`.
+
 -8. **Personalización Dinámica de Marca y Subtítulo en la Barra de Navegación / Navbar ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
    - Se añadió el campo `navbar_tagline` al modelo de `Tenant`, al formulario del personalizador y al motor de inyección no invasiva.
    - El personalizador permite ahora configurar y previsualizar en vivo el **Nombre Principal**, el **Acento Destacado** (cursiva / dorado) y el **Lema / Subtítulo del Logo** (`.brand-tagline` / `.brand-subtitle`, ej. *"ESPECIALISTAS EN RIZOS • APARTADÓ"*), preservando el 100% de la tipografía y diseño bicromático nativo.

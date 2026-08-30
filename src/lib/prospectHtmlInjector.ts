@@ -13,6 +13,7 @@ export interface ExtractedWebsiteData {
   slogan?: string;
   titleAccent?: string;
   navbarTagline?: string;
+  businessHours?: string;
   subtitle?: string;
   aboutImageUrl?: string;
   aboutBadgeText?: string;
@@ -169,6 +170,13 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
         result.aboutYearsExp = rawStatValues[0];
       }
     }
+
+    // 7. Extraer Horario de Atención
+    const hoursMatch = html.match(/(?:Horario\s+de\s+Atenci[oó]n|Horarios|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>([\s\S]*?)<\/p>/i)
+      || html.match(/<(?:div|li|span|p)\b[^>]*class=["'][^"']*(?:contact-hours|schedule|hours|horario)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|li|span|p)>/i);
+    if (hoursMatch && hoursMatch[1]) {
+      result.businessHours = hoursMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
   } catch (err) {
     console.warn('Error extracting website data from HTML:', err);
   }
@@ -192,6 +200,7 @@ export interface InjectProspectOptions {
   slogan?: string;
   titleAccent?: string;
   navbarTagline?: string;
+  businessHours?: string;
   subtitle?: string;
   aboutImageUrl?: string;
   aboutBadgeText?: string;
@@ -244,6 +253,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     slogan,
     titleAccent,
     navbarTagline,
+    businessHours,
     subtitle,
     aboutImageUrl,
     aboutBadgeText,
@@ -975,6 +985,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
       /(?:\(\+57\)\s*\d{3}\s*\d{3}\s*\d{4}|\+57\s*\d{3}\s*\d{3}\s*\d{4})/g,
       formattedTel
     );
+  }
+
+  // 6.5 Inyección Dinámica del Horario de Atención en Ubicación, Contacto y Footer
+  if (businessHours && businessHours !== baseline.businessHours) {
+    const contactItemHoursRegex = /(<(?:li|div|article)\b[^>]*class=["'][^"']*(?:contact-item|contact-box|info-box|schedule-box|hours-item|footer-col)[^"']*["'][^>]*>[\s\S]*?(?:Horario|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>)([\s\S]*?)(<\/p>[\s\S]*?<\/(?:li|div|article)>)/gi;
+    if (contactItemHoursRegex.test(processed)) {
+      processed = processed.replace(contactItemHoursRegex, `$1${businessHours}$3`);
+    } else {
+      const genericHoursRegex = /(<(?:p|span|div)\b[^>]*class=["'][^"']*(?:contact-hours|schedule-text|hours-text|horario-texto)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:p|span|div)>)/gi;
+      if (genericHoursRegex.test(processed)) {
+        processed = processed.replace(genericHoursRegex, `$1${businessHours}$3`);
+      }
+    }
   }
 
   // 7. Inyectar Script Técnico Ligero para Navegación Táctil Móvil y Compatibilidad en Iframes
