@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-30. **Optimización Responsiva y Eliminación de Solapamiento en Header ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Causa Raíz**: En pantallas medianas o reducidas, los botones de acción rápida de la derecha no tenían `shrink-0` y las pestañas de navegación se desbordaban chocando contra el botón `+` de nueva cita.
+    - **Corrección**: Se blindó la botonera derecha con `shrink-0`, se optimizaron las etiquetas de pestañas (`Overview`, `CRM Color`, `Mensajes`), se agregó scroll horizontal suave (`overflow-x-auto no-scrollbar`) y se ajustó el logo Kowy para que no se deforme ni se monte sobre ningún elemento.
+
 -29. **Ordenamiento de Fórmulas y Visualización de la Última Mezcla ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Causa Raíz**: Supabase devolvía las fórmulas relacionadas en orden de inserción ascendente, por lo que la tarjeta del CRM leía la primera creada en lugar de la última guardada, y la fecha mostraba la cadena ISO completa.
     - **Corrección**: Se ordenan explícitamente las fórmulas por fecha descendente (`new Date(created_at).getTime()`) tanto en la consulta a Supabase como en la tarjeta del CRM y en el modal de la Ficha 360°, garantizando que siempre se vea la última mezcla guardada y la fecha limpia (`YYYY-MM-DD`).

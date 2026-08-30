@@ -1397,27 +1397,27 @@ export const DashboardPage: React.FC = () => {
     }`}>
       
       {/* Top Full-Width Navigation Bar */}
-      <header className={`sticky top-0 z-40 border-b px-4 sm:px-8 py-3.5 flex justify-between items-center transition-colors ${
+      <header className={`sticky top-0 z-40 border-b px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6 transition-colors ${
         theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
       }`}>
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link to="/" className="flex items-center gap-2 text-base sm:text-lg font-black">
+        <div className="flex items-center gap-2 sm:gap-6 min-w-0 flex-1 overflow-hidden">
+          <Link to="/" className="flex items-center gap-2 text-base sm:text-lg font-black shrink-0">
             <img
               src="/kowy-logo.jpg"
               alt="Kowy Logo"
-              className="w-8 h-8 rounded-xl object-contain shadow-md shadow-[#FF5A36]/30"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover shrink-0 shadow-sm"
             />
-            <span className="hidden sm:inline">Kowy <span className="text-[#FF5A36]">.app</span></span>
+            <span className="hidden md:inline">Kowy <span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
           {/* Segmented Pill Navigation Strip */}
-          <nav className={`p-1 rounded-full border flex items-center gap-1 overflow-x-auto max-w-[50vw] sm:max-w-none ${
+          <nav className={`p-1 rounded-full border flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 max-w-full ${
             theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F5F6FA] border-black/5'
           }`}>
             {[
               { id: 'overview', label: 'Overview', icon: Layers, locked: false },
-              { id: 'crm', label: 'CRM Colorimetría', icon: Users, locked: !getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm },
-              { id: 'whatsapp', label: 'Mensajes & WhatsApp', icon: MessageSquare, locked: false }
+              { id: 'crm', label: 'CRM Color', icon: Users, locked: !getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm },
+              { id: 'whatsapp', label: 'Mensajes', icon: MessageSquare, locked: false }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1425,11 +1425,11 @@ export const DashboardPage: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => handleNavigateTab(tab.id as any)}
-                  className={`text-xs font-semibold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                     isActive
                       ? theme === 'dark'
-                        ? 'bg-[#2E374D] text-white shadow-md'
-                        : 'bg-[#12151B] text-white shadow-md'
+                        ? 'bg-[#2E374D] text-white shadow-sm'
+                        : 'bg-[#12151B] text-white shadow-sm'
                       : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
@@ -1443,20 +1443,21 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Right Action Icons & User Pill */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             type="button"
             onClick={() => setIsNewAppointmentOpen(true)}
-            className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs px-3.5 py-2 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all"
+            className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs p-2 sm:px-3.5 sm:py-2 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0 cursor-pointer"
+            title="Agendar Nueva Cita"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nueva Cita</span>
+            <span className="hidden lg:inline">Nueva Cita</span>
           </button>
 
           <button
             type="button"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer ${
               theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-amber-400' : 'bg-[#F0F2F7] border-black/5 text-slate-700'
             }`}
             title="Cambiar tema Claro / Oscuro"
@@ -1465,17 +1466,17 @@ export const DashboardPage: React.FC = () => {
           </button>
 
           {/* Interactive User Profile Menu Trigger */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className={`flex items-center gap-2 pl-2.5 pr-2 py-1 rounded-full border transition-all ${
+              className={`flex items-center gap-1.5 pl-2 pr-1.5 sm:pl-2.5 sm:pr-2 py-1 rounded-full border transition-all cursor-pointer ${
                 isProfileMenuOpen
                   ? 'border-[#FF5A36] ring-2 ring-[#FF5A36]/20'
                   : theme === 'dark' ? 'border-white/10 hover:border-white/20 bg-[#141926]' : 'border-black/5 hover:border-black/20 bg-white shadow-sm'
               }`}
             >
-              <div className="w-7 h-7 rounded-full bg-[#FF5A36] text-white font-bold text-xs flex items-center justify-center border border-[#FF5A36]/40 shadow-sm">
+              <div className="w-7 h-7 rounded-full bg-[#FF5A36] text-white font-bold text-xs flex items-center justify-center border border-[#FF5A36]/40 shadow-sm shrink-0">
                 {ownerName ? ownerName.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className="hidden md:block text-left text-xs leading-tight">
