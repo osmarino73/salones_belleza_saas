@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-24. **Corrección de Desborde Móvil y Unificación Estética del Modal de Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
+    - **Alineación y Responsividad de Enlace 24/7**: Se eliminó el desborde del ícono del calendario a la izquierda; el contenedor ahora es `flex-col sm:flex-row items-start sm:items-center` con `w-full`, `break-all` y botones de "Copiar" y "Probar" adaptados en ancho completo en móviles.
+    - **Eliminación de Colores Discordantes**: Se suprimieron los fondos y bordes cyan, emerald y fucsia, aplicando la paleta sobria oficial de Kowy (`bg-white/5`, `border-white/10`, `text-slate-300` y acentos en `#FF5A36`).
+
 -23. **Eliminación Total del Multicolor y Unificación Estética Sobria B2B ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Menú Desplegable de Perfil**: Se eliminó el arcoíris de íconos de colores discordantes (rosa, cian, amarillo, verde, morado) y se reemplazó por una paleta monocromática elegante en tono `slate-400` con acentos de marca Kowy (`#FF5A36`).
     - **Insignias y Badges**: Los badges de planes y de bloqueo `🔒 Pro IA` pasaron a un diseño minimalista y sobrio (`bg-white/5 border border-white/10 text-slate-300`).
