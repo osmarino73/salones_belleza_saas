@@ -16,6 +16,26 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-16. **Optimización de Márgenes Verticales y Scroll Móvil en el Modal de Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
+    - Se solucionó el problema de corte visual superior e inferior en dispositivos móviles o pantallas verticales estrechas.
+    - Se aplicó `overflow-y-auto px-4 py-8 sm:py-12 flex justify-center items-start sm:items-center` con `my-auto` en el modal.
+    - El modal ahora cuenta con márgenes holgados arriba y abajo, y permite desplazarse suavemente hasta el botón final *"¡Empezar a explorar mi Dashboard!"* sin ser recortado por el viewport.
+
+-15. **Reforma Integral de la Landing Page de Kowy ([`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
+    - **Hero Split-Screen de Alta Conversión**: Mockup de celular con simulación de cita entrante por WhatsApp (*Balayage Deluxe $180k*), enlaces directos al Demo Web (`/sitio/demo`) y al Agendador (`/reservar/demo`).
+    - **Simulador Instantáneo "Tu Salón en 5 Segundos"**: La dueña escribe el nombre de su salón y genera al instante su vista previa y enlaces reservados.
+    - **Showcase de los 4 Pilares**: 1. Web de Lujo, 2. Agendador 24/7, 3. Recordatorios Anti-Plantón, 4. Equipo, Comisiones & POS.
+    - **Calculadora Financiera de No-Shows**: Sliders interactivos que demuestran las pérdidas de dinero por citas no confirmadas y el retorno de inversión con Kowy ($50.000 COP).
+    - **Tabla Comparativa Directa**: Agenda Tradicional/WhatsApp vs Kowy Automatizado.
+    - **Escalera de Precios en Pesos Colombianos ($ COP)**: Plan Gratuito ($0), Inicio ($50k), Crecimiento ($120k con 30 días de regalo), Pro Flow IA ($240k), Escala ($720k), Agencia VIP ($1.44M).
+    - **Formulario de Captura & WhatsApp Oficial (+57 311 419 5123)**: Redirección instantánea a WhatsApp con mensaje estructurado.
+
+-14. **Creación del Salón Demo Oficial "Studio Glamour & Spa" ([`demoSalonSiteData.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/demoSalonSiteData.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+    - Se creó el dataset oficial para el tenant demo con slug `/sitio/demo` y `/reservar/demo`.
+    - 5 servicios reales con precios en COP y fotos (*Balayage Deluxe, Corte Spa, Keratina Espejo, Manicure Ruso, Cejas & Pestañas*).
+    - 3 estilistas reales (*Valentina Rengifo, Camila Morales, Andrés Restrepo*).
+    - WhatsApp oficial del demo conectado a `+57 311 419 5123`.
+
 -13. **Unificación y Simplificación Total de Bienvenida (Checklist 1-2-3 y Eliminación de Onboarding Redundante) ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Eliminación de Onboarding Intrusivo**: Se removió por completo `SalonOnboardingModal` para evitar wizards pesados que bloqueaban el panel o duplicaban formularios.
     - **Checklist de Inicio Rápido en `WelcomeModal`**:

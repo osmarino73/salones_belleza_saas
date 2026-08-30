@@ -3,6 +3,7 @@ import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, T
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
 import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
+import { DEMO_TENANT_DATA, DEMO_SERVICES_DATA, DEMO_STYLISTS_DATA, DEMO_SALON_SITE_DATA } from './demoSalonSiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
@@ -650,6 +651,9 @@ export const api = {
   // STYLISTS
   async getStylists(tenantId?: string): Promise<Stylist[]> {
     const tid = tenantId || getActiveTenantId();
+    if (tid === 'tenant-demo' || tid === 'demo') {
+      return DEMO_STYLISTS_DATA;
+    }
 
     const mapStylistFromDB = (d: any): Stylist => ({
       id: d.id,
@@ -939,6 +943,9 @@ export const api = {
   // SERVICES
   async getServices(tenantId?: string): Promise<Service[]> {
     const tid = tenantId || getActiveTenantId();
+    if (tid === 'tenant-demo' || tid === 'demo') {
+      return DEMO_SERVICES_DATA;
+    }
     if (supabase && isSupabaseConfigured) {
       const { data, error } = await supabase
         .from('services')
@@ -1241,6 +1248,9 @@ export const api = {
   async getTenantBySlug(slug: string): Promise<any | null> {
     if (!slug) return null;
     const cleanSlug = slug.toLowerCase().trim();
+    if (cleanSlug === 'demo' || cleanSlug === 'demo-salon' || cleanSlug === 'studio-glamour' || cleanSlug === 'studio-glamour-spa') {
+      return DEMO_TENANT_DATA;
+    }
     if (supabase && isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
@@ -2147,13 +2157,16 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    const defaultSites = [KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, demoSite];
+    const defaultSites = [DEMO_SALON_SITE_DATA, KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, LUXUS_BEAUTY_SITE_DATA, demoSite];
     inMemoryProspectSitesCache = defaultSites;
     safeSaveProspectSitesToLocalStorage(defaultSites);
     return defaultSites;
   },
 
   async getProspectSiteBySlug(slug: string): Promise<ProspectSite | null> {
+    if (slug === 'demo' || slug === 'demo-salon' || slug === 'studio-glamour' || slug === 'studio-glamour-spa' || slug === 'studio_glamour') {
+      return DEMO_SALON_SITE_DATA;
+    }
     if (slug === 'luxus-beauty-spa' || slug === 'luxus_beauty_spa') {
       return LUXUS_BEAUTY_SITE_DATA;
     }

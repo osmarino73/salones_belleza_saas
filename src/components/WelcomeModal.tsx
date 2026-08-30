@@ -57,8 +57,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-[#0E131F] border border-white/15 rounded-3xl shadow-2xl overflow-hidden text-white my-8">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto px-4 py-8 sm:py-12 flex justify-center items-start sm:items-center animate-fade-in">
+      <div className="relative w-full max-w-2xl bg-[#0E131F] border border-white/15 rounded-3xl shadow-2xl overflow-hidden text-white my-auto">
         {/* Glow Superior */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-gradient-to-r from-[#FF5A36]/30 via-pink-500/25 to-purple-600/20 blur-3xl pointer-events-none" />
 
