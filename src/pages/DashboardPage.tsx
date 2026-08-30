@@ -78,7 +78,6 @@ import {
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
-import { SalonOnboardingModal } from '../components/SalonOnboardingModal';
 import { WelcomeModal } from '../components/WelcomeModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
 import { TemplatesManagerPage } from '../components/TemplatesManagerPage';
@@ -102,7 +101,6 @@ export const DashboardPage: React.FC = () => {
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTenantObj, setActiveTenantObj] = useState<Tenant | null>(null);
-  const [isSalonOnboardingOpen, setIsSalonOnboardingOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [aiSettings, setAiSettings] = useState<TenantAISettings | null>(null);
   const [isZernioOnboardingOpen, setIsZernioOnboardingOpen] = useState(false);
@@ -570,32 +568,15 @@ export const DashboardPage: React.FC = () => {
       setProducts(prods);
       setAiSettings(settings);
 
-      // ONBOARDING TRIGGER: Si es un nuevo salón virgen (0 servicios o sin onboarding completado)
-      if (currentEmail && currentEmail !== 'sofia@studioglamour.co' && currentEmail !== 'osmarino73@yahoo.es') {
-        const cleanE = currentEmail.toLowerCase().trim();
-        const onboardingDone = localStorage.getItem(`bf_onboarding_done_${cleanE}`) === 'true' ||
-                               (targetTenantId && localStorage.getItem(`bf_onboarding_done_${targetTenantId}`) === 'true');
-        if (!onboardingDone || (srvs && srvs.length === 0)) {
-          setIsSalonOnboardingOpen(true);
-        } else {
-          // WELCOME TRIGGER: Si ya completó onboarding pero no ha visto el mensaje de bienvenida
-          const welcomeSeen = localStorage.getItem(`bf_welcome_seen_${cleanE}`) === 'true' ||
-                              (targetTenantId && localStorage.getItem(`bf_welcome_seen_${targetTenantId}`) === 'true');
-          if (!welcomeSeen) {
-            setTimeout(() => {
-              setIsWelcomeModalOpen(true);
-            }, 500);
-          }
-        }
-      } else if (currentEmail) {
-        // Para dueña activa por primera vez
+      // WELCOME TRIGGER: Mostrar mensaje de bienvenida limpio si es primera vez que la usuaria ingresa a su panel
+      if (currentEmail) {
         const cleanE = currentEmail.toLowerCase().trim();
         const welcomeSeen = localStorage.getItem(`bf_welcome_seen_${cleanE}`) === 'true' ||
                             (targetTenantId && localStorage.getItem(`bf_welcome_seen_${targetTenantId}`) === 'true');
         if (!welcomeSeen) {
           setTimeout(() => {
             setIsWelcomeModalOpen(true);
-          }, 500);
+          }, 450);
         }
       }
 
@@ -1670,11 +1651,11 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center gap-2 w-full md:w-auto shrink-0 pt-1 md:pt-0">
                   <button
                     type="button"
-                    onClick={() => setIsSalonOnboardingOpen(true)}
+                    onClick={() => setIsWelcomeModalOpen(true)}
                     className="flex-1 md:flex-initial px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#FF5A36] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Iniciar Asistente</span>
+                    <span>Ver Guía de Inicio</span>
                   </button>
                   <button
                     type="button"
@@ -6880,51 +6861,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL ONBOARDING INICIAL PARA NUEVOS SALONES (BIENVENIDA GUIADA) */}
-      <SalonOnboardingModal
-        isOpen={isSalonOnboardingOpen}
-        onClose={() => {
-          setIsSalonOnboardingOpen(false);
-          // Si cierra el onboarding guiado, abrir el mensaje de bienvenida
-          setIsWelcomeModalOpen(true);
-        }}
-        tenant={activeTenantObj}
-        ownerEmail={ownerEmail}
-        salonCurrency={salonCurrency}
-        onComplete={async () => {
-          setIsSalonOnboardingOpen(false);
-          // Recargar datos actualizados con los servicios y colaboradoras creadas
-          try {
-            const tid = activeTenantObj?.id || getActiveTenantId();
-            const [apts, cls, stys, srvs, prods] = await Promise.all([
-              api.getAppointments(tid),
-              api.getClients(tid),
-              api.getStylists(tid),
-              api.getServices(tid),
-              api.getProducts(tid)
-            ]);
-            setAppointments(apts);
-            setClients(cls);
-            setStylists(stys);
-            setServices(srvs);
-            setProducts(prods);
-
-            const activeTenantRaw = localStorage.getItem('bf_tenant_active');
-            if (activeTenantRaw) {
-              const activeT = JSON.parse(activeTenantRaw);
-              if (activeT.name) setSalonName(activeT.name);
-              if (activeT.currency) setSalonCurrency(activeT.currency);
-              if (activeT.phone) setSalonPhone(activeT.phone);
-            }
-          } catch (err) {
-            console.error('Error reloading after onboarding:', err);
-          }
-          // Mostrar mensaje de bienvenida al completar onboarding
-          setIsWelcomeModalOpen(true);
-        }}
-      />
-
-      {/* MODAL DE BIENVENIDA VIP PARA NUEVOS USUARIOS */}
+      {/* MODAL DE BIENVENIDA VIP PARA NUEVOS USUARIOS (CHECKLIST 1-2-3) */}
       <WelcomeModal
         isOpen={isWelcomeModalOpen}
         onClose={() => {
@@ -6938,12 +6875,28 @@ export const DashboardPage: React.FC = () => {
         }}
         tenant={activeTenantObj}
         ownerName={ownerName}
+        servicesCount={services.length}
+        stylistsCount={stylists.length}
         onOpenCustomizer={() => setIsWebsiteCustomizerOpen(true)}
+        onOpenNewService={() => {
+          setActiveTab('catalog_team');
+          setCatalogSubTab('services');
+          setEditingService(null);
+          setIsServiceModalOpen(true);
+        }}
+        onOpenNewStylist={() => {
+          setActiveTab('catalog_team');
+          setCatalogSubTab('stylists');
+          setEditingStylist(null);
+          setIsStylistModalOpen(true);
+        }}
         onNavigateTab={(tab) => {
-          if (tab === 'servicios' || tab === 'especialistas') {
+          if (tab === 'servicios') {
             setActiveTab('catalog_team');
-            if (tab === 'servicios') setCatalogSubTab('services');
-            if (tab === 'especialistas') setCatalogSubTab('stylists');
+            setCatalogSubTab('services');
+          } else if (tab === 'especialistas') {
+            setActiveTab('catalog_team');
+            setCatalogSubTab('stylists');
           } else {
             setActiveTab(tab as any);
           }

@@ -16,13 +16,15 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
--13. **Mensaje de Bienvenida VIP y Guía de Primer Ingreso ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
-    - Se creó el componente `WelcomeModal` con diseño Glassmorphism Dark Mode y acentos Rose Gold / Neón Kowy.
-    - Se activa automáticamente la primera vez que la dueña entra a su Dashboard (`bf_welcome_seen_${email}`).
-    - Presenta de forma clara los 3 pilares activos:
-      1. 🌐 **Página Web Oficial** (con enlace directo).
-      2. 📅 **Agendador Online 24/7** (con enlace directo).
-      3. 👥 **Control de Equipo & Caja POS**.
+-13. **Unificación y Simplificación Total de Bienvenida (Checklist 1-2-3 y Eliminación de Onboarding Redundante) ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Eliminación de Onboarding Intrusivo**: Se removió por completo `SalonOnboardingModal` para evitar wizards pesados que bloqueaban el panel o duplicaban formularios.
+    - **Checklist de Inicio Rápido en `WelcomeModal`**:
+      1. 💇‍♀️ **Paso 1 Obligatorio (Servicios & Precios)**: Muestra conteo real de servicios activos y botón para añadir/editar tratamientos directamente.
+      2. 👥 **Paso 2 Obligatorio (Equipo de Especialistas)**: Muestra conteo de colaboradoras y botón para registrar al personal.
+      3. 🎨 **Paso 3 (Página Web & Horarios)**: Botón directo al Personalizador Web con vista previa en vivo.
+      4. 🔗 **Enlace de Reservas 24/7**: Muestra la URL oficial (`/reservar/:slug`) con botón para copiar al portapapeles y probar.
+    - **Libertad Total**: La usuaria puede explorar directamente su dashboard sin trabas ni formularios obligatorios.
+    - **Reconsulta Permanente**: Accesible en todo momento desde el menú de perfil (*"🎉 Bienvenida & Enlaces de mi Salón"*).
     - Incluye acceso directo a *"Personalizar mi Página Web"* y la opción *"🎉 Bienvenida & Enlaces de mi Salón"* en el menú de perfil para volver a consultarlo en cualquier momento.
 
 -12. **Integración Inteligente del Horario de Atención en el Motor de Reserva ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
