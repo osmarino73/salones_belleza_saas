@@ -2211,7 +2211,7 @@ export const DashboardPage: React.FC = () => {
         )}
 
         {/* =========================================================================
-            VIEW 2: AGENDA & GESTIÓN INTEGRAL DE CITAS
+            VIEW 2: AGENDA & GESTIÓN INTEGRAL DE CITAS (SOPORTE BIMODAL LIGHT/DARK)
             ========================================================================= */}
         {activeTab === 'agenda' && (() => {
           // Filtrado de citas para la fecha seleccionada
@@ -2248,45 +2248,79 @@ export const DashboardPage: React.FC = () => {
           const isToday = agendaDate === new Date().toISOString().split('T')[0];
 
           const statusConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
-            pendiente: { label: '⏳ Pendiente', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-            confirmada_wa: { label: '✓ Confirmada WA', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/30' },
-            en_atencion: { label: '⚡ En Silla / Atención', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30' },
-            cobrada: { label: '💳 Cobrada en Caja', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-            completada: { label: '✨ Completada', bg: 'bg-emerald-500/10', text: 'text-emerald-300', border: 'border-emerald-500/20' },
-            no_show: { label: '✕ Cancelada / No Show', bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' }
+            pendiente: { 
+              label: '⏳ Pendiente', 
+              bg: theme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-50', 
+              text: theme === 'dark' ? 'text-amber-400' : 'text-amber-700 font-bold', 
+              border: theme === 'dark' ? 'border-amber-500/30' : 'border-amber-300' 
+            },
+            confirmada_wa: { 
+              label: '✓ Confirmada WA', 
+              bg: theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50', 
+              text: theme === 'dark' ? 'text-blue-400' : 'text-blue-700 font-bold', 
+              border: theme === 'dark' ? 'border-blue-500/30' : 'border-blue-300' 
+            },
+            en_atencion: { 
+              label: '⚡ En Silla / Atención', 
+              bg: theme === 'dark' ? 'bg-purple-500/15' : 'bg-purple-50', 
+              text: theme === 'dark' ? 'text-purple-300' : 'text-purple-700 font-bold', 
+              border: theme === 'dark' ? 'border-purple-500/30' : 'border-purple-300' 
+            },
+            cobrada: { 
+              label: '💳 Cobrada en Caja', 
+              bg: theme === 'dark' ? 'bg-emerald-500/15' : 'bg-emerald-50', 
+              text: theme === 'dark' ? 'text-emerald-400' : 'text-emerald-700 font-bold', 
+              border: theme === 'dark' ? 'border-emerald-500/30' : 'border-emerald-300' 
+            },
+            completada: { 
+              label: '✨ Completada', 
+              bg: theme === 'dark' ? 'bg-emerald-500/10' : 'bg-emerald-50/70', 
+              text: theme === 'dark' ? 'text-emerald-300' : 'text-emerald-700 font-bold', 
+              border: theme === 'dark' ? 'border-emerald-500/20' : 'border-emerald-200' 
+            },
+            no_show: { 
+              label: '✕ Cancelada / No Show', 
+              bg: theme === 'dark' ? 'bg-rose-500/10' : 'bg-rose-50', 
+              text: theme === 'dark' ? 'text-rose-400' : 'text-rose-700 font-bold', 
+              border: theme === 'dark' ? 'border-rose-500/30' : 'border-rose-300' 
+            }
           };
 
           return (
             <div className="space-y-6 animate-fade-in">
               
               {/* Header Principal de la Agenda con Navegación de Fecha */}
-              <div className={`p-5 sm:p-6 rounded-3xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-xl ${
-                theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+              <div className={`p-5 sm:p-6 rounded-3xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-xl transition-all ${
+                theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-slate-100'
               }`}>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => setActiveTab('overview')}
-                      className={`p-1.5 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-all ${
-                        theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-[#F0F2F7] border-black/5 text-slate-800 hover:border-[#FF5A36]'
+                      className={`p-1.5 px-3 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all ${
+                        theme === 'dark' 
+                          ? 'bg-[#1A2133] border-white/10 text-white hover:border-[#FF5A36]' 
+                          : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-[#FF5A36]'
                       }`}
                       title="Volver a Overview"
                     >
                       <ArrowDownLeft className="w-3.5 h-3.5 rotate-45" />
                       <span>Volver</span>
                     </button>
-                    <h2 className="text-lg sm:text-xl font-black tracking-tight text-white capitalize flex items-center gap-2">
+                    <h2 className={`text-lg sm:text-xl font-black tracking-tight capitalize flex items-center gap-2 ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       <Calendar className="w-5 h-5 text-[#FF5A36]" />
                       <span>{formattedDateHeader}</span>
                     </h2>
                     {isToday && (
-                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30 animate-pulse">
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30">
                         ● Hoy
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500 font-medium'}`}>
                     Control operativo de citas, especialistas asignados, confirmaciones por WhatsApp y paso a Caja POS.
                   </p>
                 </div>
@@ -2295,11 +2329,15 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center gap-2.5 flex-wrap w-full lg:w-auto">
                   
                   {/* Selector rápido de fecha */}
-                  <div className="flex items-center rounded-2xl border border-white/10 bg-[#0E121B] p-1 text-xs">
+                  <div className={`flex items-center rounded-2xl border p-1 text-xs ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-slate-100 border-slate-200'
+                  }`}>
                     <button
                       type="button"
                       onClick={() => handleShiftAgendaDate(-1)}
-                      className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
+                      className={`p-1.5 rounded-xl transition-colors ${
+                        theme === 'dark' ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-600 hover:text-slate-900'
+                      }`}
                       title="Día anterior"
                     >
                       ◀
@@ -2308,7 +2346,9 @@ export const DashboardPage: React.FC = () => {
                       type="button"
                       onClick={() => setAgendaDate(new Date().toISOString().split('T')[0])}
                       className={`px-3 py-1 font-bold rounded-xl transition-all ${
-                        isToday ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-300 hover:text-white'
+                        isToday 
+                          ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' 
+                          : theme === 'dark' ? 'text-slate-300 hover:text-white' : 'text-slate-700 hover:text-slate-950'
                       }`}
                     >
                       Hoy
@@ -2316,7 +2356,9 @@ export const DashboardPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleShiftAgendaDate(1)}
-                      className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
+                      className={`p-1.5 rounded-xl transition-colors ${
+                        theme === 'dark' ? 'hover:bg-white/10 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-600 hover:text-slate-900'
+                      }`}
                       title="Día siguiente"
                     >
                       ▶
@@ -2325,19 +2367,25 @@ export const DashboardPage: React.FC = () => {
                       type="date"
                       value={agendaDate}
                       onChange={(e) => setAgendaDate(e.target.value)}
-                      className="bg-transparent border-l border-white/10 pl-2 pr-1 text-xs text-slate-300 focus:outline-none focus:text-white cursor-pointer"
+                      className={`bg-transparent border-l pl-2 pr-1 text-xs font-semibold focus:outline-none cursor-pointer ${
+                        theme === 'dark' ? 'border-white/10 text-slate-200 focus:text-white' : 'border-slate-300 text-slate-800 focus:text-slate-950'
+                      }`}
                     />
                   </div>
 
                   {/* Switcher de Vista: Columnas vs Lista */}
-                  <div className="flex rounded-2xl border border-white/10 bg-[#0E121B] p-1 text-xs">
+                  <div className={`flex rounded-2xl border p-1 text-xs ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-slate-100 border-slate-200'
+                  }`}>
                     <button
                       type="button"
                       onClick={() => setAgendaViewMode('columns')}
                       className={`px-3 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer ${
                         agendaViewMode === 'columns'
-                          ? 'bg-white/15 text-white shadow-sm border border-white/10'
-                          : 'text-slate-400 hover:text-white'
+                          ? theme === 'dark'
+                            ? 'bg-white/15 text-white shadow-sm border border-white/10'
+                            : 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                          : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <Layers className="w-3.5 h-3.5" />
@@ -2348,8 +2396,10 @@ export const DashboardPage: React.FC = () => {
                       onClick={() => setAgendaViewMode('list')}
                       className={`px-3 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer ${
                         agendaViewMode === 'list'
-                          ? 'bg-white/15 text-white shadow-sm border border-white/10'
-                          : 'text-slate-400 hover:text-white'
+                          ? theme === 'dark'
+                            ? 'bg-white/15 text-white shadow-sm border border-white/10'
+                            : 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                          : theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
                       }`}
                     >
                       <FileText className="w-3.5 h-3.5" />
@@ -2367,43 +2417,71 @@ export const DashboardPage: React.FC = () => {
                     className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black text-xs px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all hover:scale-[1.02] ml-auto lg:ml-0"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>+ Agendar Turno</span>
+                    <span>Agendar Turno</span>
                   </button>
                 </div>
               </div>
 
-              {/* Barra de Métricas y Filtros del Día */}
+              {/* Barra de Métricas del Día */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
-                  <span className="text-[11px] text-slate-400 block font-semibold">Total Turnos Hoy</span>
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <span className={`text-[11px] block font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Total Turnos Hoy
+                  </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <strong className="text-xl font-black text-white">{dayAppointments.length}</strong>
-                    <span className="text-[10px] text-slate-500">agendadas</span>
+                    <strong className={`text-2xl font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      {dayAppointments.length}
+                    </strong>
+                    <span className={`text-[10px] ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400 font-semibold'}`}>
+                      agendadas
+                    </span>
                   </div>
                 </div>
 
-                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
-                  <span className="text-[11px] text-slate-400 block font-semibold">Facturación Estimada</span>
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <span className={`text-[11px] block font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Facturación Estimada
+                  </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <strong className="text-xl font-black text-emerald-400">
+                    <strong className="text-xl sm:text-2xl font-black text-emerald-500 dark:text-emerald-400">
                       {formatCurrency(totalEstimatedRevenue, salonCurrency)}
                     </strong>
                   </div>
                 </div>
 
-                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
-                  <span className="text-[11px] text-slate-400 block font-semibold">En Silla / Atendiendo</span>
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <span className={`text-[11px] block font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    En Silla / Atendiendo
+                  </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <strong className="text-xl font-black text-purple-400">{inServiceCount}</strong>
-                    <span className="text-[10px] text-purple-300/80">en proceso</span>
+                    <strong className="text-2xl font-black text-purple-600 dark:text-purple-400">
+                      {inServiceCount}
+                    </strong>
+                    <span className="text-[10px] text-purple-500 font-semibold">
+                      en proceso
+                    </span>
                   </div>
                 </div>
 
-                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
-                  <span className="text-[11px] text-slate-400 block font-semibold">Pendientes / Por Confirmar</span>
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <span className={`text-[11px] block font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Pendientes / Por Confirmar
+                  </span>
                   <div className="flex items-baseline gap-2 mt-1">
-                    <strong className="text-xl font-black text-amber-400">{pendingCount}</strong>
-                    <span className="text-[10px] text-amber-300/80">turnos</span>
+                    <strong className="text-2xl font-black text-amber-500 dark:text-amber-400">
+                      {pendingCount}
+                    </strong>
+                    <span className="text-[10px] text-amber-500 font-semibold">
+                      turnos
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2424,8 +2502,10 @@ export const DashboardPage: React.FC = () => {
                       onClick={() => setAgendaStatusFilter(filterItem.key as any)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                         agendaStatusFilter === filterItem.key
-                          ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                          : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5'
+                          ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30 ring-1 ring-[#FF5A36]'
+                          : theme === 'dark'
+                            ? 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-950 border border-slate-200 shadow-sm'
                       }`}
                     >
                       {filterItem.label}
@@ -2434,13 +2514,17 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div className="relative w-full sm:w-64">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                  <Search className={`w-3.5 h-3.5 absolute left-3 top-3 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-400'}`} />
                   <input
                     type="text"
                     value={agendaSearchTerm}
                     onChange={(e) => setAgendaSearchTerm(e.target.value)}
                     placeholder="Buscar clienta o servicio..."
-                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                    className={`w-full border rounded-2xl pl-8 pr-3 py-2 text-xs focus:outline-none focus:border-[#FF5A36] transition-colors ${
+                      theme === 'dark' 
+                        ? 'bg-[#0E121B] border-white/10 text-white placeholder-slate-500' 
+                        : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 shadow-sm'
+                    }`}
                   />
                 </div>
               </div>
@@ -2458,12 +2542,14 @@ export const DashboardPage: React.FC = () => {
                         <div
                           key={sty.id}
                           className={`rounded-3xl p-5 border flex flex-col justify-between shadow-lg transition-all ${
-                            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+                            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-slate-100'
                           }`}
                         >
                           <div>
                             {/* Cabecera del Especialista */}
-                            <div className="flex items-center justify-between pb-3.5 border-b border-white/10 mb-4">
+                            <div className={`flex items-center justify-between pb-3.5 border-b mb-4 ${
+                              theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+                            }`}>
                               <div className="flex items-center gap-3 min-w-0">
                                 <img
                                   src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
@@ -2471,21 +2557,39 @@ export const DashboardPage: React.FC = () => {
                                   className="w-12 h-12 rounded-2xl object-cover border-2 border-[#FF5A36] shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <strong className="text-sm font-extrabold text-white block truncate">{sty.name}</strong>
-                                  <span className="text-[11px] text-slate-400 block truncate">{sty.specialty}</span>
+                                  <strong className={`text-sm font-black block truncate ${
+                                    theme === 'dark' ? 'text-white' : 'text-slate-900'
+                                  }`}>
+                                    {sty.name}
+                                  </strong>
+                                  <span className={`text-[11px] block truncate font-medium ${
+                                    theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                                  }`}>
+                                    {sty.specialty}
+                                  </span>
                                 </div>
                               </div>
-                              <span className="text-xs font-black px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[#FF5A36] shrink-0">
+                              <span className={`text-xs font-black px-2.5 py-1 rounded-full border shrink-0 ${
+                                theme === 'dark' 
+                                  ? 'bg-white/5 border-white/10 text-[#FF5A36]' 
+                                  : 'bg-slate-50 border-slate-200 text-[#FF5A36]'
+                              }`}>
                                 {styApts.length} cita(s)
                               </span>
                             </div>
 
                             {/* Lista de Turnos del Especialista */}
                             {styApts.length === 0 ? (
-                              <div className="text-center py-10 px-3 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2">
-                                <Clock className="w-8 h-8 text-slate-600 mx-auto" />
-                                <span className="text-xs font-bold text-slate-400 block">Sin citas para este día</span>
-                                <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                              <div className={`text-center py-10 px-3 border rounded-2xl space-y-2 ${
+                                theme === 'dark' 
+                                  ? 'bg-white/[0.02] border-white/5' 
+                                  : 'bg-slate-50/70 border-slate-100'
+                              }`}>
+                                <Clock className={`w-8 h-8 mx-auto ${theme === 'dark' ? 'text-slate-600' : 'text-slate-400'}`} />
+                                <span className={`text-xs font-bold block ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                                  Sin citas para este día
+                                </span>
+                                <p className={`text-[11px] max-w-xs mx-auto ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
                                   El especialista tiene agenda libre para recibir citas.
                                 </p>
                               </div>
@@ -2493,10 +2597,24 @@ export const DashboardPage: React.FC = () => {
                               <div className="space-y-3">
                                 {styApts.map((apt) => {
                                   const currentStatus = statusConfig[apt.status] || statusConfig.pendiente;
+                                  const displayClientName = (() => {
+                                    if (apt.client_name && !/^\d{7,15}$/.test(apt.client_name.trim())) {
+                                      return apt.client_name;
+                                    }
+                                    const matchClient = clients.find(c => 
+                                      apt.client_phone && c.phone_whatsapp && c.phone_whatsapp.includes(apt.client_phone.replace(/\D/g, '').slice(-7))
+                                    );
+                                    return matchClient?.full_name || apt.client_name || 'Clienta Directa';
+                                  })();
+
                                   return (
                                     <div
                                       key={apt.id}
-                                      className="p-4 rounded-2xl border border-white/10 bg-[#0E121B] space-y-3 hover:border-white/20 transition-all shadow-sm"
+                                      className={`p-4 rounded-2xl border space-y-3 transition-all shadow-sm ${
+                                        theme === 'dark' 
+                                          ? 'bg-[#0E121B] border-white/10 hover:border-white/20' 
+                                          : 'bg-slate-50 border-slate-200 hover:border-[#FF5A36]/40 shadow-slate-100'
+                                      }`}
                                     >
                                       {/* Hora & Selector de Estado */}
                                       <div className="flex items-center justify-between gap-2">
@@ -2509,7 +2627,7 @@ export const DashboardPage: React.FC = () => {
                                         <select
                                           value={apt.status}
                                           onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
-                                          className={`text-[10px] font-extrabold px-2 py-1 rounded-full border focus:outline-none cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border focus:outline-none cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
                                         >
                                           <option value="pendiente">⏳ Pendiente</option>
                                           <option value="confirmada_wa">✓ Confirmada WA</option>
@@ -2523,32 +2641,42 @@ export const DashboardPage: React.FC = () => {
                                       {/* Clienta & Servicio */}
                                       <div className="space-y-1">
                                         <div className="flex items-center justify-between">
-                                          <strong className="text-sm font-bold text-white truncate">{apt.client_name}</strong>
-                                          <span className="text-xs font-black text-emerald-400">
+                                          <strong className={`text-sm font-extrabold truncate ${
+                                            theme === 'dark' ? 'text-white' : 'text-slate-900'
+                                          }`}>
+                                            {displayClientName}
+                                          </strong>
+                                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                                             {formatCurrency(apt.price_usd ?? apt.price_cop, salonCurrency)}
                                           </span>
                                         </div>
-                                        <p className="text-xs text-slate-300 font-medium leading-snug">
+                                        <p className={`text-xs font-medium leading-snug ${
+                                          theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+                                        }`}>
                                           {apt.service_name}
                                         </p>
                                         {apt.client_phone && (
-                                          <span className="text-[11px] text-slate-400 block font-mono">
+                                          <span className={`text-[11px] block font-mono font-medium ${
+                                            theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                                          }`}>
                                             📞 {apt.client_phone}
                                           </span>
                                         )}
                                       </div>
 
                                       {/* Acciones Rápidas */}
-                                      <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-2 flex-wrap">
+                                      <div className={`pt-2.5 border-t flex items-center justify-between gap-2 flex-wrap ${
+                                        theme === 'dark' ? 'border-white/5' : 'border-slate-200'
+                                      }`}>
                                         <div className="flex items-center gap-1.5">
                                           {apt.client_phone && (
                                             <button
                                               type="button"
                                               onClick={() => handleSendWhatsAppNotification(apt, 'confirm')}
-                                              className="p-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                              className="p-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                                               title="Enviar WhatsApp de confirmación"
                                             >
-                                              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                              <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
                                               <span>WhatsApp</span>
                                             </button>
                                           )}
@@ -2566,7 +2694,7 @@ export const DashboardPage: React.FC = () => {
                                         <button
                                           type="button"
                                           onClick={() => handleDeleteAppointment(apt.id)}
-                                          className="text-slate-500 hover:text-rose-400 p-1.5 rounded-xl hover:bg-rose-500/10 transition-colors"
+                                          className="text-slate-400 hover:text-rose-500 p-1.5 rounded-xl hover:bg-rose-500/10 transition-colors"
                                           title="Eliminar o cancelar turno"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
@@ -2580,7 +2708,9 @@ export const DashboardPage: React.FC = () => {
                           </div>
 
                           {/* Pie de Columna: Agregar Cita Directa al Estilista */}
-                          <div className="pt-4 border-t border-white/10 mt-4 text-center">
+                          <div className={`pt-4 border-t mt-4 text-center ${
+                            theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+                          }`}>
                             <button
                               type="button"
                               onClick={() => {
@@ -2605,20 +2735,26 @@ export const DashboardPage: React.FC = () => {
                   ========================================================================= */}
               {agendaViewMode === 'list' && (
                 <div className={`rounded-3xl border overflow-hidden shadow-xl ${
-                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-slate-200 shadow-sm'
                 }`}>
                   {dayAppointments.length === 0 ? (
                     <div className="p-12 text-center space-y-3">
-                      <Calendar className="w-12 h-12 text-slate-600 mx-auto" />
-                      <h3 className="text-base font-bold text-white">No hay citas programadas para este filtro</h3>
-                      <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                        Cambia la fecha o haz clic en "+ Agendar Turno" para registrar una cita.
+                      <Calendar className={`w-12 h-12 mx-auto ${theme === 'dark' ? 'text-slate-600' : 'text-slate-300'}`} />
+                      <h3 className={`text-base font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                        No hay citas programadas para este filtro
+                      </h3>
+                      <p className={`text-xs max-w-sm mx-auto ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Cambia la fecha o haz clic en "Agendar Turno" para registrar una cita.
                       </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-white/5 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+                        <thead className={`uppercase text-[10px] tracking-wider border-b ${
+                          theme === 'dark' 
+                            ? 'bg-white/5 text-slate-400 border-white/10' 
+                            : 'bg-slate-50 text-slate-600 border-slate-200'
+                        }`}>
                           <tr>
                             <th className="p-4">Hora</th>
                             <th className="p-4">Clienta</th>
@@ -2629,23 +2765,55 @@ export const DashboardPage: React.FC = () => {
                             <th className="p-4 text-center">Acciones</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-slate-100'}`}>
                           {dayAppointments.map((apt) => {
                             const currentStatus = statusConfig[apt.status] || statusConfig.pendiente;
+                            const displayClientName = (() => {
+                              if (apt.client_name && !/^\d{7,15}$/.test(apt.client_name.trim())) {
+                                return apt.client_name;
+                              }
+                              const matchClient = clients.find(c => 
+                                apt.client_phone && c.phone_whatsapp && c.phone_whatsapp.includes(apt.client_phone.replace(/\D/g, '').slice(-7))
+                              );
+                              return matchClient?.full_name || apt.client_name || 'Clienta Directa';
+                            })();
+
                             return (
-                              <tr key={apt.id} className="hover:bg-white/[0.02] transition-colors">
-                                <td className="p-4 font-mono font-bold text-[#FF5A36] whitespace-nowrap">
+                              <tr key={apt.id} className={`transition-colors ${
+                                theme === 'dark' ? 'hover:bg-white/[0.02]' : 'hover:bg-slate-50/80'
+                              }`}>
+                                <td className="p-4 font-mono font-black text-[#FF5A36] whitespace-nowrap">
                                   {apt.time}
                                 </td>
                                 <td className="p-4">
-                                  <strong className="text-white block font-bold">{apt.client_name}</strong>
-                                  {apt.client_phone && <span className="text-[11px] text-slate-400 font-mono">{apt.client_phone}</span>}
+                                  <strong className={`block font-extrabold ${
+                                    theme === 'dark' ? 'text-white' : 'text-slate-900'
+                                  }`}>
+                                    {displayClientName}
+                                  </strong>
+                                  {apt.client_phone && (
+                                    <span className={`text-[11px] font-mono ${
+                                      theme === 'dark' ? 'text-slate-400' : 'text-slate-500 font-medium'
+                                    }`}>
+                                      {apt.client_phone}
+                                    </span>
+                                  )}
                                 </td>
-                                <td className="p-4 text-slate-300">
-                                  <span className="font-semibold block">{apt.service_name}</span>
-                                  <span className="text-[10px] text-slate-500">{apt.duration_minutes || 60} min</span>
+                                <td className="p-4">
+                                  <span className={`font-bold block ${
+                                    theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
+                                  }`}>
+                                    {apt.service_name}
+                                  </span>
+                                  <span className={`text-[10px] ${
+                                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400 font-semibold'
+                                  }`}>
+                                    {apt.duration_minutes || 60} min
+                                  </span>
                                 </td>
-                                <td className="p-4 text-slate-300 font-medium">
+                                <td className={`p-4 font-semibold ${
+                                  theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+                                }`}>
                                   {apt.stylist_name}
                                 </td>
                                 <td className="p-4">
@@ -2662,7 +2830,7 @@ export const DashboardPage: React.FC = () => {
                                     <option value="no_show">✕ No Show</option>
                                   </select>
                                 </td>
-                                <td className="p-4 text-right font-mono font-black text-emerald-400 whitespace-nowrap">
+                                <td className="p-4 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                                   {formatCurrency(apt.price_usd ?? apt.price_cop, salonCurrency)}
                                 </td>
                                 <td className="p-4 text-center whitespace-nowrap">
@@ -2671,7 +2839,11 @@ export const DashboardPage: React.FC = () => {
                                       <button
                                         type="button"
                                         onClick={() => handleSendWhatsAppNotification(apt, 'confirm')}
-                                        className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-colors"
+                                        className={`p-1.5 rounded-xl border transition-colors ${
+                                          theme === 'dark'
+                                            ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border-emerald-500/30'
+                                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200'
+                                        }`}
                                         title="WhatsApp"
                                       >
                                         <MessageCircle className="w-3.5 h-3.5" />
@@ -2680,7 +2852,7 @@ export const DashboardPage: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => handleChargeAppointmentInPos(apt)}
-                                      className="p-1.5 px-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-[11px] flex items-center gap-1"
+                                      className="p-1.5 px-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all"
                                       title="Cobrar en Caja"
                                     >
                                       <CreditCard className="w-3.5 h-3.5" />
@@ -2689,7 +2861,7 @@ export const DashboardPage: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => handleDeleteAppointment(apt.id)}
-                                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
                                       title="Eliminar cita"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
