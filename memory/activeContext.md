@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-32. **Unificación Visual en Agendamiento SaaS ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Eliminación del Ícono Decorativo**: Se quitó el recuadro con el ícono de tijeras junto al nombre del negocio en el encabezado, dejando el nombre limpio y destacado.
+    - **Unificación de Botones de Continuar**: Se eliminó el degradado rosado/fucsia (`from-[#FF5A36] to-pink-500`) en los botones *"Continuar a Especialista"*, *"Continuar a Horario"* y *"Continuar a Mis Datos"*, unificándolos al color oficial `#FF5A36` con hover `#E54E07` y sombra calibrada.
+
 -31. **Sistema de Detección y Prevención de Negocios Duplicados ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Identificador Único por WhatsApp**: Se implementó `checkBusinessDuplicate` que normaliza y valida números de WhatsApp contra `prospect_sites` y `tenants`. Permite que negocios con el mismo nombre coexistan si tienen diferente WhatsApp y ciudad.
     - **Generación Inteligente de Slugs con Ciudad**: Si un nombre base está tomado, `generateUniqueProspectSlug` combina el nombre con la ciudad (ej. `studio-glamour-medellin`, `studio-glamour-cali`) en lugar de generar sufijos numéricos clonados.

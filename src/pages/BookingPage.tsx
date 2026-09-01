@@ -628,10 +628,7 @@ export const BookingPage: React.FC = () => {
     <div className="min-h-screen bg-[#0A0D14] text-white font-sans py-8 px-4 sm:px-6 pb-24">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-3xl mx-auto text-center mb-6 relative z-10">
-        <Link to="/" className="inline-flex items-center gap-2 text-lg font-extrabold text-white mb-2">
-          <div className="w-9 h-9 bg-gradient-to-tr from-[#FF5A36] to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-[#FF5A36]/40">
-            <Scissors className="w-5 h-5" />
-          </div>
+        <Link to="/" className="inline-block text-lg sm:text-xl font-black text-white hover:text-[#FF5A36] transition-colors mb-2">
           <span>{salonName}</span>
         </Link>
         <h1 className="text-2xl sm:text-3xl font-black text-white">Reserva tu Cita Online</h1>
@@ -767,7 +764,7 @@ export const BookingPage: React.FC = () => {
                   type="button"
                   disabled={selectedServices.length === 0}
                   onClick={() => setStep(2)}
-                  className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span>Continuar a Especialista</span>
                   <ChevronRight className="w-4 h-4" />
@@ -859,7 +856,7 @@ export const BookingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer"
+                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all"
               >
                 <span>Continuar a Horario</span>
                 <ChevronRight className="w-4 h-4" />
@@ -1041,7 +1038,7 @@ export const BookingPage: React.FC = () => {
 
                 {/* Resumen Inteligente del Turno Seleccionado */}
                 {selectedTime && !isSlotOccupied(selectedTime).occupied && (
-                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FF5A36]/15 via-pink-500/10 to-transparent border border-[#FF5A36]/30 flex items-center justify-between gap-3 text-xs animate-fade-in mt-2">
+                  <div className="p-3.5 rounded-2xl bg-[#FF5A36]/10 border border-[#FF5A36]/30 flex items-center justify-between gap-3 text-xs animate-fade-in mt-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-[#FF5A36] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#FF5A36]/30 font-black">
                         <Check className="w-4 h-4" />
@@ -1053,7 +1050,7 @@ export const BookingPage: React.FC = () => {
                         </strong>
                       </div>
                     </div>
-                    <span className="text-[10px] text-[#FF5A36] font-extrabold px-2.5 py-1 rounded-full bg-[#FF5A36]/10 border border-[#FF5A36]/20 shrink-0">
+                    <span className="text-[10px] text-[#FF5A36] font-extrabold px-2.5 py-1 rounded-full bg-[#FF5A36]/15 border border-[#FF5A36]/30 shrink-0">
                       ✓ Confirmado
                     </span>
                   </div>
@@ -1073,7 +1070,7 @@ export const BookingPage: React.FC = () => {
                 type="button"
                 disabled={stylistAvailability.blocked}
                 onClick={() => setStep(4)}
-                className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span>Continuar a Mis Datos</span>
                 <ChevronRight className="w-4 h-4" />
