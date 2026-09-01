@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-41. **Calibración de la Card KPI Coral "Citas Pendientes Hoy" ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Cómputo en Tiempo Real del Día Actual**: La tarjeta destacada coral del centro del Overview ahora cuenta únicamente las citas del día de hoy (`a.date === today`) que están pendientes o activas (`pendiente`, `confirmada_wa`, `en_atencion`).
+    - **Navegación Táctil a Agenda**: Toda la tarjeta es interactiva con animación hover `hover:scale-[1.02]` y enlace directo *"Ver →"* para abrir la pestaña de Agenda.
+
 -40. **Optimización de Tarjeta de Citas en Overview ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Filtro Exclusivo de Citas Pendientes de Hoy**: La tarjeta principal del Overview ahora filtra automáticamente solo los turnos del día en curso (`isToday`) que están pendientes o activos (`pendiente`, `confirmada_wa`, `en_atencion`).
     - **Botón Directo de Acceso a Agenda**: Botón destacado *"Ver Agenda Completa →"* en el encabezado y pie de tarjeta para saltar inmediatamente a la gestión general por fechas y especialistas.

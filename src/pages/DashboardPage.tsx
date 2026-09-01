@@ -450,7 +450,7 @@ export const DashboardPage: React.FC = () => {
 
   // Agenda State & Filters
   const [agendaDate, setAgendaDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [agendaViewMode, setAgendaViewMode] = useState<'columns' | 'list'>('columns');
+  const [agendaViewMode, setAgendaViewMode] = useState<'columns' | 'list'>('list');
   const [agendaStatusFilter, setAgendaStatusFilter] = useState<'all' | 'pendiente' | 'confirmada_wa' | 'en_atencion' | 'cobrada' | 'completada' | 'no_show'>('all');
   const [agendaSearchTerm, setAgendaSearchTerm] = useState<string>('');
   const [newAppointmentDate, setNewAppointmentDate] = useState<string>(new Date().toISOString().split('T')[0]);
