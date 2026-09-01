@@ -16,6 +16,9 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-42. **Vista de Lista Cronológica por Defecto en Agenda ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Configuración Inicial Optimizada**: Se estableció `'list'` como la vista predeterminada al ingresar al módulo de Agenda, ofreciendo una tabla cronológica clara y limpia para recepción rápida.
+
 -41. **Calibración de la Card KPI Coral "Citas Pendientes Hoy" ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Cómputo en Tiempo Real del Día Actual**: La tarjeta destacada coral del centro del Overview ahora cuenta únicamente las citas del día de hoy (`a.date === today`) que están pendientes o activas (`pendiente`, `confirmada_wa`, `en_atencion`).
     - **Navegación Táctil a Agenda**: Toda la tarjeta es interactiva con animación hover `hover:scale-[1.02]` y enlace directo *"Ver →"* para abrir la pestaña de Agenda.

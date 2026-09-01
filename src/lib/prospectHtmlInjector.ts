@@ -1000,8 +1000,61 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     }
   }
 
-  // 7. Inyectar Script Técnico Ligero para Navegación Táctil Móvil y Compatibilidad en Iframes
-  const interactionScript = `
+  // 7. Inyectar Estilos Universales y Botón Flotante de WhatsApp para Celulares
+  const waFloatingStylesAndScript = `
+<style id="kowy-wa-float-styles">
+  .whatsapp-float, .btn-whatsapp-float, .wa-floating, .floating-wa, .wa-btn-floating {
+    position: fixed !important;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px)) !important;
+    right: 20px !important;
+    left: auto !important;
+    z-index: 99999 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #25D366 !important;
+    color: #ffffff !important;
+    padding: 0.75rem 1.3rem !important;
+    border-radius: 9999px !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45) !important;
+    text-decoration: none !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+    gap: 0.5rem !important;
+  }
+  .whatsapp-float:hover, .btn-whatsapp-float:hover, .wa-floating:hover, .floating-wa:hover, .wa-btn-floating:hover {
+    transform: translateY(-3px) scale(1.04) !important;
+    box-shadow: 0 12px 28px rgba(37, 211, 102, 0.6) !important;
+    color: #ffffff !important;
+  }
+  @media (max-width: 768px) {
+    .whatsapp-float, .btn-whatsapp-float, .wa-floating, .floating-wa, .wa-btn-floating {
+      width: 56px !important;
+      height: 56px !important;
+      min-width: 56px !important;
+      max-width: 56px !important;
+      border-radius: 50% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+      bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+      right: 16px !important;
+    }
+    .whatsapp-float span, .btn-whatsapp-float span, .wa-floating span, .floating-wa span, .wa-btn-floating span,
+    .whatsapp-float p, .btn-whatsapp-float p, .wa-floating p, .floating-wa p {
+      display: none !important;
+    }
+    .whatsapp-float svg, .btn-whatsapp-float svg, .wa-floating svg, .floating-wa svg, .wa-btn-floating svg,
+    .whatsapp-float i, .btn-whatsapp-float i, .wa-floating i, .floating-wa i {
+      margin: 0 !important;
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 28px !important;
+      display: block !important;
+    }
+  }
+</style>
 <script id="beautyflow-interaction-script">
   (function() {
     function initInteractions() {
@@ -1045,10 +1098,21 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 </script>
 `;
 
+  // Comprobar si ya existe un botón flotante de WhatsApp en el HTML
+  const hasExistingFloatingWa = /(?:whatsapp-float|wa-floating|btn-whatsapp-float|floating-wa|wa-btn-floating)/i.test(processed);
+  const waFloatingButtonHtml = !hasExistingFloatingWa && cleanPhone ? `
+<a href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${businessName || ''}, vi su página web oficial y quisiera consultar información.`)}" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Escribir por WhatsApp" title="Escribir por WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+  </svg>
+  <span>WhatsApp</span>
+</a>
+` : '';
+
   if (processed.includes('</body>')) {
-    processed = processed.replace('</body>', `${interactionScript}</body>`);
+    processed = processed.replace('</body>', `${waFloatingButtonHtml}${waFloatingStylesAndScript}</body>`);
   } else {
-    processed += interactionScript;
+    processed += `${waFloatingButtonHtml}${waFloatingStylesAndScript}`;
   }
 
   return processed;

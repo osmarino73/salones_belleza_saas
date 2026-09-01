@@ -1026,13 +1026,14 @@ export const LandingPage: React.FC = () => {
       </footer>
 
       {/* BOTÓN FLOTANTE DE WHATSAPP OFICIAL (311 419 5123) */}
-      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center">
         <a
           href="https://wa.me/573114195123?text=Hola%20Kowy,%20estoy%20viendo%20la%20pagina%20web%20y%20deseo%20asesoria"
           target="_blank"
           rel="noreferrer"
-          className="w-14 h-14 rounded-full bg-[#FF5A36] hover:bg-[#E54E07] text-white flex items-center justify-center shadow-2xl shadow-[#FF5A36]/40 transition-all hover:scale-110 active:scale-95 group"
+          className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white flex items-center justify-center shadow-2xl shadow-[#25D366]/40 transition-all hover:scale-110 active:scale-95 group cursor-pointer"
           title="Hablar con un Asesor Kowy por WhatsApp"
+          aria-label="Hablar por WhatsApp con Kowy"
         >
           <MessageCircle className="w-7 h-7" />
         </a>
