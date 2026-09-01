@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-43. **Estandarización y Calibración del Botón Flotante de WhatsApp en Celulares ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts) & [`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
+    - **Formato Circular Limpio en Móvil**: En pantallas móviles (`max-width: 768px`), todo botón flotante de WhatsApp se formatea automáticamente a un círculo perfecto compacto de `56px × 56px`, ocultando textos anchos que lo desplazaban hacia el centro de la pantalla.
+    - **Posicionamiento Seguro**: Fijado de forma estricta en la esquina inferior derecha (`bottom: max(16px, env(safe-area-inset-bottom, 16px)); right: 16px; z-index: 99999;`) para no solaparse con contenidos.
+    - **Color Verde Oficial**: Color `#25D366` con micro-sombra y animación hover fluida.
+
 -42. **Vista de Lista Cronológica por Defecto en Agenda ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Configuración Inicial Optimizada**: Se estableció `'list'` como la vista predeterminada al ingresar al módulo de Agenda, ofreciendo una tabla cronológica clara y limpia para recepción rápida.
 

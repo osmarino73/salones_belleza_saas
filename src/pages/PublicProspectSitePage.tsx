@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/supabase';
 import { ProspectSite } from '../types';
-import { Calendar } from 'lucide-react';
+import { Calendar, MessageCircle } from 'lucide-react';
 import { injectProspectLinks } from '../lib/prospectHtmlInjector';
 
 export const PublicProspectSitePage: React.FC = () => {
@@ -150,21 +150,43 @@ export const PublicProspectSitePage: React.FC = () => {
     );
   }
 
+  const cleanPhone = site.phone_whatsapp ? site.phone_whatsapp.replace(/\D/g, '') : '';
+  const waUrl = cleanPhone 
+    ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`¡Hola ${site.business_name}! Vi su página web oficial y quisiera consultar información.`)}`
+    : null;
+
   return (
-    <div className="w-full min-h-screen bg-transparent">
+    <div className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-transparent">
       <iframe 
         title={`${site.business_name} | Sitio Oficial`}
         srcDoc={renderedHtml}
-        className="w-full min-h-screen border-0 block"
+        className="w-full h-full border-0 block"
         style={{
           width: '100%',
-          height: '100vh',
-          minHeight: '100vh',
+          height: '100%',
+          minHeight: '100%',
           border: 'none',
           display: 'block'
         }}
       />
+
+      {/* Botón Flotante React Nativo: Siempre Visible en Pantalla y Flotando sobre el Iframe */}
+      {waUrl && (
+        <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[99999] flex items-center">
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20BA5A] text-white flex items-center justify-center shadow-2xl shadow-[#25D366]/50 transition-all hover:scale-110 active:scale-95 group cursor-pointer border-2 border-white/20"
+            title="Escribir por WhatsApp"
+            aria-label={`Escribir por WhatsApp a ${site.business_name}`}
+          >
+            <MessageCircle className="w-7 h-7" />
+          </a>
+        </div>
+      )}
     </div>
   );
 };
+
 
