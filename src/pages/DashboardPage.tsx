@@ -2045,120 +2045,143 @@ export const DashboardPage: React.FC = () => {
             {/* Bottom Row: Live Appointments Table & Quick Action Drawer */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
-              {/* Left/Center Table (8 Cols) */}
+              {/* Left: Today's Pending Appointments Table (8 Cols) */}
               <div className={`lg:col-span-8 rounded-2xl p-6 border flex flex-col justify-between ${
                 theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
               }`}>
-                <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                    <div>
-                      <h2 className="text-base font-bold">Actividad & Citas en Vivo</h2>
-                      <span className="text-xs text-slate-400">Sincronización en tiempo real con recepción y WhatsApp</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Sincronizado API
-                      </span>
-                    </div>
-                  </div>
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const todayPendingAppointments = appointments.filter(a => {
+                    const isToday = a.date === todayStr;
+                    const isPendingOrActive = a.status === 'pendiente' || a.status === 'confirmada_wa' || a.status === 'en_atencion';
+                    return isToday && isPendingOrActive;
+                  });
 
-                  <div className="overflow-x-auto">
-                    {appointments.length === 0 ? (
-                      <div className="text-center py-10 space-y-3">
-                        <div className="w-12 h-12 rounded-full bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center mx-auto">
-                          <Calendar className="w-6 h-6" />
+                  return (
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-base font-bold">Citas Pendientes de Hoy</h2>
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30">
+                              ● Hoy
+                            </span>
+                          </div>
+                          <span className="text-xs text-slate-400">Turnos activos y pendientes por atender hoy en el salón</span>
                         </div>
-                        <h3 className="text-sm font-bold">¡Tu Agenda está lista para recibir citas!</h3>
-                        <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                          Comparte tu enlace público de reservas con tus clientas o recibe citas automáticas por WhatsApp para que aparezcan aquí.
-                        </p>
-                        <div className="pt-2 flex justify-center gap-2">
-                          <Link
-                            to="/reservas"
-                            target="_blank"
-                            className="bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white font-bold px-4 py-2 rounded-full text-xs flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30"
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('agenda')}
+                            className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/25 transition-all cursor-pointer hover:scale-[1.02]"
                           >
-                            <Sparkles className="w-3.5 h-3.5" /> Probar Enlace de Citas
-                          </Link>
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Ver Agenda Completa →</span>
+                          </button>
                         </div>
                       </div>
-                    ) : (
-                      <table className="w-full text-left text-xs min-w-[550px]">
-                        <thead className="border-b border-black/5 dark:border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
-                          <tr>
-                            <th className="py-3">Hora</th>
-                            <th className="py-3">Clienta</th>
-                            <th className="py-3">Servicio</th>
-                            <th className="py-3">Especialista</th>
-                            <th className="py-3">Estado</th>
-                            <th className="py-3 text-right">Fórmula / CRM</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-black/5 dark:divide-white/5">
-                          {appointments.map((apt) => (
-                            <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                              <td className="py-3.5 font-mono font-bold text-[#FF5A36]">{apt.time}</td>
-                              <td className="py-3.5">
-                                <strong className="block">{apt.client_name}</strong>
-                                <span className="text-[11px] text-slate-400">{apt.client_phone}</span>
-                              </td>
-                              <td className="py-3.5">{apt.service_name}</td>
-                              <td className="py-3.5">{apt.stylist_name}</td>
-                              <td className="py-3.5">
-                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                  apt.status === 'en_atencion'
-                                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                                    : apt.status === 'completada'
-                                    ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30 font-extrabold'
-                                    : apt.status === 'cobrada'
-                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                    : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                }`}>
-                                  {apt.status === 'en_atencion' ? '● En Sillón' : apt.status === 'completada' ? '💳 Por Cobrar en Caja' : apt.status === 'cobrada' ? '✓ Cobrada' : 'Confirmada WA'}
-                                </span>
-                              </td>
-                              <td className="py-3.5 text-right">
-                                <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                                  {apt.status === 'completada' && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const cl = clients.find(c => c.full_name === apt.client_name);
-                                        if (cl) setPosInitialClient(cl);
-                                        setActiveTab('pos');
-                                      }}
-                                      className="text-xs px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all inline-flex items-center gap-1 shadow-sm"
-                                      title="Cobrar servicio en el Punto de Venta POS y liquidar comisión"
-                                    >
-                                      <CreditCard className="w-3.5 h-3.5" /> Cobrar en POS
-                                    </button>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
-                                      if (cl) setSelectedClientForFormula(cl);
-                                    }}
-                                    className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
-                                      theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
-                                    }`}
-                                  >
-                                    <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
-                  </div>
-                </div>
 
-                <div className="pt-4 border-t border-black/5 dark:border-white/10 text-xs text-slate-400 flex justify-between items-center mt-4">
-                  <span>Mostrando {appointments.length} citas registradas</span>
-                  <span>BeautyFlow AI SaaS</span>
-                </div>
+                      <div className="overflow-x-auto">
+                        {todayPendingAppointments.length === 0 ? (
+                          <div className="text-center py-10 space-y-3 bg-slate-50/50 dark:bg-white/[0.01] rounded-2xl border border-dashed border-black/5 dark:border-white/5">
+                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+                              <Calendar className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-sm font-bold text-slate-800 dark:text-white">¡No hay citas pendientes para hoy!</h3>
+                            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                              Todos los turnos de hoy han sido atendidos o aún no se han agendado nuevas citas para la fecha.
+                            </p>
+                            <div className="pt-2 flex justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab('agenda')}
+                                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 cursor-pointer"
+                              >
+                                <Calendar className="w-3.5 h-3.5" /> Explorar Calendario & Agenda
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <table className="w-full text-left text-xs min-w-[550px]">
+                            <thead className="border-b border-black/5 dark:border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
+                              <tr>
+                                <th className="py-3">Hora</th>
+                                <th className="py-3">Clienta</th>
+                                <th className="py-3">Servicio</th>
+                                <th className="py-3">Especialista</th>
+                                <th className="py-3">Estado</th>
+                                <th className="py-3 text-right">Fórmula / CRM</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                              {todayPendingAppointments.map((apt) => {
+                                const displayClientName = (() => {
+                                  if (apt.client_name && !/^\d{7,15}$/.test(apt.client_name.trim())) {
+                                    return apt.client_name;
+                                  }
+                                  const matchClient = clients.find(c => 
+                                    apt.client_phone && c.phone_whatsapp && c.phone_whatsapp.includes(apt.client_phone.replace(/\D/g, '').slice(-7))
+                                  );
+                                  return matchClient?.full_name || apt.client_name || 'Clienta Directa';
+                                })();
+
+                                return (
+                                  <tr key={apt.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                    <td className="py-3.5 font-mono font-bold text-[#FF5A36]">{apt.time}</td>
+                                    <td className="py-3.5">
+                                      <strong className="block text-slate-900 dark:text-white font-bold">{displayClientName}</strong>
+                                      {apt.client_phone && <span className="text-[11px] text-slate-400 font-mono">{apt.client_phone}</span>}
+                                    </td>
+                                    <td className="py-3.5 text-slate-700 dark:text-slate-300 font-medium">{apt.service_name}</td>
+                                    <td className="py-3.5 text-slate-700 dark:text-slate-300">{apt.stylist_name}</td>
+                                    <td className="py-3.5">
+                                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                        apt.status === 'en_atencion'
+                                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                          : apt.status === 'confirmada_wa'
+                                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                      }`}>
+                                        {apt.status === 'en_atencion' ? '⚡ En Sillón' : apt.status === 'confirmada_wa' ? '✓ Confirmada WA' : '⏳ Pendiente'}
+                                      </span>
+                                    </td>
+                                    <td className="py-3.5 text-right">
+                                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const cl = clients.find(c => c.full_name === apt.client_name) || clients[0];
+                                            if (cl) setSelectedClientForFormula(cl);
+                                          }}
+                                          className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all inline-flex items-center gap-1.5 ${
+                                            theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                                          }`}
+                                        >
+                                          <FileText className="w-3.5 h-3.5 text-[#FF5A36]" /> Ficha 360°
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
+
+                      <div className="pt-4 border-t border-black/5 dark:border-white/10 text-xs text-slate-400 flex justify-between items-center mt-4">
+                        <span>Mostrando {todayPendingAppointments.length} cita(s) pendiente(s) para hoy</span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('agenda')}
+                          className="text-[#FF5A36] font-bold hover:underline"
+                        >
+                          Ir a la Agenda Completa →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Right: Simulated WhatsApp AI Live Box (4 Cols) */}
