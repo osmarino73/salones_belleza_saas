@@ -18,7 +18,7 @@
 
 -47. **Diálogo Modal de Confirmación para Guardar y Publicar la Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Protección y Doble Verificación**: Al hacer clic en el botón naranja *"💾 Guardar y Publicar"* en el Personalizador de la Página Web, ahora se despliega un diálogo modal de confirmación con diseño Glassmorphism (`isConfirmPublishWebsiteModalOpen`).
-    - **Resumen Ejecutivo de Ajustes**: Presenta una tarjeta con el nombre del salón, horario público configurado, visibilidad del equipo de especialistas y estado del cupón de 1ª visita antes de aplicar los cambios en Supabase y en la web en vivo.
+    - **Resumen Ejecutivo de Ajustes Reales**: Presenta una tarjeta limpia con el nombre del salón, horario público configurado, visibilidad de la sección de colaboradores y el enlace web directo (`https://kowy.app/sitio/:slug`) sin campos innecesarios.
     - **Acciones Claras**: Permite al usuario `"Seguir Editando"` para rectificar detalles o `"🚀 Sí, Publicar en Vivo"` para sincronizar instantáneamente el sitio oficial y el agendador.
 
 -46. **Preset de Horario "✨ Dom. Especial" en Configuración ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:

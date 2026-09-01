@@ -7481,55 +7481,72 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL DE CONFIRMACIÓN DE PUBLICACIÓN DE PÁGINA WEB */}
       {isConfirmPublishWebsiteModalOpen && (
         <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className={`border rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/30 text-slate-900'
+          <div className={`border rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 ${
+            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50'
           }`}>
             <div className="text-center space-y-2">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF5A36] to-pink-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-[#FF5A36]/30">
                 <Globe className="w-7 h-7" />
               </div>
-              <h3 className="text-lg font-black tracking-tight">¿Publicar cambios en tu Web Oficial?</h3>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+              <h3 className={`text-xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                ¿Publicar cambios en tu Web Oficial?
+              </h3>
+              <p className={`text-xs max-w-sm mx-auto leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                 Tus clientas y Google verán estos cambios actualizados inmediatamente en tu página pública y en el agendador online.
               </p>
             </div>
 
-            {/* Tarjeta Resumen de Cambios */}
-            <div className={`p-4 rounded-2xl border space-y-2 text-xs ${
-              theme === 'dark' ? 'bg-[#0E121B] border-white/5' : 'bg-[#F9FAFC] border-black/5'
+            {/* Tarjeta Resumen de Cambios con Contraste Impecable */}
+            <div className={`p-4 sm:p-5 rounded-2xl border space-y-3 text-xs ${
+              theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-slate-50 border-slate-200'
             }`}>
-              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
-                <span className="text-slate-400 font-semibold">Salón:</span>
-                <strong className="text-slate-800 dark:text-white font-bold">{activeTenantObj?.name || salonName}</strong>
+              <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-black/5 dark:border-white/5">
+                <span className={`font-semibold shrink-0 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Salón:</span>
+                <strong className={`font-bold text-right text-sm ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  {activeTenantObj?.name || salonName}
+                </strong>
               </div>
-              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
-                <span className="text-slate-400 font-semibold">Horario Público:</span>
-                <strong className="text-emerald-500 font-bold truncate max-w-[200px]" title={websiteForm.business_hours_text}>
+
+              <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-black/5 dark:border-white/5">
+                <span className={`font-semibold shrink-0 mt-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Horario Público:</span>
+                <strong className="text-emerald-600 dark:text-emerald-400 font-bold text-right leading-snug">
                   {websiteForm.business_hours_text || 'Lunes a Sábado: 8:00 AM - 7:00 PM'}
                 </strong>
               </div>
-              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
-                <span className="text-slate-400 font-semibold">Equipo de Especialistas:</span>
-                <strong className={websiteForm.show_team_section !== false ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+
+              <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-black/5 dark:border-white/5">
+                <span className={`font-semibold shrink-0 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Equipo de Especialistas:</span>
+                <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
+                  websiteForm.show_team_section !== false 
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                    : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400'
+                }`}>
                   {websiteForm.show_team_section !== false ? '✓ Sección Visible' : 'Oculta'}
-                </strong>
+                </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-semibold">Enlace Web:</span>
-                <span className="text-cyan-400 font-mono text-[11px] truncate max-w-[200px]">
-                  kowy.app/sitio/{activeTenantObj?.slug || 'salon'}
+
+              <div className="flex items-center justify-between gap-3">
+                <span className={`font-semibold shrink-0 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Enlace Web:</span>
+                <span className={`font-mono text-[11px] font-semibold px-2.5 py-1 rounded-lg border text-right break-all ${
+                  theme === 'dark' 
+                    ? 'text-cyan-300 bg-cyan-950/40 border-cyan-800/50' 
+                    : 'text-cyan-800 bg-cyan-50 border-cyan-200'
+                }`}>
+                  https://kowy.app/sitio/{activeTenantObj?.slug || 'salon'}
                 </span>
               </div>
             </div>
 
             {/* Botones de Confirmación */}
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-3 pt-1">
               <button
                 type="button"
                 disabled={isSavingWebsite}
                 onClick={() => setIsConfirmPublishWebsiteModalOpen(false)}
-                className={`flex-1 py-2.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
-                  theme === 'dark' ? 'border-white/10 hover:bg-white/5 text-slate-300' : 'border-black/10 hover:bg-black/5 text-slate-700'
+                className={`flex-1 py-3 rounded-2xl font-bold text-xs border transition-all cursor-pointer ${
+                  theme === 'dark' 
+                    ? 'border-white/15 hover:bg-white/5 text-slate-300' 
+                    : 'border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700'
                 }`}
               >
                 Seguir Editando
@@ -7538,7 +7555,7 @@ export const DashboardPage: React.FC = () => {
                 type="button"
                 disabled={isSavingWebsite}
                 onClick={handleExecutePublishWebsite}
-                className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:from-[#E54E07] hover:to-pink-600 text-white shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 disabled:opacity-70"
+                className="flex-1 py-3 rounded-2xl font-black text-xs bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:from-[#E54E07] hover:to-pink-600 text-white shadow-xl shadow-[#FF5A36]/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 disabled:opacity-70"
               >
                 {isSavingWebsite ? (
                   <>
