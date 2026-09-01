@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-33. **Filtro de Categorías de Servicio y Selección Libre en Agendador ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Eliminación de Preselección Forzada**: Si la clienta no ingresa con un servicio específico en la URL (`?srv=...`), la pantalla inicia con 0 seleccionados y permite marcar/desmarcar libremente sin bloqueos.
+    - **Selector Dinámico de Categorías de Servicio**: Se agregó una barra táctil horizontal (`✨ Todos`, `Corte`, `Color`, `Tratamiento`, etc.) que extrae las categorías reales del salón y filtra la lista en tiempo real para evitar scrolls gigantes.
+    - **Unificación del Botón Móvil**: El botón `"Siguiente >"` de la barra inferior flotante se unificó al color oficial `#FF5A36`.
+
 -32. **Unificación Visual en Agendamiento SaaS ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
     - **Eliminación del Ícono Decorativo**: Se quitó el recuadro con el ícono de tijeras junto al nombre del negocio en el encabezado, dejando el nombre limpio y destacado.
     - **Unificación de Botones de Continuar**: Se eliminó el degradado rosado/fucsia (`from-[#FF5A36] to-pink-500`) en los botones *"Continuar a Especialista"*, *"Continuar a Horario"* y *"Continuar a Mis Datos"*, unificándolos al color oficial `#FF5A36` con hover `#E54E07` y sombra calibrada.

@@ -153,6 +153,7 @@ export const BookingPage: React.FC = () => {
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
   const [couponMessage, setCouponMessage] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
 
   // Lista de próximos 14 días para selección visual rápida con estado de apertura
   const next14Days = useMemo(() => {
@@ -180,12 +181,32 @@ export const BookingPage: React.FC = () => {
     if (savedEmail && !clientEmail) setClientEmail(savedEmail);
   }, []);
 
+  // Extraer categorías únicas disponibles en el catálogo de servicios del salón
+  const availableCategories = useMemo(() => {
+    const catMap = new Map<string, number>();
+    services.forEach(s => {
+      const rawCat = (s.category || 'general').trim().toLowerCase();
+      const label = rawCat.charAt(0).toUpperCase() + rawCat.slice(1);
+      catMap.set(label, (catMap.get(label) || 0) + 1);
+    });
+    return Array.from(catMap.entries()).map(([label, count]) => ({
+      label,
+      count,
+      key: label.toLowerCase()
+    }));
+  }, [services]);
+
+  // Lista de servicios visibles según la categoría seleccionada
+  const displayedServices = useMemo(() => {
+    if (selectedCategoryFilter === 'all') return services;
+    return services.filter(s => (s.category || 'general').trim().toLowerCase() === selectedCategoryFilter.toLowerCase());
+  }, [services, selectedCategoryFilter]);
+
   const primaryService = selectedServices[0] || services[0];
 
   const handleToggleService = (srv: Service) => {
     const exists = selectedServices.some(s => s.id === srv.id);
     if (exists) {
-      if (selectedServices.length === 1) return;
       setSelectedServices(selectedServices.filter(s => s.id !== srv.id));
     } else {
       setSelectedServices([...selectedServices, srv]);
@@ -388,8 +409,6 @@ export const BookingPage: React.FC = () => {
 
         if (targetService) {
           setSelectedServices([targetService]);
-        } else if (loadedServices.length > 0) {
-          setSelectedServices([loadedServices[0]]);
         } else {
           setSelectedServices([]);
         }
@@ -660,6 +679,44 @@ export const BookingPage: React.FC = () => {
               </span>
             </div>
 
+            {/* Selector Horizontal Táctil de Categorías de Servicio */}
+            {services.length > 0 && availableCategories.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryFilter('all')}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategoryFilter === 'all'
+                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30 ring-1 ring-[#FF5A36]'
+                      : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+                  }`}
+                >
+                  <span>✨ Todos ({services.length})</span>
+                </button>
+                {availableCategories.map((cat) => {
+                  const isSelected = selectedCategoryFilter.toLowerCase() === cat.key;
+                  const selectedInCat = selectedServices.filter(s => (s.category || 'general').trim().toLowerCase() === cat.key).length;
+                  return (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setSelectedCategoryFilter(cat.key)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30 ring-1 ring-[#FF5A36]'
+                          : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+                      }`}
+                    >
+                      <span>{cat.label} ({cat.count})</span>
+                      {selectedInCat > 0 && (
+                        <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-[#FF5A36]'}`} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {isLoading ? (
               <div className="space-y-2.5">
                 {[1, 2, 3, 4].map((i) => (
@@ -704,7 +761,7 @@ export const BookingPage: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-2.5">
-                {services.map((srv) => {
+                {displayedServices.map((srv) => {
                   const isSelected = selectedServices.some(s => s.id === srv.id);
                   return (
                     <div
@@ -1360,7 +1417,7 @@ export const BookingPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setStep(step < 4 ? step + 1 : 4)}
-            className="bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white font-black text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5"
+            className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
           >
             <span>{step === 4 ? 'Confirmar' : 'Siguiente'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
