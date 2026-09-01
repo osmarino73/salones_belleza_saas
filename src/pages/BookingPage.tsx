@@ -142,7 +142,7 @@ export const BookingPage: React.FC = () => {
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [selectedStylist, setSelectedStylist] = useState<Stylist | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [selectedTime, setSelectedTime] = useState<string>('02:00 PM');
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const [timeFilter, setTimeFilter] = useState<'all' | 'morning' | 'afternoon' | 'evening'>('all');
   
   const [clientName, setClientName] = useState<string>('');
@@ -476,8 +476,6 @@ export const BookingPage: React.FC = () => {
         setStylists(loadedStylists);
         if (targetStylist) {
           setSelectedStylist(targetStylist);
-        } else if (loadedStylists.length > 0) {
-          setSelectedStylist(loadedStylists[0]);
         } else {
           setSelectedStylist(null);
         }
@@ -1012,7 +1010,10 @@ export const BookingPage: React.FC = () => {
                     <button
                       key={d.iso}
                       type="button"
-                      onClick={() => setSelectedDate(d.iso)}
+                      onClick={() => {
+                        setSelectedDate(d.iso);
+                        setSelectedTime('');
+                      }}
                       className={`shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer min-w-[72px] ${
                         isSelected
                           ? 'border-[#FF5A36] bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/35 scale-105 ring-2 ring-[#FF5A36]/20'
@@ -1048,7 +1049,10 @@ export const BookingPage: React.FC = () => {
                 type="date"
                 value={selectedDate}
                 min={new Date().toISOString().split('T')[0]}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  setSelectedTime('');
+                }}
                 className="bg-[#0E121B] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF5A36] transition-colors"
               />
             </div>
@@ -1184,7 +1188,7 @@ export const BookingPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                disabled={stylistAvailability.blocked}
+                disabled={!selectedTime || stylistAvailability.blocked || !salonScheduleForSelectedDate.isOpen || isSlotOccupied(selectedTime).occupied}
                 onClick={() => setStep(4)}
                 className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >

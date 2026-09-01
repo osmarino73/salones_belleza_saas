@@ -16,6 +16,14 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-38. **Eliminación de la Preselección Forzada de Especialista ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Causa Raíz**: En `loadBookingData`, un `else if (loadedStylists.length > 0) setSelectedStylist(loadedStylists[0])` forzaba a que siempre el primer especialista quedara preseleccionado.
+    - **Corrección**: Se corrigió para que `selectedStylist` inicie en `null` (opción abierta *"Cualquier Especialista / Primer Disponible"*), a menos que en la URL venga un parámetro explícito (`?stylist=...`).
+
+-37. **Eliminación de la Preselección Forzada de Horario 2:00 PM ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Causa Raíz**: El estado inicial `selectedTime` estaba codificado de forma estática con `'02:00 PM'`.
+    - **Corrección**: Se inicializó `selectedTime = ''` y se configuró para que al cambiar de fecha se limpie la selección, requiriendo que la clienta elija conscientemente una hora libre antes de habilitar el botón *"Continuar a Mis Datos"*.
+
 -36. **Rediseño Premium del Encabezado de Reservas ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
     - **Píldora de Identidad con Glassmorphism**: Se transformó el nombre del negocio en una píldora interactiva con punto brillante de acento `#FF5A36`, borde sutil y tipografía refinada que conecta con el sitio web del salón.
     - **Tipografía y Subtítulo de Alta Gama**: Título principal con degradado limpio y subtítulo orientativo (*"Selecciona tu tratamiento, especialista y horario en menos de 1 minuto."*).
