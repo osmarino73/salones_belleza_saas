@@ -2271,13 +2271,99 @@ export const api = {
     return sites.find(s => s.slug === slug || s.slug.toLowerCase() === slug.toLowerCase()) || null;
   },
 
-  async generateUniqueProspectSlug(baseNameOrSlug: string, currentSiteId?: string): Promise<string> {
-    const cleanBase = (baseNameOrSlug || 'salon')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'salon';
+  async checkBusinessDuplicate(params: {
+    phone?: string;
+    slug?: string;
+    city?: string;
+    excludeId?: string;
+  }): Promise<{
+    isDuplicate: boolean;
+    type?: 'prospect' | 'tenant';
+    matchField?: 'phone' | 'slug';
+    existingBusiness?: {
+      id: string;
+      name: string;
+      slug: string;
+      phone: string;
+      city?: string;
+      status?: string;
+      created_at?: string;
+    };
+    message?: string;
+  }> {
+    const normalizeDigits = (val?: string) => {
+      if (!val) return '';
+      const d = val.replace(/\D/g, '');
+      return d.length >= 10 ? d.slice(-10) : d;
+    };
+
+    const targetDigits = normalizeDigits(params.phone);
+    if (!targetDigits) {
+      return { isDuplicate: false };
+    }
+
+    // 1. Buscar en prospect_sites por WhatsApp
+    const prospects = await this.getProspectSites();
+    for (const p of prospects) {
+      if (params.excludeId && p.id === params.excludeId) continue;
+      const pDigits = normalizeDigits(p.phone_whatsapp);
+      if (pDigits && targetDigits === pDigits) {
+        return {
+          isDuplicate: true,
+          type: 'prospect',
+          matchField: 'phone',
+          existingBusiness: {
+            id: p.id,
+            name: p.business_name,
+            slug: p.slug,
+            phone: p.phone_whatsapp,
+            city: p.city,
+            status: p.status,
+            created_at: p.created_at
+          },
+          message: `Este WhatsApp (${p.phone_whatsapp}) ya está registrado en el prospecto "${p.business_name}" (${p.city || 'Colombia'}).`
+        };
+      }
+    }
+
+    // 2. Buscar en tenants (salones activos) por WhatsApp
+    const tenants = await this.getAllTenants();
+    for (const t of tenants) {
+      if (params.excludeId && t.id === params.excludeId) continue;
+      const tDigits = normalizeDigits(t.phone);
+      if (tDigits && targetDigits === tDigits) {
+        return {
+          isDuplicate: true,
+          type: 'tenant',
+          matchField: 'phone',
+          existingBusiness: {
+            id: t.id,
+            name: t.name,
+            slug: t.slug,
+            phone: t.phone,
+            city: t.city,
+            status: t.subscription_status || 'active',
+            created_at: t.created_at
+          },
+          message: `Este WhatsApp (${t.phone}) ya pertenece al salón oficial en Kowy: "${t.name}" (${t.city || 'Colombia'}).`
+        };
+      }
+    }
+
+    return { isDuplicate: false };
+  },
+
+  async generateUniqueProspectSlug(baseNameOrSlug: string, city?: string, currentSiteId?: string): Promise<string> {
+    const cleanSlug = (text: string) =>
+      text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+    const cleanBase = cleanSlug(baseNameOrSlug || 'salon') || 'salon';
+    const citySlug = city ? cleanSlug(city) : '';
 
     if (supabase && isSupabaseConfigured) {
       try {
@@ -2297,11 +2383,16 @@ export const api = {
             return cleanBase;
           }
 
+          // Si el nombre base está tomado, probar primero combinando con la ciudad
+          if (citySlug && !existingSlugs.has(`${cleanBase}-${citySlug}`)) {
+            return `${cleanBase}-${citySlug}`;
+          }
+
           let counter = 2;
-          let candidate = `${cleanBase}-${counter}`;
+          let candidate = citySlug ? `${cleanBase}-${citySlug}-${counter}` : `${cleanBase}-${counter}`;
           while (existingSlugs.has(candidate)) {
             counter++;
-            candidate = `${cleanBase}-${counter}`;
+            candidate = citySlug ? `${cleanBase}-${citySlug}-${counter}` : `${cleanBase}-${counter}`;
           }
           return candidate;
         }
@@ -2322,11 +2413,15 @@ export const api = {
       return cleanBase;
     }
 
+    if (citySlug && !existingSlugs.has(`${cleanBase}-${citySlug}`)) {
+      return `${cleanBase}-${citySlug}`;
+    }
+
     let counter = 2;
-    let candidate = `${cleanBase}-${counter}`;
+    let candidate = citySlug ? `${cleanBase}-${citySlug}-${counter}` : `${cleanBase}-${counter}`;
     while (existingSlugs.has(candidate)) {
       counter++;
-      candidate = `${cleanBase}-${counter}`;
+      candidate = citySlug ? `${cleanBase}-${citySlug}-${counter}` : `${cleanBase}-${counter}`;
     }
     return candidate;
   },
@@ -2380,7 +2475,7 @@ export const api = {
       : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
     
     const targetId = isValidUUID(site.id) ? site.id! : generatedId;
-    const targetSlug = await this.generateUniqueProspectSlug(site.slug || site.business_name || 'salon', site.id);
+    const targetSlug = await this.generateUniqueProspectSlug(site.slug || site.business_name || 'salon', site.city, site.id);
     
     // Capturar creador autenticado actual o fallback oficial
     const currentUser = this.auth.getUser();

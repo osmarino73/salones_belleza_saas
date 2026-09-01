@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-31. **Sistema de Detección y Prevención de Negocios Duplicados ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Identificador Único por WhatsApp**: Se implementó `checkBusinessDuplicate` que normaliza y valida números de WhatsApp contra `prospect_sites` y `tenants`. Permite que negocios con el mismo nombre coexistan si tienen diferente WhatsApp y ciudad.
+    - **Generación Inteligente de Slugs con Ciudad**: Si un nombre base está tomado, `generateUniqueProspectSlug` combina el nombre con la ciudad (ej. `studio-glamour-medellin`, `studio-glamour-cali`) en lugar de generar sufijos numéricos clonados.
+    - **Detección en Tiempo Real & Modal de Resolución**: Al escribir el WhatsApp en el generador de prospectos se muestra un banner en vivo. Al intentar publicar un duplicado, se abre un modal que permite *"Sobrescribir y Actualizar Este Prospecto"* o *"Ver Sitio en Vivo"* evitando registros huérfanos.
+
 -30. **Optimización Responsiva y Eliminación de Solapamiento en Header ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Causa Raíz**: En pantallas medianas o reducidas, los botones de acción rápida de la derecha no tenían `shrink-0` y las pestañas de navegación se desbordaban chocando contra el botón `+` de nueva cita.
     - **Corrección**: Se blindó la botonera derecha con `shrink-0`, se optimizaron las etiquetas de pestañas (`Overview`, `CRM Color`, `Mensajes`), se agregó scroll horizontal suave (`overflow-x-auto no-scrollbar`) y se ajustó el logo Kowy para que no se deforme ni se monte sobre ningún elemento.

@@ -44,7 +44,8 @@ import {
   Mail,
   Lock,
   UserCheck,
-  LogOut
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 
 export const SuperadminDashboardPage: React.FC = () => {
@@ -57,6 +58,30 @@ export const SuperadminDashboardPage: React.FC = () => {
 
   // Homepage Studio Modal State
   const [showHomepageStudioModal, setShowHomepageStudioModal] = useState(false);
+
+  // Duplicate Business Prevention State
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    isDuplicate: boolean;
+    type?: 'prospect' | 'tenant';
+    matchField?: 'phone' | 'slug';
+    existingBusiness?: {
+      id: string;
+      name: string;
+      slug: string;
+      phone: string;
+      city?: string;
+      status?: string;
+      created_at?: string;
+    };
+    message?: string;
+  } | null>(null);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
+  const [duplicateModal, setDuplicateModal] = useState<{
+    isOpen: boolean;
+    existingBusiness: any;
+    type: 'prospect' | 'tenant';
+    pendingSiteData: Partial<ProspectSite>;
+  } | null>(null);
 
   // Form State para el Generador de Sitios Gancho
   const [businessName, setBusinessName] = useState('');
@@ -103,6 +128,26 @@ export const SuperadminDashboardPage: React.FC = () => {
     loadData();
   }, []);
 
+  // Verificación en tiempo real de duplicados por WhatsApp
+  useEffect(() => {
+    const cleanPhone = (phoneWhatsapp || '').replace(/\D/g, '');
+    if (cleanPhone.length >= 10) {
+      setIsCheckingDuplicate(true);
+      const timer = setTimeout(async () => {
+        const result = await api.checkBusinessDuplicate({ phone: phoneWhatsapp, city, excludeId: createdSite?.id });
+        if (result.isDuplicate) {
+          setDuplicateWarning(result);
+        } else {
+          setDuplicateWarning(null);
+        }
+        setIsCheckingDuplicate(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    } else {
+      setDuplicateWarning(null);
+    }
+  }, [phoneWhatsapp, city, createdSite?.id]);
+
   const loadData = async () => {
     setLoading(true);
     const [sites, allTenants] = await Promise.all([
@@ -112,6 +157,24 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(sites);
     setTenants(allTenants);
     setLoading(false);
+  };
+
+  const handleLoadExistingProspect = async (existing: any) => {
+    if (!existing) return;
+    const fullSite = prospectSites.find(s => s.id === existing.id) || await api.getProspectSiteBySlug(existing.slug);
+    if (fullSite) {
+      setBusinessName(fullSite.business_name);
+      setPhoneWhatsapp(fullSite.phone_whatsapp);
+      setAddress(fullSite.address || '');
+      setCity(fullSite.city || '');
+      setCategory(fullSite.category || 'salon');
+      setSlug(fullSite.slug);
+      setRawHtml(fullSite.raw_html || '');
+      setHeroImageUrl(fullSite.business_data?.hero_image_url || '');
+      setBusinessData(fullSite.business_data || null);
+      setCreatedSite(fullSite);
+      setDuplicateWarning(null);
+    }
   };
 
   // Auto-generar slug al escribir el nombre
@@ -462,6 +525,7 @@ export const SuperadminDashboardPage: React.FC = () => {
       const creatorEmail = currentUser?.email || 'osmarino73@yahoo.es';
 
       const siteData: Partial<ProspectSite> = {
+        id: createdSite?.id,
         business_name: businessName,
         phone_whatsapp: phoneWhatsapp || '+573001234567',
         address,
@@ -477,9 +541,28 @@ export const SuperadminDashboardPage: React.FC = () => {
         status: 'prospecto'
       };
 
+      // Verificar si existe duplicado por WhatsApp (si no estamos editando ese mismo prospecto)
+      const duplicateCheck = await api.checkBusinessDuplicate({
+        phone: phoneWhatsapp,
+        city,
+        excludeId: createdSite?.id
+      });
+
+      if (duplicateCheck.isDuplicate && duplicateCheck.existingBusiness) {
+        setIsPublishing(false);
+        setDuplicateModal({
+          isOpen: true,
+          existingBusiness: duplicateCheck.existingBusiness,
+          type: duplicateCheck.type || 'prospect',
+          pendingSiteData: siteData
+        });
+        return;
+      }
+
       const published = await api.createProspectSite(siteData);
       setCreatedSite(published);
       setProspectSites([published, ...prospectSites.filter(s => s.id !== published.id && s.slug !== published.slug)]);
+      setDuplicateWarning(null);
       
       // Auto-scroll al resultado
       setTimeout(() => {
@@ -489,6 +572,33 @@ export const SuperadminDashboardPage: React.FC = () => {
     } catch (err) {
       console.error('Error publishing prospect site:', err);
       alert('Ocurrió un error al publicar el sitio. Intenta nuevamente.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleConfirmOverwrite = async () => {
+    if (!duplicateModal) return;
+    setIsPublishing(true);
+    try {
+      const targetSiteData: Partial<ProspectSite> = {
+        ...duplicateModal.pendingSiteData,
+        id: duplicateModal.existingBusiness.id,
+        slug: duplicateModal.existingBusiness.slug
+      };
+      const updated = await api.createProspectSite(targetSiteData);
+      setCreatedSite(updated);
+      setProspectSites([updated, ...prospectSites.filter(s => s.id !== updated.id)]);
+      setDuplicateModal(null);
+      setDuplicateWarning(null);
+      
+      setTimeout(() => {
+        const resEl = document.getElementById('published-result-box');
+        if (resEl) resEl.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (err) {
+      console.error('Error overwriting prospect site:', err);
+      alert('Ocurrió un error al actualizar el prospecto.');
     } finally {
       setIsPublishing(false);
     }
@@ -1028,11 +1138,52 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                         value={phoneWhatsapp}
                         onChange={(e) => setPhoneWhatsapp(e.target.value)}
                         placeholder="Ej. +57 300 123 4567"
-                        className="w-full bg-[#0A0D14] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-semibold"
+                        className={`w-full bg-[#0A0D14] border rounded-xl p-3 text-white focus:outline-none text-xs font-semibold ${
+                          duplicateWarning ? 'border-amber-500/50 focus:border-amber-500' : 'border-white/10 focus:border-[#FF5A36]'
+                        }`}
                         required
                       />
                     </div>
                   </div>
+
+                  {/* Alerta en Vivo de Duplicado Detectado */}
+                  {duplicateWarning && (
+                    <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+                      <div className="flex items-start gap-2.5">
+                        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-amber-300 font-bold block">
+                            {duplicateWarning.type === 'prospect' ? '⚠️ Este negocio ya existe como prospecto' : '🚨 Este WhatsApp pertenece a un Salón Activo'}
+                          </strong>
+                          <p className="text-[11px] text-amber-200/90 leading-relaxed mt-0.5">
+                            {duplicateWarning.message}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {duplicateWarning.type === 'prospect' && duplicateWarning.existingBusiness && (
+                          <>
+                            <a
+                              href={`/sitio/${duplicateWarning.existingBusiness.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl border border-white/15 transition-colors flex items-center gap-1"
+                            >
+                              <span>Ver Sitio</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleLoadExistingProspect(duplicateWarning.existingBusiness)}
+                              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                            >
+                              Cargar Datos
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Dirección & Ciudad */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
@@ -2024,6 +2175,88 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL DE RESOLUCIÓN DE DUPLICADOS
+          ========================================================================= */}
+      {duplicateModal && duplicateModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#141926] border border-amber-500/40 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5 text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="text-base font-black uppercase tracking-wider text-white">
+                  {duplicateModal.type === 'prospect' ? 'Prospecto Ya Existente' : 'Salón Oficial Ya Registrado'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDuplicateModal(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-2 text-slate-200">
+              <p className="leading-relaxed">
+                Ya existe un negocio registrado con el número de WhatsApp <strong className="text-amber-300 font-mono">{duplicateModal.existingBusiness?.phone}</strong>:
+              </p>
+              <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1">
+                <div className="flex justify-between items-center font-bold">
+                  <span className="text-white text-sm">{duplicateModal.existingBusiness?.name}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 uppercase">
+                    {duplicateModal.existingBusiness?.city || 'Colombia'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-400 block font-mono">
+                  Slug: /{duplicateModal.existingBusiness?.slug}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 italic">
+                ¿Deseas actualizar el sitio web existente de este salón o prefieres revisar sus datos?
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              {duplicateModal.type === 'prospect' ? (
+                <button
+                  type="button"
+                  onClick={handleConfirmOverwrite}
+                  className="w-full bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black text-xs py-3 rounded-2xl shadow-lg shadow-[#FF5A36]/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Sobrescribir y Actualizar Este Prospecto</span>
+                </button>
+              ) : (
+                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs">
+                  ℹ️ Este WhatsApp ya pertenece a un salón activo en Kowy. Puedes gestionar sus datos directamente desde la pestaña de <strong>Salones SaaS</strong>.
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={duplicateModal.type === 'prospect' ? `/sitio/${duplicateModal.existingBusiness?.slug}` : `/reservar/${duplicateModal.existingBusiness?.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-white/5 hover:bg-white/15 text-white font-bold text-xs py-2.5 rounded-xl border border-white/10 text-center transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <span>Ver Sitio en Vivo</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setDuplicateModal(null)}
+                  className="bg-white/5 hover:bg-white/15 text-slate-300 font-bold text-xs py-2.5 rounded-xl border border-white/10 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
