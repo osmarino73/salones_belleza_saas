@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-44. **Solución Raíz para Botón Flotante de WhatsApp en Sitios Públicos ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx) & [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Capa Flotante Nativa React**: El botón de WhatsApp ahora se renderiza en la capa superior del DOM React (`z-[99999]`), flotando directamente sobre el viewport de la pantalla del celular sin depender del scroll ni del tamaño interno del `iframe`.
+    - **Visibilidad Permanente (0% al 100% del Scroll)**: El botón verde oficial `#25D366` está siempre visible en la esquina inferior derecha desde el primer segundo que la clienta abre la página hasta el final de la navegación.
+
 -43. **Estandarización y Calibración del Botón Flotante de WhatsApp en Celulares ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts) & [`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx))**:
     - **Formato Circular Limpio en Móvil**: En pantallas móviles (`max-width: 768px`), todo botón flotante de WhatsApp se formatea automáticamente a un círculo perfecto compacto de `56px × 56px`, ocultando textos anchos que lo desplazaban hacia el centro de la pantalla.
     - **Posicionamiento Seguro**: Fijado de forma estricta en la esquina inferior derecha (`bottom: max(16px, env(safe-area-inset-bottom, 16px)); right: 16px; z-index: 99999;`) para no solaparse con contenidos.
