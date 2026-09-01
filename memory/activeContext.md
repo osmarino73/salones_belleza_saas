@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-47. **Diálogo Modal de Confirmación para Guardar y Publicar la Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Protección y Doble Verificación**: Al hacer clic en el botón naranja *"💾 Guardar y Publicar"* en el Personalizador de la Página Web, ahora se despliega un diálogo modal de confirmación con diseño Glassmorphism (`isConfirmPublishWebsiteModalOpen`).
+    - **Resumen Ejecutivo de Ajustes**: Presenta una tarjeta con el nombre del salón, horario público configurado, visibilidad del equipo de especialistas y estado del cupón de 1ª visita antes de aplicar los cambios en Supabase y en la web en vivo.
+    - **Acciones Claras**: Permite al usuario `"Seguir Editando"` para rectificar detalles o `"🚀 Sí, Publicar en Vivo"` para sincronizar instantáneamente el sitio oficial y el agendador.
+
 -46. **Preset de Horario "✨ Dom. Especial" en Configuración ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Botón Rápido de 1 Clic**: Añadido el preset `✨ Dom. Especial` (`Lun a Sáb: 8:00 AM - 7:00 PM | Dom: 10:00 AM - 3:00 PM`) en la sección de Horarios de Atención del panel de control para activar y sincronizar fácilmente la jornada dominical reducida en el sitio web y en el motor de agendamiento.
 

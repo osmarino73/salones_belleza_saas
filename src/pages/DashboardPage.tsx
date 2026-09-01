@@ -7510,15 +7510,15 @@ export const DashboardPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
                 <span className="text-slate-400 font-semibold">Equipo de Especialistas:</span>
-                <strong className={websiteForm.show_team_section !== false ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400'}>
-                  {websiteForm.show_team_section !== false ? '✓ Visible en la web' : 'Oculto'}
+                <strong className={websiteForm.show_team_section !== false ? 'text-emerald-500 dark:text-emerald-400 font-bold' : 'text-slate-400'}>
+                  {websiteForm.show_team_section !== false ? '✓ Sección Visible' : 'Oculta'}
                 </strong>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-semibold">Descuento 1ª Visita:</span>
-                <strong className={websiteForm.show_first_visit_discount ? 'text-[#FF5A36] font-bold' : 'text-slate-400'}>
-                  {websiteForm.show_first_visit_discount ? `✓ ${websiteForm.first_visit_discount_pct}% Activo` : 'Inactivo'}
-                </strong>
+                <span className="text-slate-400 font-semibold">Enlace Web:</span>
+                <span className="text-cyan-400 font-mono text-[11px] truncate max-w-[200px]">
+                  kowy.app/sitio/{activeTenantObj?.slug || 'salon'}
+                </span>
               </div>
             </div>
 
