@@ -574,6 +574,20 @@ export const api = {
     localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updated));
   },
 
+  async deleteAppointment(id: string, tenantId?: string): Promise<void> {
+    const tid = tenantId || getActiveTenantId();
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('appointments').delete().eq('id', id);
+      } catch (e) {
+        console.warn('Error deleting appointment in Supabase:', e);
+      }
+    }
+    const current = await this.getAppointments(tid);
+    const updated = current.filter(a => a.id !== id);
+    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(updated));
+  },
+
   // CLIENTS & COLOR FORMULAS
   async getClients(tenantId?: string): Promise<Client[]> {
     const tid = tenantId || getActiveTenantId();

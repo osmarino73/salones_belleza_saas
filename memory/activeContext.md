@@ -16,6 +16,12 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-39. **Centro de Gestión Integral de Citas y Agenda Diaria ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx) & [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Navegación Dinámica por Fechas**: Selector interactivo de días (`◀`, `Hoy`, `▶`, calendario con fecha completa en español) y métricas en tiempo real (Turnos del día, Facturación estimada, En silla/atención, Pendientes).
+    - **Vistas Duales**: Alternador entre **Columnas por Especialista** (Kanban visual por profesional/sillón) y **Cronograma en Lista** (ideal para recepción y móviles).
+    - **Ciclo de Vida de Estados & Acciones en 1 Clic**: Selector dinámico de estado (`Pendiente`, `Confirmada WA`, `En Silla / Atención`, `Cobrada en Caja`, `Completada`, `Cancelada/No Show`), botón de WhatsApp con plantilla personalizada y botón *"Cobrar"* que transfiere los datos de la cita directamente al Punto de Venta (POS Cash Register).
+    - **Agendamiento Manual Completo**: Modal mejorado con selector de fecha, servicios, especialista y hora.
+
 -38. **Eliminación de la Preselección Forzada de Especialista ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
     - **Causa Raíz**: En `loadBookingData`, un `else if (loadedStylists.length > 0) setSelectedStylist(loadedStylists[0])` forzaba a que siempre el primer especialista quedara preseleccionado.
     - **Corrección**: Se corrigió para que `selectedStylist` inicie en `null` (opción abierta *"Cualquier Especialista / Primer Disponible"*), a menos que en la URL venga un parámetro explícito (`?stylist=...`).

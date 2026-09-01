@@ -448,6 +448,15 @@ export const DashboardPage: React.FC = () => {
   const [isNewFormulaModalOpen, setIsNewFormulaModalOpen] = useState(false);
   const [isSavingFormula, setIsSavingFormula] = useState(false);
 
+  // Agenda State & Filters
+  const [agendaDate, setAgendaDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [agendaViewMode, setAgendaViewMode] = useState<'columns' | 'list'>('columns');
+  const [agendaStatusFilter, setAgendaStatusFilter] = useState<'all' | 'pendiente' | 'confirmada_wa' | 'en_atencion' | 'cobrada' | 'completada' | 'no_show'>('all');
+  const [agendaSearchTerm, setAgendaSearchTerm] = useState<string>('');
+  const [newAppointmentDate, setNewAppointmentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedAppointmentForDetails, setSelectedAppointmentForDetails] = useState<Appointment | null>(null);
+  const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState<boolean>(false);
+
   // New Appointment Form State
   const [newClientName, setNewClientName] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
@@ -1236,7 +1245,7 @@ export const DashboardPage: React.FC = () => {
       stylist_name: matchedStylist?.name || newStylist || 'Especialista',
       service_id: matchedService?.id || '',
       service_name: matchedService?.name || newService || 'Servicio General',
-      date: new Date().toISOString().split('T')[0],
+      date: newAppointmentDate || agendaDate || new Date().toISOString().split('T')[0],
       time: newTime,
       duration_minutes: matchedService?.duration_minutes || 60,
       price_usd: Number(matchedService?.price_usd ?? matchedService?.price ?? 40),
@@ -1251,6 +1260,72 @@ export const DashboardPage: React.FC = () => {
     setIsNewAppointmentOpen(false);
     setNewClientName('');
     setNewClientPhone('');
+  };
+
+  const handleUpdateAppointmentStatus = async (aptId: string, newStatus: Appointment['status']) => {
+    try {
+      await api.updateAppointmentStatus(aptId, newStatus);
+      setAppointments(prev => prev.map(a => a.id === aptId ? { ...a, status: newStatus } : a));
+    } catch (err) {
+      console.error('Error updating appointment status:', err);
+    }
+  };
+
+  const handleDeleteAppointment = async (aptId: string) => {
+    if (!confirm('¿Estás seguro de cancelar y eliminar este turno de la agenda?')) return;
+    try {
+      await api.deleteAppointment(aptId);
+      setAppointments(prev => prev.filter(a => a.id !== aptId));
+      if (selectedAppointmentForDetails?.id === aptId) {
+        setIsAppointmentDetailsOpen(false);
+      }
+    } catch (err) {
+      console.error('Error deleting appointment:', err);
+    }
+  };
+
+  const handleShiftAgendaDate = (offsetDays: number) => {
+    const current = new Date(agendaDate + 'T12:00:00');
+    current.setDate(current.getDate() + offsetDays);
+    setAgendaDate(current.toISOString().split('T')[0]);
+  };
+
+  const handleChargeAppointmentInPos = (apt: Appointment) => {
+    const cleanPhoneDigits = (apt.client_phone || '').replace(/\D/g, '');
+    const existingClient = clients.find(c => 
+      (cleanPhoneDigits.length >= 7 && c.phone_whatsapp.replace(/\D/g, '').includes(cleanPhoneDigits.slice(-7))) ||
+      c.full_name.toLowerCase().trim() === apt.client_name.toLowerCase().trim()
+    ) || {
+      id: apt.client_id || `cli-apt-${Date.now()}`,
+      tenant_id: apt.tenant_id || getActiveTenantId(),
+      full_name: apt.client_name,
+      phone_whatsapp: apt.client_phone || '',
+      status: 'nuevo' as const,
+      total_spent_usd: 0,
+      visits_count: 1,
+      created_at: new Date().toISOString()
+    };
+
+    setPosInitialClient(existingClient);
+    setActiveTab('pos');
+  };
+
+  const handleSendWhatsAppNotification = (apt: Appointment, type: 'confirm' | 'reminder') => {
+    const rawPhone = (apt.client_phone || '').replace(/\D/g, '');
+    if (!rawPhone) {
+      alert('La clienta no tiene número de WhatsApp registrado.');
+      return;
+    }
+    const phoneWithCountry = rawPhone.length === 10 ? `57${rawPhone}` : rawPhone;
+    
+    let msg = '';
+    if (type === 'confirm') {
+      msg = `¡Hola ${apt.client_name}! ✨ Te confirmamos tu cita en *${salonName}* para *${apt.service_name}* con *${apt.stylist_name}* el día *${apt.date}* a las *${apt.time}*. ¡Te esperamos! 💖`;
+    } else {
+      msg = `¡Hola ${apt.client_name}! ⏰ Te recordamos tu cita en *${salonName}* hoy a las *${apt.time}* para *${apt.service_name}* con *${apt.stylist_name}*. Si necesitas ajustar tu horario, avísanos con tiempo. 😊`;
+    }
+
+    window.open(`https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   const handleSaveFormula = async (e: React.FormEvent) => {
@@ -2136,95 +2211,504 @@ export const DashboardPage: React.FC = () => {
         )}
 
         {/* =========================================================================
-            VIEW 2: AGENDA & CALENDARIO
+            VIEW 2: AGENDA & GESTIÓN INTEGRAL DE CITAS
             ========================================================================= */}
-        {activeTab === 'agenda' && (
-          <div className="space-y-6">
-            <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${
-              theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-            }`}>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('overview')}
-                  className={`p-1.5 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-all ${
-                    theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-[#F0F2F7] border-black/5 text-slate-800 hover:border-[#FF5A36]'
-                  }`}
-                  title="Volver a Overview"
-                >
-                  <ArrowDownLeft className="w-3.5 h-3.5 rotate-45" />
-                  <span>Volver</span>
-                </button>
-                <div>
-                  <h2 className="text-lg font-bold">Agenda & Columnas por Especialista</h2>
-                  <p className="text-xs text-slate-400">Control visual de turnos, tiempos y estados de atención.</p>
+        {activeTab === 'agenda' && (() => {
+          // Filtrado de citas para la fecha seleccionada
+          const dayAppointments = appointments.filter(a => {
+            const matchesDate = a.date === agendaDate;
+            const matchesStatus = agendaStatusFilter === 'all' || a.status === agendaStatusFilter;
+            const matchesSearch = !agendaSearchTerm.trim() || 
+              a.client_name.toLowerCase().includes(agendaSearchTerm.toLowerCase()) ||
+              a.service_name.toLowerCase().includes(agendaSearchTerm.toLowerCase()) ||
+              (a.client_phone && a.client_phone.includes(agendaSearchTerm));
+            return matchesDate && matchesStatus && matchesSearch;
+          });
+
+          // Cálculos métricos del día
+          const totalEstimatedRevenue = dayAppointments
+            .filter(a => a.status !== 'no_show')
+            .reduce((sum, a) => sum + (Number(a.price_usd) || 0), 0);
+          
+          const pendingCount = dayAppointments.filter(a => a.status === 'pendiente').length;
+          const confirmedCount = dayAppointments.filter(a => a.status === 'confirmada_wa').length;
+          const inServiceCount = dayAppointments.filter(a => a.status === 'en_atencion').length;
+          const chargedCount = dayAppointments.filter(a => a.status === 'cobrada' || a.status === 'completada').length;
+
+          // Formateo de fecha en español
+          const formattedDateHeader = (() => {
+            try {
+              const d = new Date(agendaDate + 'T12:00:00');
+              return d.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            } catch (e) {
+              return agendaDate;
+            }
+          })();
+
+          const isToday = agendaDate === new Date().toISOString().split('T')[0];
+
+          const statusConfig: Record<string, { label: string; bg: string; text: string; border: string }> = {
+            pendiente: { label: '⏳ Pendiente', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
+            confirmada_wa: { label: '✓ Confirmada WA', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/30' },
+            en_atencion: { label: '⚡ En Silla / Atención', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30' },
+            cobrada: { label: '💳 Cobrada en Caja', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+            completada: { label: '✨ Completada', bg: 'bg-emerald-500/10', text: 'text-emerald-300', border: 'border-emerald-500/20' },
+            no_show: { label: '✕ Cancelada / No Show', bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' }
+          };
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              
+              {/* Header Principal de la Agenda con Navegación de Fecha */}
+              <div className={`p-5 sm:p-6 rounded-3xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 shadow-xl ${
+                theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+              }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('overview')}
+                      className={`p-1.5 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-all ${
+                        theme === 'dark' ? 'bg-[#1A2133] border-white/10 text-white hover:border-[#FF5A36]' : 'bg-[#F0F2F7] border-black/5 text-slate-800 hover:border-[#FF5A36]'
+                      }`}
+                      title="Volver a Overview"
+                    >
+                      <ArrowDownLeft className="w-3.5 h-3.5 rotate-45" />
+                      <span>Volver</span>
+                    </button>
+                    <h2 className="text-lg sm:text-xl font-black tracking-tight text-white capitalize flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-[#FF5A36]" />
+                      <span>{formattedDateHeader}</span>
+                    </h2>
+                    {isToday && (
+                      <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30 animate-pulse">
+                        ● Hoy
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Control operativo de citas, especialistas asignados, confirmaciones por WhatsApp y paso a Caja POS.
+                  </p>
+                </div>
+
+                {/* Controles de Navegación de Fecha & Acciones */}
+                <div className="flex items-center gap-2.5 flex-wrap w-full lg:w-auto">
+                  
+                  {/* Selector rápido de fecha */}
+                  <div className="flex items-center rounded-2xl border border-white/10 bg-[#0E121B] p-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => handleShiftAgendaDate(-1)}
+                      className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
+                      title="Día anterior"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAgendaDate(new Date().toISOString().split('T')[0])}
+                      className={`px-3 py-1 font-bold rounded-xl transition-all ${
+                        isToday ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-300 hover:text-white'
+                      }`}
+                    >
+                      Hoy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleShiftAgendaDate(1)}
+                      className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
+                      title="Día siguiente"
+                    >
+                      ▶
+                    </button>
+                    <input
+                      type="date"
+                      value={agendaDate}
+                      onChange={(e) => setAgendaDate(e.target.value)}
+                      className="bg-transparent border-l border-white/10 pl-2 pr-1 text-xs text-slate-300 focus:outline-none focus:text-white cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Switcher de Vista: Columnas vs Lista */}
+                  <div className="flex rounded-2xl border border-white/10 bg-[#0E121B] p-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setAgendaViewMode('columns')}
+                      className={`px-3 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer ${
+                        agendaViewMode === 'columns'
+                          ? 'bg-white/15 text-white shadow-sm border border-white/10'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Columnas</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAgendaViewMode('list')}
+                      className={`px-3 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer ${
+                        agendaViewMode === 'list'
+                          ? 'bg-white/15 text-white shadow-sm border border-white/10'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Lista</span>
+                    </button>
+                  </div>
+
+                  {/* Botón Agendar Cita */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewAppointmentDate(agendaDate);
+                      setIsNewAppointmentOpen(true);
+                    }}
+                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black text-xs px-4 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/30 cursor-pointer transition-all hover:scale-[1.02] ml-auto lg:ml-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Agendar Turno</span>
+                  </button>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsNewAppointmentOpen(true)}
-                className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30"
-              >
-                <Plus className="w-4 h-4" /> Agendar Cita
-              </button>
-            </div>
+              {/* Barra de Métricas y Filtros del Día */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
+                  <span className="text-[11px] text-slate-400 block font-semibold">Total Turnos Hoy</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <strong className="text-xl font-black text-white">{dayAppointments.length}</strong>
+                    <span className="text-[10px] text-slate-500">agendadas</span>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stylists.map((sty) => {
-                const sApts = appointments.filter(a => a.stylist_name === sty.name || a.stylist_id === sty.id);
-                return (
-                  <div key={sty.id} className={`rounded-2xl p-5 border flex flex-col justify-between ${
-                    theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
-                  }`}>
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-black/5 dark:border-white/10 mb-4">
-                        <img src={sty.photo_url} alt={sty.name} className="w-12 h-12 rounded-full object-cover border-2 border-[#FF5A36]" />
-                        <div>
-                          <strong className="text-sm block">{sty.name}</strong>
-                          <span className="text-xs text-slate-400">{sty.specialty}</span>
-                          <span className="text-[11px] text-[#FF5A36] font-bold block mt-0.5">{sApts.length} turnos hoy</span>
-                        </div>
-                      </div>
+                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
+                  <span className="text-[11px] text-slate-400 block font-semibold">Facturación Estimada</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <strong className="text-xl font-black text-emerald-400">
+                      {formatCurrency(totalEstimatedRevenue, salonCurrency)}
+                    </strong>
+                  </div>
+                </div>
 
-                      <div className="space-y-3">
-                        {sApts.map((apt) => (
-                          <div key={apt.id} className={`p-3.5 rounded-xl border space-y-2 ${
-                            theme === 'dark' ? 'bg-[#1A2133] border-white/10' : 'bg-[#F9FAFC] border-black/5'
-                          }`}>
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="font-mono font-bold text-[#FF5A36]">{apt.time}</span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-                                {apt.status}
+                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
+                  <span className="text-[11px] text-slate-400 block font-semibold">En Silla / Atendiendo</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <strong className="text-xl font-black text-purple-400">{inServiceCount}</strong>
+                    <span className="text-[10px] text-purple-300/80">en proceso</span>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'}`}>
+                  <span className="text-[11px] text-slate-400 block font-semibold">Pendientes / Por Confirmar</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <strong className="text-xl font-black text-amber-400">{pendingCount}</strong>
+                    <span className="text-[10px] text-amber-300/80">turnos</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtros de Estado & Buscador */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {[
+                    { key: 'all', label: `Todos (${appointments.filter(a => a.date === agendaDate).length})` },
+                    { key: 'pendiente', label: `⏳ Pendientes (${appointments.filter(a => a.date === agendaDate && a.status === 'pendiente').length})` },
+                    { key: 'confirmada_wa', label: `✓ Confirmadas (${appointments.filter(a => a.date === agendaDate && a.status === 'confirmada_wa').length})` },
+                    { key: 'en_atencion', label: `⚡ En Silla (${appointments.filter(a => a.date === agendaDate && a.status === 'en_atencion').length})` },
+                    { key: 'cobrada', label: `💳 Cobradas (${appointments.filter(a => a.date === agendaDate && (a.status === 'cobrada' || a.status === 'completada')).length})` }
+                  ].map((filterItem) => (
+                    <button
+                      key={filterItem.key}
+                      type="button"
+                      onClick={() => setAgendaStatusFilter(filterItem.key as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                        agendaStatusFilter === filterItem.key
+                          ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                          : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5'
+                      }`}
+                    >
+                      {filterItem.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    value={agendaSearchTerm}
+                    onChange={(e) => setAgendaSearchTerm(e.target.value)}
+                    placeholder="Buscar clienta o servicio..."
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-2xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                  />
+                </div>
+              </div>
+
+              {/* =========================================================================
+                  MODO DE VISTA 1: COLUMNAS POR ESPECIALISTA
+                  ========================================================================= */}
+              {agendaViewMode === 'columns' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {stylists
+                    .filter(s => s.attends_clients !== false)
+                    .map((sty) => {
+                      const styApts = dayAppointments.filter(a => a.stylist_name === sty.name || a.stylist_id === sty.id);
+                      return (
+                        <div
+                          key={sty.id}
+                          className={`rounded-3xl p-5 border flex flex-col justify-between shadow-lg transition-all ${
+                            theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+                          }`}
+                        >
+                          <div>
+                            {/* Cabecera del Especialista */}
+                            <div className="flex items-center justify-between pb-3.5 border-b border-white/10 mb-4">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <img
+                                  src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'}
+                                  alt={sty.name}
+                                  className="w-12 h-12 rounded-2xl object-cover border-2 border-[#FF5A36] shrink-0"
+                                />
+                                <div className="min-w-0">
+                                  <strong className="text-sm font-extrabold text-white block truncate">{sty.name}</strong>
+                                  <span className="text-[11px] text-slate-400 block truncate">{sty.specialty}</span>
+                                </div>
+                              </div>
+                              <span className="text-xs font-black px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[#FF5A36] shrink-0">
+                                {styApts.length} cita(s)
                               </span>
                             </div>
-                            <div>
-                              <strong className="text-xs block">{apt.client_name}</strong>
-                              <span className="text-[11px] text-slate-400">{apt.service_name}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
 
-                    <div className="pt-4 border-t border-black/5 dark:border-white/10 mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNewStylist(sty.name);
-                          setIsNewAppointmentOpen(true);
-                        }}
-                        className="text-xs text-[#FF5A36] font-bold hover:underline"
-                      >
-                        + Agregar cita a {sty.name.split(' ')[0]}
-                      </button>
+                            {/* Lista de Turnos del Especialista */}
+                            {styApts.length === 0 ? (
+                              <div className="text-center py-10 px-3 bg-white/[0.02] border border-white/5 rounded-2xl space-y-2">
+                                <Clock className="w-8 h-8 text-slate-600 mx-auto" />
+                                <span className="text-xs font-bold text-slate-400 block">Sin citas para este día</span>
+                                <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                                  El especialista tiene agenda libre para recibir citas.
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                {styApts.map((apt) => {
+                                  const currentStatus = statusConfig[apt.status] || statusConfig.pendiente;
+                                  return (
+                                    <div
+                                      key={apt.id}
+                                      className="p-4 rounded-2xl border border-white/10 bg-[#0E121B] space-y-3 hover:border-white/20 transition-all shadow-sm"
+                                    >
+                                      {/* Hora & Selector de Estado */}
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5 font-mono font-black text-sm text-[#FF5A36]">
+                                          <Clock className="w-3.5 h-3.5" />
+                                          <span>{apt.time}</span>
+                                        </div>
+
+                                        {/* Dropdown de Estado Interactivo */}
+                                        <select
+                                          value={apt.status}
+                                          onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
+                                          className={`text-[10px] font-extrabold px-2 py-1 rounded-full border focus:outline-none cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                                        >
+                                          <option value="pendiente">⏳ Pendiente</option>
+                                          <option value="confirmada_wa">✓ Confirmada WA</option>
+                                          <option value="en_atencion">⚡ En Silla</option>
+                                          <option value="cobrada">💳 Cobrada (POS)</option>
+                                          <option value="completada">✨ Completada</option>
+                                          <option value="no_show">✕ Cancelada / No Show</option>
+                                        </select>
+                                      </div>
+
+                                      {/* Clienta & Servicio */}
+                                      <div className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                          <strong className="text-sm font-bold text-white truncate">{apt.client_name}</strong>
+                                          <span className="text-xs font-black text-emerald-400">
+                                            {formatCurrency(apt.price_usd ?? apt.price_cop, salonCurrency)}
+                                          </span>
+                                        </div>
+                                        <p className="text-xs text-slate-300 font-medium leading-snug">
+                                          {apt.service_name}
+                                        </p>
+                                        {apt.client_phone && (
+                                          <span className="text-[11px] text-slate-400 block font-mono">
+                                            📞 {apt.client_phone}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Acciones Rápidas */}
+                                      <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-2 flex-wrap">
+                                        <div className="flex items-center gap-1.5">
+                                          {apt.client_phone && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleSendWhatsAppNotification(apt, 'confirm')}
+                                              className="p-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                              title="Enviar WhatsApp de confirmación"
+                                            >
+                                              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                              <span>WhatsApp</span>
+                                            </button>
+                                          )}
+                                          <button
+                                            type="button"
+                                            onClick={() => handleChargeAppointmentInPos(apt)}
+                                            className="p-1.5 px-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white text-[11px] font-black flex items-center gap-1 transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+                                            title="Pasar a Caja POS para cobrar"
+                                          >
+                                            <CreditCard className="w-3.5 h-3.5" />
+                                            <span>Cobrar</span>
+                                          </button>
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteAppointment(apt.id)}
+                                          className="text-slate-500 hover:text-rose-400 p-1.5 rounded-xl hover:bg-rose-500/10 transition-colors"
+                                          title="Eliminar o cancelar turno"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Pie de Columna: Agregar Cita Directa al Estilista */}
+                          <div className="pt-4 border-t border-white/10 mt-4 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewStylist(sty.name);
+                                setNewAppointmentDate(agendaDate);
+                                setIsNewAppointmentOpen(true);
+                              }}
+                              className="text-xs text-[#FF5A36] font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Agregar cita a {sty.name.split(' ')[0]}</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* =========================================================================
+                  MODO DE VISTA 2: LISTA / CRONOGRAMA ORDENADO
+                  ========================================================================= */}
+              {agendaViewMode === 'list' && (
+                <div className={`rounded-3xl border overflow-hidden shadow-xl ${
+                  theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5'
+                }`}>
+                  {dayAppointments.length === 0 ? (
+                    <div className="p-12 text-center space-y-3">
+                      <Calendar className="w-12 h-12 text-slate-600 mx-auto" />
+                      <h3 className="text-base font-bold text-white">No hay citas programadas para este filtro</h3>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        Cambia la fecha o haz clic en "+ Agendar Turno" para registrar una cita.
+                      </p>
                     </div>
-                  </div>
-                );
-              })}
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-white/5 text-slate-400 uppercase text-[10px] tracking-wider border-b border-white/10">
+                          <tr>
+                            <th className="p-4">Hora</th>
+                            <th className="p-4">Clienta</th>
+                            <th className="p-4">Servicio</th>
+                            <th className="p-4">Especialista</th>
+                            <th className="p-4">Estado</th>
+                            <th className="p-4 text-right">Total</th>
+                            <th className="p-4 text-center">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {dayAppointments.map((apt) => {
+                            const currentStatus = statusConfig[apt.status] || statusConfig.pendiente;
+                            return (
+                              <tr key={apt.id} className="hover:bg-white/[0.02] transition-colors">
+                                <td className="p-4 font-mono font-bold text-[#FF5A36] whitespace-nowrap">
+                                  {apt.time}
+                                </td>
+                                <td className="p-4">
+                                  <strong className="text-white block font-bold">{apt.client_name}</strong>
+                                  {apt.client_phone && <span className="text-[11px] text-slate-400 font-mono">{apt.client_phone}</span>}
+                                </td>
+                                <td className="p-4 text-slate-300">
+                                  <span className="font-semibold block">{apt.service_name}</span>
+                                  <span className="text-[10px] text-slate-500">{apt.duration_minutes || 60} min</span>
+                                </td>
+                                <td className="p-4 text-slate-300 font-medium">
+                                  {apt.stylist_name}
+                                </td>
+                                <td className="p-4">
+                                  <select
+                                    value={apt.status}
+                                    onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
+                                    className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border focus:outline-none cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                                  >
+                                    <option value="pendiente">⏳ Pendiente</option>
+                                    <option value="confirmada_wa">✓ Confirmada WA</option>
+                                    <option value="en_atencion">⚡ En Silla</option>
+                                    <option value="cobrada">💳 Cobrada</option>
+                                    <option value="completada">✨ Completada</option>
+                                    <option value="no_show">✕ No Show</option>
+                                  </select>
+                                </td>
+                                <td className="p-4 text-right font-mono font-black text-emerald-400 whitespace-nowrap">
+                                  {formatCurrency(apt.price_usd ?? apt.price_cop, salonCurrency)}
+                                </td>
+                                <td className="p-4 text-center whitespace-nowrap">
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    {apt.client_phone && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSendWhatsAppNotification(apt, 'confirm')}
+                                        className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition-colors"
+                                        title="WhatsApp"
+                                      >
+                                        <MessageCircle className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleChargeAppointmentInPos(apt)}
+                                      className="p-1.5 px-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-[11px] flex items-center gap-1"
+                                      title="Cobrar en Caja"
+                                    >
+                                      <CreditCard className="w-3.5 h-3.5" />
+                                      <span>Cobrar</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteAppointment(apt.id)}
+                                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                      title="Eliminar cita"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* =========================================================================
             VIEW 3: CRM COLORIMETRÍA 360°
@@ -4255,6 +4739,19 @@ export const DashboardPage: React.FC = () => {
                     <option key={s.id} value={s.name}>{s.name} ({formatCurrency(s.price_usd ?? s.price ?? s.price_cop, salonCurrency)})</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Fecha del Turno *</label>
+                <input
+                  type="date"
+                  value={newAppointmentDate}
+                  onChange={(e) => setNewAppointmentDate(e.target.value)}
+                  className={`w-full border rounded-lg p-2.5 focus:outline-none focus:border-[#FF5A36] ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  }`}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
