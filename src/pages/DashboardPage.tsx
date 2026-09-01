@@ -7297,7 +7297,7 @@ export const DashboardPage: React.FC = () => {
                     <strong className="text-slate-300 font-bold text-xs block flex items-center gap-1.5">
                       🕒 4. Horario de Atención (Días y Horas)
                     </strong>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap">
                       <button
                         type="button"
                         onClick={() => setWebsiteForm({ ...websiteForm, business_hours_text: 'Lunes a Sábado: 8:00 AM - 7:00 PM' })}
@@ -7318,6 +7318,14 @@ export const DashboardPage: React.FC = () => {
                         className="text-[10px] bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded text-emerald-400 font-bold cursor-pointer transition-colors"
                       >
                         Fin de semana
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWebsiteForm({ ...websiteForm, business_hours_text: 'Lun a Sáb: 8:00 AM - 7:00 PM | Dom: 10:00 AM - 3:00 PM' })}
+                        className="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-400 font-bold cursor-pointer transition-colors border border-emerald-500/20"
+                        title="Jornada completa en semana y horario especial reducido los domingos"
+                      >
+                        ✨ Dom. Especial
                       </button>
                     </div>
                   </div>

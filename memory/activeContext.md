@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-45. **Icono Oficial de WhatsApp de Alta Fidelidad & Registro en Habilidad ([`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/landing-html-injector/SKILL.md) & [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+    - **Vector SVG Oficial WhatsApp**: Sustituido el icono genérico por el glifo vectorial oficial de WhatsApp (auricular blanco relleno dentro de la burbuja característica).
+    - **Estética Premium con Aura de Pulso**: Gradiente esmeralda (`#2fe577` a `#128C7E`), micro-borde blanco y aura translúcida pulsante suave (`animate-ping`) para máxima atracción visual sin ser intrusivo.
+    - **Regla 7 Registrada en Habilidad (`landing-html-injector`)**: Guardado el protocolo oficial para que todos los futuros sitios web HTML se procesen automáticamente bajo este estándar.
+
 -44. **Solución Raíz para Botón Flotante de WhatsApp en Sitios Públicos ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx) & [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Capa Flotante Nativa React**: El botón de WhatsApp ahora se renderiza en la capa superior del DOM React (`z-[99999]`), flotando directamente sobre el viewport de la pantalla del celular sin depender del scroll ni del tamaño interno del `iframe`.
     - **Visibilidad Permanente (0% al 100% del Scroll)**: El botón verde oficial `#25D366` está siempre visible en la esquina inferior derecha desde el primer segundo que la clienta abre la página hasta el final de la navegación.
