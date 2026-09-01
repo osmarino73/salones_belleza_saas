@@ -16,6 +16,9 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-46. **Preset de Horario "✨ Dom. Especial" en Configuración ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Botón Rápido de 1 Clic**: Añadido el preset `✨ Dom. Especial` (`Lun a Sáb: 8:00 AM - 7:00 PM | Dom: 10:00 AM - 3:00 PM`) en la sección de Horarios de Atención del panel de control para activar y sincronizar fácilmente la jornada dominical reducida en el sitio web y en el motor de agendamiento.
+
 -45. **Icono Oficial de WhatsApp de Alta Fidelidad & Registro en Habilidad ([`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/landing-html-injector/SKILL.md) & [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
     - **Vector SVG Oficial WhatsApp**: Sustituido el icono genérico por el glifo vectorial oficial de WhatsApp (auricular blanco relleno dentro de la burbuja característica).
     - **Estética Premium con Aura de Pulso**: Gradiente esmeralda (`#2fe577` a `#128C7E`), micro-borde blanco y aura translúcida pulsante suave (`animate-ping`) para máxima atracción visual sin ser intrusivo.

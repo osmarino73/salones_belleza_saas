@@ -39,6 +39,7 @@ import {
   Save,
   Loader2,
   Trash2,
+  Globe,
   HelpCircle,
   MapPin,
   Shield,
@@ -208,6 +209,7 @@ export const DashboardPage: React.FC = () => {
   const [isWebsiteCustomizerOpen, setIsWebsiteCustomizerOpen] = useState(false);
   const [showWebsiteGuide, setShowWebsiteGuide] = useState(false);
   const [isSavingWebsite, setIsSavingWebsite] = useState(false);
+  const [isConfirmPublishWebsiteModalOpen, setIsConfirmPublishWebsiteModalOpen] = useState(false);
   const [websiteForm, setWebsiteForm] = useState<{
     hero_image_url: string;
     primary_color: string;
@@ -1326,6 +1328,91 @@ export const DashboardPage: React.FC = () => {
     }
 
     window.open(`https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  const handleExecutePublishWebsite = async () => {
+    if (!activeTenantObj) return;
+    setIsSavingWebsite(true);
+    try {
+      const updatedTenant: Tenant = {
+        ...activeTenantObj,
+        hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
+        primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
+        show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
+        show_first_visit_discount: websiteForm.show_first_visit_discount !== undefined ? websiteForm.show_first_visit_discount : false,
+        first_visit_discount_pct: Number(websiteForm.first_visit_discount_pct || 15),
+        first_visit_discount_title: websiteForm.first_visit_discount_title || undefined,
+        logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
+        hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
+        slogan: websiteForm.slogan || activeTenantObj.slogan,
+        title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
+        navbar_tagline: websiteForm.navbar_tagline || activeTenantObj.navbar_tagline,
+        subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
+        about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
+        about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
+        about_eyebrow: websiteForm.about_eyebrow || activeTenantObj.about_eyebrow,
+        about_title: websiteForm.about_title || activeTenantObj.about_title,
+        about_title_accent: websiteForm.about_title_accent || activeTenantObj.about_title_accent,
+        about_description: websiteForm.about_description || activeTenantObj.about_description,
+        about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
+        about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
+        about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
+        about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
+        business_hours: { summary: websiteForm.business_hours_text || activeTenantObj.business_hours?.summary || 'Lunes a Sábado: 8:00 AM - 7:00 PM' },
+        show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
+      };
+      setActiveTenantObj(updatedTenant);
+      localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+
+      await api.updateTenant(updatedTenant);
+      const pSites = await api.getProspectSites();
+      const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
+      if (matched) {
+        const updatedSite: any = {
+          hero_image_url: updatedTenant.hero_image_url,
+          primary_color: updatedTenant.primary_color,
+          business_data: {
+            ...matched.business_data,
+            hero_image_url: updatedTenant.hero_image_url,
+            primary_color: updatedTenant.primary_color,
+            logo_icon: updatedTenant.logo_icon,
+            hero_eyebrow: updatedTenant.hero_eyebrow,
+            slogan: updatedTenant.slogan,
+            title_accent: updatedTenant.title_accent,
+            navbar_tagline: updatedTenant.navbar_tagline,
+            subtitle: updatedTenant.subtitle,
+            business_hours: updatedTenant.business_hours,
+            horario_atencion: websiteForm.business_hours_text,
+            about_image_url: updatedTenant.about_image_url,
+            about_badge_text: updatedTenant.about_badge_text,
+            about_eyebrow: updatedTenant.about_eyebrow,
+            about_title: updatedTenant.about_title,
+            about_title_accent: updatedTenant.about_title_accent,
+            about_description: updatedTenant.about_description,
+            about_years_exp: updatedTenant.about_years_exp,
+            about_clients_count: updatedTenant.about_clients_count,
+            about_stat3_text: updatedTenant.about_stat3_text,
+            about_rating_text: updatedTenant.about_rating_text,
+            show_about_section: updatedTenant.show_about_section,
+            show_team_section: updatedTenant.show_team_section,
+            show_first_visit_discount: updatedTenant.show_first_visit_discount,
+            first_visit_discount_pct: updatedTenant.first_visit_discount_pct,
+            first_visit_discount_title: updatedTenant.first_visit_discount_title
+          }
+        };
+        await api.updateProspectSite(matched.id, updatedSite);
+      }
+      setIsConfirmPublishWebsiteModalOpen(false);
+      setIsWebsiteCustomizerOpen(false);
+      alert('✨ ¡Tu página web ha sido actualizada y publicada con éxito en vivo!');
+    } catch (err) {
+      console.warn('Error saving website config in Supabase:', err);
+      setIsConfirmPublishWebsiteModalOpen(false);
+      setIsWebsiteCustomizerOpen(false);
+      alert('⚠️ Hubo un detalle al guardar en la nube, pero tus cambios quedaron almacenados localmente.');
+    } finally {
+      setIsSavingWebsite(false);
+    }
   };
 
   const handleSaveFormula = async (e: React.FormEvent) => {
@@ -6974,88 +7061,9 @@ export const DashboardPage: React.FC = () => {
             {/* Contenido en 2 Columnas (Formulario + Vista Previa) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Columna Izquierda: Formulario de Configuración (7 cols) */}
-              <form id="website-customizer-form" onSubmit={async (e) => {
+              <form id="website-customizer-form" onSubmit={(e) => {
                 e.preventDefault();
-                if (!activeTenantObj) return;
-                setIsSavingWebsite(true);
-                try {
-                  const updatedTenant: Tenant = {
-                    ...activeTenantObj,
-                    hero_image_url: websiteForm.hero_image_url || activeTenantObj.hero_image_url,
-                    primary_color: websiteForm.primary_color || activeTenantObj.primary_color,
-                    show_team_section: websiteForm.show_team_section !== undefined ? websiteForm.show_team_section : true,
-                    show_first_visit_discount: websiteForm.show_first_visit_discount !== undefined ? websiteForm.show_first_visit_discount : false,
-                    first_visit_discount_pct: Number(websiteForm.first_visit_discount_pct || 15),
-                    first_visit_discount_title: websiteForm.first_visit_discount_title || undefined,
-                    logo_icon: websiteForm.logo_icon || activeTenantObj.logo_icon,
-                    hero_eyebrow: websiteForm.hero_eyebrow || activeTenantObj.hero_eyebrow,
-                    slogan: websiteForm.slogan || activeTenantObj.slogan,
-                    title_accent: websiteForm.title_accent || activeTenantObj.title_accent,
-                    navbar_tagline: websiteForm.navbar_tagline || activeTenantObj.navbar_tagline,
-                    subtitle: websiteForm.subtitle || activeTenantObj.subtitle,
-                    about_image_url: websiteForm.about_image_url || activeTenantObj.about_image_url,
-                    about_badge_text: websiteForm.about_badge_text || activeTenantObj.about_badge_text,
-                    about_eyebrow: websiteForm.about_eyebrow || activeTenantObj.about_eyebrow,
-                    about_title: websiteForm.about_title || activeTenantObj.about_title,
-                    about_title_accent: websiteForm.about_title_accent || activeTenantObj.about_title_accent,
-                    about_description: websiteForm.about_description || activeTenantObj.about_description,
-                    about_years_exp: websiteForm.about_years_exp || activeTenantObj.about_years_exp,
-                    about_clients_count: websiteForm.about_clients_count || activeTenantObj.about_clients_count,
-                    about_stat3_text: websiteForm.about_stat3_text || activeTenantObj.about_stat3_text,
-                    about_rating_text: websiteForm.about_rating_text || activeTenantObj.about_rating_text,
-                    business_hours: { summary: websiteForm.business_hours_text || activeTenantObj.business_hours?.summary || 'Lunes a Sábado: 8:00 AM - 7:00 PM' },
-                    show_about_section: websiteForm.show_about_section !== undefined ? websiteForm.show_about_section : true
-                  };
-                  setActiveTenantObj(updatedTenant);
-                  localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
-
-                  await api.updateTenant(updatedTenant);
-                  const pSites = await api.getProspectSites();
-                  const matched = pSites.find(p => p.slug === updatedTenant.slug || p.claimed_tenant_id === updatedTenant.id);
-                  if (matched) {
-                    const updatedSite: any = {
-                      hero_image_url: updatedTenant.hero_image_url,
-                      primary_color: updatedTenant.primary_color,
-                      business_data: {
-                        ...matched.business_data,
-                        hero_image_url: updatedTenant.hero_image_url,
-                        primary_color: updatedTenant.primary_color,
-                        logo_icon: updatedTenant.logo_icon,
-                        hero_eyebrow: updatedTenant.hero_eyebrow,
-                        slogan: updatedTenant.slogan,
-                        title_accent: updatedTenant.title_accent,
-                        navbar_tagline: updatedTenant.navbar_tagline,
-                        subtitle: updatedTenant.subtitle,
-                        business_hours: updatedTenant.business_hours,
-                        horario_atencion: websiteForm.business_hours_text,
-                        about_image_url: updatedTenant.about_image_url,
-                        about_badge_text: updatedTenant.about_badge_text,
-                        about_eyebrow: updatedTenant.about_eyebrow,
-                        about_title: updatedTenant.about_title,
-                        about_title_accent: updatedTenant.about_title_accent,
-                        about_description: updatedTenant.about_description,
-                        about_years_exp: updatedTenant.about_years_exp,
-                        about_clients_count: updatedTenant.about_clients_count,
-                        about_stat3_text: updatedTenant.about_stat3_text,
-                        about_rating_text: updatedTenant.about_rating_text,
-                        show_about_section: updatedTenant.show_about_section,
-                        show_team_section: updatedTenant.show_team_section,
-                        show_first_visit_discount: updatedTenant.show_first_visit_discount,
-                        first_visit_discount_pct: updatedTenant.first_visit_discount_pct,
-                        first_visit_discount_title: updatedTenant.first_visit_discount_title
-                      }
-                    };
-                    await api.updateProspectSite(matched.id, updatedSite);
-                  }
-                  setIsWebsiteCustomizerOpen(false);
-                  alert('✨ ¡Tu página web ha sido actualizada y publicada con éxito!');
-                } catch (err) {
-                  console.warn('Error saving website config in Supabase:', err);
-                  alert('⚠️ Hubo un detalle al guardar en la nube, pero tus cambios quedaron almacenados localmente.');
-                  setIsWebsiteCustomizerOpen(false);
-                } finally {
-                  setIsSavingWebsite(false);
-                }
+                setIsConfirmPublishWebsiteModalOpen(true);
               }} className="lg:col-span-7 space-y-4 text-xs">
 
                 {/* 1. Selector de Fotografía de Portada (Hero) */}
@@ -7465,6 +7473,85 @@ export const DashboardPage: React.FC = () => {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFIRMACIÓN DE PUBLICACIÓN DE PÁGINA WEB */}
+      {isConfirmPublishWebsiteModalOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className={`border rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 ${
+            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/30 text-slate-900'
+          }`}>
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF5A36] to-pink-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-[#FF5A36]/30">
+                <Globe className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-black tracking-tight">¿Publicar cambios en tu Web Oficial?</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+                Tus clientas y Google verán estos cambios actualizados inmediatamente en tu página pública y en el agendador online.
+              </p>
+            </div>
+
+            {/* Tarjeta Resumen de Cambios */}
+            <div className={`p-4 rounded-2xl border space-y-2 text-xs ${
+              theme === 'dark' ? 'bg-[#0E121B] border-white/5' : 'bg-[#F9FAFC] border-black/5'
+            }`}>
+              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
+                <span className="text-slate-400 font-semibold">Salón:</span>
+                <strong className="text-slate-800 dark:text-white font-bold">{activeTenantObj?.name || salonName}</strong>
+              </div>
+              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
+                <span className="text-slate-400 font-semibold">Horario Público:</span>
+                <strong className="text-emerald-500 font-bold truncate max-w-[200px]" title={websiteForm.business_hours_text}>
+                  {websiteForm.business_hours_text || 'Lunes a Sábado: 8:00 AM - 7:00 PM'}
+                </strong>
+              </div>
+              <div className="flex justify-between items-center pb-1.5 border-b border-black/5 dark:border-white/5">
+                <span className="text-slate-400 font-semibold">Equipo de Especialistas:</span>
+                <strong className={websiteForm.show_team_section !== false ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400'}>
+                  {websiteForm.show_team_section !== false ? '✓ Visible en la web' : 'Oculto'}
+                </strong>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-semibold">Descuento 1ª Visita:</span>
+                <strong className={websiteForm.show_first_visit_discount ? 'text-[#FF5A36] font-bold' : 'text-slate-400'}>
+                  {websiteForm.show_first_visit_discount ? `✓ ${websiteForm.first_visit_discount_pct}% Activo` : 'Inactivo'}
+                </strong>
+              </div>
+            </div>
+
+            {/* Botones de Confirmación */}
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isSavingWebsite}
+                onClick={() => setIsConfirmPublishWebsiteModalOpen(false)}
+                className={`flex-1 py-2.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
+                  theme === 'dark' ? 'border-white/10 hover:bg-white/5 text-slate-300' : 'border-black/10 hover:bg-black/5 text-slate-700'
+                }`}
+              >
+                Seguir Editando
+              </button>
+              <button
+                type="button"
+                disabled={isSavingWebsite}
+                onClick={handleExecutePublishWebsite}
+                className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:from-[#E54E07] hover:to-pink-600 text-white shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 disabled:opacity-70"
+              >
+                {isSavingWebsite ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Publicando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Sí, Publicar en Vivo</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
