@@ -1931,21 +1931,38 @@ export const DashboardPage: React.FC = () => {
               {/* Card 2: 2x2 Operations Metric Grid (Center) */}
               <div className="lg:col-span-5 grid grid-cols-2 gap-3.5">
                 
-                {/* 1. Solid Coral Card (Citas de Hoy) */}
-                <div className="bg-gradient-to-br from-[#FF6947] to-[#FF4D26] text-white rounded-2xl p-5 flex flex-col justify-between shadow-lg shadow-[#FF5A36]/25">
-                  <div className="flex justify-between items-center text-xs font-semibold opacity-90">
-                    <span>Citas Agendadas Hoy</span>
-                    <Calendar className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-extrabold tracking-tight my-1">
-                      {appointments.length} {appointments.length === 1 ? 'Cita' : 'Citas'}
+                {/* 1. Solid Coral Card (Citas Pendientes de Hoy) */}
+                {(() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const todayPendingApts = appointments.filter(a => 
+                    a.date === todayStr && (a.status === 'pendiente' || a.status === 'confirmada_wa' || a.status === 'en_atencion')
+                  );
+                  const count = todayPendingApts.length;
+
+                  return (
+                    <div 
+                      onClick={() => setActiveTab('agenda')}
+                      className="bg-gradient-to-br from-[#FF6947] to-[#FF4D26] text-white rounded-2xl p-5 flex flex-col justify-between shadow-lg shadow-[#FF5A36]/25 cursor-pointer hover:scale-[1.02] transition-all group"
+                      title="Ver citas en la Agenda"
+                    >
+                      <div className="flex justify-between items-center text-xs font-semibold opacity-90">
+                        <span>Citas Pendientes Hoy</span>
+                        <div className="p-1 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
+                          <Calendar className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-3xl font-black tracking-tight my-1">
+                          {count} {count === 1 ? 'Turno' : 'Turnos'}
+                        </div>
+                        <div className="text-[11px] opacity-90 font-medium flex items-center justify-between">
+                          <span>{count > 0 ? 'Por atender este día' : '✨ Todo al día para hoy'}</span>
+                          <span className="font-bold underline text-[10px] group-hover:translate-x-0.5 transition-transform">Ver →</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-[11px] opacity-90 font-medium">
-                      {appointments.length > 0 ? 'Recordatorios automáticos activos' : 'Enlace web 24/7 listo'}
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* 2. Mini Metric (0 Plantones) */}
                 <div className={`rounded-2xl p-5 border flex flex-col justify-between ${

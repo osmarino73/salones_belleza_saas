@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-40. **Optimización de Tarjeta de Citas en Overview ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Filtro Exclusivo de Citas Pendientes de Hoy**: La tarjeta principal del Overview ahora filtra automáticamente solo los turnos del día en curso (`isToday`) que están pendientes o activos (`pendiente`, `confirmada_wa`, `en_atencion`).
+    - **Botón Directo de Acceso a Agenda**: Botón destacado *"Ver Agenda Completa →"* en el encabezado y pie de tarjeta para saltar inmediatamente a la gestión general por fechas y especialistas.
+    - **Empty State Inteligente**: Si no quedan turnos pendientes hoy, muestra mensaje positivo de confirmación (*"¡No hay citas pendientes para hoy!"*) con botón de exploración.
+
 -39. **Centro de Gestión Integral de Citas y Agenda Diaria ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx) & [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
     - **Calibración Visual Bimodal (Light / Dark Mode)**: Soporte nativo de alto contraste en modo claro (textos en `slate-900`/`slate-700`, fondos suaves `slate-50`/`slate-100`, bordes delimitados y métricas nítidas) y modo oscuro (glassmorphism con acento neón).
     - **Resolución Inteligente de Nombres de Clientas**: Si la cita viene solo con número telefónico, se resuelve automáticamente su nombre completo desde el CRM de `clients`.
