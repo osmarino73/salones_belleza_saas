@@ -16,6 +16,18 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-36. **Rediseño Premium del Encabezado de Reservas ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Píldora de Identidad con Glassmorphism**: Se transformó el nombre del negocio en una píldora interactiva con punto brillante de acento `#FF5A36`, borde sutil y tipografía refinada que conecta con el sitio web del salón.
+    - **Tipografía y Subtítulo de Alta Gama**: Título principal con degradado limpio y subtítulo orientativo (*"Selecciona tu tratamiento, especialista y horario en menos de 1 minuto."*).
+
+-35. **Reestructuración de Tarjetas de Servicio para Nombre Completo ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Causa Raíz**: La clase `truncate` y la columna fija lateral de precio forzaban el corte prematuro del título del servicio con puntos suspensivos en móviles.
+    - **Corrección**: Se reestructuró la tarjeta con `break-words leading-snug` en el encabezado `<h3>` y un diseño responsivo inteligente que en móviles alinea el precio y el botón de check sin restarle ancho al texto del servicio, garantizando que nombres extensos (ej. *"Corte en Seco & Definición Rizo a Rizo"*, *"Iluminación Pintura & Balayage Curly"*) se lean completos y nítidos.
+
+-34. **Reconocimiento y Autocompletado en Tiempo Real por WhatsApp ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts) & [`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
+    - **Búsqueda Reactiva en Base de Datos**: Se implementó `findClientByPhone` que busca coincidencias por los últimos 7-10 dígitos en la tabla `clients` de Supabase del salón.
+    - **Autollenado Inteligente**: Al ingresar el celular en el Paso 4 de agendamiento, el sistema reconoce si la clienta ya visitó el salón, rellenando automáticamente su Nombre y Correo, y mostrando el saludo personalizado: *"👋 ¡Hola de nuevo, [Nombre]! Reconocimos tu número y autocompletamos tus datos para que reserves en 1 segundo."*
+
 -33. **Filtro de Categorías de Servicio y Selección Libre en Agendador ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx))**:
     - **Eliminación de Preselección Forzada**: Si la clienta no ingresa con un servicio específico en la URL (`?srv=...`), la pantalla inicia con 0 seleccionados y permite marcar/desmarcar libremente sin bloqueos.
     - **Selector Dinámico de Categorías de Servicio**: Se agregó una barra táctil horizontal (`✨ Todos`, `Corte`, `Color`, `Tratamiento`, etc.) que extrae las categorías reales del salón y filtra la lista en tiempo real para evitar scrolls gigantes.

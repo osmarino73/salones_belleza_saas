@@ -26,7 +26,7 @@ import {
   Moon
 } from 'lucide-react';
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
-import { Service, Stylist } from '../types';
+import { Service, Stylist, Client } from '../types';
 
 interface DayScheduleResult {
   isOpen: boolean;
@@ -154,6 +154,8 @@ export const BookingPage: React.FC = () => {
   const [couponMessage, setCouponMessage] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+  const [recognizedClient, setRecognizedClient] = useState<Client | null>(null);
+  const [isSearchingClient, setIsSearchingClient] = useState<boolean>(false);
 
   // Lista de próximos 14 días para selección visual rápida con estado de apertura
   const next14Days = useMemo(() => {
@@ -180,6 +182,34 @@ export const BookingPage: React.FC = () => {
     if (savedPhone && !phone10Digits) setPhone10Digits(savedPhone);
     if (savedEmail && !clientEmail) setClientEmail(savedEmail);
   }, []);
+
+  // Búsqueda reactiva de cliente en tiempo real por número de celular / WhatsApp
+  useEffect(() => {
+    const cleanDigits = phone10Digits.replace(/\D/g, '');
+    if (cleanDigits.length >= 7) {
+      setIsSearchingClient(true);
+      const timer = setTimeout(async () => {
+        const targetTid = selectedServices[0]?.tenant_id || getActiveTenantId();
+        const found = await api.findClientByPhone(cleanDigits, targetTid);
+        if (found) {
+          setRecognizedClient(found);
+          if (found.full_name && (!clientName || clientName.trim() === '')) {
+            setClientName(found.full_name);
+          }
+          if (found.email && (!clientEmail || clientEmail.trim() === '')) {
+            setClientEmail(found.email);
+          }
+        } else {
+          setRecognizedClient(null);
+        }
+        setIsSearchingClient(false);
+      }, 350);
+      return () => clearTimeout(timer);
+    } else {
+      setRecognizedClient(null);
+      setIsSearchingClient(false);
+    }
+  }, [phone10Digits, selectedServices]);
 
   // Extraer categorías únicas disponibles en el catálogo de servicios del salón
   const availableCategories = useMemo(() => {
@@ -646,11 +676,28 @@ export const BookingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0A0D14] text-white font-sans py-8 px-4 sm:px-6 pb-24">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-[#FF5A36]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="max-w-3xl mx-auto text-center mb-6 relative z-10">
-        <Link to="/" className="inline-block text-lg sm:text-xl font-black text-white hover:text-[#FF5A36] transition-colors mb-2">
-          <span>{salonName}</span>
-        </Link>
-        <h1 className="text-2xl sm:text-3xl font-black text-white">Reserva tu Cita Online</h1>
+      <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8 relative z-10 space-y-2">
+        {/* Píldora de Identidad del Salón */}
+        <div>
+          <Link
+            to={salonSlug ? `/sitio/${salonSlug}` : '/'}
+            className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#FF5A36]/40 text-slate-300 hover:text-white transition-all shadow-sm backdrop-blur-sm"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#FF5A36] shadow-[0_0_8px_#FF5A36]" />
+            <span className="text-xs sm:text-sm font-extrabold tracking-wide uppercase">{salonName}</span>
+            <span className="text-[10px] text-slate-500 group-hover:text-slate-300 transition-colors">↗</span>
+          </Link>
+        </div>
+
+        {/* Título Principal */}
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+          Reserva tu Cita <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-slate-400">Online</span>
+        </h1>
+
+        {/* Subtítulo Orientativo */}
+        <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto font-medium leading-relaxed">
+          Selecciona tu tratamiento, especialista y horario en menos de 1 minuto.
+        </p>
       </div>
 
       <div className="max-w-3xl mx-auto bg-[#141926] border border-white/10 rounded-3xl shadow-2xl p-5 sm:p-8 relative z-10">
@@ -767,43 +814,55 @@ export const BookingPage: React.FC = () => {
                     <div
                       key={srv.id}
                       onClick={() => handleToggleService(srv)}
-                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex justify-between items-center gap-3 ${
+                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         isSelected
-                          ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/15'
+                          ? 'border-[#FF5A36] bg-[#FF5A36]/10 shadow-lg shadow-[#FF5A36]/15 ring-1 ring-[#FF5A36]/30'
                           : 'border-white/10 bg-[#0E121B] hover:border-white/20'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
                         {srv.image_url && (
                           <img
                             src={srv.image_url}
                             alt={srv.name}
-                            className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-white/10 shrink-0"
+                            className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0 shadow-sm"
                             loading="lazy"
                           />
                         )}
-                        <div className="space-y-0.5 min-w-0 flex-1">
+                        <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <strong className="text-sm sm:text-base text-white truncate font-bold">{srv.name}</strong>
-                            <span className="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">
-                              {srv.category}
+                            <h3 className="text-sm sm:text-base font-bold text-white leading-snug break-words">
+                              {srv.name}
+                            </h3>
+                            {srv.category && (
+                              <span className="text-[9px] uppercase font-extrabold px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10 shrink-0">
+                                {srv.category}
+                              </span>
+                            )}
+                          </div>
+                          {srv.description && (
+                            <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                              {srv.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-0.5">
+                            <span className="flex items-center gap-1 font-medium text-slate-400">
+                              <Clock className="w-3.5 h-3.5 text-[#FF5A36]" /> {srv.duration_minutes} min
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 line-clamp-1">{srv.description || 'Servicio profesional garantizado.'}</p>
-                          <span className="text-[11px] text-slate-500 flex items-center gap-1 font-medium">
-                            <Clock className="w-3 h-3 text-[#FF5A36]" /> {srv.duration_minutes} min
-                          </span>
                         </div>
                       </div>
 
-                      <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
+                      <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5 shrink-0">
                         <div className="text-sm sm:text-base font-black text-[#FF5A36]">
                           {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
                         </div>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                          isSelected ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'border border-white/20 text-slate-500'
+                        <div className={`w-7 h-7 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                          isSelected
+                            ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/40 scale-105'
+                            : 'border border-white/20 text-slate-400 hover:border-white/40'
                         }`}>
-                          {isSelected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                          {isSelected ? <Check className="w-4 h-4 sm:w-3.5 sm:h-3.5 stroke-[3]" /> : <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />}
                         </div>
                       </div>
                     </div>
@@ -1175,6 +1234,20 @@ export const BookingPage: React.FC = () => {
                     required
                   />
                 </div>
+                {/* Badge de Reconocimiento Automático de Cliente */}
+                {recognizedClient && (
+                  <div className="mt-2 p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5 animate-fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div>
+                      <strong className="block text-white font-bold">
+                        👋 ¡Hola de nuevo, {recognizedClient.full_name}!
+                      </strong>
+                      <span className="text-[11px] text-emerald-200/90 block">
+                        Reconocimos tu número y autocompletamos tus datos para que reserves en 1 segundo.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 2. NOMBRE COMPLETO */}

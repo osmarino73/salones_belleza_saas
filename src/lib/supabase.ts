@@ -642,6 +642,44 @@ export const api = {
     localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(updated));
   },
 
+  async findClientByPhone(phone: string, tenantId?: string): Promise<Client | null> {
+    if (!phone) return null;
+    const cleanDigits = phone.replace(/\D/g, '');
+    if (cleanDigits.length < 7) return null;
+    const searchSuffix = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+
+    const tid = tenantId || getActiveTenantId();
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        let query = supabase
+          .from('clients')
+          .select('*, formulas:color_formulas(*)')
+          .or(`phone_whatsapp.ilike.%${searchSuffix}%,phone.ilike.%${searchSuffix}%`);
+
+        if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
+          query = query.eq('tenant_id', tid);
+        }
+
+        const { data } = await query.limit(1);
+        if (data && data.length > 0) {
+          return data[0] as Client;
+        }
+      } catch (e) {
+        console.warn('Error querying client by phone in Supabase:', e);
+      }
+    }
+
+    // Fallback con memoria y localStorage
+    const clients = await this.getClients(tid);
+    const found = clients.find(c => {
+      const cDigits = (c.phone_whatsapp || (c as any).phone || '').replace(/\D/g, '');
+      return cDigits.includes(searchSuffix) || (cDigits.length >= 10 && searchSuffix.includes(cDigits.slice(-10)));
+    });
+
+    return found || null;
+  },
+
   async addColorFormula(clientId: string, formula: Partial<ColorFormula>): Promise<ColorFormula> {
     const tid = (formula as any).tenant_id || getActiveTenantId();
     const isUuid = (str?: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str || '');
