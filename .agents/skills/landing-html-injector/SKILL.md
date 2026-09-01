@@ -44,6 +44,13 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
 - Reemplazo dinámico del nombre del salón, slogan, logo/icono y foto principal del Hero según la base de datos.
 - Banner de descuento por 1ª visita condicional (`show_first_visit_discount: true/false`): solo se renderiza si la administradora lo activa desde su panel.
 
+### 7. Aislamiento y Estandarización del Botón Flotante de WhatsApp en Móviles (Capa Host / React Root)
+- **Problema de Iframe en Celulares**: En navegadores móviles (Chrome/Safari), si el botón flotante reside dentro del HTML del iframe, el navegador expande el iframe y `position: fixed` queda atascado al final del documento (3.000px abajo).
+- **Protocolo de Renderizado**:
+  1. El botón flotante de WhatsApp se gobierna **desde la capa superior React (`PublicProspectSitePage.tsx`)** con `z-[99999]`, garantizando **visibilidad permanente y fija** en la pantalla del celular en todo momento (desde el Hero hasta el Footer).
+  2. **Diseño Vectorial Oficial**: Utiliza el glifo SVG oficial de alta fidelidad de WhatsApp con auricular blanco relleno, fondo con gradiente `#2fe577` a `#128C7E`, aura de pulso suave (`animate-ping`) y micro-borde `border-white/30`.
+  3. **Neutralización Interna**: En el HTML inyectado dentro del iframe, se neutralizan (`display: none !important;`) los botones flotantes internos duplicados para prevenir desajustes de scroll.
+
 ---
 
 ## 🚀 Archivos Asociados
@@ -51,5 +58,6 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
 - Optimizador de imágenes WebP: [beautyImageLibrary.ts](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts)
 - Renderizador público de sitio: [PublicProspectSitePage.tsx](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx)
 - Panel Superadmin / Lead Hub: [SuperadminDashboardPage.tsx](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx)
+
 
 
