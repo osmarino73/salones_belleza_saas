@@ -2884,6 +2884,7 @@ export const api = {
           slug: newTenant.slug,
           phone: newTenant.phone,
           whatsapp_number: newTenant.phone,
+          owner_email: newTenant.owner_email,
           currency: newTenant.currency || 'COP',
           plan_tier: 'crecimiento',
           subscription_status: 'trial',
