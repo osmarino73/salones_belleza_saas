@@ -27,7 +27,7 @@ export const LoginPage: React.FC = () => {
       }
 
       const user = authRes.user;
-      const isSuperadmin = api.auth.isSuperadmin(user);
+      const isSuperadmin = api.auth.isSuperadmin(user) || api.auth.isSuperadmin(cleanEmail);
 
       // 1. Si es Superadmin autenticado
       if (isSuperadmin) {

@@ -546,8 +546,10 @@ export const DashboardPage: React.FC = () => {
         if (activeTenantRaw) {
           try {
             const activeTenant = JSON.parse(activeTenantRaw);
-            // No heredar el ID del tenant demo para usuarios distintos
-            if (activeTenant.id !== '00000000-0000-0000-0000-000000000001' || currentEmail === 'sofia@studioglamour.co') {
+            const isMatchingOwner = activeTenant.owner_email?.toLowerCase().trim() === currentEmail?.toLowerCase().trim() ||
+                                   activeTenant.email?.toLowerCase().trim() === currentEmail?.toLowerCase().trim();
+            // Solo usar si el tenant pertenece al usuario actual o es el demo
+            if (isMatchingOwner || (!currentEmail && activeTenant.id !== '00000000-0000-0000-0000-000000000001') || currentEmail === 'sofia@studioglamour.co') {
               targetTenantId = activeTenant.id;
               setActiveTenantObj(activeTenant);
               if (activeTenant.name) setSalonName(activeTenant.name);

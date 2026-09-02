@@ -1404,7 +1404,11 @@ export const api = {
   async getTenantByUserEmail(email: string): Promise<any | null> {
     if (!email) return null;
     const cleanEmail = email.toLowerCase().trim();
-    const emailPrefix = cleanEmail.split('@')[0].replace(/[^a-z0-9]/g, '');
+
+    // 0. Si el usuario es Superadmin, NO debe asociarse a un tenant cliente por defecto
+    if (this.auth.isSuperadmin(cleanEmail)) {
+      return null;
+    }
 
     if (supabase && isSupabaseConfigured) {
       try {
@@ -1435,11 +1439,12 @@ export const api = {
           if (tenantData) return tenantData;
         }
 
-        // 3. Buscar si hay un sitio prospecto reclamado o asignado a este negocio
+        // 3. Buscar si hay un sitio prospecto activado con este email exacto
         const { data: prospectData } = await supabase
           .from('prospect_sites')
           .select('*')
-          .or(`claimed_tenant_id.not.is.null,slug.ilike.%${emailPrefix}%`)
+          .ilike('owner_email', cleanEmail)
+          .not('claimed_tenant_id', 'is', null)
           .limit(1)
           .maybeSingle();
 
@@ -1458,11 +1463,10 @@ export const api = {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Validar que el tenant guardado pertenezca a este email o su prefijo
+        // Validar que el tenant guardado pertenezca estrictamente a este email
         if (
           parsed.owner_email?.toLowerCase().trim() === cleanEmail ||
-          parsed.email?.toLowerCase().trim() === cleanEmail ||
-          (parsed.slug && emailPrefix && (parsed.slug.includes(emailPrefix) || emailPrefix.includes(parsed.slug)))
+          parsed.email?.toLowerCase().trim() === cleanEmail
         ) {
           return parsed;
         }
@@ -1914,13 +1918,15 @@ export const api = {
       localStorage.setItem('bf_auth_user', JSON.stringify(loggedUser));
       localStorage.removeItem('bf_tenant_active');
 
-      // Sincronizar automáticamente el tenant perteneciente a este usuario
-      try {
-        const tenant = await api.getTenantByUserEmail(cleanEmail);
-        if (tenant) {
-          localStorage.setItem('bf_tenant_active', JSON.stringify(tenant));
-        }
-      } catch (tErr) {}
+      // Sincronizar automáticamente el tenant perteneciente a este usuario (solo si no es Superadmin)
+      if (!this.isSuperadmin(cleanEmail) && !this.isSuperadmin(loggedUser)) {
+        try {
+          const tenant = await api.getTenantByUserEmail(cleanEmail);
+          if (tenant) {
+            localStorage.setItem('bf_tenant_active', JSON.stringify(tenant));
+          }
+        } catch (tErr) {}
+      }
 
       return { user: loggedUser, session: authSession || { access_token: 'mock-token' }, error: null };
     },
