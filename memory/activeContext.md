@@ -16,6 +16,11 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-48. **Blindaje de Seguridad y Aislamiento Estricto Multi-Tenant ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
+    - **Aislamiento Total de Sesión**: Eliminada la herencia indiscriminada de tenants en `localStorage` (`bf_tenant_active`). Ahora el dashboard solo hidrata datos de salones cuyo `owner_email` o `email` coincida estrictamente con la cuenta autenticada.
+    - **Protección de Consola Superadmin**: Al activar un negocio desde el Superadmin, los datos del nuevo salón ya no contaminan el `localStorage` del navegador del Superadmin.
+    - **Persistencia de `owner_email`**: Se sincroniza y persiste `owner_email` tanto en la tabla `tenants` como en `prospect_sites` para evitar desincronizaciones de identidad entre dueñas.
+
 -47. **Diálogo Modal de Confirmación para Guardar y Publicar la Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Protección y Doble Verificación**: Al hacer clic en el botón naranja *"💾 Guardar y Publicar"* en el Personalizador de la Página Web, ahora se despliega un diálogo modal de confirmación con diseño Glassmorphism (`isConfirmPublishWebsiteModalOpen`).
     - **Contraste y Legibilidad Total**: Corregido el contraste en Light Mode y Dark Mode (nombre del salón en negro nítido `text-slate-900`, horario completo visible sin cortes de texto, badge de especialistas verde esmeralda y URL en caja mono legible).
