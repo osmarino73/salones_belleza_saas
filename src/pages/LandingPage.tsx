@@ -156,14 +156,6 @@ export const LandingPage: React.FC = () => {
             >
               Iniciar Sesión
             </Link>
-
-            <a
-              href="#solicitar"
-              className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/25 transition-all active:scale-95"
-            >
-              <Gift className="w-3.5 h-3.5" />
-              <span>Activar Mi Salón</span>
-            </a>
           </div>
         </div>
       </header>
