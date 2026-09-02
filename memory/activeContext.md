@@ -18,8 +18,8 @@
 
 -47. **Diálogo Modal de Confirmación para Guardar y Publicar la Web ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Protección y Doble Verificación**: Al hacer clic en el botón naranja *"💾 Guardar y Publicar"* en el Personalizador de la Página Web, ahora se despliega un diálogo modal de confirmación con diseño Glassmorphism (`isConfirmPublishWebsiteModalOpen`).
-    - **Resumen Ejecutivo de Ajustes Reales**: Presenta una tarjeta limpia con el nombre del salón, horario público configurado, visibilidad de la sección de colaboradores y el enlace web directo (`https://kowy.app/sitio/:slug`) sin campos innecesarios.
-    - **Acciones Claras**: Permite al usuario `"Seguir Editando"` para rectificar detalles o `"🚀 Sí, Publicar en Vivo"` para sincronizar instantáneamente el sitio oficial y el agendador.
+    - **Contraste y Legibilidad Total**: Corregido el contraste en Light Mode y Dark Mode (nombre del salón en negro nítido `text-slate-900`, horario completo visible sin cortes de texto, badge de especialistas verde esmeralda y URL en caja mono legible).
+    - **Acciones Claras**: Botón `"Seguir Editando"` con alto contraste y botón `"🚀 Sí, Publicar en Vivo"` con degradado coral y micro-animación al pulsar.
 
 -46. **Preset de Horario "✨ Dom. Especial" en Configuración ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Botón Rápido de 1 Clic**: Añadido el preset `✨ Dom. Especial` (`Lun a Sáb: 8:00 AM - 7:00 PM | Dom: 10:00 AM - 3:00 PM`) en la sección de Horarios de Atención del panel de control para activar y sincronizar fácilmente la jornada dominical reducida en el sitio web y en el motor de agendamiento.
@@ -288,7 +288,7 @@
 0. **Seguridad y Control de Acceso Estricto al Súper Administrador ([`SuperadminGuard.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/SuperadminGuard.tsx), [`App.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/App.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`LoginPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LoginPage.tsx))**:
    - **Guardián de Rutas `SuperadminGuard`**: Protege la ruta `/superadmin`. Redirige a `/login` si no hay sesión activa.
    - **Pantalla 403 de Acceso Restringido**: Si un usuario común (dueña de salón o estilista) intenta acceder a `/superadmin`, se muestra una pantalla de bloqueo 403 que impide visualizar prospectos o tenants ajenos.
-   - **Lista Blanca de Superadministración**: Validación estricta con `isSuperadmin` (`osmarino73@yahoo.es` y rol `superadmin`).
+   - **Lista Blanca de Superadministración**: Validación estricta con `isSuperadmin` (`osmarino73@yahoo.es`, `zabdymarin1@gmail.com` y rol `superadmin`).
    - **Validación Estricta de Contraseñas**: El login valida obligatoriamente la contraseña contra Supabase antes de autorizar la navegación.
 
 0. **Optimizaciones Táctiles Mobile-First para Colaboradores ([`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:

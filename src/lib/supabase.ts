@@ -1839,7 +1839,7 @@ export const api = {
       return { user: localUser, session: { access_token: 'mock-token' }, error: null };
     },
 
-    SUPERADMIN_EMAILS: ['osmarino73@yahoo.es'],
+    SUPERADMIN_EMAILS: ['osmarino73@yahoo.es', 'zabdymarin1@gmail.com'],
 
     isSuperadmin(userOrEmail?: any): boolean {
       let targetUser = userOrEmail;
