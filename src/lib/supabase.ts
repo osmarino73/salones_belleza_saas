@@ -3053,17 +3053,21 @@ export const api = {
       }
     }
 
-    // 5. Actualizar prospect_sites como 'reclamado'
+    // 5. Actualizar prospect_sites como 'reclamado' y asociar owner_email
     if (prospect) {
       await this.updateProspectSite(prospect.id, {
         status: 'reclamado',
-        claimed_tenant_id: newTenant.id
+        claimed_tenant_id: newTenant.id,
+        owner_email: params.ownerEmail.toLowerCase().trim()
       });
     }
 
-    // 6. Guardar en localStorage para disponibilidad inmediata
-    localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
-    localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategoriesToInsert));
+    // 6. Guardar en localStorage solo si el usuario autenticado es el nuevo dueño (no sobreescribir sesión de Superadmin)
+    const activeAuth = this.auth.getUser();
+    if (activeAuth && activeAuth.email?.toLowerCase().trim() === params.ownerEmail.toLowerCase().trim()) {
+      localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategoriesToInsert));
+    }
 
     return {
       success: true,

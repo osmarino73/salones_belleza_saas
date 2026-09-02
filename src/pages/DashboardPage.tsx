@@ -497,25 +497,25 @@ export const DashboardPage: React.FC = () => {
 
       // 1. Cargar usuario autenticado / dueña
       const authUserRaw = localStorage.getItem('bf_auth_user');
+      let defaultDisplayName = '';
       if (authUserRaw) {
         try {
           const authUser = JSON.parse(authUserRaw);
-          if (authUser.user_metadata?.name && !authUser.user_metadata.name.includes('@')) {
-            setOwnerName(authUser.user_metadata.name);
-          }
           if (authUser.email) {
             setOwnerEmail(authUser.email);
-            currentEmail = authUser.email;
-            if (!ownerName) {
-              const cleanPrefix = authUser.email.split('@')[0].replace(/[._-]/g, ' ');
-              const formattedName = cleanPrefix.charAt(0).toUpperCase() + cleanPrefix.slice(1);
-              setOwnerName(formattedName);
-            }
+            currentEmail = authUser.email.toLowerCase().trim();
+            const cleanPrefix = currentEmail.split('@')[0].replace(/[._-]/g, ' ');
+            defaultDisplayName = cleanPrefix.charAt(0).toUpperCase() + cleanPrefix.slice(1);
+          }
+          if (authUser.user_metadata?.name && !authUser.user_metadata.name.includes('@') && authUser.user_metadata.name.toLowerCase() !== 'owner') {
+            setOwnerName(authUser.user_metadata.name);
+          } else if (defaultDisplayName) {
+            setOwnerName(defaultDisplayName);
           }
         } catch (e) {}
       }
 
-      // 2. Buscar tenant oficial asociado a este email en Supabase
+      // 2. Buscar tenant oficial asociado estrictamente a este email en Supabase
       if (currentEmail) {
         try {
           const tenantFromEmail = await api.getTenantByUserEmail(currentEmail);
@@ -524,12 +524,11 @@ export const DashboardPage: React.FC = () => {
             setActiveTenantObj(tenantFromEmail);
             if (tenantFromEmail.name) {
               setSalonName(tenantFromEmail.name);
-              // Si el usuario no tiene nombre configurado, usar el nombre del salón o dueña
-              if (tenantFromEmail.owner_name) {
-                setOwnerName(tenantFromEmail.owner_name);
-              } else if (!ownerName || ownerName.toLowerCase() === 'owner') {
-                setOwnerName(tenantFromEmail.name);
-              }
+            }
+            if (tenantFromEmail.owner_name) {
+              setOwnerName(tenantFromEmail.owner_name);
+            } else if (!ownerName || ownerName.toLowerCase() === 'owner') {
+              setOwnerName(defaultDisplayName || tenantFromEmail.name);
             }
             if (tenantFromEmail.phone) setSalonPhone(tenantFromEmail.phone);
             if (tenantFromEmail.address) setSalonAddress(tenantFromEmail.address.replace(/^,\s*/, '').trim());
@@ -540,19 +539,19 @@ export const DashboardPage: React.FC = () => {
         } catch (e) {}
       }
 
-      // 3. Fallback a información en LocalStorage si no se recuperó de Supabase
-      if (!targetTenantId) {
+      // 3. Fallback a información en LocalStorage SOLO SI pertenece estrictamente a este usuario
+      if (!targetTenantId && currentEmail) {
         const activeTenantRaw = localStorage.getItem('bf_tenant_active');
         if (activeTenantRaw) {
           try {
             const activeTenant = JSON.parse(activeTenantRaw);
-            const isMatchingOwner = activeTenant.owner_email?.toLowerCase().trim() === currentEmail?.toLowerCase().trim() ||
-                                   activeTenant.email?.toLowerCase().trim() === currentEmail?.toLowerCase().trim();
-            // Solo usar si el tenant pertenece al usuario actual o es el demo
-            if (isMatchingOwner || (!currentEmail && activeTenant.id !== '00000000-0000-0000-0000-000000000001') || currentEmail === 'sofia@studioglamour.co') {
+            const isMatchingOwner = activeTenant.owner_email?.toLowerCase().trim() === currentEmail ||
+                                   activeTenant.email?.toLowerCase().trim() === currentEmail;
+            if (isMatchingOwner) {
               targetTenantId = activeTenant.id;
               setActiveTenantObj(activeTenant);
               if (activeTenant.name) setSalonName(activeTenant.name);
+              if (activeTenant.owner_name) setOwnerName(activeTenant.owner_name);
               if (activeTenant.phone) setSalonPhone(activeTenant.phone);
               if (activeTenant.address) setSalonAddress(activeTenant.address.replace(/^,\s*/, '').trim());
               if (activeTenant.currency) setSalonCurrency(activeTenant.currency);
@@ -564,22 +563,29 @@ export const DashboardPage: React.FC = () => {
         }
       }
 
-      // Si sigue sin targetTenantId y es un usuario específico, generar un namespace limpio
-      if (!targetTenantId && currentEmail && currentEmail !== 'sofia@studioglamour.co') {
-        targetTenantId = `tenant-${currentEmail.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-      }
-
-      if (targetTenantId) {
-        try {
-          const rawT = localStorage.getItem('bf_tenant_active');
-          if (rawT) {
-            const parsed = JSON.parse(rawT);
-            if (parsed.id !== '00000000-0000-0000-0000-000000000001' || currentEmail === 'sofia@studioglamour.co') {
-              setActiveTenantObj(parsed);
-              if (parsed.name) setSalonName(parsed.name);
-            }
-          }
-        } catch (e) {}
+      // 4. Si es un usuario nuevo sin salón aún registrado, crear namespace aislado y limpio
+      if (!targetTenantId && currentEmail) {
+        targetTenantId = `tenant-${currentEmail.replace(/[^a-z0-9]/g, '-')}`;
+        const newSalonName = defaultDisplayName ? `${defaultDisplayName} Studio` : 'Mi Salón & Spa';
+        setSalonName(newSalonName);
+        if (defaultDisplayName) setOwnerName(defaultDisplayName);
+        const placeholderTenant: Tenant = {
+          id: targetTenantId,
+          name: newSalonName,
+          slug: currentEmail.split('@')[0].replace(/[^a-z0-9]/g, '-'),
+          owner_email: currentEmail,
+          phone: salonPhone || '+57 300 000 0000',
+          address: 'Medellín',
+          city: 'Medellín',
+          country: 'Colombia',
+          plan: 'pro_ai',
+          plan_tier: 'crecimiento',
+          currency: 'COP',
+          is_active: true,
+          created_at: new Date().toISOString()
+        };
+        setActiveTenantObj(placeholderTenant);
+        localStorage.setItem('bf_tenant_active', JSON.stringify(placeholderTenant));
       }
 
       const [apts, cls, stys, srvs, cats, prods, settings] = await Promise.all([
