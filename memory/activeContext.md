@@ -16,6 +16,24 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-50. **Corrección de TypeError: `r.toLowerCase is not a function` en Agendador / `getSalonScheduleForDate` ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+    - **Causa Raíz**: En ciertos negocios (por ejemplo provenientes de Google Maps / `DATOS_NEGOCIO.json` o esquemas JSONB de Supabase), el campo `horario_atencion` o `business_hours` viene como un objeto anidado (ej. `{"lunes_a_sabado": "8:00 AM - 7:00 PM", "domingos": "..."}`) en vez de una cadena de texto plana. Al cargarse en `setSalonHours(rawHours)`, la función `getSalonScheduleForDate` ejecutada dentro de los `useMemo` (`next14Days` y `salonScheduleForSelectedDate`) intentaba llamar directamente `scheduleSummary.toLowerCase()`, detonando un `TypeError: r.toLowerCase is not a function` que bloqueaba el renderizado de la página.
+    - **Solución Implementada**:
+      1. `getSalonScheduleForDate` ahora acepta `scheduleSummary: any` y normaliza de forma segura tanto strings planos como objetos JSON de horarios mediante `Object.entries(scheduleSummary).map(...).join(' | ')`.
+      2. Normalización preventiva en `loadBookingData` (`BookingPage.tsx`), en el Personalizador Web (`DashboardPage.tsx`) y en `PublicProspectSitePage.tsx` para garantizar que el estado de horarios siempre contenga un string formateado.
+      3. Blindaje adicional con `String(...)` y validación de tipos en filtros por categoría, especialidades de estilistas y CRM para evitar cualquier excepción por tipos no-string.
+
+-49. **Resolución de Error 400 / 409 en Activación de Tenants y Servicios en Supabase ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`add_owner_email_to_tenants.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/add_owner_email_to_tenants.sql))**:
+    - **Diagnóstico de Causa Raíz**:
+      1. La tabla `public.tenants` en Supabase no tenía creada la columna `owner_email`. Al ejecutar `activateProspectAsTenant`, el insert fallaba con código 400 (*"Could not find the 'owner_email' column of 'tenants' in the schema cache"*).
+      2. Al fallar silenciosamente la creación del tenant en la base de datos, la inserción posterior de estilistas (`stylists`), categorías y servicios (`services`) arrojaba error 409 por violación de clave foránea (`violates foreign key constraint ..._tenant_id_fkey: Key is not present in table tenants`), abortando el flujo completo.
+      3. En la consulta `getTenantByOwnerEmail`, el llamado a `.ilike('owner_email', cleanEmail)` sobre `tenants` detonaba un error 400 visible en consola en cada carga de página.
+    - **Solución Implementada en TypeScript**:
+      1. **Fallback Inteligente en `activateProspectAsTenant`**: Si la inserción con `owner_email` falla por no estar en el schema cache, se reintenta inmediatamente sin `owner_email` y, en caso necesario, con las columnas mínimas estándar para asegurar la creación del tenant antes de crear los registros dependientes.
+      2. **Prevención de Error 400 en `getTenantByOwnerEmail`**: Se prioriza la búsqueda por la tabla `stylists` (donde la columna `email` existe de forma garantizada y vincula al tenant del admin/owner), eliminando los errores 400 de PostgREST.
+      3. **Normalización de Nombres en Emails**: Se aplica `.normalize("NFD")` para que nombres con tildes (ej. *Ángela María López*) generen correos limpios (`angelamarialopez@...`) en lugar de perder letras.
+      4. **Script SQL de Migración**: Creado [`add_owner_email_to_tenants.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/add_owner_email_to_tenants.sql) para añadir formalmente la columna `owner_email` e índices en `tenants` y `prospect_sites`, con recarga de caché (`NOTIFY pgrst, 'reload schema'`).
+
 -48. **Blindaje de Seguridad y Aislamiento Estricto Multi-Tenant ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
     - **Aislamiento Total de Sesión**: Eliminada la herencia indiscriminada de tenants en `localStorage` (`bf_tenant_active`). Ahora el dashboard solo hidrata datos de salones cuyo `owner_email` o `email` coincida estrictamente con la cuenta autenticada.
     - **Protección de Consola Superadmin**: Al activar un negocio desde el Superadmin, los datos del nuevo salón ya no contaminan el `localStorage` del navegador del Superadmin.

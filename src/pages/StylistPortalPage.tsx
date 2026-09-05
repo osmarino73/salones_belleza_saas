@@ -172,8 +172,8 @@ export const StylistPortalPage: React.FC = () => {
     if (!crmSearchQuery.trim()) return myClients;
     const q = crmSearchQuery.toLowerCase();
     return myClients.filter(c => 
-      c.full_name.toLowerCase().includes(q) || 
-      c.phone_whatsapp.toLowerCase().includes(q)
+      (c.full_name && String(c.full_name).toLowerCase().includes(q)) || 
+      (c.phone_whatsapp && String(c.phone_whatsapp).toLowerCase().includes(q))
     );
   }, [myClients, crmSearchQuery]);
 

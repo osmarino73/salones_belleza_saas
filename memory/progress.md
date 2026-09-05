@@ -1,3 +1,14 @@
+- [x] **Corrección de TypeError: `r.toLowerCase is not a function` en Agendador ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+  - `getSalonScheduleForDate` ahora soporta objetos JSON de horarios de atención (ej. `{"lunes_a_sabado": "8:00 AM - 7:00 PM"}`) transformándolos a cadenas formateadas legibles.
+  - Se eliminó el error de ejecución en `useMemo` al cargar la página de agendamiento y los 14 días disponibles.
+  - Blindaje con `String(...)` y comprobación de tipo `string` en filtros de servicios, categorías y CRM.
+
+- [x] **Resolución de Error 400 / 409 en Inserción de Tenants y Servicios ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`add_owner_email_to_tenants.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/add_owner_email_to_tenants.sql))**:
+  - Eliminado el fallo en cascada donde la falta de `owner_email` en la tabla `tenants` impedía crear el salón y generaba violaciones de clave foránea 409 en `stylists` y `services`.
+  - Implementado mecanismo de reintento automático sin `owner_email` y fallback a esquema base para garantizar que el tenant siempre quede creado en la base de datos.
+  - Reordenada la consulta en `getTenantByOwnerEmail` para buscar primero en `stylists.email` evitando respuestas 400 en consola.
+  - Generado script de migración SQL para añadir formalmente la columna `owner_email` a `tenants` y `prospect_sites` con `NOTIFY pgrst, 'reload schema'`.
+
 - [x] **Eliminación de Pills/Badges Secundarias en Tarjetas de Servicios ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - Eliminadas las pastillas intermedias de técnicas/ingredientes (*"Caída Natural & Lavado Botánico"*, *"Mantecas Naturales & Vapor"*, etc.) para lograr una presentación más limpia, espaciosa y minimalista de cada tarjeta de servicio (Foto, Título, Duración, Precio y Botón Agendar).
 

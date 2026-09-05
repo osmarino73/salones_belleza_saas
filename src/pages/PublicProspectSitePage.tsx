@@ -103,7 +103,15 @@ export const PublicProspectSitePage: React.FC = () => {
       slogan: cleanSlogan,
       titleAccent: cleanTitleAccent,
       navbarTagline: tenant?.navbar_tagline || bData.navbar_tagline || undefined,
-      businessHours: tenant?.business_hours?.summary || bData.business_hours?.summary || bData.horario_atencion || undefined,
+      businessHours: typeof tenant?.business_hours?.summary === 'string'
+        ? tenant.business_hours.summary
+        : typeof bData.business_hours?.summary === 'string'
+        ? bData.business_hours.summary
+        : typeof bData.horario_atencion === 'string'
+        ? bData.horario_atencion
+        : bData.horario_atencion && typeof bData.horario_atencion === 'object'
+        ? Object.entries(bData.horario_atencion).filter(([_, v]) => typeof v === 'string').map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(' | ')
+        : undefined,
       subtitle: tenant?.subtitle || bData.subtitle || undefined,
       aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
       aboutBadgeText: cleanAboutBadge,

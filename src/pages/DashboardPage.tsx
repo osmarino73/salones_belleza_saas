@@ -290,7 +290,27 @@ export const DashboardPage: React.FC = () => {
 
         const cleanNavbarTagline = activeTenantObj.navbar_tagline || bData.navbar_tagline || extracted.navbarTagline || '';
 
-        const cleanBusinessHours = activeTenantObj.business_hours?.summary || bData.business_hours?.summary || bData.horario_atencion || extracted.businessHours || 'Lunes a Sábado: 8:00 AM - 7:00 PM';
+        let cleanBusinessHours = 'Lunes a Sábado: 8:00 AM - 7:00 PM';
+        const rawBH = activeTenantObj.business_hours?.summary || 
+                      (typeof activeTenantObj.business_hours === 'string' ? activeTenantObj.business_hours : undefined) ||
+                      bData.business_hours?.summary || 
+                      (typeof bData.business_hours === 'string' ? bData.business_hours : undefined) ||
+                      bData.horario_atencion || 
+                      extracted.businessHours ||
+                      activeTenantObj.business_hours;
+
+        if (typeof rawBH === 'string') {
+          cleanBusinessHours = rawBH;
+        } else if (rawBH && typeof rawBH === 'object') {
+          if (typeof rawBH.summary === 'string') {
+            cleanBusinessHours = rawBH.summary;
+          } else {
+            cleanBusinessHours = Object.entries(rawBH)
+              .filter(([_, v]) => typeof v === 'string' && (v as string).trim().length > 0)
+              .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+              .join(' | ');
+          }
+        }
 
         const cleanSlogan = (activeTenantObj.slogan && activeTenantObj.slogan !== 'Sandra Color´s' && activeTenantObj.slogan !== activeTenantObj.name)
           ? activeTenantObj.slogan

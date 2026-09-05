@@ -1412,17 +1412,7 @@ export const api = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        // 1. Buscar directamente en la tabla tenants por owner_email
-        const { data: tenantDirect } = await supabase
-          .from('tenants')
-          .select('*')
-          .ilike('owner_email', cleanEmail)
-          .limit(1)
-          .maybeSingle();
-
-        if (tenantDirect) return tenantDirect;
-
-        // 2. Buscar estilista/dueña asociada en la tabla stylists
+        // 1. Buscar estilista/dueña asociada en la tabla stylists (¡Columna 'email' siempre existe y previene error 400!)
         const { data: styData } = await supabase
           .from('stylists')
           .select('tenant_id')
@@ -1439,11 +1429,11 @@ export const api = {
           if (tenantData) return tenantData;
         }
 
-        // 3. Buscar si hay un sitio prospecto activado con este email exacto
+        // 2. Buscar si hay un sitio prospecto activado asociado a este salón
         const { data: prospectData } = await supabase
           .from('prospect_sites')
           .select('*')
-          .ilike('owner_email', cleanEmail)
+          .or(`creator_email.ilike.${cleanEmail},phone_whatsapp.ilike.${cleanEmail}`)
           .not('claimed_tenant_id', 'is', null)
           .limit(1)
           .maybeSingle();
@@ -1456,6 +1446,18 @@ export const api = {
             .maybeSingle();
           if (tClaimed) return tClaimed;
         }
+
+        // 3. Fallback: Buscar directamente en la tabla tenants por owner_email solo si existe
+        try {
+          const { data: tenantDirect, error: tenantErr } = await supabase
+            .from('tenants')
+            .select('*')
+            .ilike('owner_email', cleanEmail)
+            .limit(1)
+            .maybeSingle();
+
+          if (!tenantErr && tenantDirect) return tenantDirect;
+        } catch (_) {}
       } catch (e) {}
     }
 
@@ -2590,10 +2592,18 @@ export const api = {
   async updateProspectSite(id: string, siteData: Partial<ProspectSite>): Promise<ProspectSite | null> {
     if (supabase && isSupabaseConfigured) {
       try {
-        const { error } = await supabase
+        let { error } = await supabase
           .from('prospect_sites')
           .update({ ...siteData, updated_at: new Date().toISOString() })
           .eq('id', id);
+        if (error && error.message?.includes('owner_email')) {
+          const { owner_email, ...safeSiteData } = siteData as any;
+          const retryRes = await supabase
+            .from('prospect_sites')
+            .update({ ...safeSiteData, updated_at: new Date().toISOString() })
+            .eq('id', id);
+          error = retryRes.error;
+        }
         if (error) console.error('Error updating prospect site:', error.message);
       } catch (e) {}
     }
@@ -2876,15 +2886,14 @@ export const api = {
         console.warn('Auth notice during tenant activation:', e);
       }
 
-      // 2. Insertar en tabla tenants con columnas reales de la BD
+      // 2. Insertar en tabla tenants con tolerancia a esquemas y fallback
       try {
-        const dbTenantPayload = {
+        const dbTenantPayload: any = {
           id: newTenant.id,
           name: newTenant.name,
           slug: newTenant.slug,
           phone: newTenant.phone,
           whatsapp_number: newTenant.phone,
-          owner_email: newTenant.owner_email,
           currency: newTenant.currency || 'COP',
           plan_tier: 'crecimiento',
           subscription_status: 'trial',
@@ -2902,12 +2911,48 @@ export const api = {
           trial_started_at: newTenant.trial_started_at,
           trial_ends_at: newTenant.trial_ends_at
         };
-        const { error: insertTenantErr } = await supabase.from('tenants').insert([dbTenantPayload]);
-        if (insertTenantErr) {
-          console.warn('DB tenant insert notice:', insertTenantErr.message);
+
+        // Intentar primero con owner_email
+        let { error: insertTenantErr } = await supabase
+          .from('tenants')
+          .insert([{ ...dbTenantPayload, owner_email: newTenant.owner_email }]);
+
+        // Si la columna owner_email no existe en Supabase, reintentar sin ella
+        if (insertTenantErr && (insertTenantErr.message?.includes('owner_email') || insertTenantErr.code === 'PGRST204')) {
+          console.warn('owner_email column not in tenants table, retrying insert without owner_email');
+          const retryRes = await supabase.from('tenants').insert([dbTenantPayload]);
+          insertTenantErr = retryRes.error;
         }
-      } catch (e) {
-        console.warn('DB tenant insert exception:', e);
+
+        // Si aún falla por columnas de planes/suscripción no migradas, usar columnas base universales
+        if (insertTenantErr) {
+          console.warn('Retrying tenant insert with base core columns:', insertTenantErr.message);
+          const baseCorePayload = {
+            id: newTenant.id,
+            name: newTenant.name,
+            slug: newTenant.slug,
+            phone: newTenant.phone,
+            whatsapp_number: newTenant.phone,
+            currency: newTenant.currency || 'COP',
+            address: newTenant.address || '',
+            city: newTenant.city || 'Medellín',
+            country: newTenant.country || 'Colombia',
+            business_hours: newTenant.business_hours || {},
+            is_active: true
+          };
+          const baseRes = await supabase.from('tenants').insert([baseCorePayload]);
+          insertTenantErr = baseRes.error;
+        }
+
+        if (insertTenantErr) {
+          console.error('Fatal: Could not insert tenant into Supabase:', insertTenantErr.message);
+          throw new Error(`No se pudo crear el salón en la base de datos: ${insertTenantErr.message}`);
+        } else {
+          console.log('Tenant successfully created in Supabase:', newTenant.id);
+        }
+      } catch (e: any) {
+        console.error('DB tenant insert exception:', e);
+        throw e;
       }
     }
 
@@ -2947,7 +2992,8 @@ export const api = {
       for (let i = 0; i < rawTeam.length; i++) {
         const member = rawTeam[i];
         const memberName = member.nombre || member.name || `Especialista ${i + 1}`;
-        const cleanMemberEmail = memberName.toLowerCase().replace(/[^a-z0-9]/g, '') + `@${cleanSlug}.com`;
+        const normalizedName = memberName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanMemberEmail = (normalizedName || `especialista${i + 1}`) + `@${cleanSlug}.com`;
         const memberPhoto = member.foto_url || member.photo_url || member.avatar || member.imagen || teamPhotos[i % teamPhotos.length];
         
         const stylistEntity: Stylist = {

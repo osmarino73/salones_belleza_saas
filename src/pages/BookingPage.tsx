@@ -35,14 +35,28 @@ interface DayScheduleResult {
   reason?: string;
 }
 
-export function getSalonScheduleForDate(scheduleSummary: string, dateStr: string): DayScheduleResult {
-  if (!scheduleSummary) {
+export function getSalonScheduleForDate(scheduleSummary: any, dateStr: string): DayScheduleResult {
+  let cleanStr = '';
+  if (typeof scheduleSummary === 'string') {
+    cleanStr = scheduleSummary;
+  } else if (scheduleSummary && typeof scheduleSummary === 'object') {
+    if (typeof scheduleSummary.summary === 'string') {
+      cleanStr = scheduleSummary.summary;
+    } else {
+      cleanStr = Object.entries(scheduleSummary)
+        .filter(([_, val]) => typeof val === 'string' && (val as string).trim().length > 0)
+        .map(([key, val]) => `${key.replace(/_/g, ' ')}: ${val}`)
+        .join(' | ');
+    }
+  }
+
+  if (!cleanStr || !cleanStr.trim()) {
     return { isOpen: true, openMinutes: 480, closeMinutes: 1140 }; // 8:00 AM - 7:00 PM default
   }
 
   const d = new Date(dateStr + 'T00:00:00');
   const dayOfWeek = d.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-  const cleanSummary = scheduleSummary.toLowerCase();
+  const cleanSummary = cleanStr.toLowerCase();
 
   const parseTimeToMin = (str: string, defaultMin: number): number => {
     if (!str) return defaultMin;
@@ -57,7 +71,7 @@ export function getSalonScheduleForDate(scheduleSummary: string, dateStr: string
   };
 
   // 1. Revisar especificaciones para días concretos (ej. Sábados o Domingos separados por | o comas)
-  const segments = scheduleSummary.split(/[|\n]/).map(s => s.trim());
+  const segments = cleanStr.split(/[|\n]/).map(s => s.trim());
   for (const seg of segments) {
     const segLower = seg.toLowerCase();
     
@@ -108,7 +122,7 @@ export function getSalonScheduleForDate(scheduleSummary: string, dateStr: string
     }
   }
 
-  const mainTimesMatch = scheduleSummary.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:[-–—]|a)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
+  const mainTimesMatch = cleanStr.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)\s*(?:[-–—]|a)\s*(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/i);
   if (mainTimesMatch) {
     const openMin = parseTimeToMin(mainTimesMatch[1], 480);
     const closeMin = parseTimeToMin(mainTimesMatch[2], 1140);
@@ -215,7 +229,7 @@ export const BookingPage: React.FC = () => {
   const availableCategories = useMemo(() => {
     const catMap = new Map<string, number>();
     services.forEach(s => {
-      const rawCat = (s.category || 'general').trim().toLowerCase();
+      const rawCat = String(s.category || 'general').trim().toLowerCase();
       const label = rawCat.charAt(0).toUpperCase() + rawCat.slice(1);
       catMap.set(label, (catMap.get(label) || 0) + 1);
     });
@@ -229,7 +243,7 @@ export const BookingPage: React.FC = () => {
   // Lista de servicios visibles según la categoría seleccionada
   const displayedServices = useMemo(() => {
     if (selectedCategoryFilter === 'all') return services;
-    return services.filter(s => (s.category || 'general').trim().toLowerCase() === selectedCategoryFilter.toLowerCase());
+    return services.filter(s => String(s.category || 'general').trim().toLowerCase() === String(selectedCategoryFilter || 'all').toLowerCase());
   }, [services, selectedCategoryFilter]);
 
   const primaryService = selectedServices[0] || services[0];
@@ -267,7 +281,7 @@ export const BookingPage: React.FC = () => {
     return activeStylists.filter(s => {
       if (s.service_ids?.includes(srvId)) return true;
       if (s.service_categories?.includes(cat)) return true;
-      if (s.specialty) {
+      if (s.specialty && typeof s.specialty === 'string') {
         const spec = s.specialty.toLowerCase();
         if (cat === 'color' && (spec.includes('color') || spec.includes('balayage'))) return true;
         if (cat === 'corte' && (spec.includes('corte') || spec.includes('estilista') || spec.includes('barber'))) return true;
@@ -341,8 +355,28 @@ export const BookingPage: React.FC = () => {
           if (resolvedTenant.address) setSalonAddress(resolvedTenant.address);
           if (resolvedTenant.currency) setSalonCurrency(resolvedTenant.currency);
           
-          const rawHours = resolvedTenant.business_hours?.summary || prospectDataObj?.business_hours?.summary || prospectDataObj?.horario_atencion || 'Lunes a Sábado: 8:00 AM - 7:00 PM';
-          setSalonHours(rawHours);
+          let rawHours = 'Lunes a Sábado: 8:00 AM - 7:00 PM';
+          const possibleHours = resolvedTenant.business_hours?.summary || 
+                                (typeof resolvedTenant.business_hours === 'string' ? resolvedTenant.business_hours : undefined) ||
+                                prospectDataObj?.business_hours?.summary || 
+                                (typeof prospectDataObj?.business_hours === 'string' ? prospectDataObj?.business_hours : undefined) ||
+                                prospectDataObj?.horario_atencion ||
+                                resolvedTenant.business_hours ||
+                                prospectDataObj?.business_hours;
+
+          if (typeof possibleHours === 'string') {
+            rawHours = possibleHours;
+          } else if (possibleHours && typeof possibleHours === 'object') {
+            if (typeof possibleHours.summary === 'string') {
+              rawHours = possibleHours.summary;
+            } else {
+              rawHours = Object.entries(possibleHours)
+                .filter(([_, val]) => typeof val === 'string' && (val as string).trim().length > 0)
+                .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`)
+                .join(' | ');
+            }
+          }
+          setSalonHours(rawHours || 'Lunes a Sábado: 8:00 AM - 7:00 PM');
         }
 
         let loadedServices: Service[] = [];
