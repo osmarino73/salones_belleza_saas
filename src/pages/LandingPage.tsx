@@ -76,13 +76,13 @@ export const LandingPage: React.FC = () => {
 
     // Preparar mensaje de WhatsApp preformateado
     const message = encodeURIComponent(
-      `¡Hola Kowy! 🚀 Deseo reclamar la oferta de activación para mi Salón:\n\n` +
+      `¡Hola Kowy! 🚀 Deseo reclamar la oferta de activación ($89.000 COP) para mi Salón:\n\n` +
       `🏢 Negocio: ${formData.businessName}\n` +
       `👤 Responsable: ${formData.ownerName}\n` +
       `📱 WhatsApp: ${formData.whatsapp}\n` +
       `📍 Ciudad: ${formData.city}\n` +
       `💇 Rubro: ${formData.niche}\n\n` +
-      `Por favor contáctenme para entregar el diseño de mi página web y activar mis 30 días de regalo del Plan Crecimiento.`
+      `Por favor contáctenme para entregar el diseño de mi página web (con 1 año de hosting incluido), afiches QR y activar mis 30 días de regalo del Plan Crecimiento.`
     );
 
     // Abrir WhatsApp en nueva pestaña
@@ -711,10 +711,11 @@ export const LandingPage: React.FC = () => {
                 <h3 className="text-xl font-extrabold text-white mt-3">🌐 Plan Gratuito</h3>
                 <p className="text-xs text-slate-400 mt-1">Tu vitrina de lujo en internet</p>
                 <div className="text-3xl font-black text-white my-4">
-                  $0 <span className="text-xs font-normal text-slate-400">/ mes (De por vida)</span>
+                  $0 <span className="text-xs font-normal text-slate-400">/ mes (Sin mensualidades)</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
                   <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Página Web Profesional completa (móvil y PC)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>1er Año de Hosting & SSL incluido con tu activación</span></li>
                   <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
                   <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
                   <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Botón flotante directo a tu WhatsApp</span></li>
@@ -855,7 +856,7 @@ export const LandingPage: React.FC = () => {
                 Reclama la <span className="text-[#FF5A36]">Página Web de tu Salón</span>
               </h2>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                El desarrollo y configuración comercial regular cuesta <strong className="text-slate-400 line-through">$680.000 COP</strong>. Por un aporte simbólico de activación de solo <strong className="text-white font-extrabold">$50.000 COP</strong>, te entregamos tu web personalizada lista en 48 horas con el <strong className="text-[#FF5A36]">Plan Crecimiento de Regalo durante tus primeros 30 días</strong>.
+                El desarrollo y configuración comercial regular cuesta <strong className="text-slate-400 line-through">$680.000 COP</strong>. Por un aporte único de activación de solo <strong className="text-white font-extrabold">$89.000 COP</strong>, te entregamos tu web personalizada lista en 48 horas con <strong className="text-white font-bold">1 Año Completo de Hosting Seguro incluido</strong> más el <strong className="text-[#FF5A36]">Plan Crecimiento de Regalo durante tus primeros 30 días</strong> y kit de afiches QR listos para imprimir.
               </p>
             </div>
 
@@ -955,12 +956,12 @@ export const LandingPage: React.FC = () => {
         <div className="space-y-3">
           {[
             {
-              q: '¿Por qué la Página Web es 100% Gratis?',
-              a: 'Porque queremos que experimentes el poder de tener presencia digital profesional sin barreras. El Plan Gratuito te permite tener tu vitrina web, fotos y WhatsApp de por vida sin pagar mensualidad.'
+              q: '¿Por qué el diseño y desarrollo de la web no tiene costo?',
+              a: 'Porque queremos que experimentes el poder de tener presencia digital profesional sin barreras. Nosotros bonificamos el costo de desarrollo y diseño web. Tu aporte de activación solo cubre la puesta en marcha técnica, tu primer año de hosting seguro y tus afiches QR.'
             },
             {
-              q: '¿Qué incluye la activación de $50.000 COP?',
-              a: 'Incluye la personalización comercial completa de tu página web en 48 horas (subida de tus fotos, catálogo de servicios, horarios y Google Maps) más 30 Días de Regalo del Plan Crecimiento ($120.000 COP) para probar el agendador online y control de colaboradoras.'
+              q: '¿Qué incluye la activación de $89.000 COP?',
+              a: 'Incluye la personalización comercial completa de tu página web en 48 horas (fotos, servicios, horarios y Google Maps), 1 Año Completo de Hosting seguro y certificado SSL en la nube, más 30 Días de Regalo del Plan Crecimiento ($120.000 COP) para probar el agendador online, app móvil para estilistas y caja POS, junto con tu kit de afiches QR listos para imprimir. A partir del 2do mes tienes total libertad: puedes continuar con el sistema de reservas desde $50.000/mes o quedarte solo con tu web vitrina activa en Google Maps renovando únicamente tu hosting por $89.000 al año a partir del 2do año.'
             },
             {
               q: '¿Mis clientas necesitan descargar alguna app para agendar?',

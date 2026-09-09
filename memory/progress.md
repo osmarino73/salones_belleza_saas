@@ -41,7 +41,7 @@
 
 - [x] **Renovación de Landing Page B2B con Planes en COP & Oferta de Activación**:
   - Escalera oficial de 6 planes: $0 Gratuito, $50k Inicio, $120k Crecimiento (Regalo Mes 1), $240k Pro Flow IA, $720k Escala, $1.44M VIP.
-  - Anclaje de alto valor ($680.000 COP regular ➔ $50.000 COP activación única por Nequi/Daviplata con 30 días de Crecimiento).
+  - Anclaje de alto valor ($680.000 COP regular ➔ $89.000 COP activación única por Nequi/Daviplata con 1 año de hosting incluido + 30 días de Crecimiento + afiches QR).
 
 - [x] **Generador de QR Dinámico por Slug & Afiche HD Imprimible**:
   - QR vinculado a `https://kowy.app/reservar/:slug` y botón para copiar enlace directo.

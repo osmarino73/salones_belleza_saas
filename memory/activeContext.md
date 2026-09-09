@@ -298,8 +298,9 @@
    - **Alineación Comercial Kowy**: Anclaje de $680.000 COP ➔ Patrocinio de $50.000 COP (93% de descuento) + 1 Mes Plan Crecimiento ($120.000) incluido + Modalidad Solo Web por $50.000 COP al año de hosting.
    - **Matriz de Manejo de Objeciones**: Respuestas probadas para dudas de costos, hosting, tecnología y apps de estilistas.
 
-0. **Alineación de Mensajes de Prospección & Activación con la Estrategia Comercial ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx))**:
-   - **Guión de Anclaje de Alto Valor ($680.000 ➔ $50.000 COP)**: Mensaje de WhatsApp optimizado que regala la web gratis de por vida e introduce la activación única de $50k con 1 mes completo incluido en el Plan Crecimiento ($120k/mes).
+0. **Alineación de Mensajes de Prospección & Activación con la Estrategia Comercial ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`LandingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/LandingPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+   - **Estrategia Oficial de Entrada ($89.000 COP + 1 Año de Hosting Incluido)**: Tarifa de activación que cubre la personalización de la web, 1 año completo de hosting de alta velocidad y SSL en la nube, kit de afiches QR listos para imprimir y 1 mes completo de regalo en el Plan Crecimiento ($120.000/mes).
+   - **Modelo de Renovación Transparente**: A partir del año 2, quienes no usen el SaaS mensual solo pagan su hosting anual ($89.000 COP/año, ~$7.400/mes), blindando la confianza y eliminando objeciones de "costos ocultos".
    - **Mensaje Oficial de Bienvenida y Credenciales**: Envío automático de accesos al login de Kowy, URL de agendamiento online `/reservar/:slug` y pasos iniciales para la dueña del salón.
    - **Consistencia de Marca Kowy**: Todos los guiones reflejan la marca oficial `Kowy.app`.
 

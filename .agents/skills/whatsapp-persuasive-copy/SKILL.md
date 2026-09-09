@@ -13,7 +13,7 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 - **Naturaleza del Archivo**: Markdown declarativo (`SKILL.md`).
 - **Scripts Ejecutables**: Ninguno (0% código binario o dependencias externas no seguras).
 - **Privacidad de Datos**: No expone tokens, claves API ni realiza peticiones remotas no autorizadas.
-- **Cumplimiento de Marca**: 100% alineado con la estrategia comercial oficial de Kowy ($680.000 anclaje ➔ $50.000 patrocinado + 1 mes crecimiento + $50.000/año hosting).
+- **Cumplimiento de Marca**: 100% alineado con la estrategia comercial oficial de Kowy ($680.000 anclaje ➔ $89.000 patrocinado + 1 año hosting incluido + 1 mes crecimiento + $89.000/año hosting desde año 2).
 
 ---
 
@@ -24,12 +24,12 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 - **Aplicación Kowy**: *"Les diseñamos una propuesta de página web profesional para su marca ya lista en Google Maps: [Enlace]"*. La dueña recibe algo tangible y hermoso antes de cualquier propuesta comercial.
 
 ### 2. Anclaje de Alto Valor (High-Ticket Contrast)
-- **Regla de Oro**: Una oferta de $50.000 COP no parece valiosa si no se contrasta con su valor real de mercado ($680.000 COP).
-- **Aplicación Kowy**: Mostrar el valor regular de desarrollo web (~$680.000 COP) tachado, y presentar los $50.000 COP como un **Bono / Cupo de Patrocinio de Lanzamiento** (ahorro del 93%).
+- **Regla de Oro**: Una oferta de $89.000 COP no parece valiosa si no se contrasta con su valor real de mercado ($680.000 COP).
+- **Aplicación Kowy**: Mostrar el valor regular de desarrollo web (~$680.000 COP) tachado, y presentar los $89.000 COP como un **Bono / Cupo de Patrocinio de Lanzamiento** con 1 año completo de hosting incluido (ahorro del 87%).
 
 ### 3. Eliminar la Fricción & el Miedo al Compromiso
 - **Regla de Oro**: Las dueñas de salones temen contratos de permanencia o cobros sorpresa.
-- **Aplicación Kowy**: Explicar con total claridad qué pasa en el Mes 2 (libertad de elegir continuar en SaaS o quedarse solo con su web activa por $50.000 al año de hosting).
+- **Aplicación Kowy**: Explicar con total claridad qué pasa en el Mes 2 (libertad de elegir continuar en SaaS o quedarse solo con su web activa por $89.000 al año de hosting a partir del año 2).
 
 ### 4. Estructura Visual Escaneable (Thumb-Friendly)
 - Párrafos de máximo 2 a 3 líneas.
@@ -51,7 +51,7 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 ### Framework B: Hook - Story - Offer (Gancho - Historia - Oferta)
 1. **Gancho**: *"¡Hola [Nombre]! Encontramos su salón en Google Maps y les preparamos un regalo especial."*
 2. **Historia**: *"Notamos que tienen excelentes reseñas pero no contaban con un portal web moderno para mostrar sus fotos y servicios."*
-3. **Oferta**: *"Página web completa + 1 Mes de Plan Crecimiento por solo $50.000 COP de patrocinio."*
+3. **Oferta**: *"Página web completa con 1 año de hosting + 1 Mes de Plan Crecimiento + afiches QR por solo $89.000 COP de activación."*
 
 ---
 
@@ -70,18 +70,19 @@ Encontramos su negocio en Google Maps y les armamos una propuesta de su página 
 
 ---
 
-### 🎁 Plantilla 2: Respuesta al Interés (Paso 2: Jornada de Lanzamiento $50k)
+### 🎁 Plantilla 2: Respuesta al Interés (Paso 2: Jornada de Lanzamiento $89k)
 ```text
 ¡Nos alegra mucho! 🎉 La diseñamos pensando en destacar la imagen de su salón.
 
 Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
 
-Por un aporte único de activación de $50.000 COP (vía Nequi o Daviplata), les entregamos:
+Por un aporte único de activación de $89.000 COP (vía Nequi o Daviplata), les entregamos:
 
-🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp.
-🎁 1 Mes Completo Incluido del sistema de reservas online para clientas y app de agenda para sus estilistas.
+🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp, con 1 Año Completo de Alojamiento Web (Hosting + SSL) incluido.
+🎁 1 Mes Completo Incluido del sistema de reservas online para clientas, app de agenda para estilistas y caja POS.
+🖨️ Afiches y Tarjetas QR de reservas listos para imprimir en sus tocadores y mostrador.
 
-(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al año).
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa en Google Maps renovando solo su hosting por $89.000 al año a partir del 2do año).
 
 Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨
 ```
@@ -90,7 +91,7 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
 
 ### 🔴 Plantilla 3: Cierre de Urgencia & Cupo Limitado
 ```text
-¡Hola [Nombre]! 👋 Te cuento que estamos asignando los últimos 3 cupos patrocinados de digitalización de esta semana en [Ciudad] ($50.000 COP en vez de $680.000 COP con el mes de Plan Crecimiento incluido).
+¡Hola [Nombre]! 👋 Te cuento que estamos asignando los últimos 3 cupos patrocinados de digitalización de esta semana en [Ciudad] ($89.000 COP en vez de $680.000 COP con 1 año de hosting y el mes de Plan Crecimiento incluido).
 
 Si te gustaría asegurar el cupo de [Nombre del Salón], me confirmas para dejarlo activo hoy mismo 🚀
 ```
@@ -125,6 +126,6 @@ Si te gustaría asegurar el cupo de [Nombre del Salón], me confirmas para dejar
 
 | Objeción | Respuesta Persuasiva |
 | :--- | :--- |
-| **"¿Por qué cobran $50.000 al año si no sigo con el plan mensual?"** | *"Para que tu página web esté en línea 24/7 en Google Maps con certificado de seguridad SSL y fotos en alta definición, requiere un servidor en la nube. Ese costo es de apenas $4.160 COP al mes ($50k/año), menos de lo que cuesta un café."* |
+| **"¿Por qué cobran $89.000 al año si no sigo con el plan mensual?"** | *"Para que tu página web esté en línea 24/7 en Google Maps con certificado de seguridad SSL y fotos en alta definición, requiere un servidor en la nube. Ese costo es de apenas ~$7.400 COP al mes ($89k/año), menos de lo que cuesta un café."* |
 | **"Ya tengo Instagram, no necesito página web"** | *"¡Instagram es excelente! Pero cuando las personas buscan en Google Maps 'salón cerca de mí', Google solo posiciona a los negocios que tienen una web oficial vinculada. Además, tu agendador Kowy lo puedes poner en el link de tu biografía de Instagram para que tus seguidoras se agenden solas en segundos."* |
 | **"Mis estilistas no saben usar tecnología"** | *"La App de Kowy para colaboradoras fue diseñada para ser tan fácil como usar WhatsApp. En solo 2 minutos aprenden a ver sus turnos del día y cuánto dinero llevan ganado en comisiones."* |

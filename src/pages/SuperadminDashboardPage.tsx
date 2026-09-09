@@ -646,12 +646,13 @@ Encontramos su negocio en Google Maps y les armamos una propuesta de su página 
 
 Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
 
-Por un aporte único de activación de $50.000 COP (vía Nequi o Daviplata), les entregamos:
+Por un aporte único de activación de $89.000 COP (vía Nequi o Daviplata), les entregamos:
 
-🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp.
-🎁 1 Mes Completo Incluido del sistema de reservas online para clientas y app de agenda para sus estilistas.
+🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp, con 1 Año Completo de Alojamiento Web (Hosting de alta velocidad + Certificado SSL) incluido.
+🎁 1 Mes Completo Incluido del sistema de reservas online para clientas, app móvil de agenda para sus estilistas y caja POS.
+🖨️ Afiches y Tarjetas QR de reservas listos para imprimir en sus tocadores y mostrador.
 
-(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa por solo $50.000 al año).
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa en Google Maps renovando únicamente su hosting por $89.000 al año a partir del 2do año).
 
 Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨`;
   };

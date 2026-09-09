@@ -6,11 +6,14 @@
 
 ### 📌 El Concepto Central
 En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse / Lead Magnet de Alto Impacto**:
-1. **La Página Web es 100% GRATIS de por vida** (Plan Gratuito $0 COP). Esto rompe la desconfianza y abre la puerta con el dueño del salón.
+1. **La Página Web es 100% GRATIS en desarrollo y diseño** (Plan Gratuito sin mensualidades). Esto rompe la desconfianza y abre la puerta con el dueño del salón.
 2. **Anclaje de Alto Valor ($680.000 COP):** Se posiciona el valor regular de desarrollo web, agendador y sistema en **$680.000 COP**.
-3. **Cupo de Lanzamiento / Activación Simbólica ($50.000 COP):** Se ofrece una tarifa única de activación de solo **$50.000 COP** (por Nequi o Daviplata) para configurar el catálogo, especialistas y habilitar el botón de reservas.
-4. **Regalo Mes 1 (Plan Crecimiento - $120.000 COP):** Por esos mismos $50.000 COP reciben **30 días completos en el Plan Crecimiento**, permitiendo que todo el equipo del salón adopte la App móvil y la caja POS.
-5. **A partir del Mes 2:** El cliente puede continuar con el Plan Crecimiento ($120k), pasar al Plan Inicio ($50k), subir al Plan Pro con IA ($240k) o quedarse solo con su web gratis ($0), sin contratos ni cláusulas de permanencia.
+3. **Cupo de Activación & Hosting Anual ($89.000 COP):** Se ofrece una tarifa de activación de solo **$89.000 COP** (por Nequi o Daviplata) que incluye:
+   - Personalización y montaje del catálogo y especialistas.
+   - **1 Año Completo de Hosting Seguro y Certificado SSL en la nube** (cero mensualidades de hosting el primer año).
+   - **Kit de Afiches y Tarjetas QR Imprimibles** para tocadores y mostrador.
+4. **Regalo Mes 1 (Plan Crecimiento - $120.000 COP):** Por esos mismos $89.000 COP reciben **30 días completos en el Plan Crecimiento**, permitiendo que todo el equipo del salón adopte la App móvil y la caja POS.
+5. **A partir del Mes 2:** El cliente tiene total libertad: puede continuar con el Plan Crecimiento ($120k/mes), pasar al Plan Inicio ($50k/mes), subir al Plan Pro con IA ($240k/mes) o quedarse solo con su web vitrina activa pagando únicamente el hosting anual ($89.000 COP/año) a partir del año 2, sin contratos ni cláusulas de permanencia.
 
 ---
 
@@ -18,7 +21,7 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 | Nivel | Plan | Inversión Mensual ($ COP) | Enfoque & Propuesta de Valor |
 | :---: | :--- | :---: | :--- |
-| **0** | **🌐 Modalidad Solo Web** | **$50.000 / AÑO** *(~$4.160/mes)* | Vitrina digital de lujo en Google Maps con fotos, catálogo, horarios, SSL y botón directo a WhatsApp. |
+| **0** | **🌐 Modalidad Solo Web** | **$89.000 / AÑO** *(~$7.400/mes)* | Vitrina digital de lujo en Google Maps con fotos, catálogo, horarios, SSL y botón directo a WhatsApp. *1er año incluido en la activación.* |
 | **1** | **🚀 Plan Inicio** | **$50.000 / mes** *(o $500k/año)* | Sistema interactivo de agendamiento online (`/reservar/:slug`) con hasta 4 colaboradores. |
 | **2** | **📈 Plan Crecimiento** ⭐ *(Regalo Mes 1)* | **$120.000 / mes** *(o $1.2M/año)* | Colaboradores ilimitados + App móvil para estilistas + Caja POS y liquidación de comisiones. |
 | **3** | **🤖 Plan Pro Flow (IA)** | **$240.000 / mes** *(o $2.4M/año)* | Agente Virtual Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal (IG/FB) + Recordatorios anti-plantón. |
@@ -32,7 +35,7 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 ---
 
 ### 🌐 NIVEL 0: Modalidad Solo Web *(Vitrina Digital + Hosting Seguro)*
-* **Precio:** **$50.000 COP / AÑO** *(equivalente a solo $4.160 COP/mes)*.
+* **Precio:** **$89.000 COP / AÑO** *(equivalente a solo ~$7.400 COP/mes)*. El primer año está 100% incluido en la activación inicial.
 * **Objetivo:** Para negocios que no desean SaaS ni agenda, pero quieren mantener su página web oficial en Google Maps.
 * **Características incluidas:**
   - ✅ **Página Web Profesional de Lujo** (`/sitio/:slug`) adaptada a móvil y desktop con diseño *Glassmorphism*.
@@ -122,12 +125,12 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 ## 📱 4. Guiones Oficiales de Prospección por WhatsApp
 
-### 📩 Mensaje de Contacto Inicial (Anclaje $680.000 ➔ $50.000)
+### 📩 Mensaje de Contacto Inicial (Anclaje $680.000 ➔ $89.000)
 
 ```text
 ¡Hola [Nombre del Salón / Dueña]! 👋 Estuvimos viendo su salón en Google Maps y les preparamos un regalo especial para su negocio:
 
-🌐 Su Página Web Profesional (100% Gratis de por vida):
+🌐 Su Página Web Profesional (Desarrollo 100% Bonificado):
 👉 https://belleza2027.netlify.app/sitio/[slug]
 
 (Pueden compartirla con sus clientas para mostrar fotos, trabajos, dirección y horarios sin costo alguno).
@@ -135,23 +138,24 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 ✨ Oportunidad de Digitalización Local:
 El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
 
-🎁 Por un aporte único de activación de solo $50.000 COP (Nequi / Daviplata), reciben:
+🎁 Por un aporte único de activación de solo $89.000 COP (Nequi / Daviplata), reciben:
 1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
-2. ✅ Configuración total de su Catálogo de Servicios y Especialistas.
-3. ✅ 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
+2. 🌐 1 Año Completo de Alojamiento Web en la Nube (Hosting de alta velocidad + Certificado SSL) incluido.
+3. 🎁 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):
    - 📅 Botón de reservas online para clientas (/reservar).
    - 👥 Colaboradoras / Especialistas ilimitadas.
    - 📱 App móvil para que cada estilista vea su agenda y comisiones.
    - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
+4. 🖨️ Kit de Afiches y Tarjetas QR de reservas listos para imprimir en tocadores y mostrador.
 
-A partir del 2do mes pueden continuar con su plan desde $50.000/mes o quedarse solo con su web gratis sin permanencias.
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa renovando únicamente su hosting por $89.000 al año a partir del año 2).
 
 ¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo me confirman su correo y les entrego sus accesos 📲
 ```
 
 ---
 
-### 📩 Mensaje de Entrega de Credenciales (Post-Pago $50.000 COP)
+### 📩 Mensaje de Entrega de Credenciales (Post-Pago $89.000 COP)
 
 ```text
 ¡Hola [Nombre de la Dueña]! 🎉 Ya activamos tu acceso de administración a tu plataforma BeautyFlow AI.
