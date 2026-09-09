@@ -1,3 +1,7 @@
+- [x] **Diagnóstico Inmune a CORS y Resolución Multi-Ruta de Fotogramas para Video-Scroll ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
+  - Diagnóstico CDN mediante `new Image()` nativo con timeout y fallback a `poster.webp`, eliminando falsos negativos causados por bloqueos de CORS en `fetch()`.
+  - Detección universal de carpetas de fotogramas en `../negocios_locales/<slug>/public/frames` y con guiones bajos en el CLI `npm run upload:frames <slug>`.
+
 - [x] **Ingesta Inteligente de Video-Scroll & Diagnóstico CDN de Frames en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - Auto-detección de plantillas con video-scroll en la carga de archivos HTML y prospectos existentes.
   - Panel dinámico con diagnóstico en tiempo real contra Cloudflare R2 (`200 OK`), botón para copiar comando `npm run upload:frames <slug>` y enlace al bucket.

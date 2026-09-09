@@ -66,13 +66,18 @@ if (!slug) {
 // 3. Resolver la carpeta de origen de los frames
 if (!sourceFramesFolder) {
   const defaultLocal = path.join(projectRoot, 'public', 'frames', slug);
+  const fallbackDoc = path.join(projectRoot, 'document', slug.replace(/-/g, '_'), 'public', 'frames');
+  const fallbackNegocios = path.resolve(projectRoot, '..', 'negocios_locales', slug.replace(/-/g, '_'), 'public', 'frames');
+  const fallbackNegociosHyphen = path.resolve(projectRoot, '..', 'negocios_locales', slug, 'public', 'frames');
+
   if (fs.existsSync(defaultLocal)) {
     sourceFramesFolder = defaultLocal;
-  } else {
-    const fallbackDoc = path.join(projectRoot, 'document', slug.replace(/-/g, '_'), 'public', 'frames');
-    if (fs.existsSync(fallbackDoc)) {
-      sourceFramesFolder = fallbackDoc;
-    }
+  } else if (fs.existsSync(fallbackDoc)) {
+    sourceFramesFolder = fallbackDoc;
+  } else if (fs.existsSync(fallbackNegocios)) {
+    sourceFramesFolder = fallbackNegocios;
+  } else if (fs.existsSync(fallbackNegociosHyphen)) {
+    sourceFramesFolder = fallbackNegociosHyphen;
   }
 }
 

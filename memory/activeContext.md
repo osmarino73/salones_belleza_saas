@@ -16,6 +16,10 @@
 
 ## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
 
+-54. **Diagnóstico Inmune a CORS y Resolución Multi-Ruta de Fotogramas para Video-Scroll ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
+    - **Diagnóstico CDN con `new Image()` Nativo**: El botón *"Diagnosticar CDN"* utilizaba `fetch(..., { method: 'HEAD' })`, lo que producía falsos negativos ("Fotogramas aún no detectados") en el navegador debido a bloqueos de CORS provenientes del dominio público `pub-*.r2.dev`. Se rediseñó la comprobación utilizando un objeto `new Image()` con timeout y fallback a `poster.webp`, que los navegadores cargan cross-origin sin restricciones de CORS, reflejando inmediatamente el estado real `✅ Frames listos en CDN (Cloudflare R2)`.
+    - **Detección Universal en `negocios_locales`**: El script CLI `npm run upload:frames <slug>` ahora resuelve automáticamente los fotogramas no solo en `public/frames/<slug>`, sino también en `../negocios_locales/<slug>/public/frames` y `../negocios_locales/<slug_con_guiones_bajos>/public/frames` (ej. `dp_beauty_nails`), eliminando la necesidad de rutas absolutas manuales.
+
 -53. **Ingesta Inteligente de Video-Scroll & Diagnóstico CDN de Frames en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Detección Reactiva de Video-Scroll**: Al cargar cualquier plantilla `.html` o prospecto existente, el sistema escanea automáticamente patrones de scrubbing (`#hero-canvas`, `hero-scroll-section`, `public/frames`). Si no hay video, la interfaz permanece 100% limpia con las 3 tarjetas estándar.
     - **Panel Dedicado de Gestión & Diagnóstico CDN**: Cuando se detecta video-scroll, se despliega un panel con degradado dorado que:

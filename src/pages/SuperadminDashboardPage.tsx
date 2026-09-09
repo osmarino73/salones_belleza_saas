@@ -117,8 +117,42 @@ export const SuperadminDashboardPage: React.FC = () => {
     setFramesCdnStatus('checking');
     try {
       const testUrl = `${r2CdnUrl}/frames/${targetSlug}/desktop/frame-0001.webp`;
-      const res = await fetch(testUrl, { method: 'HEAD' });
-      if (res.ok) {
+      
+      // Usamos new Image() en lugar de fetch() porque los navegadores bloquean fetch() con CORS
+      // si el bucket R2 no tiene cabeceras CORS explícitas, mientras que Image carga sin restricciones.
+      const isAvailable = await new Promise<boolean>((resolve) => {
+        const img = new Image();
+        const timeout = setTimeout(() => {
+          img.onload = null;
+          img.onerror = null;
+          resolve(false);
+        }, 6000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(true);
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          // Intento de fallback verificando poster.webp
+          const fallbackImg = new Image();
+          const fallbackTimeout = setTimeout(() => resolve(false), 4000);
+          fallbackImg.onload = () => {
+            clearTimeout(fallbackTimeout);
+            resolve(true);
+          };
+          fallbackImg.onerror = () => {
+            clearTimeout(fallbackTimeout);
+            resolve(false);
+          };
+          fallbackImg.src = `${r2CdnUrl}/frames/${targetSlug}/desktop/poster.webp?t=${Date.now()}`;
+        };
+
+        img.src = `${testUrl}?t=${Date.now()}`;
+      });
+
+      if (isAvailable) {
         setFramesCdnStatus('ready');
       } else {
         setFramesCdnStatus('missing');
