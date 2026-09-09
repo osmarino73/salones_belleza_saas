@@ -122,7 +122,7 @@ export const WhatsAppTemplatesCard: React.FC<WhatsAppTemplatesCardProps> = ({
 
   const handleSendTestMessage = () => {
     if (!testPhone || testPhone.replace(/\D/g, '').length < 7) {
-      alert('Por favor ingresa un número de teléfono válido con código de país (ej. +57 311 419 5123).');
+      alert('Por favor ingresa un número de teléfono válido con código de país (ej. +57 322 633 4341).');
       return;
     }
     setIsSendingTest(true);
@@ -307,7 +307,7 @@ export const WhatsAppTemplatesCard: React.FC<WhatsAppTemplatesCardProps> = ({
                 type="tel"
                 value={testPhone}
                 onChange={(e) => setTestPhone(e.target.value)}
-                placeholder="+57 311 419 5123"
+                placeholder="+57 322 633 4341"
                 className="w-full bg-[#0E121B] border border-white/10 text-white rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-emerald-500"
               />
               <button

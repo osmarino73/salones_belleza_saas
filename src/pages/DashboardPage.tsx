@@ -3768,7 +3768,7 @@ export const DashboardPage: React.FC = () => {
                                       if (aiSettings) {
                                         const updated: TenantAISettings = {
                                           ...aiSettings,
-                                          whatsapp_phone_number: waAccount.username || waAccount.phoneNumber || salonPhone || '+57 311 419 5123',
+                                          whatsapp_phone_number: waAccount.username || waAccount.phoneNumber || salonPhone || '+57 322 633 4341',
                                           zernio_connected: true,
                                           zernio_status: 'connected',
                                           zernio_connection_mode: 'coexistence'

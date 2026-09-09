@@ -152,7 +152,7 @@
       2. `Fidelización & Reactivación (+35D)` (🔒 Pro IA)
       3. `Plantillas WhatsApp & Email` (🔒 Pro IA)
     - **Control Cuantitativo de Equipo**: Validación en `handleOpenNewStylist` para restringir hasta 4 colaboradoras en Plan Inicio y sugerir upgrade a Crecimiento para ilimitadas.
-    - **Navegación Protegida (`handleNavigateTab`)**: Al hacer clic en módulos exclusivos de Pro IA, se despliega el modal interactivo de Upgrade con beneficios claros, sin permanencia y botón directo a WhatsApp oficial (+57 311 419 5123).
+    - **Navegación Protegida (`handleNavigateTab`)**: Al hacer clic en módulos exclusivos de Pro IA, se despliega el modal interactivo de Upgrade con beneficios claros, sin permanencia y botón directo a WhatsApp oficial (+57 322 633 4341).
     - **Indicadores Visuales 🔒**: Candados e insignias informativas `🔒 Pro IA` en el menú de perfil y la navegación.
 
 -21. **Corrección de Responsividad y Solapamiento de Badges en Tarjetas de Estilistas ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
@@ -205,13 +205,13 @@
     - **Calculadora Financiera de No-Shows**: Sliders interactivos que demuestran las pérdidas de dinero por citas no confirmadas y el retorno de inversión con Kowy ($50.000 COP).
     - **Tabla Comparativa Directa**: Agenda Tradicional/WhatsApp vs Kowy Automatizado.
     - **Escalera de Precios en Pesos Colombianos ($ COP)**: Plan Gratuito ($0), Inicio ($50k), Crecimiento ($120k con 30 días de regalo), Pro Flow IA ($240k), Escala ($720k), Agencia VIP ($1.44M).
-    - **Formulario de Captura & WhatsApp Oficial (+57 311 419 5123)**: Redirección instantánea a WhatsApp con mensaje estructurado.
+    - **Formulario de Captura & WhatsApp Oficial (+57 322 633 4341)**: Redirección instantánea a WhatsApp con mensaje estructurado.
 
 -14. **Creación del Salón Demo Oficial "Studio Glamour & Spa" ([`demoSalonSiteData.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/demoSalonSiteData.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
     - Se creó el dataset oficial para el tenant demo con slug `/sitio/demo` y `/reservar/demo`.
     - 5 servicios reales con precios en COP y fotos (*Balayage Deluxe, Corte Spa, Keratina Espejo, Manicure Ruso, Cejas & Pestañas*).
     - 3 estilistas reales (*Valentina Rengifo, Camila Morales, Andrés Restrepo*).
-    - WhatsApp oficial del demo conectado a `+57 311 419 5123`.
+    - WhatsApp oficial del demo conectado a `+57 322 633 4341`.
 
 -13. **Unificación y Simplificación Total de Bienvenida (Checklist 1-2-3 y Eliminación de Onboarding Redundante) ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Eliminación de Onboarding Intrusivo**: Se removió por completo `SalonOnboardingModal` para evitar wizards pesados que bloqueaban el panel o duplicaban formularios.

@@ -839,7 +839,7 @@ export const TemplatesManagerPage: React.FC<TemplatesManagerPageProps> = ({
 
   const handleSendWaTest = () => {
     if (!testWaPhone || testWaPhone.replace(/\D/g, '').length < 7) {
-      alert('Ingresa un teléfono válido con código de país (ej. +57 311 419 5123)');
+      alert('Ingresa un teléfono válido con código de país (ej. +57 322 633 4341)');
       return;
     }
     setIsSendingWaTest(true);
@@ -1295,7 +1295,7 @@ export const TemplatesManagerPage: React.FC<TemplatesManagerPageProps> = ({
                   type="tel"
                   value={testWaPhone}
                   onChange={(e) => setTestWaPhone(e.target.value)}
-                  placeholder="+57 311 419 5123"
+                  placeholder="+57 322 633 4341"
                   className={`w-full rounded-xl px-3 py-2.5 text-xs font-mono focus:outline-none focus:border-emerald-500 ${
                     isDark
                       ? 'bg-[#0B0E14] border border-white/10 text-white'

@@ -1,26 +1,26 @@
 {
-  "nombre_agencia": "BeautyFlow AI",
+  "nombre_agencia": "Kowy (kowy.app)",
   "slogan": "La plataforma inteligente 360° para Salones de Belleza, Spas y Barberías",
-  "propuesta_valor": "Te entregamos la Página Web de tu Salón 100% GRATIS de por vida. Por solo $50.000 COP de activación (valor regular $680.000 COP), activas tu sistema de reservas online, caja POS y app de colaboradoras con 1 mes incluido en el Plan Crecimiento.",
+  "propuesta_valor": "Te entregamos la Página Web de tu Salón con desarrollo 100% bonificado. Por solo $89.000 COP de activación (valor regular $680.000 COP), recibes tu web personalizada, 1 año completo de hosting y SSL en la nube, kit de afiches QR y 1 mes incluido en el Plan Crecimiento con agendador online, caja POS y app de colaboradoras.",
   "contacto": {
-    "telefono": "+57 300 900 8000",
-    "whatsapp": "+57 300 900 8000",
-    "email": "hola@beautyflow.ai",
-    "direccion": "Agencia Digital & Software SaaS para Salones de Belleza",
+    "telefono": "+57 322 633 4341",
+    "whatsapp": "+57 322 633 4341",
+    "email": "hola@kowy.app",
+    "direccion": "Kowy.app • Plataforma SaaS Multi-Tenant para Salones de Belleza",
     "horario_atencion": "Atención automatizada por IA las 24 Horas"
   },
   "oferta_caballo_troya": {
-    "titulo": "¡Tu Página Web Profesional 100% GRATIS de por vida!",
+    "titulo": "¡Tu Página Web Profesional con Desarrollo Bonificado!",
     "valor_regular_anclaje": "$680.000 COP",
-    "costo_activacion": "$50.000 COP",
+    "costo_activacion": "$89.000 COP",
     "plan_primer_mes_incluido": "Plan Crecimiento ($120.000 COP/mes)",
-    "descripcion": "Diseñamos e instalamos el sitio web de tu salón sin costo alguno. Por solo $50.000 COP de activación única, te configuramos tu catálogo completo y te regalamos 1 mes en el Plan Crecimiento con reservas online, caja POS y app móvil para tus colaboradoras.",
+    "descripcion": "Diseñamos e instalamos el sitio web de tu salón sin costo de desarrollo. Por solo $89.000 COP de activación única, te entregamos tu web personalizada con 1 año de hosting seguro y SSL incluido, kit de afiches QR listos para imprimir y te regalamos 1 mes en el Plan Crecimiento con reservas online, caja POS y app móvil para tus colaboradoras.",
     "incluye_gratis": [
       "Página Web de Lujo 100% responsiva para móviles",
       "Optimización para Google Maps y SEO Local",
       "Catálogo interactivo de servicios con fotos de referencia",
       "Botón directo a WhatsApp del salón",
-      "Alojamiento y certificado de seguridad SSL gratis de por vida"
+      "1er Año Completo de Alojamiento Web y SSL en la nube incluido"
     ]
   },
   "modulos_sistema": [
@@ -94,7 +94,7 @@
       "precio_mensual": "$120.000 COP",
       "periodo": "/mes",
       "destacado": true,
-      "etiqueta_destacado": "INCLUIDO EN MES 1 ($50k SETUP)",
+      "etiqueta_destacado": "INCLUIDO EN MES 1 ($89k SETUP)",
       "publico": "Salones y Spas con equipo (4 a 10 personas)",
       "caracteristicas": [
         "Todo lo del Plan Inicio",

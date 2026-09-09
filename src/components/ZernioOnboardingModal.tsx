@@ -415,7 +415,7 @@ export const ZernioOnboardingModal: React.FC<ZernioOnboardingModalProps> = ({
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => handlePhoneInput(e.target.value)}
-                  placeholder="311 419 5123"
+                  placeholder="322 633 4341"
                   className="w-full bg-white border border-slate-300 focus:border-[#1877F2] text-slate-900 rounded-lg px-3.5 py-2.5 text-sm font-mono focus:outline-none transition-all placeholder-slate-400 shadow-sm"
                   required
                 />

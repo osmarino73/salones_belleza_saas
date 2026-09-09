@@ -86,7 +86,7 @@ export const LandingPage: React.FC = () => {
     );
 
     // Abrir WhatsApp en nueva pestaña
-    window.open(`https://wa.me/573114195123?text=${message}`, '_blank');
+    window.open(`https://wa.me/573226334341?text=${message}`, '_blank');
   };
 
   return (
@@ -107,13 +107,13 @@ export const LandingPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://wa.me/573114195123?text=Hola%20Kowy,%20deseo%20asesoria%20para%20mi%20salon"
+              href="https://wa.me/573226334341?text=Hola%20Kowy,%20deseo%20asesoria%20para%20mi%20salon"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 text-[#FF5A36] hover:text-[#ff785a] font-bold transition-colors"
             >
               <MessageCircle className="w-3.5 h-3.5" />
-              WhatsApp Oficial: +57 311 419 5123
+              WhatsApp Oficial: +57 322 633 4341
             </a>
           </div>
         </div>
@@ -329,7 +329,7 @@ export const LandingPage: React.FC = () => {
                 {/* Botón WhatsApp Oficial */}
                 <div className="px-3 pt-1">
                   <a
-                    href="https://wa.me/573114195123?text=Hola%20Studio%20Glamour,%20vi%20su%20demo%20y%20quiero%20informacion"
+                    href="https://wa.me/573226334341?text=Hola%20Studio%20Glamour,%20vi%20su%20demo%20y%20quiero%20informacion"
                     target="_blank"
                     rel="noreferrer"
                     className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/10 transition-all"
@@ -827,7 +827,7 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
             <a
-              href="https://wa.me/573114195123?text=Hola%20Kowy,%20deseo%20consultar%20sobre%20los%20Planes%20Escala%20o%20Agencia%20VIP"
+              href="https://wa.me/573226334341?text=Hola%20Kowy,%20deseo%20consultar%20sobre%20los%20Planes%20Escala%20o%20Agencia%20VIP"
               target="_blank"
               rel="noreferrer"
               className="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/10 shrink-0 transition-all"
@@ -868,13 +868,13 @@ export const LandingPage: React.FC = () => {
                   Se ha abierto la conversación oficial con nuestro equipo. Si no se abrió automáticamente, pulsa el botón de abajo.
                 </p>
                 <a
-                  href={`https://wa.me/573114195123?text=Hola%20Kowy,%20registre%20mi%20negocio%20${encodeURIComponent(formData.businessName)}`}
+                  href={`https://wa.me/573226334341?text=Hola%20Kowy,%20registre%20mi%20negocio%20${encodeURIComponent(formData.businessName)}`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 bg-[#FF5A36] hover:bg-[#E54E07] text-white font-black px-6 py-3 rounded-2xl text-xs shadow-lg shadow-[#FF5A36]/30"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Abrir Chat de WhatsApp (+57 311 419 5123)</span>
+                  <span>Abrir Chat de WhatsApp (+57 322 633 4341)</span>
                 </a>
               </div>
             ) : (
@@ -1018,10 +1018,10 @@ export const LandingPage: React.FC = () => {
         </div>
       </footer>
 
-      {/* BOTÓN FLOTANTE DE WHATSAPP OFICIAL (311 419 5123) */}
+      {/* BOTÓN FLOTANTE DE WHATSAPP OFICIAL (322 633 4341) */}
       <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center">
         <a
-          href="https://wa.me/573114195123?text=Hola%20Kowy,%20estoy%20viendo%20la%20pagina%20web%20y%20deseo%20asesoria"
+          href="https://wa.me/573226334341?text=Hola%20Kowy,%20estoy%20viendo%20la%20pagina%20web%20y%20deseo%20asesoria"
           target="_blank"
           rel="noreferrer"
           className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#2fe577] to-[#128C7E] text-white flex items-center justify-center shadow-2xl shadow-emerald-500/60 transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer border border-white/30"

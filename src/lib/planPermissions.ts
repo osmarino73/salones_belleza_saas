@@ -126,7 +126,7 @@ export function canAddMoreStylists(currentCount: number, plan?: string): { allow
 }
 
 export function getUpgradeWhatsAppUrl(requiredPlan: SubscriptionPlan, salonName?: string, featureName?: string): string {
-  const phone = '573114195123';
+  const phone = '573226334341';
   const planInfo = PLAN_CONFIGS[requiredPlan];
   const msg = encodeURIComponent(
     `Hola Kowy! 👋 Mi salón es "${salonName || 'mi negocio'}" y me gustaría activar el ${planInfo.name} (${planInfo.price_label}) para desbloquear ${featureName || 'todas las funciones avanzadas'}. ¿Cómo puedo activarlo?`
