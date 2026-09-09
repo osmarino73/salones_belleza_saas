@@ -124,6 +124,7 @@ export const PublicProspectSitePage: React.FC = () => {
       aboutStat3Text: tenant?.about_stat3_text || bData.about_stat3_text || undefined,
       aboutRatingText: tenant?.about_rating_text || bData.about_rating_text || undefined,
       showAboutSection: showAbout,
+      framesBaseUrl: `/frames/${site.slug}`,
       liveServices: liveServices.length > 0 ? liveServices : undefined,
       liveStylists: liveStylists.length > 0 ? liveStylists : undefined
     });

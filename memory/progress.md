@@ -1,3 +1,9 @@
+- [x] **Soporte de Inyección SaaS para Plantillas con Canvas Video Scroll Scrubbing (Frames WebP en Header) ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`sanusSpaSiteData.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/sanusSpaSiteData.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - `overflow-x: clip` en el reset inyectado para evitar anular `position: sticky` en el canvas en navegadores modernos.
+  - Reescritura dinámica de rutas de fotogramas a `/frames/:slug/desktop` y `/frames/:slug/mobile`.
+  - Mapeo de botones de reserva ("Agendar", "Reservar") a `/reservar/:slug` respetando anclas internas (`#servicios`).
+  - Fotogramas WebP alojados en `public/frames/sanus-spa/` y registro estático de Sanus Spa para pruebas instantáneas.
+
 - [x] **Corrección de TypeError: `r.toLowerCase is not a function` en Agendador ([`BookingPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/BookingPage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`StylistPortalPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
   - `getSalonScheduleForDate` ahora soporta objetos JSON de horarios de atención (ej. `{"lunes_a_sabado": "8:00 AM - 7:00 PM"}`) transformándolos a cadenas formateadas legibles.
   - Se eliminó el error de ejecución en `useMemo` al cargar la página de agendamiento y los 14 días disponibles.

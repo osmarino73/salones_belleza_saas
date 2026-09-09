@@ -3,6 +3,7 @@ import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, T
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
 import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
+import { SANUS_SPA_SITE_DATA } from './sanusSpaSiteData';
 import { DEMO_TENANT_DATA, DEMO_SERVICES_DATA, DEMO_STYLISTS_DATA, DEMO_SALON_SITE_DATA } from './demoSalonSiteData';
 
 const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -2225,6 +2226,9 @@ export const api = {
         if (!merged.some(s => s.slug === 'luxus-beauty-spa')) {
           merged = [LUXUS_BEAUTY_SITE_DATA, ...merged];
         }
+        if (!merged.some(s => s.slug === 'sanus-spa')) {
+          merged = [SANUS_SPA_SITE_DATA, ...merged];
+        }
         inMemoryProspectSitesCache = merged;
         return merged;
       } catch (e) {}
@@ -2292,7 +2296,7 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    const defaultSites = [DEMO_SALON_SITE_DATA, KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, LUXUS_BEAUTY_SITE_DATA, demoSite];
+    const defaultSites = [DEMO_SALON_SITE_DATA, SANUS_SPA_SITE_DATA, KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, LUXUS_BEAUTY_SITE_DATA, demoSite];
     inMemoryProspectSitesCache = defaultSites;
     safeSaveProspectSitesToLocalStorage(defaultSites);
     return defaultSites;
@@ -2310,6 +2314,9 @@ export const api = {
     }
     if (slug === 'kapa-spa' || slug === 'kapa_spa') {
       return KAPA_SPA_SITE_DATA;
+    }
+    if (slug === 'sanus-spa' || slug === 'sanus_spa') {
+      return SANUS_SPA_SITE_DATA;
     }
     if (supabase && isSupabaseConfigured) {
       try {

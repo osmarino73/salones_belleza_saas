@@ -1,0 +1,119 @@
+{
+  "negocio": {
+    "nombre": "Sanus Spa",
+    "nombre_legal": "Sanus Spa & Fitness Club",
+    "rubro": "Spa y gimnasio",
+    "categoria": "spa",
+    "eslogan": "Tu refugio exclusivo de relajación, acondicionamiento y bienestar en Apartadó",
+    "calificacion": "4.7",
+    "resenas": "1",
+    "contacto": {
+      "telefono_principal": "(+57) 310 539 5819",
+      "whatsapp": {
+        "numero": "+573105395819",
+        "link": "https://wa.me/573105395819?text=Hola%20Sanus%20Spa%2C%20quisiera%20solicitar%20informaci%C3%B3n%20y%20agendar%20una%20cita."
+      }
+    },
+    "ubicacion": {
+      "direccion": "Cra. 106, Apartadó, Antioquia",
+      "ciudad": "Apartadó",
+      "departamento_pais": "Antioquia, Colombia",
+      "google_maps_url": "https://maps.google.com/maps?q=Sanus+Spa,+Cra.+106,+Apartad%C3%B3,+Antioquia&t=&z=16&ie=UTF8&iwloc=&output=embed"
+    },
+    "horario_atencion": {
+      "lunes_a_viernes": "06:00 AM - 08:30 PM",
+      "sabados": "07:00 AM - 07:00 PM",
+      "domingos_festivos": "08:00 AM - 02:00 PM"
+    },
+    "sistema_reservas": {
+      "canal_directo": "WhatsApp Concierge",
+      "anticipacion_sugerida": "24 horas"
+    },
+    "servicios": [
+      {
+        "id": "hidroterapia-sauna",
+        "nombre": "Ritual Hidroterapia & Sauna",
+        "categoria": "Circuito Spa",
+        "descripcion": "Inmersión termal, sales minerales y sauna herbal desintoxicante.",
+        "precio": "$110.000 COP",
+        "precio_numerico": 110000,
+        "imagen": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "masaje-terapeutico",
+        "nombre": "Masaje Terapéutico & Descontracturante",
+        "categoria": "Masajes",
+        "descripcion": "Alivio muscular profundo con aceites botánicos y aromaterapia.",
+        "precio": "$95.000 COP",
+        "precio_numerico": 95000,
+        "imagen": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "facial-glow",
+        "nombre": "Facial Glow & Hidrodermo",
+        "categoria": "Estética Facial",
+        "descripcion": "Exfoliación ultrasónica, ácido hialurónico y velo de colágeno.",
+        "precio": "$85.000 COP",
+        "precio_numerico": 85000,
+        "imagen": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "piedras-volcanicas",
+        "nombre": "Terapia con Piedras Volcánicas",
+        "categoria": "Bienestar Holístico",
+        "descripcion": "Calor basáltico relajante para disolver tensiones y revitalizar.",
+        "precio": "$120.000 COP",
+        "precio_numerico": 120000,
+        "imagen": "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "drenaje-moldeo",
+        "nombre": "Drenaje Linfático & Moldeo",
+        "categoria": "Corporal",
+        "descripcion": "Reactivación circulatoria, tonificación y reducción de toxinas.",
+        "precio": "$90.000 COP",
+        "precio_numerico": 90000,
+        "imagen": "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "id": "fitness-recuperacion",
+        "nombre": "Fitness & Recuperación Muscular",
+        "categoria": "Gimnasio & Funcional",
+        "descripcion": "Acondicionamiento físico asistido y sesión de estiramiento guiado.",
+        "precio": "$75.000 COP",
+        "precio_numerico": 75000,
+        "imagen": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80"
+      }
+    ],
+    "especialistas": [
+      {
+        "nombre": "Dra. Valeria Gómez",
+        "rol": "Terapeuta Holística & Fisioterapia",
+        "calificacion": "5.0",
+        "experiencia": "8 años exp.",
+        "imagen": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "nombre": "Camila Benítez",
+        "rol": "Cosmetología Facial & Glow",
+        "calificacion": "5.0",
+        "experiencia": "6 años exp.",
+        "imagen": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "nombre": "Sofía Restrepo",
+        "rol": "Masoterapeuta & Terapia Geotermal",
+        "calificacion": "5.0",
+        "experiencia": "7 años exp.",
+        "imagen": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        "nombre": "Mateo Valencia",
+        "rol": "Entrenador Físico & Recuperación",
+        "calificacion": "5.0",
+        "experiencia": "9 años exp.",
+        "imagen": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80"
+      }
+    ]
+  }
+}

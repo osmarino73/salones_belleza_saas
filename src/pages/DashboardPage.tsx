@@ -397,6 +397,7 @@ export const DashboardPage: React.FC = () => {
       aboutStat3Text: websiteForm.about_stat3_text || undefined,
       aboutRatingText: websiteForm.about_rating_text || undefined,
       showAboutSection: websiteForm.show_about_section !== false,
+      framesBaseUrl: `/frames/${activeTenantObj?.slug || 'demo'}`,
       liveServices: services.length > 0 ? services : undefined,
       liveStylists: stylists.length > 0 ? stylists : undefined
     });

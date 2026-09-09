@@ -37,8 +37,10 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
   const result: ExtractedWebsiteData = {};
 
   try {
-    // 1. Extraer Hero Image
-    const heroImgMatch = html.match(/(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap|hero-image)[^>]*>\s*<img\b[^>]*src=["']([^"']+)["']/i)
+    // 1. Extraer Hero Image (incluyendo canvas poster fallback de video-scroll)
+    const heroImgMatch = html.match(/<img\b[^>]*id=["']canvas-poster-fallback["'][^>]*src=["']([^"']+)["']/i)
+      || html.match(/<img\b[^>]*class=["'][^"']*canvas-poster-img[^"']*["'][^>]*src=["']([^"']+)["']/i)
+      || html.match(/(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap|hero-image)[^>]*>\s*<img\b[^>]*src=["']([^"']+)["']/i)
       || html.match(/<header\b[^>]*>\s*[\s\S]*?<img\b[^>]*src=["']([^"']+)["']/i)
       || html.match(/background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/i);
     if (heroImgMatch && heroImgMatch[1]) {
@@ -213,6 +215,7 @@ export interface InjectProspectOptions {
   aboutStat3Text?: string;
   aboutRatingText?: string;
   showAboutSection?: boolean;
+  framesBaseUrl?: string;
   liveServices?: Array<{
     id: string;
     name: string;
@@ -266,6 +269,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     aboutStat3Text,
     aboutRatingText,
     showAboutSection = true,
+    framesBaseUrl,
     liveServices,
     liveStylists
   } = options;
@@ -274,12 +278,24 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
+  // 0. Detección y Adaptación Dinámica de la Ruta de Fotogramas para Video-Scroll en Canvas
+  const targetFramesBase = framesBaseUrl || `/frames/${slug}`;
+  
+  // Reemplazar rutas relativas de frames tipo 'public/frames/mobile' o 'public/frames/desktop'
+  // con la ruta absoluta en Kowy /frames/:slug/...
+  processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${targetFramesBase}/mobile'`);
+  processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${targetFramesBase}/desktop'`);
+  processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${targetFramesBase}/'`);
+  
+  // Normalizar cualquier poster en src="..."
+  processed = processed.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
+
   // 1. Inyectar únicamente soporte técnico limpio y estilos para elementos dinámicos
   const resetCss = `
 <style id="beautyflow-prospect-reset">
-  /* Soporte técnico no invasivo para evitar desbordamiento horizontal y mejorar el tap móvil */
+  /* Soporte técnico no invasivo para evitar desbordamiento horizontal garantizando soporte a Canvas Sticky */
   html, body {
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
   
@@ -316,6 +332,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   }
 </style>
 `;
+  // Garantizar resolución universal de rutas en iframes con srcDoc
+  if (!/<base\b/i.test(processed) && /<head\b[^>]*>/i.test(processed)) {
+    processed = processed.replace(/(<head\b[^>]*>)/i, '$1\n  <base href="/" />');
+  }
+
   if (processed.includes('</head>')) {
     processed = processed.replace('</head>', `${resetCss}</head>`);
   } else {
@@ -380,12 +401,19 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     );
   }
 
-  // 1.3 Inyección Dinámica de Foto Principal del Hero / Header
+  // 1.3 Inyección Dinámica de Foto Principal del Hero / Header (o poster fallback si usa canvas)
   if (heroImageUrl && heroImageUrl !== baseline.heroImageUrl) {
-    processed = processed.replace(
-      /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
-      `$1${heroImageUrl}$3`
-    );
+    if (/(<img\b[^>]*id=["']canvas-poster-fallback["'][^>]*src=["'])([^"']*)(["'][^>]*>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<img\b[^>]*id=["']canvas-poster-fallback["'][^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+        `$1${heroImageUrl}$3`
+      );
+    } else {
+      processed = processed.replace(
+        /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+        `$1${heroImageUrl}$3`
+      );
+    }
   }
 
   // 1.4 Inyección Fiel de Título y Acento en el Hero H1 (Preservando 100% las fuentes, cursivas y maquetación nativa)
