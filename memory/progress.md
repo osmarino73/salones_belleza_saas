@@ -1,3 +1,7 @@
+- [x] **Resolución de Error 404 en Contador de Visitas de Prospectos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`create_increment_views_rpc.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_increment_views_rpc.sql))**:
+  - `incrementProspectSiteViews` actualiza directamente la columna `views_count` en la tabla `prospect_sites`, eliminando la llamada RPC fallida a `/rest/v1/rpc/increment_prospect_views` y su error 404.
+  - Creado script SQL `create_increment_views_rpc.sql` para el esquema de base de datos.
+
 - [x] **Diagnóstico Inmune a CORS y Resolución Multi-Ruta de Fotogramas para Video-Scroll ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
   - Diagnóstico CDN mediante `new Image()` nativo con timeout y fallback a `poster.webp`, eliminando falsos negativos causados por bloqueos de CORS en `fetch()`.
   - Detección universal de carpetas de fotogramas en `../negocios_locales/<slug>/public/frames` y con guiones bajos en el CLI `npm run upload:frames <slug>`.

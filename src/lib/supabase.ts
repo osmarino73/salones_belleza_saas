@@ -2642,10 +2642,28 @@ export const api = {
   },
 
   async incrementProspectSiteViews(id: string): Promise<void> {
-    if (supabase && isSupabaseConfigured) {
+    if (supabase && isSupabaseConfigured && id) {
       try {
-        await supabase.rpc('increment_prospect_views', { site_id: id });
-      } catch (e) {}
+        // Incremento directo sobre la tabla prospect_sites para evitar llamar a una RPC inexistente (evita error 404)
+        const { data } = await supabase
+          .from('prospect_sites')
+          .select('views_count')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (data) {
+          const newCount = (data.views_count || 0) + 1;
+          await supabase
+            .from('prospect_sites')
+            .update({ 
+              views_count: newCount,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', id);
+        }
+      } catch (e) {
+        // Silencioso ante contingencias de red
+      }
     }
     const current = await this.getProspectSites();
     const updated = current.map(s => s.id === id ? { ...s, views_count: (s.views_count || 0) + 1 } : s);
