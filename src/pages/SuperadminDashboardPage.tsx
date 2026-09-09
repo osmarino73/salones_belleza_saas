@@ -47,7 +47,8 @@ import {
   LogOut,
   AlertTriangle,
   Play,
-  AlertCircle
+  AlertCircle,
+  UploadCloud
 } from 'lucide-react';
 import { SANUS_SPA_SITE_DATA } from '../lib/sanusSpaSiteData';
 
@@ -161,6 +162,90 @@ export const SuperadminDashboardPage: React.FC = () => {
       setFramesCdnStatus('missing');
     } finally {
       setIsCheckingFrames(false);
+    }
+  };
+
+  // Estado de Subida Directa de Frames desde el Navegador a R2
+  const [isUploadingFrames, setIsUploadingFrames] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; uploaded: number; pct: number } | null>(null);
+  const [uploadSuccessMessage, setUploadSuccessMessage] = useState<string | null>(null);
+  const [uploadErrorMessage, setUploadErrorMessage] = useState<string | null>(null);
+  const framesFolderInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleUploadFramesFromBrowser = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFiles = Array.from(e.target.files || []);
+    if (rawFiles.length === 0) return;
+
+    // Filtrar archivos de imagen válidos (.webp, .png, .jpg, .jpeg)
+    const validFiles = rawFiles.filter(f => /\.(webp|png|jpe?g)$/i.test(f.name));
+    if (validFiles.length === 0) {
+      alert('No se encontraron imágenes válidas (.webp, .png, .jpg) en la carpeta seleccionada.');
+      return;
+    }
+
+    const targetSlug = slug || businessName.toLowerCase().replace(/[^a-z0-9-_]/g, '-') || 'sanus-spa';
+    setIsUploadingFrames(true);
+    setUploadErrorMessage(null);
+    setUploadSuccessMessage(null);
+    setUploadProgress({ total: validFiles.length, uploaded: 0, pct: 0 });
+
+    try {
+      const BATCH_SIZE = 8; // Lotes concurrentes para máxima velocidad y evitar exceder payloads
+      let uploadedCount = 0;
+
+      for (let i = 0; i < validFiles.length; i += BATCH_SIZE) {
+        const batch = validFiles.slice(i, i + BATCH_SIZE);
+
+        const filePayloads = await Promise.all(
+          batch.map(file => new Promise<{ relativePath: string; name: string; dataBase64: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const res = String(reader.result || '');
+              const base64 = res.split(',')[1] || '';
+              const relativePath = (file as any).webkitRelativePath || file.name;
+              resolve({
+                relativePath,
+                name: file.name,
+                dataBase64: base64
+              });
+            };
+            reader.onerror = () => reject(new Error(`Error al leer archivo ${file.name}`));
+            reader.readAsDataURL(file);
+          }))
+        );
+
+        const response = await fetch('/api/upload-frames', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug: targetSlug,
+            files: filePayloads
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Error al subir lote HTTP ${response.status}`);
+        }
+
+        uploadedCount += batch.length;
+        const pct = Math.round((uploadedCount / validFiles.length) * 100);
+        setUploadProgress({ total: validFiles.length, uploaded: uploadedCount, pct });
+      }
+
+      setUploadSuccessMessage(`¡${validFiles.length} fotogramas subidos exitosamente a Cloudflare R2!`);
+      // Auto-diagnosticar en CDN tras 1 segundo
+      setTimeout(() => {
+        checkFramesOnCdn(targetSlug);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Error al subir fotogramas:', err);
+      setUploadErrorMessage(err.message || 'Error al conectar con el servicio de subida.');
+    } finally {
+      setIsUploadingFrames(false);
+      if (framesFolderInputRef.current) {
+        framesFolderInputRef.current.value = '';
+      }
     }
   };
 
@@ -1277,7 +1362,32 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                         </div>
 
                         {/* Acciones de subida y enlace */}
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                          {/* Input oculto para selección de carpeta */}
+                          <input
+                            type="file"
+                            ref={framesFolderInputRef}
+                            // @ts-ignore
+                            webkitdirectory=""
+                            directory=""
+                            multiple
+                            onChange={handleUploadFramesFromBrowser}
+                            className="hidden"
+                          />
+
+                          {/* Botón Principal: Subir Carpeta Directamente desde la Web */}
+                          <button
+                            type="button"
+                            disabled={isUploadingFrames}
+                            onClick={() => framesFolderInputRef.current?.click()}
+                            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-500/25 disabled:opacity-50"
+                            title="Selecciona la carpeta local con los fotogramas WebP para subirlos automáticamente a Cloudflare R2"
+                          >
+                            <UploadCloud className={`w-4 h-4 ${isUploadingFrames ? 'animate-bounce text-slate-950' : 'text-slate-950'}`} />
+                            <span>{isUploadingFrames ? 'Subiendo a R2...' : '📤 Subir Carpeta a R2'}</span>
+                          </button>
+
+                          {/* Botón Alternativo: Copiar Comando CLI */}
                           <button
                             type="button"
                             onClick={() => {
@@ -1286,11 +1396,13 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                               setCopiedUploadCommand(true);
                               setTimeout(() => setCopiedUploadCommand(false), 3000);
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                            className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                            title="Copiar comando de consola npm run upload:frames"
                           >
                             {copiedUploadCommand ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedUploadCommand ? '¡Comando Copiado!' : 'Copiar comando npm upload'}</span>
+                            <span>{copiedUploadCommand ? 'Copiado' : 'CLI npm'}</span>
                           </button>
+
                           <a
                             href="https://dash.cloudflare.com/"
                             target="_blank"
@@ -1302,6 +1414,59 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                           </a>
                         </div>
                       </div>
+
+                      {/* Barra de Progreso en Vivo de Subida */}
+                      {isUploadingFrames && uploadProgress && (
+                        <div className="w-full bg-[#080a10] border border-amber-500/40 rounded-xl p-3 space-y-2 animate-fade-in shadow-inner">
+                          <div className="flex items-center justify-between text-xs text-amber-200">
+                            <span className="font-semibold flex items-center gap-2">
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                              Subiendo fotogramas a Cloudflare R2: {uploadProgress.uploaded} de {uploadProgress.total}
+                            </span>
+                            <span className="font-mono font-bold text-amber-400">{uploadProgress.pct}%</span>
+                          </div>
+                          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                            <div 
+                              className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-300 rounded-full"
+                              style={{ width: `${uploadProgress.pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mensaje de Éxito de Subida */}
+                      {uploadSuccessMessage && (
+                        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-xs text-emerald-300 flex items-center justify-between gap-2 animate-fade-in">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span>{uploadSuccessMessage}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setUploadSuccessMessage(null)}
+                            className="text-emerald-400 hover:text-emerald-200 text-xs px-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Mensaje de Error de Subida */}
+                      {uploadErrorMessage && (
+                        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-2.5 text-xs text-rose-300 flex items-center justify-between gap-2 animate-fade-in">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                            <span>{uploadErrorMessage}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setUploadErrorMessage(null)}
+                            className="text-rose-400 hover:text-rose-200 text-xs px-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
