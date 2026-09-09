@@ -628,6 +628,17 @@ export const SuperadminDashboardPage: React.FC = () => {
         );
       }
 
+      // Si tiene video scroll activado, asegurar que las rutas de fotogramas en el HTML apunten a la CDN Cloudflare R2
+      if (hasVideoScroll) {
+        const targetSlug = slug || businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const cdnFrames = `${r2CdnUrl}/frames/${targetSlug}`;
+        finalHtml = finalHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${cdnFrames}/mobile'`);
+        finalHtml = finalHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${cdnFrames}/desktop'`);
+        finalHtml = finalHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${cdnFrames}/'`);
+        finalHtml = finalHtml.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cdnFrames}/$2`);
+        finalHtml = finalHtml.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cdnFrames}/$2`);
+      }
+
       const extracted = extractWebsiteDataFromHtml(finalHtml);
       const updatedBusinessData = {
         ...(businessData || {}),

@@ -122,9 +122,8 @@ export const PublicProspectSitePage: React.FC = () => {
       aboutYearsExp: tenant?.about_years_exp || bData.about_years_exp || undefined,
       aboutClientsCount: tenant?.about_clients_count || bData.about_clients_count || undefined,
       aboutStat3Text: tenant?.about_stat3_text || bData.about_stat3_text || undefined,
-      aboutRatingText: tenant?.about_rating_text || bData.about_rating_text || undefined,
       showAboutSection: showAbout,
-      framesBaseUrl: `/frames/${site.slug}`,
+      framesBaseUrl: tenant?.frames_cdn_url || bData.frames_cdn_url || (site as any).frames_cdn_url || (import.meta.env.VITE_R2_CDN_URL ? `${import.meta.env.VITE_R2_CDN_URL}/frames/${site.slug}` : `https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/frames/${site.slug}`),
       liveServices: liveServices.length > 0 ? liveServices : undefined,
       liveStylists: liveStylists.length > 0 ? liveStylists : undefined
     });

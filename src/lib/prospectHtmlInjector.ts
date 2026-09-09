@@ -282,21 +282,21 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   const globalProcess = typeof globalThis !== 'undefined' ? (globalThis as any).process : undefined;
   const envR2 = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_R2_CDN_URL)
     || (globalProcess?.env?.VITE_R2_CDN_URL)
-    || '';
+    || 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev';
   const r2CdnUrl = String(envR2).replace(/\/+$/, '');
-  const defaultFramesBase = r2CdnUrl ? `${r2CdnUrl}/frames/${slug}` : `/frames/${slug}`;
   const targetFramesBase = (framesBaseUrl && (framesBaseUrl.startsWith('http://') || framesBaseUrl.startsWith('https://')))
     ? framesBaseUrl
-    : (r2CdnUrl ? `${r2CdnUrl}/frames/${slug}` : (framesBaseUrl || defaultFramesBase));
+    : `${r2CdnUrl}/frames/${slug}`;
   
   // Reemplazar rutas relativas de frames tipo 'public/frames/mobile' o 'public/frames/desktop'
-  // con la ruta absoluta en Kowy /frames/:slug/...
+  // con la CDN absoluta Cloudflare R2
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${targetFramesBase}/mobile'`);
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${targetFramesBase}/desktop'`);
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${targetFramesBase}/'`);
   
-  // Normalizar cualquier poster en src="..."
+  // Normalizar cualquier poster o asset en src="..." o content="..."
   processed = processed.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
+  processed = processed.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
 
   // 1. Inyectar únicamente soporte técnico limpio y estilos para elementos dinámicos
   const resetCss = `
