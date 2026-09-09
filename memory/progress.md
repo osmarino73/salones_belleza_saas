@@ -1,3 +1,13 @@
+- [x] **Ingesta Inteligente de Video-Scroll & Diagnóstico CDN de Frames en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+  - Auto-detección de plantillas con video-scroll en la carga de archivos HTML y prospectos existentes.
+  - Panel dinámico con diagnóstico en tiempo real contra Cloudflare R2 (`200 OK`), botón para copiar comando `npm run upload:frames <slug>` y enlace al bucket.
+  - Preset de 1-clic `🎬 Cargar: Sanus Spa (Video-Scroll)` y badge `🎬 Video Scroll HD` en la tabla de prospectos.
+
+- [x] **Integración de Cloudflare R2 y Automatización de Subida de Fotogramas (`uploadFramesToR2.mjs`)**:
+  - Script CLI `npm run upload:frames <slug> [carpeta_origen]` para subir lotes de frames WebP directamente a Cloudflare R2 con 8 workers concurrentes y headers de caché inmutables (`max-age=31536000`).
+  - Egress ilimitado a $0, permitiendo crear 10 negocios diarios (300/mes) sin sobrepasar límites ni saturar Git/Netlify.
+  - Inyector no invasivo (`prospectHtmlInjector.ts`) con resolución transparente a `VITE_R2_CDN_URL` y fallback a `/frames/:slug`.
+
 - [x] **Soporte de Inyección SaaS para Plantillas con Canvas Video Scroll Scrubbing (Frames WebP en Header) ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`sanusSpaSiteData.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/sanusSpaSiteData.ts), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
   - `overflow-x: clip` en el reset inyectado para evitar anular `position: sticky` en el canvas en navegadores modernos.
   - Reescritura dinámica de rutas de fotogramas a `/frames/:slug/desktop` y `/frames/:slug/mobile`.

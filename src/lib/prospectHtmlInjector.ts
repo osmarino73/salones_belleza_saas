@@ -278,8 +278,16 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   let processed = html;
 
-  // 0. Detección y Adaptación Dinámica de la Ruta de Fotogramas para Video-Scroll en Canvas
-  const targetFramesBase = framesBaseUrl || `/frames/${slug}`;
+  // 0. Detección y Adaptación Dinámica de la Ruta de Fotogramas para Video-Scroll en Canvas (Cloudflare R2 o Local)
+  const globalProcess = typeof globalThis !== 'undefined' ? (globalThis as any).process : undefined;
+  const envR2 = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_R2_CDN_URL)
+    || (globalProcess?.env?.VITE_R2_CDN_URL)
+    || '';
+  const r2CdnUrl = String(envR2).replace(/\/+$/, '');
+  const defaultFramesBase = r2CdnUrl ? `${r2CdnUrl}/frames/${slug}` : `/frames/${slug}`;
+  const targetFramesBase = (framesBaseUrl && (framesBaseUrl.startsWith('http://') || framesBaseUrl.startsWith('https://')))
+    ? framesBaseUrl
+    : (r2CdnUrl ? `${r2CdnUrl}/frames/${slug}` : (framesBaseUrl || defaultFramesBase));
   
   // Reemplazar rutas relativas de frames tipo 'public/frames/mobile' o 'public/frames/desktop'
   // con la ruta absoluta en Kowy /frames/:slug/...

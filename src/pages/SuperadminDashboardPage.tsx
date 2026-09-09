@@ -45,8 +45,11 @@ import {
   Lock,
   UserCheck,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Play,
+  AlertCircle
 } from 'lucide-react';
+import { SANUS_SPA_SITE_DATA } from '../lib/sanusSpaSiteData';
 
 export const SuperadminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'generator' | 'prospects' | 'tenants'>('generator');
@@ -100,6 +103,33 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [fileNameJson, setFileNameJson] = useState<string>('');
   const [fileNameHtml, setFileNameHtml] = useState<string>('');
   
+  // Video-Scroll Frames & Cloudflare R2 State
+  const [hasVideoScroll, setHasVideoScroll] = useState(false);
+  const [framesCdnStatus, setFramesCdnStatus] = useState<'checking' | 'ready' | 'missing' | 'idle'>('idle');
+  const [isCheckingFrames, setIsCheckingFrames] = useState(false);
+  const [copiedUploadCommand, setCopiedUploadCommand] = useState(false);
+
+  const r2CdnUrl = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_R2_CDN_URL) || 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev';
+
+  const checkFramesOnCdn = async (targetSlug: string) => {
+    if (!targetSlug) return;
+    setIsCheckingFrames(true);
+    setFramesCdnStatus('checking');
+    try {
+      const testUrl = `${r2CdnUrl}/frames/${targetSlug}/desktop/frame-0001.webp`;
+      const res = await fetch(testUrl, { method: 'HEAD' });
+      if (res.ok) {
+        setFramesCdnStatus('ready');
+      } else {
+        setFramesCdnStatus('missing');
+      }
+    } catch {
+      setFramesCdnStatus('missing');
+    } finally {
+      setIsCheckingFrames(false);
+    }
+  };
+
   // Estado post-publicación exitosa
   const [createdSite, setCreatedSite] = useState<ProspectSite | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -174,6 +204,14 @@ export const SuperadminDashboardPage: React.FC = () => {
       setBusinessData(fullSite.business_data || null);
       setCreatedSite(fullSite);
       setDuplicateWarning(null);
+      
+      const isVideo = Boolean(fullSite.business_data?.has_video_scroll || /(?:#hero-canvas|hero-scroll-section|public\/frames|canvas-sticky-wrapper)/i.test(fullSite.raw_html || ''));
+      setHasVideoScroll(isVideo);
+      if (isVideo) {
+        checkFramesOnCdn(fullSite.slug);
+      } else {
+        setFramesCdnStatus('idle');
+      }
     }
   };
 
@@ -357,6 +395,15 @@ export const SuperadminDashboardPage: React.FC = () => {
       // Optimizar automáticamente reemplazando Base64 pesados por CDN de muestra
       const optimized = optimizeProspectHtml(text, category);
       setRawHtml(optimized);
+
+      // Detección inteligente de Canvas Video Scroll Scrubbing
+      const isVideo = /(?:#hero-canvas|hero-scroll-section|public\/frames|canvas-sticky-wrapper|framesBaseUrl)/i.test(text);
+      setHasVideoScroll(isVideo);
+      if (isVideo) {
+        checkFramesOnCdn(slug || 'sanus-spa');
+      } else {
+        setFramesCdnStatus('idle');
+      }
     };
     reader.readAsText(file);
   };
@@ -471,6 +518,57 @@ export const SuperadminDashboardPage: React.FC = () => {
     setFileNameHtml('kapa_spa_standalone.html');
     parseAndApplyBusinessData(kapaJson);
     setJsonInputText(JSON.stringify(kapaJson, null, 2));
+    setHasVideoScroll(false);
+    setFramesCdnStatus('idle');
+  };
+
+  // Carga del preset oficial Sanus Spa (Video-Scroll Scrubbing)
+  const handleLoadSanusPreset = async () => {
+    const sanusJson = {
+      negocio: {
+        nombre: SANUS_SPA_SITE_DATA.business_name,
+        rubro: "Spa, Hidroterapia & Fitness Club",
+        categoria: "spa",
+        eslogan: "Tu refugio exclusivo de relajación, acondicionamiento y bienestar en Apartadó",
+        calificacion: "4.7",
+        resenas: "1",
+        contacto: {
+          telefono_principal: SANUS_SPA_SITE_DATA.phone_whatsapp,
+          whatsapp: {
+            numero: SANUS_SPA_SITE_DATA.phone_whatsapp,
+            link: `https://wa.me/${SANUS_SPA_SITE_DATA.phone_whatsapp.replace(/\D/g, '')}`
+          }
+        },
+        ubicacion: {
+          direccion: SANUS_SPA_SITE_DATA.address,
+          ciudad: SANUS_SPA_SITE_DATA.city,
+          departamento_pais: "Antioquia, Colombia",
+          google_maps_url: SANUS_SPA_SITE_DATA.google_maps_url
+        },
+        horario_atencion: "Lunes a Viernes: 6:00 AM – 8:30 PM | Sáb: 7:00 AM – 7:00 PM | Dom: 8:00 AM – 2:00 PM",
+        servicios: [
+          { titulo: "Ritual Hidroterapia & Sauna", descripcion: "Inmersión termal, sales minerales y sauna herbal desintoxicante.", precio_cop: 110000, duracion_minutos: 60 },
+          { titulo: "Masaje Terapéutico & Descontracturante", descripcion: "Alivio muscular profundo con aceites botánicos y aromaterapia.", precio_cop: 95000, duracion_minutos: 60 },
+          { titulo: "Facial Glow & Hidrodermo", descripcion: "Exfoliación ultrasónica, ácido hialurónico y velo de colágeno.", precio_cop: 85000, duracion_minutos: 50 },
+          { titulo: "Terapia con Piedras Volcánicas", descripcion: "Calor basáltico relajante para disolver tensiones y revitalizar.", precio_cop: 120000, duracion_minutos: 75 }
+        ],
+        especialistas: [
+          { nombre: "Dra. Valeria Gómez", rol: "Terapeuta Holística & Fisioterapia" },
+          { nombre: "Camila Benítez", rol: "Cosmetología Facial & Glow" },
+          { nombre: "Sofía Restrepo", rol: "Masoterapeuta & Terapia Geotermal" },
+          { nombre: "Mateo Valencia", rol: "Entrenador Físico & Recuperación" }
+        ]
+      }
+    };
+
+    setFileNameJson('DATOS_NEGOCIO.json (Sanus Spa - Video-Scroll)');
+    setFileNameHtml('sanus_spa_index.html (Canvas WebP)');
+    parseAndApplyBusinessData(sanusJson);
+    setSlug('sanus-spa');
+    setRawHtml(SANUS_SPA_SITE_DATA.raw_html);
+    setHasVideoScroll(true);
+    setJsonInputText(JSON.stringify(sanusJson, null, 2));
+    checkFramesOnCdn('sanus-spa');
   };
 
   const [isPublishing, setIsPublishing] = useState(false);
@@ -486,7 +584,7 @@ export const SuperadminDashboardPage: React.FC = () => {
 
     try {
       // Si no hay rawHtml, generarlo automáticamente con el template de lujo
-      let finalHtml = rawHtml.trim() || generateStandaloneHtmlFromBusinessData(businessData || { nombre: businessName });
+      let finalHtml = rawHtml || generateStandaloneHtmlFromBusinessData(businessData || { nombre: businessName });
 
       // Si se cargó una foto específica de Hero (heroImageUrl), reemplazarla en el HTML
       if (heroImageUrl) {
@@ -518,7 +616,10 @@ export const SuperadminDashboardPage: React.FC = () => {
         about_clients_count: businessData?.about_clients_count || extracted.aboutClientsCount || undefined,
         about_stat3_text: businessData?.about_stat3_text || extracted.aboutStat3Text || undefined,
         about_rating_text: businessData?.about_rating_text || extracted.aboutRatingText || undefined,
-        show_about_section: businessData?.show_about_section !== undefined ? businessData.show_about_section : (extracted.showAboutSection !== undefined ? extracted.showAboutSection : true)
+        show_about_section: businessData?.show_about_section !== undefined ? businessData.show_about_section : (extracted.showAboutSection !== undefined ? extracted.showAboutSection : true),
+        has_video_scroll: hasVideoScroll,
+        frames_cdn_url: hasVideoScroll ? `${r2CdnUrl}/frames/${slug || 'sanus-spa'}` : undefined,
+        frames_cdn_status: hasVideoScroll ? framesCdnStatus : undefined
       };
 
       const currentUser = api.auth.getUser();
@@ -931,11 +1032,19 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
+                        onClick={handleLoadSanusPreset}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span>🎬 Cargar: Sanus Spa (Video-Scroll)</span>
+                      </button>
+                      <button
+                        type="button"
                         onClick={handleLoadKapaPreset}
                         className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>🌿 Cargar: Kapa Spa (Apartadó)</span>
+                        <span>🌿 Cargar: Kapa Spa</span>
                       </button>
                       <button
                         type="button"
@@ -1029,6 +1138,127 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                       />
                     </label>
                   </div>
+
+                  {/* ===================================================================
+                      ZONA DE GESTIÓN & DIAGNÓSTICO DE VIDEO-SCROLL FRAMES (CLOUDFLARE R2)
+                      =================================================================== */}
+                  {hasVideoScroll && (
+                    <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl p-4 space-y-3 animate-fade-in shadow-xl">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                            <Play className="w-4 h-4 fill-amber-400" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-xs font-bold text-white">🎬 Plantilla Video-Scroll Detectada</h3>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                CANVAS SCRUBBING
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Esta plantilla requiere fotogramas WebP en Cloudflare R2 con 0 costo de transferencia (egress ilimitado).
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => checkFramesOnCdn(slug || 'sanus-spa')}
+                            disabled={isCheckingFrames}
+                            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-all cursor-pointer"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 ${isCheckingFrames ? 'animate-spin text-amber-400' : ''}`} />
+                            <span>{isCheckingFrames ? 'Verificando R2...' : 'Diagnosticar CDN'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setHasVideoScroll(false)}
+                            className="text-xs text-slate-500 hover:text-slate-300 px-1.5 py-1"
+                            title="Desactivar modo video-scroll"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Caja de Estado y Comando */}
+                      <div className="bg-[#0c0f17] border border-white/5 rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          {framesCdnStatus === 'ready' ? (
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </div>
+                          ) : framesCdnStatus === 'missing' ? (
+                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                              <Layers className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
+                              <span>Ruta CDN:</span>
+                              <code className="text-[11px] font-mono text-amber-300 bg-black/40 px-1.5 py-0.5 rounded border border-white/5">
+                                {r2CdnUrl}/frames/{slug || ':slug'}
+                              </code>
+                            </div>
+                            <div className="text-[11px] mt-0.5">
+                              {framesCdnStatus === 'ready' && (
+                                <span className="text-emerald-400 font-semibold">
+                                  ✓ Fotogramas activos y verificados en vivo en Cloudflare R2 (200 OK)
+                                </span>
+                              )}
+                              {framesCdnStatus === 'missing' && (
+                                <span className="text-amber-400 font-semibold">
+                                  ⚠️ Fotogramas aún no detectados en R2. Corre el comando CLI para subirlos:
+                                </span>
+                              )}
+                              {framesCdnStatus === 'idle' && (
+                                <span className="text-slate-400">
+                                  Presiona «Diagnosticar CDN» para verificar la disponibilidad de los frames en R2.
+                                </span>
+                              )}
+                              {framesCdnStatus === 'checking' && (
+                                <span className="text-amber-300 animate-pulse">
+                                  Consultando servidores perimetrales de Cloudflare...
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Acciones de subida y enlace */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cmd = `npm run upload:frames ${slug || 'mi-salon'}`;
+                              navigator.clipboard.writeText(cmd);
+                              setCopiedUploadCommand(true);
+                              setTimeout(() => setCopiedUploadCommand(false), 3000);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                          >
+                            {copiedUploadCommand ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedUploadCommand ? '¡Comando Copiado!' : 'Copiar comando npm upload'}</span>
+                          </button>
+                          <a
+                            href="https://dash.cloudflare.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs flex items-center gap-1 hover:text-white transition-colors"
+                            title="Abrir Cloudflare Dashboard (kowy-frames)"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Editor / Pegado de JSON Opcional */}
                   {showJsonPaste && (
@@ -1557,6 +1787,12 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                               <div>
                                 <strong className="block text-white text-xs">{p.business_name}</strong>
                                 <span className="text-[11px] font-mono text-slate-400">/sitio/{p.slug}</span>
+                                {p.business_data?.has_video_scroll && (
+                                  <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                    <Play className="w-2.5 h-2.5 fill-amber-300" />
+                                    Video Scroll HD
+                                  </span>
+                                )}
                                 <span className="text-[10px] font-mono text-amber-300/90 block mt-0.5 font-semibold">
                                   👤 {p.created_by || p.creator_email || 'osmarino73@yahoo.es'}
                                 </span>
