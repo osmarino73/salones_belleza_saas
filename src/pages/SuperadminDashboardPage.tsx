@@ -72,6 +72,12 @@ export const SuperadminDashboardPage: React.FC = () => {
   // Homepage Studio Modal State
   const [showHomepageStudioModal, setShowHomepageStudioModal] = useState(false);
 
+  // Modal para ver y alternar Mensaje 1 y Mensaje 2 de WhatsApp desde la tabla de prospectos
+  const [viewingWhatsAppPitchProspect, setViewingWhatsAppPitchProspect] = useState<ProspectSite | null>(null);
+  const [modalPitchStep, setModalPitchStep] = useState<1 | 2>(1);
+  const [modalNicheOverride, setModalNicheOverride] = useState<BusinessNiche | null>(null);
+  const [modalCopiedPitch, setModalCopiedPitch] = useState(false);
+
   // Duplicate Business Prevention State
   const [duplicateWarning, setDuplicateWarning] = useState<{
     isDuplicate: boolean;
@@ -2105,15 +2111,19 @@ export const SuperadminDashboardPage: React.FC = () => {
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
 
-                              <a
-                                href={`https://wa.me/${p.phone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(generateWhatsAppPitch(p))}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-2 rounded-xl bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-colors"
-                                title="Enviar mensaje de WhatsApp"
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setViewingWhatsAppPitchProspect(p);
+                                  setModalPitchStep(1);
+                                  setModalNicheOverride(null);
+                                  setModalCopiedPitch(false);
+                                }}
+                                className="p-2 rounded-xl bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366] hover:text-black transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                                title="Ver Mensajes 1 y 2 de WhatsApp"
                               >
                                 <MessageCircle className="w-3.5 h-3.5 fill-current" />
-                              </a>
+                              </button>
 
                               <button
                                 type="button"
@@ -2733,6 +2743,214 @@ export const SuperadminDashboardPage: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL DE MENSAJES DE WHATSAPP (PASO 1 Y PASO 2) PARA CUALQUIER PROSPECTO
+          ========================================================================= */}
+      {viewingWhatsAppPitchProspect && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+          <div className="bg-[#121722] border border-emerald-500/30 rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4 text-white">
+            
+            {/* Header del Modal */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#25D366]/20 text-[#25D366] border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                  <MessageCircle className="w-5 h-5 fill-current" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-black text-white">
+                      {viewingWhatsAppPitchProspect.business_name}
+                    </h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      {NICHE_CONFIGS[modalNicheOverride || detectBusinessNiche(viewingWhatsAppPitchProspect.business_name, viewingWhatsAppPitchProspect.category)].emoji}{' '}
+                      {NICHE_CONFIGS[modalNicheOverride || detectBusinessNiche(viewingWhatsAppPitchProspect.business_name, viewingWhatsAppPitchProspect.category)].badgeLabel}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                    <span className="font-mono text-emerald-400 font-bold">{viewingWhatsAppPitchProspect.phone_whatsapp}</span>
+                    <span>•</span>
+                    <a
+                      href={`/sitio/${viewingWhatsAppPitchProspect.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-white flex items-center gap-0.5 text-slate-400 hover:underline"
+                    >
+                      <span>/sitio/{viewingWhatsAppPitchProspect.slug}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setViewingWhatsAppPitchProspect(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Selector de Nicho Dinámico */}
+            <div className="flex items-center justify-between gap-2 bg-black/30 p-2 rounded-2xl border border-white/5 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-1">Nicho:</span>
+                {(['barberia', 'salon', 'nails', 'spa', 'estetica'] as BusinessNiche[]).map((nKey) => {
+                  const detected = detectBusinessNiche(viewingWhatsAppPitchProspect.business_name, viewingWhatsAppPitchProspect.category);
+                  const currentNiche = modalNicheOverride || detected;
+                  const isSelected = currentNiche === nKey;
+                  const cfg = NICHE_CONFIGS[nKey];
+                  return (
+                    <button
+                      key={nKey}
+                      type="button"
+                      onClick={() => setModalNicheOverride(nKey)}
+                      className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-sm'
+                          : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                      }`}
+                    >
+                      <span>{cfg.emoji}</span>
+                      <span>{cfg.badgeLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selector de Mensaje 1 vs Mensaje 2 */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setModalPitchStep(1)}
+                className={`py-2.5 px-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+                  modalPitchStep === 1
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20'
+                    : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20'
+                }`}
+              >
+                <span>📸 Mensaje 1: Gancho Visual</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModalPitchStep(2)}
+                className={`py-2.5 px-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+                  modalPitchStep === 2
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20'
+                    : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20'
+                }`}
+              >
+                <span>🎁 Mensaje 2: Oferta $89k</span>
+              </button>
+            </div>
+
+            {/* Tips de Soporte según el mensaje activo */}
+            <div className="text-[11px] text-slate-300 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between gap-2">
+              <span>
+                {modalPitchStep === 1
+                  ? '💡 Tip Paso 1: Envía una foto/captura de su web en el celular junto a este mensaje.'
+                  : '💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Daviplata para activar.'}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const txt = modalPitchStep === 1
+                    ? genStep1({
+                        businessName: viewingWhatsAppPitchProspect.business_name,
+                        slug: viewingWhatsAppPitchProspect.slug,
+                        origin: window.location.origin,
+                        category: viewingWhatsAppPitchProspect.category,
+                        customNiche: modalNicheOverride || undefined
+                      })
+                    : genStep2({
+                        businessName: viewingWhatsAppPitchProspect.business_name,
+                        category: viewingWhatsAppPitchProspect.category,
+                        customNiche: modalNicheOverride || undefined
+                      });
+                  navigator.clipboard.writeText(txt);
+                  setModalCopiedPitch(true);
+                  setTimeout(() => setModalCopiedPitch(false), 2500);
+                }}
+                className="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+              >
+                <Copy className="w-3 h-3" />
+                <span>{modalCopiedPitch ? '¡Copiado!' : 'Copiar Texto'}</span>
+              </button>
+            </div>
+
+            {/* Burbuja con el Texto Completo */}
+            <div className="bg-[#0B141A] p-4 rounded-2xl border border-white/10 shadow-inner relative max-h-56 overflow-y-auto">
+              <div className="text-xs text-[#E9EDEF] font-sans whitespace-pre-line leading-relaxed selection:bg-emerald-500/30">
+                {modalPitchStep === 1
+                  ? genStep1({
+                      businessName: viewingWhatsAppPitchProspect.business_name,
+                      slug: viewingWhatsAppPitchProspect.slug,
+                      origin: window.location.origin,
+                      category: viewingWhatsAppPitchProspect.category,
+                      customNiche: modalNicheOverride || undefined
+                    })
+                  : genStep2({
+                      businessName: viewingWhatsAppPitchProspect.business_name,
+                      category: viewingWhatsAppPitchProspect.category,
+                      customNiche: modalNicheOverride || undefined
+                    })}
+              </div>
+            </div>
+
+            {/* Acciones del Modal */}
+            <div className="space-y-2 pt-1">
+              <a
+                href={`https://wa.me/${viewingWhatsAppPitchProspect.phone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  modalPitchStep === 1
+                    ? genStep1({
+                        businessName: viewingWhatsAppPitchProspect.business_name,
+                        slug: viewingWhatsAppPitchProspect.slug,
+                        origin: window.location.origin,
+                        category: viewingWhatsAppPitchProspect.category,
+                        customNiche: modalNicheOverride || undefined
+                      })
+                    : genStep2({
+                        businessName: viewingWhatsAppPitchProspect.business_name,
+                        category: viewingWhatsAppPitchProspect.category,
+                        customNiche: modalNicheOverride || undefined
+                      })
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => {
+                  if (viewingWhatsAppPitchProspect.status === 'prospecto') {
+                    handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
+                  }
+                }}
+                className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span>Enviar Mensaje {modalPitchStep} a WhatsApp ({viewingWhatsAppPitchProspect.phone_whatsapp})</span>
+              </a>
+
+              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
+                <span>Estado actual: <strong className="text-white capitalize">{viewingWhatsAppPitchProspect.status}</strong></span>
+                {viewingWhatsAppPitchProspect.status === 'prospecto' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
+                      setViewingWhatsAppPitchProspect({ ...viewingWhatsAppPitchProspect, status: 'contactado' });
+                    }}
+                    className="text-emerald-400 hover:underline font-bold cursor-pointer"
+                  >
+                    ✓ Marcar como Contactado WA
+                  </button>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}
