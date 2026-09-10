@@ -1,3 +1,8 @@
+- [x] **Corrección del Botón de Cierre en Modal de Activación / Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
+  - Resuelto problema donde el botón de cerrar (`X`) en la esquina superior derecha no respondía al clic debido a que el contenedor de cabecera con `relative z-10` se superponía en el apilamiento CSS sobre el botón (`absolute z-10`).
+  - Se elevó el botón a `z-50` prioritario con mayor área táctil (`w-9 h-9 sm:w-10 sm:h-10`).
+  - Se habilitó cierre al hacer clic en el backdrop oscuro exterior y mediante la tecla `Escape`.
+
 - [x] **Generador de Mensajes Persuasivos de WhatsApp Adaptados por Nicho & Modal de Vista Previa ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
   - **Paso 1 (Gancho Visual & Demo)**: Personalizado por nicho con pregunta de dolor agudo ("¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?").
   - **Paso 2 (Respuesta al Interés & Cierre Directo $89k)**: Redacción persuasiva de alta conversión sin rodeos ("¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes por responder tarde al WhatsApp..."), 3 pilares clave (web 1 año, 1 mes gratis agenda móvil, material QR) y micro-cierre con datos de Nequi/Daviplata.

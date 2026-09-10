@@ -14,7 +14,13 @@
 
 ---
 
-## 🚀 Resumen Exhaustivo de Hitos & Mejoras Completadas en esta Sesión:
+-57. **Corrección de Cierre en Modal de Bienvenida (`WelcomeModal.tsx`)**:
+    - **Causa Raíz**: El botón de cierre `X` en la esquina superior derecha tenía `z-10`, pero el contenedor de la cabecera (`p-6 sm:p-7 relative z-10`) al estar posicionado inmediatamente después en el DOM quedaba pintado por encima en el contexto de apilamiento CSS, absorbiendo los eventos de clic y bloqueando la pulsación del botón.
+    - **Solución Implementada**:
+      1. Se elevó el `z-index` del botón a `z-50` prioritario con `pointer-events-auto` y área táctil optimizada (`w-9 h-9 sm:w-10 sm:h-10`).
+      2. Se añadió cierre automático por clic en el fondo oscuro/backdrop (`onClick={onClose}`).
+      3. Se agregó listener para cerrar de inmediato al presionar la tecla `Escape`.
+      4. Validación de compilación exitosa con `npm run build`.
 
 -56. **Generador de Mensajes Persuasivos de WhatsApp Adaptados por Nicho (Barberías, Salones, Nails, Spas y Estética) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
     - **Contexto & Necesidad Comercial**: El primer mensaje de prospección por WhatsApp no puede ser genérico. Una barbería necesita hablar de "catálogo de cortes", "barberos", "clientes", y apuntar al dolor exacto: *"¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?"*. Un salón habla de "catálogo de servicios", "estilistas" y "clientas"; un estudio de uñas habla de "diseños de uñas" y "manicuristas"; y un spa habla de "carta de tratamientos", "especialistas" y "pacientes/clientes".

@@ -47,25 +47,51 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({
   const baseUrl = window.location.origin;
   const bookingUrl = `${baseUrl}/reservar/${salonSlug}`;
 
+  // Permitir cerrar con la tecla Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   const copyBookingLink = () => {
     navigator.clipboard.writeText(bookingUrl);
     alert(`✨ ¡Enlace de reservas copiado al portapapeles!\n\n${bookingUrl}\n\nCompártelo en tu biografía de Instagram y WhatsApp para recibir citas.`);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto px-4 py-6 sm:py-12 flex justify-center items-start sm:items-center animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-[#0E131F] border border-white/15 rounded-3xl shadow-2xl overflow-hidden text-white my-auto">
+    <div 
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md overflow-y-auto px-4 py-6 sm:py-12 flex justify-center items-start sm:items-center animate-fade-in cursor-pointer"
+      onClick={onClose}
+    >
+      <div 
+        className="relative w-full max-w-2xl bg-[#0E131F] border border-white/15 rounded-3xl shadow-2xl overflow-hidden text-white my-auto cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Glow Superior Monocromático */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-[#FF5A36]/15 blur-3xl pointer-events-none" />
 
-        {/* Botón de Cierre */}
+        {/* Botón de Cierre con z-50 prioritario y hit-area táctil generosa */}
         <button
           type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg"
+          aria-label="Cerrar ventana de bienvenida"
+          title="Cerrar (Esc)"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5 pointer-events-none" />
         </button>
 
         {/* Cabecera Principal */}
