@@ -51,15 +51,19 @@ const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || process.env.VITE_R2_CDN_URL;
 // 2. Parsear argumentos de línea de comandos
 const args = process.argv.slice(2);
 const slug = args[0];
-let sourceFramesFolder = args[1];
+const versionArg = args.find(a => a.startsWith('--version=') || a.startsWith('-v='));
+const version = versionArg ? versionArg.split('=')[1].trim().toLowerCase() : null;
+// El segundo argumento es la carpeta origen (excluyendo si era un flag --version)
+let sourceFramesFolder = args.slice(1).find(a => !a.startsWith('--version=') && !a.startsWith('-v='));
 
 if (!slug) {
   console.log('\n❌ Error: Debes especificar el slug del negocio.');
   console.log('📌 Uso:');
-  console.log('   npm run upload:frames <slug> [carpeta-local-frames]\n');
+  console.log('   npm run upload:frames <slug> [carpeta-local-frames] [--version=v2]\n');
   console.log('💡 Ejemplos:');
   console.log('   npm run upload:frames sanus-spa');
-  console.log('   npm run upload:frames sanus-spa "C:\\Users\\Rio Belen\\negocios_locales\\sanus_spa\\public\\frames"\n');
+  console.log('   npm run upload:frames sanus-spa --version=v2');
+  console.log('   npm run upload:frames sanus-spa "C:\\Users\\Rio Belen\\negocios_locales\\sanus_spa\\public\\frames" --version=v2\n');
   process.exit(1);
 }
 
@@ -147,7 +151,8 @@ let completed = 0;
 let errorsCount = 0;
 
 async function uploadSingleFile(fileItem) {
-  const r2Key = `frames/${slug}/${fileItem.relPath}`;
+  const versionPrefix = version ? `${version.replace(/[^a-z0-9-_]/g, '')}/` : '';
+  const r2Key = `frames/${slug}/${versionPrefix}${fileItem.relPath}`;
   const fileBuffer = fs.readFileSync(fileItem.fullPath);
 
   const command = new PutObjectCommand({

@@ -57,7 +57,8 @@ import {
   AlertTriangle,
   Play,
   AlertCircle,
-  UploadCloud
+  UploadCloud,
+  Film
 } from 'lucide-react';
 import { SANUS_SPA_SITE_DATA } from '../lib/sanusSpaSiteData';
 
@@ -287,6 +288,18 @@ export const SuperadminDashboardPage: React.FC = () => {
     prospect: ProspectSite;
   } | null>(null);
   const [copiedCredentials, setCopiedCredentials] = useState(false);
+
+  // Modal Dedicado de Gestión de Video-Scroll & CDN Cloudflare R2
+  const [managingVideoScrollProspect, setManagingVideoScrollProspect] = useState<ProspectSite | null>(null);
+  const [modalVideoVersion, setModalVideoVersion] = useState<string>('v2');
+  const [modalCdnStatus, setModalCdnStatus] = useState<'ready' | 'missing' | 'checking' | 'idle'>('idle');
+  const [isModalUploading, setIsModalUploading] = useState(false);
+  const [modalUploadProgress, setModalUploadProgress] = useState<{ total: number; uploaded: number; pct: number } | null>(null);
+  const [modalUploadError, setModalUploadError] = useState<string | null>(null);
+  const [modalUploadSuccess, setModalUploadSuccess] = useState<string | null>(null);
+  const [modalCopiedCmd, setModalCopiedCmd] = useState(false);
+  const [isApplyingVideo, setIsApplyingVideo] = useState(false);
+  const modalFramesFolderInputRef = React.useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadData();
@@ -981,6 +994,185 @@ export const SuperadminDashboardPage: React.FC = () => {
     } else if (type === 'credentials') {
       setCopiedCredentials(true);
       setTimeout(() => setCopiedCredentials(false), 2500);
+    }
+  };
+
+  // Funciones de gestión de Video-Scroll & CDN Cloudflare R2
+  const handleOpenVideoScrollModal = (prospect: ProspectSite) => {
+    setManagingVideoScrollProspect(prospect);
+    setModalUploadError(null);
+    setModalUploadSuccess(null);
+    setModalUploadProgress(null);
+    setModalCopiedCmd(false);
+
+    // Deducir versión actual o sugerir v2
+    const currentUrl = prospect.business_data?.frames_cdn_url || '';
+    const versionMatch = currentUrl.match(/\/frames\/[^/]+\/(v\d+)\//i);
+    if (versionMatch) {
+      const currVNum = parseInt(versionMatch[1].replace(/\D/g, ''), 10) || 1;
+      setModalVideoVersion(`v${currVNum + 1}`);
+    } else {
+      setModalVideoVersion('v2');
+    }
+
+    // Auto-diagnosticar disponibilidad de los frames actuales en CDN
+    const existingVersion = versionMatch ? versionMatch[1] : undefined;
+    checkModalFramesOnCdn(prospect.slug, existingVersion);
+  };
+
+  const checkModalFramesOnCdn = (targetSlug: string, versionStr?: string) => {
+    setModalCdnStatus('checking');
+    const cleanV = (versionStr || '').trim().replace(/[^a-z0-9-_]/g, '');
+    const vPrefix = cleanV ? `${cleanV}/` : '';
+    const testUrl = `${r2CdnUrl}/frames/${targetSlug}/${vPrefix}desktop/poster.webp?t=${Date.now()}`;
+    const img = new Image();
+    let timer: any = null;
+
+    img.onload = () => {
+      clearTimeout(timer);
+      setModalCdnStatus('ready');
+    };
+
+    img.onerror = () => {
+      const imgFallback = new Image();
+      imgFallback.onload = () => {
+        clearTimeout(timer);
+        setModalCdnStatus('ready');
+      };
+      imgFallback.onerror = () => {
+        clearTimeout(timer);
+        setModalCdnStatus('missing');
+      };
+      imgFallback.src = `${r2CdnUrl}/frames/${targetSlug}/${vPrefix}desktop/frame_001.webp?t=${Date.now()}`;
+    };
+
+    timer = setTimeout(() => {
+      setModalCdnStatus('missing');
+    }, 5000);
+
+    img.src = testUrl;
+  };
+
+  const handleUploadModalFramesFromBrowser = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFiles = e.target.files;
+    if (!rawFiles || rawFiles.length === 0 || !managingVideoScrollProspect) return;
+    const filesArray = Array.from(rawFiles);
+    const validFiles = filesArray.filter(f => f.name.toLowerCase().endsWith('.webp') || f.name.toLowerCase().endsWith('.png'));
+    if (validFiles.length === 0) {
+      alert('No se encontraron archivos .webp en la carpeta seleccionada.');
+      return;
+    }
+
+    const targetSlug = managingVideoScrollProspect.slug;
+    const cleanVersion = modalVideoVersion.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
+    setIsModalUploading(true);
+    setModalUploadError(null);
+    setModalUploadSuccess(null);
+    setModalUploadProgress({ total: validFiles.length, uploaded: 0, pct: 0 });
+
+    try {
+      const BATCH_SIZE = 8;
+      let uploadedCount = 0;
+
+      for (let i = 0; i < validFiles.length; i += BATCH_SIZE) {
+        const batch = validFiles.slice(i, i + BATCH_SIZE);
+        const filePayloads = await Promise.all(
+          batch.map(file => new Promise<{ relativePath: string; name: string; dataBase64: string }>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const res = String(reader.result || '');
+              const base64 = res.split(',')[1] || '';
+              const relativePath = (file as any).webkitRelativePath || file.name;
+              resolve({ relativePath, name: file.name, dataBase64: base64 });
+            };
+            reader.onerror = () => reject(new Error(`Error leyendo ${file.name}`));
+            reader.readAsDataURL(file);
+          }))
+        );
+
+        const response = await fetch('/api/upload-frames', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            slug: targetSlug,
+            files: filePayloads,
+            version: cleanVersion || undefined
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+
+        uploadedCount += batch.length;
+        const pct = Math.round((uploadedCount / validFiles.length) * 100);
+        setModalUploadProgress({ total: validFiles.length, uploaded: uploadedCount, pct });
+      }
+
+      setModalUploadSuccess(`¡${validFiles.length} fotogramas subidos exitosamente a Cloudflare R2!`);
+      setTimeout(() => {
+        checkModalFramesOnCdn(targetSlug, cleanVersion);
+      }, 1000);
+    } catch (err: any) {
+      console.error('Error modal subiendo frames:', err);
+      setModalUploadError(err.message || 'Error al subir los fotogramas a Cloudflare R2.');
+    } finally {
+      setIsModalUploading(false);
+      if (modalFramesFolderInputRef.current) {
+        modalFramesFolderInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleApplyModalVideoToSupabase = async () => {
+    if (!managingVideoScrollProspect) return;
+    setIsApplyingVideo(true);
+    try {
+      const targetSlug = managingVideoScrollProspect.slug;
+      const cleanVersion = modalVideoVersion.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
+      const vPrefix = cleanVersion ? `${cleanVersion}/` : '';
+      const newFramesCdnUrl = `${r2CdnUrl}/frames/${targetSlug}/${vPrefix}`;
+
+      const updatedBusinessData: any = {
+        nombre: managingVideoScrollProspect.business_name,
+        ...(managingVideoScrollProspect.business_data || {}),
+        has_video_scroll: true,
+        frames_cdn_url: newFramesCdnUrl,
+        frames_version: cleanVersion || 'v1'
+      };
+
+      await api.updateProspectSite(managingVideoScrollProspect.id, {
+        business_data: updatedBusinessData
+      });
+
+      if (managingVideoScrollProspect.claimed_tenant_id) {
+        const tMatch = tenants.find(t => t.id === managingVideoScrollProspect.claimed_tenant_id);
+        if (tMatch) {
+          await api.updateTenant({
+            ...tMatch,
+            frames_cdn_url: newFramesCdnUrl
+          } as any);
+        }
+      }
+
+      setProspectSites(prev => prev.map(p => {
+        if (p.id === managingVideoScrollProspect.id) {
+          return {
+            ...p,
+            business_data: updatedBusinessData
+          };
+        }
+        return p;
+      }));
+
+      setManagingVideoScrollProspect(prev => prev ? { ...prev, business_data: updatedBusinessData } : null);
+      setModalUploadSuccess(`🚀 ¡Video versión ${cleanVersion || 'v1'} activado y publicado en vivo en Supabase!`);
+    } catch (err: any) {
+      console.error('Error aplicando video a Supabase:', err);
+      setModalUploadError('Error al guardar en Supabase. Intenta nuevamente.');
+    } finally {
+      setIsApplyingVideo(false);
     }
   };
 
@@ -2033,10 +2225,15 @@ export const SuperadminDashboardPage: React.FC = () => {
                                 <strong className="block text-white text-xs">{p.business_name}</strong>
                                 <span className="text-[11px] font-mono text-slate-400">/sitio/{p.slug}</span>
                                 {p.business_data?.has_video_scroll && (
-                                  <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenVideoScrollModal(p)}
+                                    className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-300 border border-amber-500/40 shadow-sm cursor-pointer transition-all"
+                                    title="Gestionar fotogramas WebP y versiones en Cloudflare R2"
+                                  >
                                     <Play className="w-2.5 h-2.5 fill-amber-300" />
-                                    Video Scroll HD
-                                  </span>
+                                    <span>Video Scroll HD • Gestionar</span>
+                                  </button>
                                 )}
                                 <span className="text-[10px] font-mono text-amber-300/90 block mt-0.5 font-semibold">
                                   👤 {p.created_by || p.creator_email || 'osmarino73@yahoo.es'}
@@ -2110,6 +2307,20 @@ export const SuperadminDashboardPage: React.FC = () => {
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
+
+                              {/* Botón Gestión Video-Scroll & CDN R2 */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenVideoScrollModal(p)}
+                                className={`p-2 rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-sm ${
+                                  p.business_data?.has_video_scroll
+                                    ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-black border border-amber-500/40'
+                                    : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                                }`}
+                                title="🎬 Gestionar Video-Scroll & Fotogramas en Cloudflare R2"
+                              >
+                                <Film className="w-3.5 h-3.5" />
+                              </button>
 
                               <button
                                 type="button"
@@ -2949,6 +3160,242 @@ export const SuperadminDashboardPage: React.FC = () => {
                   </button>
                 )}
               </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL DEDICADO: GESTIÓN DE VIDEO-SCROLL & CLOUDFLARE R2
+          ========================================================================= */}
+      {managingVideoScrollProspect && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in cursor-pointer"
+          onClick={() => setManagingVideoScrollProspect(null)}
+        >
+          <div 
+            className="bg-[#121624] border border-amber-500/40 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl space-y-5 text-white my-auto relative overflow-hidden cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Glow Dorado Superior */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-28 bg-amber-500/15 blur-3xl pointer-events-none" />
+
+            {/* Header del Modal */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl shrink-0 shadow-lg shadow-amber-500/10">
+                  🎬
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-extrabold text-white">
+                      Gestión de Video-Scroll & CDN R2
+                    </h3>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      Cloudflare
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Negocio: <strong className="text-white">{managingVideoScrollProspect.business_name}</strong> • Slug: <code className="text-amber-300 font-mono">/sitio/{managingVideoScrollProspect.slug}</code>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setManagingVideoScrollProspect(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Cerrar (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Card 1: Diagnóstico en Vivo de la CDN */}
+            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2.5 relative z-10">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                  <span>📡 Estado de Disponibilidad en Cloudflare R2:</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => checkModalFramesOnCdn(managingVideoScrollProspect.slug, modalVideoVersion)}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Verificar si los fotogramas responden en la CDN"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${modalCdnStatus === 'checking' ? 'animate-spin text-amber-400' : ''}`} />
+                  <span>Diagnosticar CDN</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
+                {modalCdnStatus === 'ready' && (
+                  <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>✓ Fotogramas activos y disponibles en la red CDN perimetral (200 OK)</span>
+                  </span>
+                )}
+                {modalCdnStatus === 'missing' && (
+                  <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>⚠️ Fotogramas aún no detectados para esta versión en R2. Sube la carpeta a continuación.</span>
+                  </span>
+                )}
+                {modalCdnStatus === 'checking' && (
+                  <span className="text-amber-300 font-semibold flex items-center gap-1.5 animate-pulse">
+                    <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
+                    <span>Consultando servidores perimetrales de Cloudflare...</span>
+                  </span>
+                )}
+                {modalCdnStatus === 'idle' && (
+                  <span className="text-slate-400">
+                    Presiona «Diagnosticar CDN» para verificar la disponibilidad de los frames.
+                  </span>
+                )}
+              </div>
+
+              <div className="text-[11px] text-slate-400 flex items-center gap-1.5 font-mono bg-black/40 px-3 py-2 rounded-xl border border-white/5 overflow-x-auto">
+                <span className="text-slate-500 shrink-0">Ruta CDN:</span>
+                <span className="text-amber-300 truncate">
+                  {r2CdnUrl}/frames/{managingVideoScrollProspect.slug}/{modalVideoVersion ? `${modalVideoVersion}/` : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Card 2: Selector de Versión para Cache-Busting */}
+            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2 relative z-10">
+              <label className="text-xs font-bold text-slate-300 block">
+                ⚡ Versión de la Secuencia de Video (Cache-Busting):
+              </label>
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="text"
+                  value={modalVideoVersion}
+                  onChange={(e) => {
+                    const newV = e.target.value;
+                    setModalVideoVersion(newV);
+                    checkModalFramesOnCdn(managingVideoScrollProspect.slug, newV);
+                  }}
+                  placeholder="ej. v2, v3"
+                  className="bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs font-mono font-bold text-amber-300 w-32 focus:outline-none focus:border-amber-400"
+                />
+                <span className="text-[11px] text-slate-400 leading-snug">
+                  Asignar una nueva versión (ej. <code>v2</code>, <code>v3</code>) garantiza que los celulares carguen el nuevo video al instante sin depender de la expiración de la memoria caché.
+                </span>
+              </div>
+            </div>
+
+            {/* Card 3: Selector de Carpeta de Frames y Subida a R2 */}
+            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-3 relative z-10">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 block">
+                  📤 Subir Nuevos Fotogramas WebP a Cloudflare R2:
+                </label>
+                <span className="text-[10px] text-slate-400">Soporta carpetas con /desktop y /mobile</span>
+              </div>
+
+              {/* Input oculto para selección de carpeta */}
+              <input
+                type="file"
+                ref={modalFramesFolderInputRef}
+                // @ts-ignore
+                webkitdirectory=""
+                directory=""
+                multiple
+                onChange={handleUploadModalFramesFromBrowser}
+                className="hidden"
+              />
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  disabled={isModalUploading}
+                  onClick={() => modalFramesFolderInputRef.current?.click()}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <UploadCloud className={`w-4 h-4 ${isModalUploading ? 'animate-bounce text-slate-950' : 'text-slate-950'}`} />
+                  <span>{isModalUploading ? 'Subiendo Fotogramas...' : 'Seleccionar Carpeta con Frames'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const cleanV = modalVideoVersion ? ` --version=${modalVideoVersion}` : '';
+                    const cmd = `npm run upload:frames ${managingVideoScrollProspect.slug}${cleanV}`;
+                    navigator.clipboard.writeText(cmd);
+                    setModalCopiedCmd(true);
+                    setTimeout(() => setModalCopiedCmd(false), 3000);
+                  }}
+                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Copiar comando de consola npm run upload:frames"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{modalCopiedCmd ? '✓ Comando Copiado' : 'Copiar Comando CLI'}</span>
+                </button>
+              </div>
+
+              {/* Barra de Progreso en Vivo */}
+              {isModalUploading && modalUploadProgress && (
+                <div className="w-full bg-[#080a10] border border-amber-500/40 rounded-xl p-3 space-y-2 animate-fade-in">
+                  <div className="flex items-center justify-between text-xs text-amber-200">
+                    <span className="font-semibold flex items-center gap-2">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                      Subiendo a Cloudflare R2: {modalUploadProgress.uploaded} de {modalUploadProgress.total}
+                    </span>
+                    <span className="font-mono font-bold text-amber-400">{modalUploadProgress.pct}%</span>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-300 rounded-full"
+                      style={{ width: `${modalUploadProgress.pct}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mensajes de Éxito / Error */}
+              {modalUploadSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between animate-fade-in">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{modalUploadSuccess}</span>
+                  </span>
+                  <button type="button" onClick={() => setModalUploadSuccess(null)} className="text-emerald-400 hover:text-white">✕</button>
+                </div>
+              )}
+
+              {modalUploadError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between animate-fade-in">
+                  <span className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{modalUploadError}</span>
+                  </span>
+                  <button type="button" onClick={() => setModalUploadError(null)} className="text-rose-400 hover:text-white">✕</button>
+                </div>
+              )}
+            </div>
+
+            {/* Footer con Acción Final */}
+            <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+              <a
+                href={`/sitio/${managingVideoScrollProspect.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>Probar Sitio en Vivo</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
+              <button
+                type="button"
+                disabled={isApplyingVideo}
+                onClick={handleApplyModalVideoToSupabase}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <span>{isApplyingVideo ? 'Guardando en Supabase...' : '🚀 Aplicar y Publicar en Vivo'}</span>
+              </button>
             </div>
 
           </div>

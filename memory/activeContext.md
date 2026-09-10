@@ -14,6 +14,21 @@
 
 ---
 
+-59. **Modal Dedicado "Gestión de Video-Scroll & CDN R2" en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`upload-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/upload-frames.mjs), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
+    - **Contexto & Necesidad Operativa**: Cuando un negocio ya creado (ej. *Blessed Barbería* o *Sanus Spa*) desea cambiar o actualizar su video cinemático, el Superadmin no tenía un acceso directo en la tabla para gestionar los fotogramas y la CDN de Cloudflare R2 sin tener que volver a editar el HTML o usar la consola. Además, sobreescribir la misma ruta causaba que los clientes siguieran viendo el video anterior debido a la caché agresiva (`max-age=31536000`).
+    - **Solución Implementada**:
+      1. **Botón en Tabla de Prospectos**: Se añadió el botón interactivo `🎬 Video Scroll HD • Gestionar` y el icono de claqueta `🎬` en las acciones rápidas de cada negocio.
+      2. **Modal Dedicado de Gestión R2**:
+         - Diagnóstico en vivo e inmune a CORS de la disponibilidad de frames en Cloudflare R2 con `new Image()`.
+         - Control de versionado automático (Cache-Busting: `v1` -> `v2` -> `v3`) para que los cambios se reflejen de inmediato sin conflicto de caché en navegadores.
+         - Cargador web directo de carpetas de frames (`desktop/` y `mobile/`) con subida por lotes y barra de progreso porcentual.
+         - Botón de 1 clic para copiar el comando de consola actualizado: `npm run upload:frames <slug> --version=v2`.
+         - Botón `🚀 Aplicar y Publicar en Vivo` que actualiza `frames_cdn_url` en Supabase (`prospect_sites` y `tenants`) sin alterar el código fuente.
+      3. **Soporte de Versionado en Netlify Function & CLI**:
+         - Se actualizó `netlify/functions/upload-frames.mjs` para recibir el parámetro `version` y almacenar en `frames/:slug/:version/`.
+         - Se actualizó `scripts/uploadFramesToR2.mjs` para soportar `--version=v2`.
+      4. Validación limpia con `npm run build` (código 0).
+
 -58. **Bloqueo Total de Edición de Portada en Sitios con Video-Scroll ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
     - **Contexto**: Cuando un negocio (como *Blessed Barbería* o *Sanus Spa*) utiliza una plantilla con Video-Scroll Scrubbing, la portada está controlada por una secuencia interactiva de 72 a 144 fotogramas WebP en Cloudflare R2 vía `<canvas>`. Permitir cambiar la foto fija en el Personalizador Web creaba inconsistencias y confusiones.
     - **Implementación (Opción B)**:

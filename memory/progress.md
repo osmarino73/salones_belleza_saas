@@ -1,3 +1,8 @@
+- [x] **Modal Dedicado "Gestión de Video-Scroll & CDN R2" en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`upload-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/upload-frames.mjs), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
+  - Implementado botón de acceso rápido `🎬 Video Scroll HD • Gestionar` en la tabla de prospectos.
+  - Creado modal interactivo con diagnóstico en tiempo real de Cloudflare R2, control de versionado (`v1` -> `v2` para cache-busting), selector de carpetas para subida web directa de frames WebP con barra de progreso, y botón de 1 clic `🚀 Aplicar y Publicar en Vivo` para sincronizar en Supabase.
+  - Soportado parámetro `version` tanto en la Netlify Function como en el script CLI `npm run upload:frames <slug> --version=v2`.
+
 - [x] **Bloqueo Total de Edición de Portada en Sitios con Video-Scroll ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
   - Implementada la Opción B: Cuando un sitio cuenta con animación de Video-Scroll Scrubbing (`#hero-canvas` / `.hero-scroll-section` / `has_video_scroll`), la sección de Fotografía Principal del Header queda 100% bloqueada en el Personalizador Web.
   - Se sustituye el selector de fotos por un banner de alta gama con candado `🔒`, badge `🎬 Video Scroll HD` e indicador de CDN Cloudflare R2 activo, protegiendo la secuencia cinemática contra sobreescrituras accidentales.

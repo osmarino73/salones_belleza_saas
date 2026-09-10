@@ -38,7 +38,7 @@ export async function handler(event) {
   }
 
   try {
-    const { slug, files } = JSON.parse(event.body || '{}');
+    const { slug, files, version } = JSON.parse(event.body || '{}');
 
     if (!slug || !files || !Array.isArray(files) || files.length === 0) {
       return {
@@ -49,6 +49,8 @@ export async function handler(event) {
     }
 
     const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+    const cleanVersion = version ? String(version).toLowerCase().replace(/[^a-z0-9-_]/g, '') : '';
+    const versionPrefix = cleanVersion ? `${cleanVersion}/` : '';
     let uploadedCount = 0;
 
     // Subir los archivos del lote en paralelo a Cloudflare R2
@@ -60,7 +62,7 @@ export async function handler(event) {
           .replace(/^(?:public\/)?frames\//i, '')
           .replace(/^[^\/]+\/(?:public\/)?frames\//i, '');
 
-        const r2Key = `frames/${cleanSlug}/${cleanRelative}`;
+        const r2Key = `frames/${cleanSlug}/${versionPrefix}${cleanRelative}`;
         const buffer = Buffer.from(file.dataBase64, 'base64');
         const contentType = cleanRelative.endsWith('.webp')
           ? 'image/webp'
@@ -91,6 +93,8 @@ export async function handler(event) {
         success: true,
         uploadedCount,
         slug: cleanSlug,
+        version: cleanVersion || null,
+        framesPath: `frames/${cleanSlug}/${versionPrefix}`
       }),
     };
   } catch (error) {
