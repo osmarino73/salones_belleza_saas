@@ -1,3 +1,7 @@
+- [x] **Bloqueo Total de Edición de Portada en Sitios con Video-Scroll ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+  - Implementada la Opción B: Cuando un sitio cuenta con animación de Video-Scroll Scrubbing (`#hero-canvas` / `.hero-scroll-section` / `has_video_scroll`), la sección de Fotografía Principal del Header queda 100% bloqueada en el Personalizador Web.
+  - Se sustituye el selector de fotos por un banner de alta gama con candado `🔒`, badge `🎬 Video Scroll HD` e indicador de CDN Cloudflare R2 activo, protegiendo la secuencia cinemática contra sobreescrituras accidentales.
+
 - [x] **Corrección del Botón de Cierre en Modal de Activación / Bienvenida ([`WelcomeModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/WelcomeModal.tsx))**:
   - Resuelto problema donde el botón de cerrar (`X`) en la esquina superior derecha no respondía al clic debido a que el contenedor de cabecera con `relative z-10` se superponía en el apilamiento CSS sobre el botón (`absolute z-10`).
   - Se elevó el botón a `z-50` prioritario con mayor área táctil (`w-9 h-9 sm:w-10 sm:h-10`).

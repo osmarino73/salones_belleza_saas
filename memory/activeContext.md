@@ -14,6 +14,14 @@
 
 ---
 
+-58. **Bloqueo Total de Edición de Portada en Sitios con Video-Scroll ([`DashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/DashboardPage.tsx))**:
+    - **Contexto**: Cuando un negocio (como *Blessed Barbería* o *Sanus Spa*) utiliza una plantilla con Video-Scroll Scrubbing, la portada está controlada por una secuencia interactiva de 72 a 144 fotogramas WebP en Cloudflare R2 vía `<canvas>`. Permitir cambiar la foto fija en el Personalizador Web creaba inconsistencias y confusiones.
+    - **Implementación (Opción B)**:
+      1. Se añadió la detección reactiva `isVideoScrollSite` evaluando la presencia de `#hero-canvas`, `.hero-scroll-section`, `public/frames` o el flag `has_video_scroll`.
+      2. En el modal del Personalizador Web, la Sección 1 (`1. Fotografía Principal del Header (Portada)`) reemplaza por completo el selector de fotos por un panel informativo blindado con badge dorado `🎬 Video Scroll HD`, icono de candado `🔒` e indicador verde de sincronización con CDN Cloudflare R2.
+      3. Se eliminó cualquier opción de cambiar la foto fija para evitar romper la secuencia de fotogramas del video.
+      4. Validación exitosa con `npm run build` (0 errores).
+
 -57. **Corrección de Cierre en Modal de Bienvenida (`WelcomeModal.tsx`)**:
     - **Causa Raíz**: El botón de cierre `X` en la esquina superior derecha tenía `z-10`, pero el contenedor de la cabecera (`p-6 sm:p-7 relative z-10`) al estar posicionado inmediatamente después en el DOM quedaba pintado por encima en el contexto de apilamiento CSS, absorbiendo los eventos de clic y bloqueando la pulsación del botón.
     - **Solución Implementada**:

@@ -402,6 +402,17 @@ export const DashboardPage: React.FC = () => {
     });
   }, [prospectRawHtml, websiteForm, activeTenantObj, services, stylists]);
 
+  // Detección reactiva de si el sitio web usa Video Scroll Scrubbing en el Hero
+  const isVideoScrollSite = useMemo(() => {
+    return Boolean(
+      prospectRawHtml?.includes('hero-scroll-section') ||
+      prospectRawHtml?.includes('hero-canvas') ||
+      prospectRawHtml?.includes('public/frames') ||
+      (activeTenantObj as any)?.has_video_scroll ||
+      (activeTenantObj as any)?.business_data?.has_video_scroll
+    );
+  }, [prospectRawHtml, activeTenantObj]);
+
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState({
@@ -7094,14 +7105,54 @@ export const DashboardPage: React.FC = () => {
                 setIsConfirmPublishWebsiteModalOpen(true);
               }} className="lg:col-span-7 space-y-4 text-xs">
 
-                {/* 1. Selector de Fotografía de Portada (Hero) */}
+                {/* 1. Selector de Fotografía de Portada (Hero) o Bloqueo Total por Video-Scroll */}
                 <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.02]">
-                  <ServiceImagePicker
-                    value={websiteForm.hero_image_url}
-                    category="color"
-                    onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
-                    label="1. Fotografía Principal del Header (Portada)"
-                  />
+                  {isVideoScrollSite ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-slate-300 font-bold text-xs flex items-center gap-1.5">
+                          <span>1. Fotografía Principal del Header (Portada)</span>
+                        </label>
+                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shadow-sm">
+                          <span>🎬 Video Scroll HD</span>
+                        </span>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-black/40 to-black/60 flex flex-col sm:flex-row items-start sm:items-center gap-4 relative overflow-hidden">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0 text-2xl shadow-lg shadow-amber-500/10">
+                          🔒
+                        </div>
+
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="text-white text-xs font-bold block">
+                              Edición de Portada Bloqueada por Video-Scroll
+                            </strong>
+                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              Sincronizado en CDN Cloudflare R2
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-slate-300 leading-relaxed">
+                            Tu sitio web utiliza una animación cinemática interactiva controlada por el scroll del cliente. La portada no es una imagen fija tradicional, sino una secuencia de fotogramas WebP de alta velocidad optimizada para dispositivos móviles.
+                          </p>
+
+                          <div className="text-[10px] text-amber-200/90 flex items-center gap-1.5 pt-1">
+                            <span className="font-bold">⚠️ Nota:</span>
+                            <span>Esta sección permanece protegida para evitar la desincronización de la secuencia del video.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <ServiceImagePicker
+                      value={websiteForm.hero_image_url}
+                      category="color"
+                      onChange={(url) => setWebsiteForm({ ...websiteForm, hero_image_url: url })}
+                      label="1. Fotografía Principal del Header (Portada)"
+                    />
+                  )}
                 </div>
 
                 {/* 2. Textos Principales del Hero & Barra de Navegación */}
