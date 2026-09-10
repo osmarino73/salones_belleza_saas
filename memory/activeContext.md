@@ -14,6 +14,18 @@
 
 ---
 
+-60. **Resolución de Feedback y Publicación de Video-Scroll en Vivo ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Causa Raíz del Reporte**: Al hacer clic en "🚀 Aplicar y Publicar en Vivo", el usuario percibía que "no pasaba nada" debido a dos razones:
+      1. **Falta de Feedback Inmediato en el Footer**: El mensaje de éxito se renderizaba dentro del bloque de subida superior (fuera del foco visual al pie del modal), el modal no se cerraba y el botón no cambiaba de estado tras los 200ms de guardado, pareciendo inerte.
+      2. **Falla de Reemplazo en `prospectHtmlInjector.ts`**: Cuando el sitio ya había sido creado, `raw_html` contenía URLs absolutas de CDN (sin `v2`). `prospectHtmlInjector` únicamente buscaba strings `public/frames/`, por lo que nunca reemplazaba la CDN anterior por la nueva versión (`v2`). Además, no se limpiaba la barra inclinada final (`/`), produciendo dobles barras `//mobile`.
+    - **Solución Implementada**:
+      1. En [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts): Se normalizó `targetFramesBase` eliminando barras finales y se añadieron regexes para detectar y reemplazar URLs absolutas previas de Cloudflare R2 (`https://.../frames/:slug/.../(desktop|mobile)`) por la nueva versión activa.
+      2. En [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx):
+         - `handleApplyModalVideoToSupabase` ahora actualiza simultáneamente `business_data` y las rutas en `raw_html` dentro de Supabase.
+         - Se añadió el estado `modalAppliedSuccess` para que el botón cambie a `✓ ¡Publicado con Éxito!` con anillo esmeralda reactivo y badge animado.
+         - Se agregó botón de "Cerrar" directo en el pie del modal y enlace con forzado de recarga (`?t=...`) en "Probar Sitio en Vivo".
+      3. Validación exitosa con `npm run build`.
+
 -59. **Modal Dedicado "Gestión de Video-Scroll & CDN R2" en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`upload-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/upload-frames.mjs), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
     - **Contexto & Necesidad Operativa**: Cuando un negocio ya creado (ej. *Blessed Barbería* o *Sanus Spa*) desea cambiar o actualizar su video cinemático, el Superadmin no tenía un acceso directo en la tabla para gestionar los fotogramas y la CDN de Cloudflare R2 sin tener que volver a editar el HTML o usar la consola. Además, sobreescribir la misma ruta causaba que los clientes siguieran viendo el video anterior debido a la caché agresiva (`max-age=31536000`).
     - **Solución Implementada**:

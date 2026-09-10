@@ -284,11 +284,12 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     || (globalProcess?.env?.VITE_R2_CDN_URL)
     || 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev';
   const r2CdnUrl = String(envR2).replace(/\/+$/, '');
-  const targetFramesBase = (framesBaseUrl && (framesBaseUrl.startsWith('http://') || framesBaseUrl.startsWith('https://')))
+  const rawFramesBase = (framesBaseUrl && (framesBaseUrl.startsWith('http://') || framesBaseUrl.startsWith('https://')))
     ? framesBaseUrl
     : `${r2CdnUrl}/frames/${slug}`;
+  const targetFramesBase = String(rawFramesBase).replace(/\/+$/, '');
   
-  // Reemplazar rutas relativas de frames tipo 'public/frames/mobile' o 'public/frames/desktop'
+  // 1. Reemplazar rutas relativas de frames tipo 'public/frames/mobile' o 'public/frames/desktop'
   // con la CDN absoluta Cloudflare R2
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${targetFramesBase}/mobile'`);
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${targetFramesBase}/desktop'`);
@@ -297,6 +298,13 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // Normalizar cualquier poster o asset en src="..." o content="..."
   processed = processed.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
   processed = processed.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
+
+  // 2. Reemplazar URLs absolutas previas de Cloudflare R2 para este slug (por si ya estaban quemadas con v1 u otra versión)
+  const existingCdnRegex = new RegExp(`(['"])https?:\\/\\/[^/'"\\s]+\\/frames\\/${slug}(?:\\/[^/'"\\s]+)?\\/(desktop|mobile)(['"])`, 'gi');
+  processed = processed.replace(existingCdnRegex, `$1${targetFramesBase}/$2$3`);
+
+  const existingPosterRegex = new RegExp(`(src=["']|content=["'])https?:\\/\\/[^/'"\\s]+\\/frames\\/${slug}(?:\\/[^/'"\\s]+)?\\/((?:desktop|mobile)\\/poster\\.webp["'])`, 'gi');
+  processed = processed.replace(existingPosterRegex, `$1${targetFramesBase}/$2`);
 
   // 1. Inyectar únicamente soporte técnico limpio y estilos para elementos dinámicos
   const resetCss = `

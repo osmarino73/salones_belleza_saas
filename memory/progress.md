@@ -1,3 +1,9 @@
+- [x] **Resolución de Feedback y Publicación de Video-Scroll en Vivo ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Resuelto el problema reportado donde al pulsar "Aplicar y Publicar en Vivo" parecía no ocurrir nada: se añadieron estados visuales inmediatos en el botón (`✓ ¡Publicado con Éxito!` con anillo esmeralda reactivo), badge de confirmación en el pie del modal y botón de "Cerrar".
+  - Corregido el reemplazo de URLs en [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts): ahora detecta y sustituye cualquier URL previa de CDN (`.../frames/:slug/...`) por la nueva versión (`v2`), limpiando barras inclinadas duplicadas (`//mobile`).
+  - Sincronización completa de `raw_html` en Supabase al aplicar nueva versión de video.
+  - El botón "Probar Sitio en Vivo" ahora fuerza bypass de caché local del navegador con `?t=...`.
+
 - [x] **Modal Dedicado "Gestión de Video-Scroll & CDN R2" en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`upload-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/upload-frames.mjs), [`uploadFramesToR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/uploadFramesToR2.mjs))**:
   - Implementado botón de acceso rápido `🎬 Video Scroll HD • Gestionar` en la tabla de prospectos.
   - Creado modal interactivo con diagnóstico en tiempo real de Cloudflare R2, control de versionado (`v1` -> `v2` para cache-busting), selector de carpetas para subida web directa de frames WebP con barra de progreso, y botón de 1 clic `🚀 Aplicar y Publicar en Vivo` para sincronizar en Supabase.

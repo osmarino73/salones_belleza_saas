@@ -299,6 +299,7 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [modalUploadSuccess, setModalUploadSuccess] = useState<string | null>(null);
   const [modalCopiedCmd, setModalCopiedCmd] = useState(false);
   const [isApplyingVideo, setIsApplyingVideo] = useState(false);
+  const [modalAppliedSuccess, setModalAppliedSuccess] = useState(false);
   const modalFramesFolderInputRef = React.useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -1008,16 +1009,16 @@ export const SuperadminDashboardPage: React.FC = () => {
     // Deducir versión actual o sugerir v2
     const currentUrl = prospect.business_data?.frames_cdn_url || '';
     const versionMatch = currentUrl.match(/\/frames\/[^/]+\/(v\d+)\//i);
+    let targetInitialVersion = 'v2';
     if (versionMatch) {
       const currVNum = parseInt(versionMatch[1].replace(/\D/g, ''), 10) || 1;
-      setModalVideoVersion(`v${currVNum + 1}`);
-    } else {
-      setModalVideoVersion('v2');
+      targetInitialVersion = `v${currVNum + 1}`;
     }
+    setModalVideoVersion(targetInitialVersion);
+    setModalAppliedSuccess(false);
 
-    // Auto-diagnosticar disponibilidad de los frames actuales en CDN
-    const existingVersion = versionMatch ? versionMatch[1] : undefined;
-    checkModalFramesOnCdn(prospect.slug, existingVersion);
+    // Auto-diagnosticar disponibilidad de los frames en CDN para la versión seleccionada
+    checkModalFramesOnCdn(prospect.slug, targetInitialVersion);
   };
 
   const checkModalFramesOnCdn = (targetSlug: string, versionStr?: string) => {
@@ -1128,22 +1129,42 @@ export const SuperadminDashboardPage: React.FC = () => {
   const handleApplyModalVideoToSupabase = async () => {
     if (!managingVideoScrollProspect) return;
     setIsApplyingVideo(true);
+    setModalAppliedSuccess(false);
     try {
       const targetSlug = managingVideoScrollProspect.slug;
       const cleanVersion = modalVideoVersion.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '');
       const vPrefix = cleanVersion ? `${cleanVersion}/` : '';
       const newFramesCdnUrl = `${r2CdnUrl}/frames/${targetSlug}/${vPrefix}`;
+      const cleanNewFramesUrl = newFramesCdnUrl.replace(/\/+$/, '');
+
+      // Actualizar rutas de frames directamente en el raw_html almacenado
+      let updatedRawHtml = managingVideoScrollProspect.raw_html;
+      if (updatedRawHtml) {
+        const oldCdnRegex = new RegExp(`(['"])https?:\\/\\/[^/'"\\s]+\\/frames\\/${targetSlug}(?:\\/[^/'"\\s]+)?\\/(desktop|mobile)(['"])`, 'gi');
+        updatedRawHtml = updatedRawHtml.replace(oldCdnRegex, `$1${cleanNewFramesUrl}/$2$3`);
+
+        const oldPosterRegex = new RegExp(`(src=["']|content=["'])https?:\\/\\/[^/'"\\s]+\\/frames\\/${targetSlug}(?:\\/[^/'"\\s]+)?\\/((?:desktop|mobile)\\/poster\\.webp["'])`, 'gi');
+        updatedRawHtml = updatedRawHtml.replace(oldPosterRegex, `$1${cleanNewFramesUrl}/$2`);
+
+        updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${cleanNewFramesUrl}/mobile'`);
+        updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${cleanNewFramesUrl}/desktop'`);
+        updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${cleanNewFramesUrl}/'`);
+        updatedRawHtml = updatedRawHtml.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cleanNewFramesUrl}/$2`);
+        updatedRawHtml = updatedRawHtml.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cleanNewFramesUrl}/$2`);
+      }
 
       const updatedBusinessData: any = {
         nombre: managingVideoScrollProspect.business_name,
         ...(managingVideoScrollProspect.business_data || {}),
         has_video_scroll: true,
         frames_cdn_url: newFramesCdnUrl,
-        frames_version: cleanVersion || 'v1'
+        frames_version: cleanVersion || 'v1',
+        hero_image_url: `${cleanNewFramesUrl}/desktop/poster.webp`
       };
 
       await api.updateProspectSite(managingVideoScrollProspect.id, {
-        business_data: updatedBusinessData
+        business_data: updatedBusinessData,
+        raw_html: updatedRawHtml || undefined
       });
 
       if (managingVideoScrollProspect.claimed_tenant_id) {
@@ -1151,7 +1172,8 @@ export const SuperadminDashboardPage: React.FC = () => {
         if (tMatch) {
           await api.updateTenant({
             ...tMatch,
-            frames_cdn_url: newFramesCdnUrl
+            frames_cdn_url: newFramesCdnUrl,
+            hero_image_url: `${cleanNewFramesUrl}/desktop/poster.webp`
           } as any);
         }
       }
@@ -1160,14 +1182,29 @@ export const SuperadminDashboardPage: React.FC = () => {
         if (p.id === managingVideoScrollProspect.id) {
           return {
             ...p,
-            business_data: updatedBusinessData
+            business_data: updatedBusinessData,
+            raw_html: updatedRawHtml || p.raw_html
           };
         }
         return p;
       }));
 
-      setManagingVideoScrollProspect(prev => prev ? { ...prev, business_data: updatedBusinessData } : null);
-      setModalUploadSuccess(`🚀 ¡Video versión ${cleanVersion || 'v1'} activado y publicado en vivo en Supabase!`);
+      setManagingVideoScrollProspect(prev => prev ? {
+        ...prev,
+        business_data: updatedBusinessData,
+        raw_html: updatedRawHtml || prev.raw_html
+      } : null);
+
+      setModalAppliedSuccess(true);
+      setModalUploadSuccess(`🚀 ¡Video versión ${cleanVersion || 'v1'} activado y publicado en vivo en Supabase! Abriendo sitio en vivo...`);
+
+      // Abrir el sitio web en una nueva pestaña para validar de inmediato los cambios
+      window.open(`/sitio/${targetSlug}?t=${Date.now()}`, '_blank');
+
+      // Auto-cerrar el modal tras 2.5s para no dejarlo estancado
+      setTimeout(() => {
+        setManagingVideoScrollProspect(null);
+      }, 2500);
     } catch (err: any) {
       console.error('Error aplicando video a Supabase:', err);
       setModalUploadError('Error al guardar en Supabase. Intenta nuevamente.');
@@ -3377,25 +3414,57 @@ export const SuperadminDashboardPage: React.FC = () => {
             </div>
 
             {/* Footer con Acción Final */}
-            <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
-              <a
-                href={`/sitio/${managingVideoScrollProspect.slug}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <span>Probar Sitio en Vivo</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+            <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setManagingVideoScrollProspect(null)}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cerrar
+                </button>
 
-              <button
-                type="button"
-                disabled={isApplyingVideo}
-                onClick={handleApplyModalVideoToSupabase}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50"
-              >
-                <span>{isApplyingVideo ? 'Guardando en Supabase...' : '🚀 Aplicar y Publicar en Vivo'}</span>
-              </button>
+                <a
+                  href={`/sitio/${managingVideoScrollProspect.slug}?t=${Date.now()}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  title="Abrir sitio con actualización en tiempo real forzada"
+                >
+                  <span>Probar Sitio en Vivo</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                {modalAppliedSuccess ? (
+                  <a
+                    href={`/sitio/${managingVideoScrollProspect.slug}?t=${Date.now()}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-full font-black text-xs flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/30 animate-pulse hover:brightness-110 transition-all cursor-pointer"
+                  >
+                    <span>👀 Ver Sitio en Vivo Ahora</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isApplyingVideo}
+                    onClick={handleApplyModalVideoToSupabase}
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-full font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-50 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-emerald-500/25"
+                  >
+                    {isApplyingVideo ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Guardando en Supabase...</span>
+                      </>
+                    ) : (
+                      <span>🚀 Aplicar y Publicar en Vivo</span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
           </div>
