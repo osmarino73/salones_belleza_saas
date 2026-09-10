@@ -57,34 +57,125 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 
 ## 📋 3. Banco de Plantillas Oficiales de WhatsApp
 
-### 🟢 Plantilla 1: Primer Contacto (Paso 1: Gancho Visual + Propuesta)
+### 🟢 Plantilla 1: Primer Contacto (Paso 1: Gancho Visual + Demo Adaptado por Nicho)
+
+> [!IMPORTANT]
+> **Regla de Nicho**: El mensaje debe adaptarse a la identidad y jerga del negocio (barbería vs salón vs uñas vs spa). La pregunta de cierre apunta al dolor agudo de estar atendiendo mientras el teléfono no para de sonar con preguntas de agenda.
+
+#### 💈 Opción A: Barbería / Barber Shop
 ```text
-¡Hola [Nombre del Salón]! 👋✨
-Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
+¡Hola equipo de [Nombre del Negocio]! 👋💈
+Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su página web con catálogo de cortes y sistema de reservas online:
 👉 https://kowy.app/sitio/[slug]
 
-📌 Nota: Si en su perfil de Google Maps tenían servicios o especialistas registrados, se reflejaron automáticamente. Si no, colocamos unos de muestra para que puedan ver la experiencia completa. ¡Todo es 100% editable!
+(Todo el contenido, barberos y servicios son 100% editables).
 
-¿Qué les parece cómo quedó el diseño de su marca? 💖
+"¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?"
+```
+
+#### ✨ Opción B: Salón de Belleza / Peluquería
+```text
+¡Hola equipo de [Nombre del Salón]! 👋✨
+Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su página web con catálogo de servicios y sistema de reservas online:
+👉 https://kowy.app/sitio/[slug]
+
+(Todo el contenido, estilistas y servicios son 100% editables).
+
+"¿Les gustaría que sus clientas agenden citas solas 24/7 sin tener que responder tantos chats de WhatsApp mientras están atendiendo?"
+```
+
+#### 💅 Opción C: Nail Bar / Estudio de Uñas
+```text
+¡Hola equipo de [Nombre del Estudio]! 👋💅
+Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su página web con catálogo de diseños de uñas y sistema de reservas online:
+👉 https://kowy.app/sitio/[slug]
+
+(Todo el contenido, manicuristas y servicios son 100% editables).
+
+"¿Les gustaría que sus clientas agenden sus citas solas viendo los diseños y horarios sin saturarles el WhatsApp?"
+```
+
+#### 🧖‍♀️ Opción D: Spa & Centro de Estética
+```text
+¡Hola equipo de [Nombre del Spa]! 👋🧖‍♀️
+Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su página web con carta de tratamientos y sistema de reservas online:
+👉 https://kowy.app/sitio/[slug]
+
+(Todo el contenido, especialistas y protocolos son 100% editables).
+
+"¿Les gustaría que sus clientes o pacientes reserven sus citas y valoraciones automáticamente sin tener que responder tantos chats de WhatsApp?"
 ```
 
 ---
 
-### 🎁 Plantilla 2: Respuesta al Interés (Paso 2: Jornada de Lanzamiento $89k)
+### 🎁 Plantilla 2: Respuesta al Interés & Cierre (Paso 2: Cupos de Lanzamiento $89k)
+
+#### 💈 Opción A: Barbería / Barber Shop
 ```text
-¡Nos alegra mucho! 🎉 La diseñamos pensando en destacar la imagen de su salón.
+¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes por responder tarde al WhatsApp.
 
-Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
+Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
 
-Por un aporte único de activación de $89.000 COP (vía Nequi o Daviplata), les entregamos:
+🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
 
-🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp, con 1 Año Completo de Alojamiento Web (Hosting + SSL) incluido.
-🎁 1 Mes Completo Incluido del sistema de reservas online para clientas, app de agenda para estilistas y caja POS.
-🖨️ Afiches y Tarjetas QR de reservas listos para imprimir en sus tocadores y mostrador.
+📲 1 mes gratis de agenda y reservas: Sus clientes eligen barbero y horario; ustedes controlan la agenda desde el celular.
 
-(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa en Google Maps renovando solo su hosting por $89.000 al año a partir del 2do año).
+🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y los espejos.
 
-Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨
+Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+
+¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+```
+
+#### ✨ Opción B: Salón de Belleza / Peluquería
+```text
+¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientas por responder tarde al WhatsApp.
+
+Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+
+🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+
+📲 1 mes gratis de agenda y reservas: Sus clientas eligen estilista y horario; ustedes controlan la agenda desde el celular.
+
+🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y los tocadores.
+
+Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+
+¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+```
+
+#### 💅 Opción C: Nail Bar / Estudio de Uñas
+```text
+¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientas por responder tarde al WhatsApp.
+
+Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+
+🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+
+📲 1 mes gratis de agenda y reservas: Sus clientas eligen manicurista y horario; ustedes controlan la agenda desde el celular.
+
+🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y las mesas de manicure.
+
+Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+
+¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+```
+
+#### 🧖‍♀️ Opción D: Spa & Centro de Estética
+```text
+¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes o pacientes por responder tarde al WhatsApp.
+
+Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+
+🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+
+📲 1 mes gratis de agenda y reservas: Sus clientes o pacientes eligen especialista y horario; ustedes controlan la agenda desde el celular.
+
+🖨️ Material QR listo para imprimir: Afiches y tarjetas para la recepción y las cabinas.
+
+Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+
+¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
 ```
 
 ---

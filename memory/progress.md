@@ -1,3 +1,9 @@
+- [x] **Generador de Mensajes Persuasivos de WhatsApp Adaptados por Nicho ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`HomepageStudioModal.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/HomepageStudio/HomepageStudioModal.tsx), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+  - **Paso 1 (Gancho Visual & Demo)**: Personalizado por nicho con pregunta de dolor agudo ("¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?").
+  - **Paso 2 (Respuesta al Interés & Cierre Directo $89k)**: Redacción persuasiva de alta conversión sin rodeos ("¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes por responder tarde al WhatsApp..."), 3 pilares clave (web 1 año, 1 mes gratis agenda móvil, material QR) y micro-cierre con datos de Nequi/Daviplata.
+  - Selector de nicho interactivo con pastillas y emojis en el modal de prospección de Superadmin.
+  - Integración modular reutilizable en Superadmin Dashboard y Local Homepage Studio.
+
 - [x] **Resolución de Error 404 en Contador de Visitas de Prospectos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`create_increment_views_rpc.sql`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/create_increment_views_rpc.sql))**:
   - `incrementProspectSiteViews` actualiza directamente la columna `views_count` en la tabla `prospect_sites`, eliminando la llamada RPC fallida a `/rest/v1/rpc/increment_prospect_views` y su error 404.
   - Creado script SQL `create_increment_views_rpc.sql` para el esquema de base de datos.

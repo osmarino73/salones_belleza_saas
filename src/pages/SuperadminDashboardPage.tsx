@@ -14,6 +14,15 @@ import { HomepageStudioModal } from '../components/HomepageStudio/HomepageStudio
 import { compressImage } from '../utils/imageCompressor';
 import { extractWebsiteDataFromHtml } from '../lib/prospectHtmlInjector';
 import {
+  generateStep1Pitch as genStep1,
+  generateStep2Pitch as genStep2,
+  generateWhatsAppPitch as genUniversalPitch,
+  generateWelcomeCredentialsPitch as genWelcomePitch,
+  detectBusinessNiche,
+  NICHE_CONFIGS,
+  BusinessNiche
+} from '../lib/whatsappPitchGenerator';
+import {
   Crown,
   Sparkles,
   Globe,
@@ -859,37 +868,37 @@ export const SuperadminDashboardPage: React.FC = () => {
 
   // Estado del paso del pitch de prospección (1: Gancho Visual, 2: Oferta Patrocinada)
   const [pitchStep, setPitchStep] = useState<1 | 2>(1);
+  // Nicho personalizado opcional para afinar tono de pitch en vivo
+  const [pitchNicheOverride, setPitchNicheOverride] = useState<BusinessNiche | null>(null);
 
-  // Generador de Mensajes Oficiales en 2 Pasos (Gancho Visual + Oferta Jornada de Lanzamiento)
+  // Generador de Mensajes Oficiales en 2 Pasos con Adaptación Automática por Nicho
   const generateStep1Pitch = (siteObj: ProspectSite) => {
-    const siteUrl = `${window.location.origin}/sitio/${siteObj.slug}`;
-    return `¡Hola ${siteObj.business_name}! 👋✨
-Encontramos su negocio en Google Maps y les armamos una propuesta de su página web oficial con catálogo y reservas online:
-👉 ${siteUrl}
-
-📌 Nota: Si en su perfil de Google Maps tenían servicios o especialistas registrados, se reflejaron automáticamente. Si no, colocamos unos de muestra para que puedan ver la experiencia completa. ¡Todo es 100% editable!
-
-¿Qué les parece cómo quedó el diseño de su marca? 💖`;
+    return genStep1({
+      businessName: siteObj.business_name,
+      slug: siteObj.slug,
+      origin: window.location.origin,
+      category: siteObj.category,
+      customNiche: pitchNicheOverride || undefined
+    });
   };
 
   const generateStep2Pitch = (siteObj: ProspectSite) => {
-    return `¡Nos alegra mucho! 🎉 La diseñamos pensando en destacar la imagen de su salón.
-
-Hoy tenemos activa la jornada de lanzamiento de Kowy en su zona:
-
-Por un aporte único de activación de $89.000 COP (vía Nequi o Daviplata), les entregamos:
-
-🌐 Su Página Web Oficial: Personalizada con fotos, servicios, ubicación y botón directo a su WhatsApp, con 1 Año Completo de Alojamiento Web (Hosting de alta velocidad + Certificado SSL) incluido.
-🎁 1 Mes Completo Incluido del sistema de reservas online para clientas, app móvil de agenda para sus estilistas y caja POS.
-🖨️ Afiches y Tarjetas QR de reservas listos para imprimir en sus tocadores y mostrador.
-
-(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa en Google Maps renovando únicamente su hosting por $89.000 al año a partir del 2do año).
-
-Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos sus accesos de administración? 📲✨`;
+    return genStep2({
+      businessName: siteObj.business_name,
+      category: siteObj.category,
+      customNiche: pitchNicheOverride || undefined
+    });
   };
 
   const generateWhatsAppPitch = (siteObj: ProspectSite) => {
-    return pitchStep === 1 ? generateStep1Pitch(siteObj) : generateStep2Pitch(siteObj);
+    return genUniversalPitch({
+      businessName: siteObj.business_name,
+      slug: siteObj.slug,
+      origin: window.location.origin,
+      category: siteObj.category,
+      step: pitchStep,
+      customNiche: pitchNicheOverride || undefined
+    });
   };
 
   // Manejador para abrir el Modal de Activación
@@ -944,28 +953,15 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
 
   // Mensaje de bienvenida con credenciales para enviar por WhatsApp
   const generateWelcomeCredentialsPitch = (data: { tenant: Tenant; tempPass: string; prospect: ProspectSite }) => {
-    const loginUrl = `${window.location.origin}/login`;
-    const siteUrl = `${window.location.origin}/sitio/${data.prospect.slug}`;
-    const bookingUrl = `${window.location.origin}/reservar/${data.prospect.slug}`;
-
-    return `¡Hola ${data.tenant.name}! 🎉 Ya activamos tu acceso de administración a tu plataforma Kowy.app (Plan Crecimiento 1 Mes Incluido).
-
-🌐 Tu Panel de Administración:
-👉 ${loginUrl}
-
-👤 Usuario / Correo: ${data.tenant.owner_email}
-🔑 Contraseña Temporal: ${data.tempPass}
-
-✨ Enlaces Oficiales de tu Negocio:
-🌐 Tu Página Web Oficial: ${siteUrl}
-📅 Tu Agendador de Citas Online: ${bookingUrl}
-
-📱 Próximos pasos recomendados:
-1. Ingresa a tu panel con tu correo y clave temporal.
-2. Revisa tus colaboradoras y catálogo de servicios.
-3. Comparte tu enlace de agendamiento (${bookingUrl}) en tu perfil de Instagram y estados de WhatsApp.
-
-¡Muchos éxitos y bienvenida a la familia Kowy! 🚀💖`;
+    return genWelcomePitch({
+      tenantName: data.tenant.name,
+      ownerEmail: data.tenant.owner_email || '',
+      tempPass: data.tempPass,
+      slug: data.prospect.slug,
+      origin: window.location.origin,
+      category: data.prospect.category,
+      customNiche: pitchNicheOverride || undefined
+    });
   };
 
   const handleCopy = (text: string, type: 'link' | 'pitch' | 'credentials') => {
@@ -1781,34 +1777,35 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                     )}
                   </div>
 
-                  {/* Pitch WhatsApp Generator (2-Step Strategy) */}
+                  {/* Pitch WhatsApp Generator (2-Step Strategy with Niche Optimization) */}
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/30 space-y-3">
                     
-                    {/* Selector de Paso 1 vs Paso 2 */}
-                    <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setPitchStep(1)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                            pitchStep === 1
-                              ? 'bg-emerald-500 text-slate-950 shadow-md'
-                              : 'bg-white/5 text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          📸 Paso 1: Gancho Visual
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setPitchStep(2)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                            pitchStep === 2
-                              ? 'bg-emerald-500 text-slate-950 shadow-md'
-                              : 'bg-white/5 text-slate-400 hover:text-white'
-                          }`}
-                        >
-                          🎁 Paso 2: Oferta $50k
-                        </button>
+                    {/* Selector de Nicho Dinámico */}
+                    <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nicho:</span>
+                        {(['barberia', 'salon', 'nails', 'spa', 'estetica'] as BusinessNiche[]).map((nKey) => {
+                          const detected = detectBusinessNiche(createdSite.business_name, createdSite.category);
+                          const currentNiche = pitchNicheOverride || detected;
+                          const isSelected = currentNiche === nKey;
+                          const cfg = NICHE_CONFIGS[nKey];
+                          return (
+                            <button
+                              key={nKey}
+                              type="button"
+                              onClick={() => setPitchNicheOverride(nKey)}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-amber-500/25 text-amber-300 border border-amber-500/50 shadow-sm'
+                                  : 'bg-white/5 text-slate-400 hover:text-white border border-white/5'
+                              }`}
+                              title={`Adaptar tono para ${cfg.label}`}
+                            >
+                              <span>{cfg.emoji}</span>
+                              <span>{cfg.badgeLabel}</span>
+                            </button>
+                          );
+                        })}
                       </div>
 
                       <button
@@ -1821,13 +1818,45 @@ Si quieren dejarla lista hoy mismo, ¿a qué correo electrónico les enviamos su
                       </button>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 italic">
-                      {pitchStep === 1 
-                        ? '💡 Tip: Envía primero una captura de pantalla de su web en el celular y acompaña la imagen con este texto ultra corto:' 
-                        : '💡 Tip: Cuando la dueña responda diciendo que le gustó el diseño, envíale la propuesta del cupo de $50k:'}
+                    {/* Selector de Paso 1 vs Paso 2 */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPitchStep(1)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                            pitchStep === 1
+                              ? 'bg-emerald-500 text-slate-950 shadow-md'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          📸 Paso 1: Gancho Visual ({NICHE_CONFIGS[pitchNicheOverride || detectBusinessNiche(createdSite.business_name, createdSite.category)].emoji})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPitchStep(2)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                            pitchStep === 2
+                              ? 'bg-emerald-500 text-slate-950 shadow-md'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          🎁 Paso 2: Oferta $89k
+                        </button>
+                      </div>
+
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {pitchStep === 1 ? 'Gancho + Dolor' : 'Jornada Lanzamiento'}
+                      </span>
                     </div>
 
-                    <div className="bg-[#0A0D14]/90 p-3 rounded-xl border border-white/5 text-[11px] text-slate-200 font-sans whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto">
+                    <div className="text-[10px] text-slate-400 italic">
+                      {pitchStep === 1 
+                        ? '💡 Tip: Envía primero una captura de pantalla de su web en el celular y acompaña la imagen con este mensaje optimizado para su nicho:' 
+                        : '💡 Tip: Cuando respondan diciendo que les gustó el diseño, envíales la propuesta del cupo de $89k:'}
+                    </div>
+
+                    <div className="bg-[#0A0D14]/90 p-3 rounded-xl border border-white/5 text-[11px] text-slate-200 font-sans whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto selection:bg-emerald-500/30">
                       {generateWhatsAppPitch(createdSite)}
                     </div>
 
