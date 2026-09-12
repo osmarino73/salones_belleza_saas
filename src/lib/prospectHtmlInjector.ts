@@ -237,6 +237,22 @@ export interface InjectProspectOptions {
   }>;
 }
 
+function adjustColorBrightness(hex: string, percent: number): string {
+  try {
+    const cleanHex = hex.replace('#', '').trim();
+    if (cleanHex.length !== 6 && cleanHex.length !== 3) return hex;
+    const fullHex = cleanHex.length === 3 ? cleanHex.split('').map(c => c + c).join('') : cleanHex;
+    const num = parseInt(fullHex, 16);
+    if (isNaN(num)) return hex;
+    const r = Math.min(255, Math.max(0, (num >> 16) + Math.round(255 * (percent / 100))));
+    const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + Math.round(255 * (percent / 100))));
+    const b = Math.min(255, Math.max(0, (num & 0x0000FF) + Math.round(255 * (percent / 100))));
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  } catch {
+    return hex;
+  }
+}
+
 export function injectProspectLinks(html: string, options: InjectProspectOptions): string {
   if (!html) return '';
 
@@ -310,9 +326,33 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   const existingPosterRegex = new RegExp(`(src=["']|content=["'])https?:\\/\\/[^/'"\\s]+\\/frames\\/${slug}(?:\\/[^/'"\\s]+)?\\/((?:desktop|mobile)\\/poster\\.webp["'])`, 'gi');
   processed = processed.replace(existingPosterRegex, `$1${targetFramesBase}/$2`);
 
+  // Inyección cromática dinámica si primaryColor fue provisto y es un HEX válido
+  const validPrimaryColor = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
+  const colorOverridesCss = validPrimaryColor ? `
+  /* Sobrescritura cromática dinámica de alta fidelidad desde Superadmin */
+  :root {
+    --color-accent: ${validPrimaryColor} !important;
+    --color-accent-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-accent-soft: ${validPrimaryColor}26 !important;
+    --color-primary: ${validPrimaryColor} !important;
+    --primary: ${validPrimaryColor} !important;
+    --color-mocca: ${validPrimaryColor} !important;
+    --color-mocca-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-mocca-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --color-gold: ${validPrimaryColor} !important;
+    --color-gold-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-gold-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --mocca-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
+    --mocca-gradient-hover: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 15)} 0%, ${adjustColorBrightness(validPrimaryColor, 35)} 100%) !important;
+    --gold-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
+    --gradient-accent: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
+  }
+  ` : '';
+
   // 1. Inyectar únicamente soporte técnico limpio y estilos para elementos dinámicos
   const resetCss = `
 <style id="beautyflow-prospect-reset">
+${colorOverridesCss}
   /* Soporte técnico no invasivo para evitar desbordamiento horizontal garantizando soporte a Canvas Sticky */
   html, body {
     overflow-x: clip;

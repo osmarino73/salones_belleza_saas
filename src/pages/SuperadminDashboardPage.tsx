@@ -58,9 +58,23 @@ import {
   Play,
   AlertCircle,
   UploadCloud,
-  Film
+  Film,
+  Palette
 } from 'lucide-react';
 import { SANUS_SPA_SITE_DATA } from '../lib/sanusSpaSiteData';
+
+export const LUXURY_COLOR_PRESETS = [
+  { name: 'Caramel Mocca', hex: '#9c6d53', desc: 'Nails & Spa cálido elegante' },
+  { name: 'Gold Foil', hex: '#d4af37', desc: 'Dorado editorial de lujo' },
+  { name: 'Rose Gold', hex: '#e07a5f', desc: 'Oro rosado contemporáneo' },
+  { name: 'Emerald Spa', hex: '#10b981', desc: 'Verde botánico y wellness' },
+  { name: 'Ruby Velvet', hex: '#be123c', desc: 'Rojo vino seductor para uñas y cabello' },
+  { name: 'Cyber Cyan', hex: '#06b6d4', desc: 'Cian neón para barberías modernas' },
+  { name: 'Sunset Amber', hex: '#f59e0b', desc: 'Ámbar cálido luminoso' },
+  { name: 'Bronze Luxury', hex: '#c5a059', desc: 'Bronce metálico sobre fondo oscuro' },
+  { name: 'Lavanda Relax', hex: '#8b5cf6', desc: 'Lavanda serena y bienestar' },
+  { name: 'Hot Coral', hex: '#FF5A36', desc: 'Coral insignia Kowy' },
+];
 
 export const SuperadminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'generator' | 'prospects' | 'tenants'>('generator');
@@ -301,6 +315,12 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [isApplyingVideo, setIsApplyingVideo] = useState(false);
   const [modalAppliedSuccess, setModalAppliedSuccess] = useState(false);
   const modalFramesFolderInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Modal de Personalización de Color Principal por Negocio
+  const [managingColorProspect, setManagingColorProspect] = useState<ProspectSite | null>(null);
+  const [selectedColorHex, setSelectedColorHex] = useState<string>('#9c6d53');
+  const [isSavingColor, setIsSavingColor] = useState(false);
+  const [colorSaveSuccess, setColorSaveSuccess] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -1212,6 +1232,66 @@ export const SuperadminDashboardPage: React.FC = () => {
       setModalUploadError('Error al guardar en Supabase. Intenta nuevamente.');
     } finally {
       setIsApplyingVideo(false);
+    }
+  };
+
+  // Manejadores para Personalización de Color Principal
+  const handleOpenColorModal = (prospect: ProspectSite) => {
+    setManagingColorProspect(prospect);
+    const existingColor = prospect.business_data?.primary_color || '#d4af37';
+    setSelectedColorHex(existingColor);
+    setColorSaveSuccess(false);
+  };
+
+  const handleSavePrimaryColor = async () => {
+    if (!managingColorProspect) return;
+    setIsSavingColor(true);
+    setColorSaveSuccess(false);
+    try {
+      const cleanHex = selectedColorHex.trim();
+      const updatedBusinessData: any = {
+        nombre: managingColorProspect.business_name,
+        ...(managingColorProspect.business_data || {}),
+        primary_color: cleanHex
+      };
+
+      await api.updateProspectSite(managingColorProspect.id, {
+        business_data: updatedBusinessData
+      });
+
+      // Si el prospecto ya está reclamado como tenant, actualizar también en tenants
+      if (managingColorProspect.claimed_tenant_id) {
+        const tMatch = tenants.find(t => t.id === managingColorProspect.claimed_tenant_id);
+        if (tMatch) {
+          await api.updateTenant({
+            ...tMatch,
+            primary_color: cleanHex
+          } as any);
+        }
+      }
+
+      // Actualizar estado reactivo local
+      setProspectSites(prev => prev.map(p => {
+        if (p.id === managingColorProspect.id) {
+          return {
+            ...p,
+            business_data: updatedBusinessData
+          };
+        }
+        return p;
+      }));
+
+      setManagingColorProspect(prev => prev ? {
+        ...prev,
+        business_data: updatedBusinessData
+      } : null);
+
+      setColorSaveSuccess(true);
+    } catch (err: any) {
+      console.error('Error guardando color primario:', err);
+      alert('Error al guardar el color primario.');
+    } finally {
+      setIsSavingColor(false);
     }
   };
 
@@ -2263,17 +2343,32 @@ export const SuperadminDashboardPage: React.FC = () => {
                               <div>
                                 <strong className="block text-white text-xs">{p.business_name}</strong>
                                 <span className="text-[11px] font-mono text-slate-400">/sitio/{p.slug}</span>
-                                {p.business_data?.has_video_scroll && (
+                                <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                  {p.business_data?.has_video_scroll && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenVideoScrollModal(p)}
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-extrabold bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-300 border border-amber-500/40 shadow-sm cursor-pointer transition-all"
+                                      title="Gestionar fotogramas WebP y versiones en Cloudflare R2"
+                                    >
+                                      <Play className="w-2.5 h-2.5 fill-amber-300" />
+                                      <span>Video Scroll HD</span>
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
-                                    onClick={() => handleOpenVideoScrollModal(p)}
-                                    className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded text-[9px] font-extrabold bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/35 hover:to-orange-500/35 text-amber-300 border border-amber-500/40 shadow-sm cursor-pointer transition-all"
-                                    title="Gestionar fotogramas WebP y versiones en Cloudflare R2"
+                                    onClick={() => handleOpenColorModal(p)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 hover:border-white/20 transition-all cursor-pointer shadow-sm"
+                                    title="Personalizar color principal de este sitio"
                                   >
-                                    <Play className="w-2.5 h-2.5 fill-amber-300" />
-                                    <span>Video Scroll HD • Gestionar</span>
+                                    <span
+                                      className="w-2.5 h-2.5 rounded-full border border-white/40 shrink-0 shadow-inner"
+                                      style={{ backgroundColor: p.business_data?.primary_color || '#d4af37' }}
+                                    />
+                                    <span className="font-mono text-[9px] text-slate-300">{p.business_data?.primary_color || '#d4af37'}</span>
+                                    <Palette className="w-2.5 h-2.5 text-purple-400 ml-0.5" />
                                   </button>
-                                )}
+                                </div>
                                 <span className="text-[10px] font-mono text-amber-300/90 block mt-0.5 font-semibold">
                                   👤 {p.created_by || p.creator_email || 'osmarino73@yahoo.es'}
                                 </span>
@@ -2359,6 +2454,16 @@ export const SuperadminDashboardPage: React.FC = () => {
                                 title="🎬 Gestionar Video-Scroll & Fotogramas en Cloudflare R2"
                               >
                                 <Film className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* Botón Personalizar Color Principal */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenColorModal(p)}
+                                className="p-2 rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-sm bg-purple-500/10 text-purple-300 hover:bg-purple-500 hover:text-white border border-purple-500/20"
+                                title="🎨 Personalizar Color Principal de la Web"
+                              >
+                                <Palette className="w-3.5 h-3.5" />
                               </button>
 
                               <button
@@ -3467,6 +3572,239 @@ export const SuperadminDashboardPage: React.FC = () => {
                   </button>
                 )}
               </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PERSONALIZADOR DE COLOR PRINCIPAL POR NEGOCIO */}
+      {managingColorProspect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#0f1422] border border-white/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative flex flex-col gap-5 text-white">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0"
+                  style={{ backgroundColor: selectedColorHex }}
+                >
+                  <Palette className="w-5 h-5 text-white drop-shadow" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white flex items-center gap-2 flex-wrap">
+                    <span>Color Principal de Marca</span>
+                    <span 
+                      className="text-xs px-2 py-0.5 rounded-md font-mono font-bold text-white border border-white/20"
+                      style={{ backgroundColor: selectedColorHex }}
+                    >
+                      {selectedColorHex}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {managingColorProspect.business_name} <span className="font-mono text-slate-500">(/sitio/{managingColorProspect.slug})</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setManagingColorProspect(null)}
+                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Presets Rápidos de Lujo */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Paletas Curadas de Alta Gama (1 Clic)</span>
+                </label>
+                <span className="text-[10px] text-slate-500">10 estilos premium</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {LUXURY_COLOR_PRESETS.map((preset) => {
+                  const isSelected = selectedColorHex.toLowerCase() === preset.hex.toLowerCase();
+                  return (
+                    <button
+                      key={preset.hex}
+                      type="button"
+                      onClick={() => {
+                        setSelectedColorHex(preset.hex);
+                        setColorSaveSuccess(false);
+                      }}
+                      className={`p-2 rounded-xl text-left border transition-all flex flex-col gap-1.5 cursor-pointer ${
+                        isSelected 
+                          ? 'border-white bg-white/10 shadow-md ring-2 ring-white/40 scale-[1.02]' 
+                          : 'border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/20'
+                      }`}
+                      title={preset.desc}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span 
+                          className="w-5 h-5 rounded-full border border-white/30 shadow-sm shrink-0" 
+                          style={{ backgroundColor: preset.hex }} 
+                        />
+                        {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold text-white truncate">{preset.name}</div>
+                        <div className="text-[9px] font-mono text-slate-400">{preset.hex}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selector Libre / Código HEX */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <label className="text-xs font-bold text-slate-300">Selector Libre o Código HEX Personalizado</label>
+              <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+                <input
+                  type="color"
+                  value={selectedColorHex}
+                  onChange={(e) => {
+                    setSelectedColorHex(e.target.value);
+                    setColorSaveSuccess(false);
+                  }}
+                  className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                  title="Elegir color libremente"
+                />
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={selectedColorHex}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedColorHex(val);
+                      setColorSaveSuccess(false);
+                    }}
+                    placeholder="#d4af37"
+                    maxLength={7}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 font-mono text-sm text-white focus:outline-none focus:border-purple-500"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    Formato hexadecimal (ej: #d4af37, #9c6d53, #10b981)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Previsualización en Vivo de Componentes */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <label className="text-xs font-bold text-slate-300">Previsualización en Vivo en la Web</label>
+              <div className="p-4 rounded-xl bg-black/50 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  {/* Eyebrow de muestra */}
+                  <span 
+                    className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border border-white/10"
+                    style={{ 
+                      backgroundColor: `${selectedColorHex}26`, 
+                      color: selectedColorHex 
+                    }}
+                  >
+                    ✦ Experiencia Prémium
+                  </span>
+
+                  {/* Texto con acento */}
+                  <span className="text-xs font-serif italic text-slate-300">
+                    Belleza & Estilo <strong style={{ color: selectedColorHex }}>Exclusivo</strong>
+                  </span>
+                </div>
+
+                {/* Botones de muestra */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    type="button"
+                    style={{ 
+                      backgroundColor: selectedColorHex,
+                      boxShadow: `0 8px 20px -4px ${selectedColorHex}66`
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-black text-white cursor-default"
+                  >
+                    Agendar Cita
+                  </button>
+                  <button
+                    type="button"
+                    style={{ 
+                      borderColor: selectedColorHex,
+                      color: selectedColorHex
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold border cursor-default bg-transparent"
+                  >
+                    Ver Servicios
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Feedback de Éxito */}
+            {colorSaveSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between animate-fade-in">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>¡Color guardado con éxito! El sitio web y su canal SaaS ya reflejan el nuevo tono.</span>
+                </span>
+                <a
+                  href={`/sitio/${managingColorProspect.slug}?t=${Date.now()}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold text-emerald-300 underline hover:text-white flex items-center gap-1"
+                >
+                  <span>Ver web</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+
+            {/* Footer con Acciones */}
+            <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setManagingColorProspect(null)}
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cerrar
+                </button>
+
+                <a
+                  href={`/sitio/${managingColorProspect.slug}?t=${Date.now()}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <span>Ver Sitio en Vivo</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              <button
+                type="button"
+                disabled={isSavingColor}
+                onClick={handleSavePrimaryColor}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-50 text-white"
+                style={{ 
+                  backgroundColor: selectedColorHex,
+                  boxShadow: `0 8px 24px -4px ${selectedColorHex}88`
+                }}
+              >
+                {isSavingColor ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Palette className="w-4 h-4" />
+                    <span>💾 Guardar y Aplicar Color</span>
+                  </>
+                )}
+              </button>
             </div>
 
           </div>

@@ -14,6 +14,22 @@
 
 ---
 
+-63. **Selector y Personalizador de Color Principal de Marca por Negocio en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Requerimiento**: El Superadmin requería un botón en el panel para cambiar el color principal de cualquier sitio web / prospecto sin tocar manualmente el código HTML ni alterar la estructura responsive o el hero canvas video-scroll.
+    - **Arquitectura & Solución No Invasiva**:
+      1. **Motor de Inyección Dinámica (`prospectHtmlInjector.ts`)**:
+         - Implementación del helper `adjustColorBrightness` para calcular automáticamente variantes de brillo (+18%, -20%, etc.) sin librerías externas.
+         - Inyección en `:root` dentro del reset CSS de variables universales de acento: `--color-accent`, `--color-primary`, `--primary`, `--color-mocca`, `--color-gold`, `--mocca-gradient`, etc.
+      2. **UI en Superadmin (`SuperadminDashboardPage.tsx`)**:
+         - Pastilla interactiva de color en la columna "Salón" de la tabla de prospectos que muestra el color actual y código HEX.
+         - Botón de acción rápida con icono `<Palette />` en la columna de Acciones.
+         - Modal interactivo de alta gama (`ColorCustomizerModal`):
+           - 10 Presets de lujo curados (Caramel Mocca, Gold Foil, Rose Gold, Emerald Spa, Ruby Velvet, Cyber Cyan, Sunset Amber, Bronze Luxury, Lavanda Relax, Hot Coral).
+           - Selector libre con `<input type="color">` e input de código HEX.
+           - Previsualización en vivo (botones primarios, botones outline, badge de acento y tipografía editorial).
+           - Guardado reactivo en Supabase (`prospect_sites.business_data.primary_color` y `tenants.primary_color` si está reclamado).
+      3. **Validación**: Compilación limpia con `npm run build` (código 0).
+
 -62. **Sincronización en Vivo de Nuva Nails Spa en Supabase y Soporte de Template Literals para R2 ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), Supabase `prospect_sites`)**:
     - **Causa Raíz de que Siguiera Igual**:
       1. Aunque el archivo local en `negocios_locales/nuva_nails_spa/index.html` ya estaba reparado, la base de datos de Supabase (`prospect_sites`) seguía guardando el `raw_html` original sin sincronizar.
