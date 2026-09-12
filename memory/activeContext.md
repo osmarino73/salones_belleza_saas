@@ -14,6 +14,14 @@
 
 ---
 
+-61. **Corrección de Condición de Carrera en Hero Canvas y Destello Negro en Nuva Nails Spa ([`nuva_nails_spa/index.html`](file:///c:/Users/Rio%20Belen/negocios_locales/nuva_nails_spa/index.html))**:
+    - **Causa Raíz del Destello de 1 Milésima de Segundo**: En `preloadImages()`, `renderFrame(0)` solo se ejecutaba si `loadedCount === 1`. Al descargarse los 74 fotogramas en paralelo, casi nunca el frame 0 (`frame-0001.webp`) era el primero en finalizar, por lo que `renderFrame(0)` abortaba silenciosamente (`!img.complete`). Posteriormente, en cuanto 6 imágenes cualesquiera finalizaban la descarga (`loadedCount >= 6`), el script ejecutaba de inmediato `posterImg.style.display = 'none'`. Esto hacía que la imagen del póster solo fuera visible una fracción de segundo antes de ocultarse, dejando el canvas en negro puro.
+    - **Solución Implementada**:
+      1. Se integró el ciclo `renderLoop()` con `requestAnimationFrame` que vigila reactivamente si `!initialFrameDrawn && images[0]?.complete`.
+      2. En `img.onload`, se detecta explícitamente `if (!initialFrameDrawn && frameIdx === 0)` para dibujar el canvas en el milisegundo exacto en que el frame 0 está listo.
+      3. Se blindó la desaparición del póster: el póster de reserva permanece activo hasta que `renderFrame()` haya pintado físicamente sobre el canvas (`initialFrameDrawn = true`), tras lo cual se desvanece con transición suave de opacidad y `setTimeout 350ms` para `display: none`.
+      4. Sincronizado y publicado con commit en repositorio `negocios_locales`.
+
 -60. **Resolución de Feedback y Publicación de Video-Scroll en Vivo ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Causa Raíz del Reporte**: Al hacer clic en "🚀 Aplicar y Publicar en Vivo", el usuario percibía que "no pasaba nada" debido a dos razones:
       1. **Falta de Feedback Inmediato en el Footer**: El mensaje de éxito se renderizaba dentro del bloque de subida superior (fuera del foco visual al pie del modal), el modal no se cerraba y el botón no cambiaba de estado tras los 200ms de guardado, pareciendo inerte.
