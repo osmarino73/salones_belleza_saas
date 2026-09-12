@@ -1149,6 +1149,8 @@ export const SuperadminDashboardPage: React.FC = () => {
         updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/mobile)['"]/g, `'${cleanNewFramesUrl}/mobile'`);
         updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${cleanNewFramesUrl}/desktop'`);
         updatedRawHtml = updatedRawHtml.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${cleanNewFramesUrl}/'`);
+        updatedRawHtml = updatedRawHtml.replace(/`(?:\.?\/)?public\/frames\/\$\{([^}]+)\}/g, `\`${cleanNewFramesUrl}/\${$1}`);
+        updatedRawHtml = updatedRawHtml.replace(/`(?:\.?\/)?public\/frames\//g, `\`${cleanNewFramesUrl}/`);
         updatedRawHtml = updatedRawHtml.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cleanNewFramesUrl}/$2`);
         updatedRawHtml = updatedRawHtml.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${cleanNewFramesUrl}/$2`);
       }

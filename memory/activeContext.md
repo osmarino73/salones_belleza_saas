@@ -14,6 +14,15 @@
 
 ---
 
+-62. **Sincronización en Vivo de Nuva Nails Spa en Supabase y Soporte de Template Literals para R2 ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), Supabase `prospect_sites`)**:
+    - **Causa Raíz de que Siguiera Igual**:
+      1. Aunque el archivo local en `negocios_locales/nuva_nails_spa/index.html` ya estaba reparado, la base de datos de Supabase (`prospect_sites`) seguía guardando el `raw_html` original sin sincronizar.
+      2. Además, en `raw_html` la función `getFrameUrl` utilizaba template literals con backticks (`` `public/frames/${folder}/...` ``). `prospectHtmlInjector.ts` únicamente reemplazaba strings con comillas simples o dobles, por lo que nunca sustituía `public/frames` por la CDN de Cloudflare R2 en los fotogramas, arrojando 404 al intentar cargar el video.
+    - **Solución Implementada**:
+      1. En `prospectHtmlInjector.ts` y `SuperadminDashboardPage.tsx`, se implementó regex con soporte universal para template literals con backticks (`` `public/frames/...` ``).
+      2. Se actualizó el registro en vivo de `nuva-nails-spa` en Supabase con el nuevo motor `renderLoop()` / `initialFrameDrawn` y las URLs absolutas de Cloudflare R2 (`https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/frames/nuva-nails-spa/`).
+      3. Verificación exitosa de `npm run build` (código 0).
+
 -61. **Corrección de Condición de Carrera en Hero Canvas y Destello Negro en Nuva Nails Spa ([`nuva_nails_spa/index.html`](file:///c:/Users/Rio%20Belen/negocios_locales/nuva_nails_spa/index.html))**:
     - **Causa Raíz del Destello de 1 Milésima de Segundo**: En `preloadImages()`, `renderFrame(0)` solo se ejecutaba si `loadedCount === 1`. Al descargarse los 74 fotogramas en paralelo, casi nunca el frame 0 (`frame-0001.webp`) era el primero en finalizar, por lo que `renderFrame(0)` abortaba silenciosamente (`!img.complete`). Posteriormente, en cuanto 6 imágenes cualesquiera finalizaban la descarga (`loadedCount >= 6`), el script ejecutaba de inmediato `posterImg.style.display = 'none'`. Esto hacía que la imagen del póster solo fuera visible una fracción de segundo antes de ocultarse, dejando el canvas en negro puro.
     - **Solución Implementada**:

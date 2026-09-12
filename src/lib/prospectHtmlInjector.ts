@@ -295,6 +295,10 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/desktop)['"]/g, `'${targetFramesBase}/desktop'`);
   processed = processed.replace(/['"](?:(?:\.?\/)?public\/frames\/)['"]/g, `'${targetFramesBase}/'`);
   
+  // Soporte para template literals: `public/frames/${folder}/...` o `public/frames/${...}`
+  processed = processed.replace(/`(?:\.?\/)?public\/frames\/\$\{([^}]+)\}/g, `\`${targetFramesBase}/\${$1}`);
+  processed = processed.replace(/`(?:\.?\/)?public\/frames\//g, `\`${targetFramesBase}/`);
+  
   // Normalizar cualquier poster o asset en src="..." o content="..."
   processed = processed.replace(/(src=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
   processed = processed.replace(/(content=["'])(?:\.?\/)?public\/frames\/([^"']+["'])/gi, `$1${targetFramesBase}/$2`);
