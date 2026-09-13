@@ -14,6 +14,18 @@
 
 ---
 
+-69. **Corrección Integral de Inyección Cromática Dinámica para Prospectos y Nichos Múltiples ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+    - **Problema Reportado**: Al cambiar el color principal desde el Superadmin en un prospecto no activo (específicamente My Spacio Nails u otras plantillas Nails/Barberías), el sitio web público no reflejaba el nuevo tono, mientras que en otros salones activos sí funcionaba.
+    - **Causa Raíz Diagnosticada**:
+      1. La plantilla de Nails (`My Spacio Nails`) utiliza su propio sistema de tokens CSS basado en acentos Camel/Nude (`--color-camel`, `--color-camel-light`, `--color-camel-dark`, `--color-camel-hover`, `--color-champagne`, `--camel-gradient`, `--shadow-camel`).
+      2. El inyector cromático `colorOverridesCss` en `prospectHtmlInjector.ts` solo sobrescribía variables tradicionales (`--color-accent`, `--color-mocca`, `--color-gold`, etc.), ignorando los tokens Camel de plantillas de uñas y los tokens de rizos/barberías (`--accent-gold`, etc.).
+      3. Aunque el color se guardaba correctamente en Supabase (`prospect_sites.business_data.primary_color`), la plantilla no lo tomaba.
+    - **Solución Implementada**:
+      1. **Ampliación de Tokens en `prospectHtmlInjector.ts`**: Se integraron todos los tokens Camel (`--color-camel*`, `--camel-gradient*`, `--shadow-camel`), tokens Gold (`--accent-gold*`, `--gold-border*`, etc.), tokens Mocca y gradientes de acento generales dentro de `:root` con `!important`.
+      2. **Contraste Automático de Texto en Botones CTA**: Se implementó `getContrastTextColor` para calcular la luminancia del color seleccionado y aplicar texto oscuro (`#0d0b0a`) o blanco (`#ffffff`) en `.btn-header-cta`, `.btn-primary`, `.btn-hero-book` y `.btn-cta-primary`.
+      3. **Extracción Defensiva en `PublicProspectSitePage.tsx`**: Soporte para `business_data` como objeto o string parseado y verificación encadenada de `primaryColor: bData.primary_color || (site as any).primary_color || tenant?.primary_color`.
+      4. **Verificación de Compilación**: `npm run build` ejecutado exitosamente con código 0.
+
 -68. **Reemplazo de Imagen de Sobre Nosotros por Fotografía Real del Nicho Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
     - **Problema Reportado**: La sección "Sobre Nosotros" de Nüva Nails Spa mostraba una fotografía de secadores, planchas y cepillos de peluquería capilar (`CROC`), incoherente para un salón especializado en manicura y pedicura.
     - **Solución Implementada**:

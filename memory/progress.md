@@ -1,3 +1,10 @@
+- [x] **Inyección Cromática Dinámica Multi-Nicho para Prospectos y Sitios Web ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+  - Resuelto el problema por el cual cambiar el color principal en prospectos no activos (específicamente My Spacio Nails) no se reflejaba en el sitio web en vivo.
+  - La plantilla de uñas de My Spacio Nails utiliza tokens CSS Camel (`--color-camel`, `--camel-gradient`, `--shadow-camel`, etc.) que no estaban contemplados en el inyector de estilos dinámicos.
+  - Se incorporaron al `:root` dinámico los tokens de Nails (Camel/Nude/Champagne), tokens de Barberías y Rizos (Gold/Golden Accent) y tokens de Spas (Mocca/Warm Earth).
+  - Se implementó cálculo de luminancia y contraste para asegurar legibilidad del texto en botones principales (`.btn-header-cta`, `.btn-primary`, `.btn-hero-book`, etc.).
+  - Soporte para parseo seguro de `business_data` y resolución en cascada en `PublicProspectSitePage.tsx`.
+
 - [x] **Reemplazo de Imagen de Sobre Nosotros por Fotografía Real del Nicho Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
   - Reemplazada la fotografía de secadores y planchas de pelo CROC en "Sobre Nosotros" por una fotografía macro de salón que muestra a una manicurista profesional trabajando con instrumental y lámpara UV en la uña de una clienta.
   - Alojada en Cloudflare R2 (`https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/about-nuva-nails-manicurista.jpg`).

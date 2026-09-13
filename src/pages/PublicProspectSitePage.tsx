@@ -56,7 +56,10 @@ export const PublicProspectSitePage: React.FC = () => {
   // Inyectar enlaces de agendamiento (/reservar/:slug), WhatsApp, catálogo vivo y equipo en el HTML nativo
   const renderedHtml = useMemo(() => {
     if (!site?.raw_html) return '';
-    const bData = (site as any).business_data || {};
+    const rawBData = (site as any).business_data;
+    const bData = typeof rawBData === 'string'
+      ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })()
+      : (rawBData || {});
     const showTeam = tenant?.show_team_section !== undefined 
       ? tenant.show_team_section 
       : (bData.show_team_section !== undefined ? bData.show_team_section : true);
@@ -92,7 +95,7 @@ export const PublicProspectSitePage: React.FC = () => {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
-      primaryColor: bData.primary_color || tenant?.primary_color || undefined,
+      primaryColor: bData.primary_color || (site as any).primary_color || tenant?.primary_color || undefined,
       showTeamSection: showTeam,
       showFirstVisitDiscount: showDiscount,
       firstVisitDiscountPct: tenant?.first_visit_discount_pct || bData.first_visit_discount_pct || 15,

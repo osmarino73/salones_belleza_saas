@@ -253,6 +253,22 @@ function adjustColorBrightness(hex: string, percent: number): string {
   }
 }
 
+function getContrastTextColor(hex: string): string {
+  try {
+    const cleanHex = hex.replace('#', '').trim();
+    const fullHex = cleanHex.length === 3 ? cleanHex.split('').map(c => c + c).join('') : cleanHex;
+    const num = parseInt(fullHex, 16);
+    if (isNaN(num)) return '#ffffff';
+    const r = (num >> 16);
+    const g = ((num >> 8) & 0x00FF);
+    const b = (num & 0x0000FF);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.62 ? '#0d0b0a' : '#ffffff';
+  } catch {
+    return '#ffffff';
+  }
+}
+
 export function injectProspectLinks(html: string, options: InjectProspectOptions): string {
   if (!html) return '';
 
@@ -328,24 +344,66 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   // Inyección cromática dinámica si primaryColor fue provisto y es un HEX válido
   const validPrimaryColor = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
+  const ctaTextColor = validPrimaryColor ? getContrastTextColor(validPrimaryColor) : '#ffffff';
   const colorOverridesCss = validPrimaryColor ? `
   /* Sobrescritura cromática dinámica de alta fidelidad desde Superadmin */
   :root {
+    /* 1. Tokens Universales y Base */
     --color-accent: ${validPrimaryColor} !important;
     --color-accent-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --color-accent-soft: ${validPrimaryColor}26 !important;
+    --color-accent-glow: ${validPrimaryColor}33 !important;
     --color-primary: ${validPrimaryColor} !important;
     --primary: ${validPrimaryColor} !important;
-    --color-mocca: ${validPrimaryColor} !important;
-    --color-mocca-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
-    --color-mocca-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --primary-color: ${validPrimaryColor} !important;
+    --brand-color: ${validPrimaryColor} !important;
+    --brand-primary: ${validPrimaryColor} !important;
+
+    /* 2. Tokens Camel / Sand / Champagne / Nude (usados en plantillas de Nails como My Spacio Nails) */
+    --color-camel: ${validPrimaryColor} !important;
+    --color-camel-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-camel-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --color-camel-hover: ${adjustColorBrightness(validPrimaryColor, 15)} !important;
+    --color-champagne: ${adjustColorBrightness(validPrimaryColor, 12)} !important;
+    --camel-gradient: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 50%, ${adjustColorBrightness(validPrimaryColor, -20)} 100%) !important;
+    --camel-gradient-hover: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 35)} 0%, ${adjustColorBrightness(validPrimaryColor, 15)} 50%, ${validPrimaryColor} 100%) !important;
+    --shadow-camel: 0 6px 20px ${validPrimaryColor}40 !important;
+
+    /* 3. Tokens Gold / Golden Accent (usados en Rizos Felices, Barberías y Spas de Lujo) */
     --color-gold: ${validPrimaryColor} !important;
     --color-gold-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --color-gold-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --color-gold-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-gold-muted: ${validPrimaryColor}bf !important;
+    --color-gold-soft: ${validPrimaryColor}24 !important;
+    --accent-gold: ${validPrimaryColor} !important;
+    --accent-gold-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --accent-gold-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --accent-gold-glow: ${validPrimaryColor}2e !important;
+    --gold-border: ${validPrimaryColor}38 !important;
+    --gold-border-bright: ${validPrimaryColor}73 !important;
+    --border-gold-subtle: ${validPrimaryColor}38 !important;
+    --gold-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
+    --shadow-gold: 0 6px 22px ${validPrimaryColor}47 !important;
+
+    /* 4. Tokens Mocca / Warm Earth (Spas y Centros Estéticos) */
+    --color-mocca: ${validPrimaryColor} !important;
+    --color-mocca-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-mocca-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
     --mocca-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
     --mocca-gradient-hover: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 15)} 0%, ${adjustColorBrightness(validPrimaryColor, 35)} 100%) !important;
-    --gold-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
-    --gradient-accent: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
+
+    /* 5. Gradientes de Acento y Bordes */
+    --gradient-accent: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 50%, ${adjustColorBrightness(validPrimaryColor, -15)} 100%) !important;
+    --color-accent-gradient: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 100%) !important;
+  }
+
+  /* Asegurar contraste y legibilidad óptima en botones CTA con el nuevo color */
+  .btn-header-cta,
+  .btn-primary,
+  .btn-hero-book,
+  .btn-cta-primary {
+    color: ${ctaTextColor} !important;
   }
   ` : '';
 
