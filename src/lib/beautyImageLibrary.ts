@@ -20,98 +20,98 @@ export const NAILS_STOCK_SERVICES: StockImageItem[] = [
     id: 'nails-semipermanente',
     category: 'nails',
     title: 'Manicura Semipermanente & Gel Polish Brillo Espejo',
-    url: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/semipermanente-mocca.jpg',
     tags: ['semipermanente', 'gelish', 'esmalte', 'manicura', 'nude', 'brillo', 'gel polish']
   },
   {
     id: 'nails-rusa-dry',
     category: 'nails',
     title: 'Manicura Rusa / Dry Manicure con Torno y Fresas Diamantadas',
-    url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['rusa', 'dry manicure', 'torno', 'cuticula', 'limpieza profunda', 'fresas', 'perfeccion']
   },
   {
     id: 'nails-acrilicas-esculpidas',
     category: 'nails',
     title: 'Uñas Acrílicas Esculpidas & Extensiones Coffin / Almond',
-    url: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['acrilicas', 'esculpidas', 'extensiones', 'coffin', 'almond', 'tips', 'monomero', 'acrilico']
   },
   {
     id: 'nails-soft-gel',
     category: 'nails',
     title: 'Soft Gel / Gel-X / Press On Nails de Cobertura Completa',
-    url: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['soft gel', 'gel x', 'press on', 'extension gel', 'tips completos', 'ligero']
   },
   {
     id: 'nails-kapping-rubber',
     category: 'nails',
     title: 'Kapping Gel & Nivelación con Rubber Base (Fuerza Natural)',
-    url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['kapping', 'rubber base', 'nivelacion', 'bano de gel', 'refuerzo', 'antiquiebre']
   },
   {
     id: 'nails-polygel',
     category: 'nails',
     title: 'Polygel / Acrylgel Híbrido Esculpido & Curado UV',
-    url: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['polygel', 'acrylgel', 'acrigel', 'hibrido', 'esculpido', 'flexibilidad']
   },
   {
     id: 'nails-nail-art-luxury',
     category: 'nails',
     title: 'Nail Art Editorial Minimalista & Hojilla de Oro Foil',
-    url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg',
     tags: ['nail art', 'decoracion', 'foil', 'glitter', 'diseno', 'piedras', 'lineas', 'lujo']
   },
   {
     id: 'nails-french-modern',
     category: 'nails',
     title: 'Francesa Moderna / Micro French Estilizado & Minimal',
-    url: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['francesa', 'french', 'micro french', 'blanco', 'elegante', 'sonrisa']
   },
   {
     id: 'nails-baby-boomer',
     category: 'nails',
     title: 'Baby Boomer & Degradé Ombré Francés Blanco Nube',
-    url: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['baby boomer', 'ombre', 'degrade', 'difuminado', 'leche', 'rosa', 'blanco']
   },
   {
     id: 'nails-cat-eye',
     category: 'nails',
     title: 'Efecto Ojo de Gato (Cat Eye) Magnético & Glazed Donut Cromo',
-    url: 'https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg',
     tags: ['cat eye', 'ojo de gato', 'glazed donut', 'cromo', 'efecto espejo', 'iman', 'brillo saten']
   },
   {
     id: 'nails-pedicura-spa',
     category: 'nails',
     title: 'Pedicura Spa Profunda & Jelly Spa con Ritual Hidratante',
-    url: 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg',
     tags: ['pedicura', 'pedicure', 'spa pies', 'jelly spa', 'hidromasaje', 'exfoliacion', 'pies']
   },
   {
     id: 'nails-pedicura-rusa',
     category: 'nails',
     title: 'Pedicura Rusa & Esmaltado Semipermanente en Pies',
-    url: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg',
     tags: ['pedicura rusa', 'esmaltado pies', 'pies pulidos', 'cuticula pies', 'pies perfectos']
   },
   {
     id: 'nails-retiro-sistema',
     category: 'nails',
     title: 'Retiro Seguro de Acrílico / Gel & Tratamiento Fortalecedor',
-    url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg',
     tags: ['retiro', 'remocion', 'retiro acrilico', 'retiro gel', 'nutricion', 'fortalecedor', 'salud ungueal']
   },
   {
     id: 'nails-spa-parafina',
     category: 'nails',
     title: 'Spa de Manos con Mascarilla Térmica & Baño de Parafina',
-    url: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg',
     tags: ['parafina', 'spa manos', 'mascarilla termal', 'hidratacion manos', 'suavidad', 'terapia termica']
   }
 ];

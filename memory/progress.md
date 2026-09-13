@@ -1,3 +1,9 @@
+- [x] **Actualización Integral de Imágenes de Servicios para Nicho Nails y Nüva Nails Spa ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
+  - Reemplazadas las imágenes inconsistentes de stock por fotografías macro de alta definición enfocadas 100% en uñas y manicura.
+  - Subidas 6 fotografías de catálogo a Cloudflare R2 (`kowy-frames/stock/nails/`) con CDN global y caché inmutable.
+  - Sincronizados `business_data.servicios` y `raw_html` de `nuva-nails-spa` en Supabase y en el archivo local de `negocios_locales/nuva_nails_spa/index.html`.
+  - Actualizada la biblioteca modular `NAILS_STOCK_SERVICES` en `beautyImageLibrary.ts` para todos los futuros salones de uñas.
+
 - [x] **Sincronización Bidireccional de Color Principal en Sitios Activos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
   - Resuelto el bug donde cambiar el color principal desde Superadmin funcionaba de inmediato en prospectos pero no en sitios ya activos/reclamados.
   - Se completó el payload en `api.updateTenant` para incluir `primary_color` y todas las columnas de personalización web hacia la tabla `tenants` de Supabase.

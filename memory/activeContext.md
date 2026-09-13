@@ -14,6 +14,21 @@
 
 ---
 
+-67. **Actualización Integral de Imágenes de Servicios para Nicho Nails y Nüva Nails Spa ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
+    - **Problema Reportado**: Las tarjetas de servicios mostraban fotos incongruentes de stock (Extensiones Acrílicas con foto de una mujer tocándose el cabello, Nail Art con foto de árboles/bosque, Kapping Gel con mujer afro y Retiro con pote de crema).
+    - **Solución Implementada**:
+      1. **Imágenes Fotográficas de Alta Definición**: Se crearon/curaron fotos macro y de estudio editorial de alta gama enfocadas 100% en las uñas y manicura.
+      2. **Alojamiento Permanente en Cloudflare R2 (`kowy-frames/stock/nails/`)**:
+         - *Semipermanente*: `stock/nails/semipermanente-mocca.jpg`
+         - *Extensiones Acrílicas*: `stock/nails/extensiones-acrilicas-esculpidas.jpg`
+         - *Nail Art & Diseños*: `stock/nails/nail-art-luxury-designs.jpg`
+         - *Kapping & Nivelación*: `stock/nails/kapping-gel-nivelador.jpg`
+         - *Pedicura Spa*: `stock/nails/pedicura-spa-relax.jpg`
+         - *Retiro & Baño de Calcio*: `stock/nails/retiro-bano-calcio.jpg`
+      3. **Sincronización en Supabase y Archivo Local**: Se actualizaron los campos `business_data.servicios` y el `raw_html` del prospecto `nuva-nails-spa` en Supabase y en `negocios_locales/nuva_nails_spa/index.html`.
+      4. **Calibración de la Biblioteca Global (`beautyImageLibrary.ts`)**: Se actualizaron las entradas de `NAILS_STOCK_SERVICES` con las URLs de CDN de Cloudflare R2 para que todos los futuros sitios del nicho Nails adopten automáticamente imágenes profesionales y coherentes.
+      5. **Compilación**: Verificada con `npm run build` (código 0).
+
 -66. **Sincronización Bidireccional de Color Principal en Sitios Activos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
     - **Causa Raíz del Bug**: Al cambiar el color desde Superadmin a un prospecto no activo funcionaba de una porque tomaba `bData.primary_color`. Pero en un sitio activo, `tenantData` existe y `PublicProspectSitePage.tsx` evaluaba `tenant?.primary_color || bData.primary_color`. Como `api.updateTenant` omitía `primary_color` en el payload a la tabla `tenants`, la base de datos conservaba el color por defecto (`#d92672`), bloqueando permanentemente el color nuevo guardado en el prospecto.
     - **Solución Implementada**:
