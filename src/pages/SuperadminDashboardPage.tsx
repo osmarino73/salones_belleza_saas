@@ -1304,15 +1304,20 @@ export const SuperadminDashboardPage: React.FC = () => {
         business_data: updatedBusinessData
       });
 
-      // Si el prospecto ya está reclamado como tenant, actualizar también en tenants
-      if (managingColorProspect.claimed_tenant_id) {
-        const tMatch = tenants.find(t => t.id === managingColorProspect.claimed_tenant_id);
-        if (tMatch) {
-          await api.updateTenant({
-            ...tMatch,
-            primary_color: cleanHex
-          } as any);
-        }
+      // Si el prospecto ya está reclamado como tenant o coincide por slug, actualizar también en tenants
+      const tMatch = tenants.find(t => 
+        (managingColorProspect.claimed_tenant_id && t.id === managingColorProspect.claimed_tenant_id) ||
+        (t.slug && managingColorProspect.slug && t.slug.toLowerCase() === managingColorProspect.slug.toLowerCase())
+      );
+
+      if (tMatch) {
+        await api.updateTenant({
+          ...tMatch,
+          primary_color: cleanHex
+        } as any);
+
+        // Actualizar reactivamente la lista de tenants en el superadmin
+        setTenants(prev => prev.map(t => t.id === tMatch.id ? { ...t, primary_color: cleanHex } : t));
       }
 
       // Actualizar estado reactivo local

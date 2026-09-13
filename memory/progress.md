@@ -1,3 +1,10 @@
+- [x] **Sincronización Bidireccional de Color Principal en Sitios Activos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+  - Resuelto el bug donde cambiar el color principal desde Superadmin funcionaba de inmediato en prospectos pero no en sitios ya activos/reclamados.
+  - Se completó el payload en `api.updateTenant` para incluir `primary_color` y todas las columnas de personalización web hacia la tabla `tenants` de Supabase.
+  - Se agregó sincronización automática en `api.updateProspectSite` para reflejar cualquier cambio de color en la tabla `tenants` en Supabase por ID o slug.
+  - En Superadmin se amplió la coincidencia de tenant por `claimed_tenant_id` y por `slug`, actualizando de forma reactiva `tenants` en memoria.
+  - En la web pública (`PublicProspectSitePage.tsx`), se priorizó `bData.primary_color || tenant?.primary_color`, asegurando que defaults antiguos de la base de datos no bloqueen el nuevo color.
+
 - [x] **Eliminación Coordinada de Prospectos con Purga Automática en Cloudflare R2 ([`delete-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/delete-frames.mjs), [`deleteFramesFromR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/deleteFramesFromR2.mjs), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - Implementada serverless function `netlify/functions/delete-frames.mjs` con `@aws-sdk/client-s3` para listar y borrar por lotes todos los fotogramas WebP bajo `frames/:slug/` en Cloudflare R2.
   - Creado script CLI `npm run delete:frames <slug>` en `scripts/deleteFramesFromR2.mjs` para mantenimiento manual desde terminal.

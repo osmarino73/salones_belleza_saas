@@ -14,6 +14,15 @@
 
 ---
 
+-66. **Sincronización Bidireccional de Color Principal en Sitios Activos ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+    - **Causa Raíz del Bug**: Al cambiar el color desde Superadmin a un prospecto no activo funcionaba de una porque tomaba `bData.primary_color`. Pero en un sitio activo, `tenantData` existe y `PublicProspectSitePage.tsx` evaluaba `tenant?.primary_color || bData.primary_color`. Como `api.updateTenant` omitía `primary_color` en el payload a la tabla `tenants`, la base de datos conservaba el color por defecto (`#d92672`), bloqueando permanentemente el color nuevo guardado en el prospecto.
+    - **Solución Implementada**:
+      1. **Payload Completo en `api.updateTenant`**: Se incorporó `primary_color` y las columnas de personalización web (`logo_icon`, `hero_eyebrow`, `slogan`, `title_accent`, `about_...`, etc.) en el update a la tabla `tenants` de Supabase.
+      2. **Sincronización Automática en `api.updateProspectSite`**: Cada vez que se actualiza el color primario de un prospecto, si está reclamado (`claimed_tenant_id`) o coincide por slug, la tabla `tenants` se actualiza de forma automática en Supabase.
+      3. **Búsqueda Robusta y Estado Reactivo en Superadmin**: `handleSavePrimaryColor` ahora busca el tenant por `id` y por `slug`, actualiza el registro en `tenants` y refresca el hook de estado `setTenants` en memoria.
+      4. **Prioridad Inteligente en Vista Pública**: `primaryColor` ahora evalúa `bData.primary_color || tenant?.primary_color || undefined` para evitar que un valor huérfano de la base de datos bloquee la identidad visual del negocio.
+      5. **Compilación**: Verificada mediante `npm run build` (código 0).
+
 -65. **Eliminación Coordinada de Prospectos con Purga Automática en Cloudflare R2 ([`delete-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/delete-frames.mjs), [`deleteFramesFromR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/deleteFramesFromR2.mjs), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Requerimiento**: Al eliminar un prospecto no activado, purgar de forma limpia y coordinada los fotogramas WebP alojados en Cloudflare R2 (`frames/:slug/`), evitando archivos huérfanos y garantizando el límite $0 de la cuota mensual.
     - **Implementación Realizada**:

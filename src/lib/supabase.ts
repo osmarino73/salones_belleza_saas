@@ -1490,7 +1490,30 @@ export const api = {
         if (tenant.country) payload.country = tenant.country;
         if (tenant.currency) payload.currency = tenant.currency;
         if (tenant.business_hours) payload.business_hours = tenant.business_hours;
-        if (tenant.hero_image_url) payload.logo_url = tenant.hero_image_url;
+        if (tenant.hero_image_url) {
+          payload.logo_url = tenant.hero_image_url;
+          payload.hero_image_url = tenant.hero_image_url;
+        }
+        if (tenant.primary_color) payload.primary_color = tenant.primary_color;
+        if (tenant.logo_icon) payload.logo_icon = tenant.logo_icon;
+        if (tenant.hero_eyebrow) payload.hero_eyebrow = tenant.hero_eyebrow;
+        if (tenant.slogan) payload.slogan = tenant.slogan;
+        if (tenant.title_accent) payload.title_accent = tenant.title_accent;
+        if (tenant.subtitle) payload.subtitle = tenant.subtitle;
+        if (tenant.show_team_section !== undefined) payload.show_team_section = tenant.show_team_section;
+        if (tenant.show_first_visit_discount !== undefined) payload.show_first_visit_discount = tenant.show_first_visit_discount;
+        if (tenant.first_visit_discount_pct !== undefined) payload.first_visit_discount_pct = tenant.first_visit_discount_pct;
+        if (tenant.first_visit_discount_title) payload.first_visit_discount_title = tenant.first_visit_discount_title;
+        if (tenant.about_image_url) payload.about_image_url = tenant.about_image_url;
+        if (tenant.about_badge_text) payload.about_badge_text = tenant.about_badge_text;
+        if (tenant.about_eyebrow) payload.about_eyebrow = tenant.about_eyebrow;
+        if (tenant.about_title) payload.about_title = tenant.about_title;
+        if (tenant.about_title_accent) payload.about_title_accent = tenant.about_title_accent;
+        if (tenant.about_description) payload.about_description = tenant.about_description;
+        if (tenant.about_years_exp) payload.about_years_exp = tenant.about_years_exp;
+        if (tenant.about_clients_count) payload.about_clients_count = tenant.about_clients_count;
+        if (tenant.about_rating_text) payload.about_rating_text = tenant.about_rating_text;
+        if (tenant.show_about_section !== undefined) payload.show_about_section = tenant.show_about_section;
         
         await supabase
           .from('tenants')
@@ -2612,6 +2635,24 @@ export const api = {
           error = retryRes.error;
         }
         if (error) console.error('Error updating prospect site:', error.message);
+
+        // Si se actualizó el color primario, sincronizarlo inmediatamente con la tabla tenants si está reclamado o coincide por slug
+        const newPrimaryColor = siteData.business_data?.primary_color;
+        if (newPrimaryColor) {
+          const { data: prospectRecord } = await supabase
+            .from('prospect_sites')
+            .select('slug, claimed_tenant_id')
+            .eq('id', id)
+            .maybeSingle();
+          if (prospectRecord) {
+            if (prospectRecord.claimed_tenant_id) {
+              await supabase.from('tenants').update({ primary_color: newPrimaryColor }).eq('id', prospectRecord.claimed_tenant_id);
+            }
+            if (prospectRecord.slug) {
+              await supabase.from('tenants').update({ primary_color: newPrimaryColor }).ilike('slug', prospectRecord.slug);
+            }
+          }
+        }
       } catch (e) {}
     }
     const current = await this.getProspectSites();
