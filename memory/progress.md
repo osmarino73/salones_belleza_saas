@@ -1,3 +1,9 @@
+- [x] **Reemplazo de Imagen de Sobre Nosotros por Fotografía Real del Nicho Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
+  - Reemplazada la fotografía de secadores y planchas de pelo CROC en "Sobre Nosotros" por una fotografía macro de salón que muestra a una manicurista profesional trabajando con instrumental y lámpara UV en la uña de una clienta.
+  - Alojada en Cloudflare R2 (`https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/about-nuva-nails-manicurista.jpg`).
+  - Sincronizada en Supabase (`prospect_sites` y `tenants`) y en los archivos locales de `nuva_nails_spa`.
+  - Añadida a la biblioteca `BEAUTY_STOCK_LIBRARY` en la categoría `hero_nails`.
+
 - [x] **Actualización Integral de Imágenes de Servicios para Nicho Nails y Nüva Nails Spa ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
   - Reemplazadas las imágenes inconsistentes de stock por fotografías macro de alta definición enfocadas 100% en uñas y manicura.
   - Subidas 6 fotografías de catálogo a Cloudflare R2 (`kowy-frames/stock/nails/`) con CDN global y caché inmutable.

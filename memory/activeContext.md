@@ -14,6 +14,15 @@
 
 ---
 
+-68. **Reemplazo de Imagen de Sobre Nosotros por Fotografía Real del Nicho Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
+    - **Problema Reportado**: La sección "Sobre Nosotros" de Nüva Nails Spa mostraba una fotografía de secadores, planchas y cepillos de peluquería capilar (`CROC`), incoherente para un salón especializado en manicura y pedicura.
+    - **Solución Implementada**:
+      1. **Fotografía Profesional de Salón de Uñas**: Se seleccionó una imagen de alta resolución que muestra a una manicurista experta trabajando con instrumental y lámpara UV en la uña de una clienta en una estación limpia de salón.
+      2. **Subida a Cloudflare R2**: Alojada en `https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/about-nuva-nails-manicurista.jpg` con CDN global.
+      3. **Sincronización en Supabase y Local**: Actualizado `about_image_url` en `business_data`, `raw_html` y en la tabla `tenants` en Supabase, así como en `negocios_locales/nuva_nails_spa/index.html` y `DATOS_NEGOCIO.json`.
+      4. **Biblioteca Global**: Añadido el asset `about-nails-station` a `BEAUTY_STOCK_LIBRARY` en la categoría `hero_nails`.
+      5. **Compilación**: Verificada mediante `npm run build` (código 0).
+
 -67. **Actualización Integral de Imágenes de Servicios para Nicho Nails y Nüva Nails Spa ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), Supabase `prospect_sites`, Cloudflare R2 `stock/nails/`)**:
     - **Problema Reportado**: Las tarjetas de servicios mostraban fotos incongruentes de stock (Extensiones Acrílicas con foto de una mujer tocándose el cabello, Nail Art con foto de árboles/bosque, Kapping Gel con mujer afro y Retiro con pote de crema).
     - **Solución Implementada**:

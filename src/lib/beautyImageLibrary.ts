@@ -155,6 +155,13 @@ export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
     url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80',
     tags: ['nails', 'uñas', 'lounge', 'acrilico', 'spa']
   },
+  {
+    id: 'about-nails-station',
+    category: 'hero_nails',
+    title: 'Estación de Manicura Profesional & Instrumental de Salón',
+    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/about-nuva-nails-manicurista.jpg',
+    tags: ['nails', 'uñas', 'sobre nosotros', 'manicurista', 'estacion', 'lampara uv', 'spa']
+  },
 
   // ==========================================
   // COLORIMETRÍA & BALAYAGE
