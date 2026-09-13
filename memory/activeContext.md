@@ -14,6 +14,17 @@
 
 ---
 
+-65. **Eliminación Coordinada de Prospectos con Purga Automática en Cloudflare R2 ([`delete-frames.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/netlify/functions/delete-frames.mjs), [`deleteFramesFromR2.mjs`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/scripts/deleteFramesFromR2.mjs), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Requerimiento**: Al eliminar un prospecto no activado, purgar de forma limpia y coordinada los fotogramas WebP alojados en Cloudflare R2 (`frames/:slug/`), evitando archivos huérfanos y garantizando el límite $0 de la cuota mensual.
+    - **Implementación Realizada**:
+      1. **Serverless Function (`netlify/functions/delete-frames.mjs`)**: Endpoint serverless que recibe `{ slug }`, ejecuta `ListObjectsV2Command` bajo el prefijo `frames/${cleanSlug}/` y purga en lotes concurrentes con `DeleteObjectsCommand`.
+      2. **Script CLI (`scripts/deleteFramesFromR2.mjs`)**: Comando de consola `npm run delete:frames <slug>` para purgas manuales desde terminal.
+      3. **Modal de Confirmación en Superadmin**:
+         - Detecta si el prospecto tiene video-scroll o fotogramas en CDN y activa por defecto la casilla *"Liberar y purgar fotogramas en Cloudflare R2"*.
+         - Muestra advertencia si el prospecto ya había sido reclamado o es cliente de pago.
+         - Ejecuta la eliminación en R2 y Supabase de forma sincronizada con feedback de éxito detallando la cantidad de fotogramas purgados.
+      4. **Compilación**: Verificada mediante `npm run build` (código 0).
+
 -64. **Banco de Imágenes de Servicios por Nicho - Catálogo Especializado Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), [`ServiceImagePicker.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/ServiceImagePicker.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Requerimiento**: Crear un banco estructurado de imágenes de alta fidelidad para servicios por nicho, comenzando con el nicho Nails (salones de uñas, manicura, pedicura y nail spas).
     - **Implementación Realizada**:

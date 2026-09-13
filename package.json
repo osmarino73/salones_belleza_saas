@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "upload:frames": "node scripts/uploadFramesToR2.mjs"
+    "upload:frames": "node scripts/uploadFramesToR2.mjs",
+    "delete:frames": "node scripts/deleteFramesFromR2.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1128.0",
