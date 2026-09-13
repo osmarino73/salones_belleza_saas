@@ -15,6 +15,107 @@ export interface StockImageItem {
   tags: string[];
 }
 
+export const NAILS_STOCK_SERVICES: StockImageItem[] = [
+  {
+    id: 'nails-semipermanente',
+    category: 'nails',
+    title: 'Manicura Semipermanente & Gel Polish Brillo Espejo',
+    url: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
+    tags: ['semipermanente', 'gelish', 'esmalte', 'manicura', 'nude', 'brillo', 'gel polish']
+  },
+  {
+    id: 'nails-rusa-dry',
+    category: 'nails',
+    title: 'Manicura Rusa / Dry Manicure con Torno y Fresas Diamantadas',
+    url: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80',
+    tags: ['rusa', 'dry manicure', 'torno', 'cuticula', 'limpieza profunda', 'fresas', 'perfeccion']
+  },
+  {
+    id: 'nails-acrilicas-esculpidas',
+    category: 'nails',
+    title: 'Uñas Acrílicas Esculpidas & Extensiones Coffin / Almond',
+    url: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
+    tags: ['acrilicas', 'esculpidas', 'extensiones', 'coffin', 'almond', 'tips', 'monomero', 'acrilico']
+  },
+  {
+    id: 'nails-soft-gel',
+    category: 'nails',
+    title: 'Soft Gel / Gel-X / Press On Nails de Cobertura Completa',
+    url: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80',
+    tags: ['soft gel', 'gel x', 'press on', 'extension gel', 'tips completos', 'ligero']
+  },
+  {
+    id: 'nails-kapping-rubber',
+    category: 'nails',
+    title: 'Kapping Gel & Nivelación con Rubber Base (Fuerza Natural)',
+    url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+    tags: ['kapping', 'rubber base', 'nivelacion', 'bano de gel', 'refuerzo', 'antiquiebre']
+  },
+  {
+    id: 'nails-polygel',
+    category: 'nails',
+    title: 'Polygel / Acrylgel Híbrido Esculpido & Curado UV',
+    url: 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80',
+    tags: ['polygel', 'acrylgel', 'acrigel', 'hibrido', 'esculpido', 'flexibilidad']
+  },
+  {
+    id: 'nails-nail-art-luxury',
+    category: 'nails',
+    title: 'Nail Art Editorial Minimalista & Hojilla de Oro Foil',
+    url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
+    tags: ['nail art', 'decoracion', 'foil', 'glitter', 'diseno', 'piedras', 'lineas', 'lujo']
+  },
+  {
+    id: 'nails-french-modern',
+    category: 'nails',
+    title: 'Francesa Moderna / Micro French Estilizado & Minimal',
+    url: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=800&q=80',
+    tags: ['francesa', 'french', 'micro french', 'blanco', 'elegante', 'sonrisa']
+  },
+  {
+    id: 'nails-baby-boomer',
+    category: 'nails',
+    title: 'Baby Boomer & Degradé Ombré Francés Blanco Nube',
+    url: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=800&q=80',
+    tags: ['baby boomer', 'ombre', 'degrade', 'difuminado', 'leche', 'rosa', 'blanco']
+  },
+  {
+    id: 'nails-cat-eye',
+    category: 'nails',
+    title: 'Efecto Ojo de Gato (Cat Eye) Magnético & Glazed Donut Cromo',
+    url: 'https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?auto=format&fit=crop&w=800&q=80',
+    tags: ['cat eye', 'ojo de gato', 'glazed donut', 'cromo', 'efecto espejo', 'iman', 'brillo saten']
+  },
+  {
+    id: 'nails-pedicura-spa',
+    category: 'nails',
+    title: 'Pedicura Spa Profunda & Jelly Spa con Ritual Hidratante',
+    url: 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80',
+    tags: ['pedicura', 'pedicure', 'spa pies', 'jelly spa', 'hidromasaje', 'exfoliacion', 'pies']
+  },
+  {
+    id: 'nails-pedicura-rusa',
+    category: 'nails',
+    title: 'Pedicura Rusa & Esmaltado Semipermanente en Pies',
+    url: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80',
+    tags: ['pedicura rusa', 'esmaltado pies', 'pies pulidos', 'cuticula pies', 'pies perfectos']
+  },
+  {
+    id: 'nails-retiro-sistema',
+    category: 'nails',
+    title: 'Retiro Seguro de Acrílico / Gel & Tratamiento Fortalecedor',
+    url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
+    tags: ['retiro', 'remocion', 'retiro acrilico', 'retiro gel', 'nutricion', 'fortalecedor', 'salud ungueal']
+  },
+  {
+    id: 'nails-spa-parafina',
+    category: 'nails',
+    title: 'Spa de Manos con Mascarilla Térmica & Baño de Parafina',
+    url: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80',
+    tags: ['parafina', 'spa manos', 'mascarilla termal', 'hidratacion manos', 'suavidad', 'terapia termica']
+  }
+];
+
 export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
   // ==========================================
   // HERO & FACHADAS DE LUJO
@@ -110,22 +211,9 @@ export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
   },
 
   // ==========================================
-  // NAIL ART & MANICURA
+  // NAIL ART & MANICURA (CATÁLOGO ESPECIALIZADO NAILS)
   // ==========================================
-  {
-    id: 'nails-rusa-francesa',
-    category: 'nails',
-    title: 'Manicura Rusa con Esmaltado Soft & French',
-    url: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80',
-    tags: ['manicura', 'uñas', 'semipermanente', 'rusa', 'french']
-  },
-  {
-    id: 'nails-art-luxury',
-    category: 'nails',
-    title: 'Nail Art Minimalista con Hojilla de Oro',
-    url: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80',
-    tags: ['nail art', 'uñas', 'gel', 'acrilicas', 'lujo']
-  },
+  ...NAILS_STOCK_SERVICES,
 
   // ==========================================
   // SPA, FACIALES & MASAJE
@@ -331,7 +419,47 @@ export function getSuggestedImageForService(title: string = '', categoryHint?: s
   if (t.includes('keratina') || t.includes('alisad') || t.includes('botox') || t.includes('liso')) {
     return 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=800&q=80';
   }
-  if (t.includes('nail') || t.includes('uña') || t.includes('manicura') || t.includes('pedicura') || t.includes('acrilic')) {
+  // 3. Nicho Nails (Salones de Uñas, Manicura, Pedicura & Nail Spa)
+  if (t.includes('parafina') || (t.includes('spa') && t.includes('mano'))) {
+    return 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('retiro') || t.includes('remocion') || t.includes('remover') || t.includes('desmonte')) {
+    return 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('pedicura rusa') || t.includes('pedicure ruso') || (t.includes('pies') && t.includes('rusa'))) {
+    return 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('pedicur') || t.includes('pedicure') || t.includes('jelly') || t.includes('pies')) {
+    return 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('rusa') || t.includes('dry') || t.includes('torno') || t.includes('fresas') || t.includes('cuticula')) {
+    return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('acrilic') || t.includes('esculpid') || t.includes('extension') || t.includes('coffin') || t.includes('almond') || t.includes('monomero')) {
+    return 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('soft gel') || t.includes('gel x') || t.includes('press on') || t.includes('tips')) {
+    return 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('kapping') || t.includes('rubber') || t.includes('nivelacion') || t.includes('baño de gel') || t.includes('bano de gel')) {
+    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('polygel') || t.includes('acrylgel') || t.includes('acrigel')) {
+    return 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('cat eye') || t.includes('ojo de gato') || t.includes('glazed') || t.includes('cromo') || t.includes('espejo')) {
+    return 'https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('baby boomer') || t.includes('boomer') || t.includes('ombre') || t.includes('degrade')) {
+    return 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('french') || t.includes('frances') || t.includes('francesa')) {
+    return 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('nail art') || t.includes('decoracion') || t.includes('foil') || t.includes('glitter') || t.includes('piedras') || t.includes('mano alzada')) {
+    return 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('nail') || t.includes('uña') || t.includes('semipermanente') || t.includes('manicura') || t.includes('gelish') || t.includes('gel polish')) {
     return 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80';
   }
   if (t.includes('facial') || t.includes('spa') || t.includes('masaje') || t.includes('limpieza') || t.includes('piel') || t.includes('peeling')) {
@@ -393,8 +521,8 @@ export function optimizeProspectHtml(html: string, category: string = 'salon'): 
     if (lower.includes('keratina') || lower.includes('liso') || lower.includes('alisado')) {
       return 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=800&q=80';
     }
-    if (lower.includes('nail') || lower.includes('uñas') || lower.includes('manicura')) {
-      return 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80';
+    if (lower.includes('nail') || lower.includes('uña') || lower.includes('manicur') || lower.includes('pedicur') || lower.includes('acrilic') || lower.includes('gel')) {
+      return getSuggestedImageForService(lower);
     }
     if (lower.includes('elena')) {
       return 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=500&q=80';

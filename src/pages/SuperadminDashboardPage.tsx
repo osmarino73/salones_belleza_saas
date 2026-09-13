@@ -2706,7 +2706,7 @@ export const SuperadminDashboardPage: React.FC = () => {
                 { id: 'color', label: '🎨 Color & Balayage' },
                 { id: 'cortes', label: '✂️ Cortes & Peinados' },
                 { id: 'keratina', label: '✨ Alisados & Keratina' },
-                { id: 'nails', label: '💅 Nail Art' },
+                { id: 'nails', label: '💅 Uñas & Nails' },
                 { id: 'spa_facial', label: '🧖‍♀️ Spa & Faciales' },
                 { id: 'barberia', label: '💈 Barbería' },
                 { id: 'maquillaje', label: '💄 Maquillaje' },

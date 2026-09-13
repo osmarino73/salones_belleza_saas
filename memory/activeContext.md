@@ -14,6 +14,15 @@
 
 ---
 
+-64. **Banco de Imágenes de Servicios por Nicho - Catálogo Especializado Nails ([`beautyImageLibrary.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/beautyImageLibrary.ts), [`ServiceImagePicker.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/components/ServiceImagePicker.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Requerimiento**: Crear un banco estructurado de imágenes de alta fidelidad para servicios por nicho, comenzando con el nicho Nails (salones de uñas, manicura, pedicura y nail spas).
+    - **Implementación Realizada**:
+      1. **Catálogo Modular `NAILS_STOCK_SERVICES` (14 servicios esenciales)**:
+         - *Manicura Semipermanente & Gel Polish*, *Manicura Rusa / Dry Manicure*, *Uñas Acrílicas Esculpidas*, *Soft Gel / Gel-X / Press On*, *Kapping Gel / Rubber Base*, *Polygel / Acrylgel*, *Nail Art Minimalista & Foil*, *Francesa Moderna (Micro French)*, *Baby Boomer & Degradé Ombré*, *Efecto Ojo de Gato (Cat Eye) / Glazed Donut*, *Pedicura Spa & Jelly Spa*, *Pedicura Rusa & Esmaltado en Pies*, *Retiro Seguro de Sistema*, *Spa de Manos & Parafina*.
+      2. **Motor de Inferencia Inteligente (`getSuggestedImageForService`)**: Detección semántica de términos técnicos ("rusa", "torno", "rubber", "kapping", "acrilic", "coffin", "press on", "cat eye", "baby boomer", "jelly", "parafina", etc.) para asignar automáticamente la foto de muestra precisa.
+      3. **Galería CDN & Selector Visual**: Actualizada categoría `💅 Uñas & Nails` en el modal de Galería de Superadmin y soporte nativo en el selector de servicios para la dueña del salón (`ServiceImagePicker`).
+      4. **Compilación**: Verificada mediante `npm run build` (código 0).
+
 -63. **Selector y Personalizador de Color Principal de Marca por Negocio en Superadmin ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Requerimiento**: El Superadmin requería un botón en el panel para cambiar el color principal de cualquier sitio web / prospecto sin tocar manualmente el código HTML ni alterar la estructura responsive o el hero canvas video-scroll.
     - **Arquitectura & Solución No Invasiva**:
