@@ -12,6 +12,19 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-73. **Corrección de Tokens Cromáticos para Sandra Color´s y Plantillas con `--accent-primary` ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Problema Reportado**: Al intentar cambiar el color principal desde el Superadmin en Sandra Color´s (`sandra-color-s`), la base de datos guardaba el valor (ej. `#be123c`), pero en la web pública no se apreciaban cambios evidentes.
+    - **Causa Raíz Diagnosticada**:
+      1. La plantilla de Sandra Color´s estructura toda su identidad visual a través de tokens CSS específicos en `:root`: `--accent-primary`, `--accent-hover`, `--accent-light`, `--accent-soft` y `--gold-border` (utilizados en más de 28 reglas CSS de títulos H1, script tags, acentos, botones, tarjetas de servicios y footer).
+      2. El bloque `colorOverridesCss` en `prospectHtmlInjector.ts` solo inyectaba `--color-accent`, `--color-camel`, `--color-gold`, etc., dejando huérfanas las variables `--accent-primary` y derivadas de esta plantilla.
+      3. Adicionalmente, las clases de botones primarios `.btn-hero-primary` y `.btn-footer-cta` no recibían la adaptación de sombra ni contraste de texto dinámico.
+    - **Solución Implementada**:
+      1. Se agregaron a `:root` en `prospectHtmlInjector.ts` los tokens `--accent-primary`, `--accent-hover`, `--accent-light`, `--accent-soft`, `--accent-glow` y `--accent-dark` con `!important`.
+      2. Se añadieron tokens para el nicho Nails/Pink (`--color-rose*`, `--rose-gradient*`, `--shadow-rose`).
+      3. Se integraron las clases `.btn-hero-primary`, `.btn-footer-cta`, `.btn-hero-cta`, `.btn-action-cta` en el control de contraste y sombras luminosas dinámicas (`box-shadow`).
+      4. Se incluyó el soporte de color para las pastillas decorativas (`.pillar-icon`).
+      5. Verificación de compilación limpia con `npm run build` (código 0).
+
 -72. **Paso Extra de Seguridad en Eliminación de Prospectos y Salones Activos ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
     - **Requerimiento**: Proteger la plataforma Kowy contra eliminaciones accidentales de prospectos del embudo de ventas o de salones activos SaaS en producción, implementando un paso extra de seguridad obligatorio.
     - **Implementación**:

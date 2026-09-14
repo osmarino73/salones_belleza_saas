@@ -345,12 +345,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   // Inyección cromática dinámica si primaryColor fue provisto y es un HEX válido
   const validPrimaryColor = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
   const ctaTextColor = validPrimaryColor ? getContrastTextColor(validPrimaryColor) : '#ffffff';
+  const hoverCtaTextColor = validPrimaryColor ? getContrastTextColor(adjustColorBrightness(validPrimaryColor, 20)) : '#ffffff';
   const colorOverridesCss = validPrimaryColor ? `
   /* Sobrescritura cromática dinámica de alta fidelidad desde Superadmin */
   :root {
     /* 1. Tokens Universales y Base */
     --color-accent: ${validPrimaryColor} !important;
     --color-accent-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --color-accent-light: ${adjustColorBrightness(validPrimaryColor, 22)} !important;
+    --color-accent-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
     --color-accent-soft: ${validPrimaryColor}26 !important;
     --color-accent-glow: ${validPrimaryColor}33 !important;
     --color-primary: ${validPrimaryColor} !important;
@@ -359,7 +362,15 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --brand-color: ${validPrimaryColor} !important;
     --brand-primary: ${validPrimaryColor} !important;
 
-    /* 2. Tokens Camel / Sand / Champagne / Nude (usados en plantillas de Nails como My Spacio Nails) */
+    /* 2. Tokens Accent Directos (Usados en Sandra Color's y salones capilares) */
+    --accent-primary: ${validPrimaryColor} !important;
+    --accent-hover: ${adjustColorBrightness(validPrimaryColor, -12)} !important;
+    --accent-light: ${adjustColorBrightness(validPrimaryColor, 22)} !important;
+    --accent-soft: ${validPrimaryColor}26 !important;
+    --accent-glow: ${validPrimaryColor}33 !important;
+    --accent-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+
+    /* 3. Tokens Camel / Sand / Champagne / Nude (usados en plantillas de Nails como My Spacio Nails) */
     --color-camel: ${validPrimaryColor} !important;
     --color-camel-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --color-camel-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
@@ -369,7 +380,16 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --camel-gradient-hover: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 35)} 0%, ${adjustColorBrightness(validPrimaryColor, 15)} 50%, ${validPrimaryColor} 100%) !important;
     --shadow-camel: 0 6px 20px ${validPrimaryColor}40 !important;
 
-    /* 3. Tokens Gold / Golden Accent (usados en Rizos Felices, Barberías y Spas de Lujo) */
+    /* 4. Tokens Rose / Pink (usados en Uñitas Mágicas) */
+    --color-rose: ${validPrimaryColor} !important;
+    --color-rose-light: ${adjustColorBrightness(validPrimaryColor, 20)} !important;
+    --color-rose-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --color-rose-hover: ${adjustColorBrightness(validPrimaryColor, 15)} !important;
+    --rose-gradient: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 50%, ${adjustColorBrightness(validPrimaryColor, -20)} 100%) !important;
+    --rose-gradient-hover: linear-gradient(135deg, #ffffff 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 50%, ${validPrimaryColor} 100%) !important;
+    --shadow-rose: 0 6px 22px ${validPrimaryColor}52 !important;
+
+    /* 5. Tokens Gold / Golden Accent (usados en Rizos Felices, Barberías y Spas de Lujo) */
     --color-gold: ${validPrimaryColor} !important;
     --color-gold-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --color-gold-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
@@ -380,20 +400,22 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --accent-gold-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --accent-gold-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
     --accent-gold-glow: ${validPrimaryColor}2e !important;
-    --gold-border: ${validPrimaryColor}38 !important;
+    --gold-border: ${validPrimaryColor}40 !important;
     --gold-border-bright: ${validPrimaryColor}73 !important;
     --border-gold-subtle: ${validPrimaryColor}38 !important;
     --gold-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
     --shadow-gold: 0 6px 22px ${validPrimaryColor}47 !important;
 
-    /* 4. Tokens Mocca / Warm Earth (Spas y Centros Estéticos) */
+    /* 6. Tokens Mocca / Warm Earth (Spas y Centros Estéticos) */
     --color-mocca: ${validPrimaryColor} !important;
     --color-mocca-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     --color-mocca-dark: ${adjustColorBrightness(validPrimaryColor, -20)} !important;
+    --color-mocca-hover: ${adjustColorBrightness(validPrimaryColor, 15)} !important;
     --mocca-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
     --mocca-gradient-hover: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 15)} 0%, ${adjustColorBrightness(validPrimaryColor, 35)} 100%) !important;
+    --shadow-mocca: 0 6px 20px ${validPrimaryColor}47 !important;
 
-    /* 5. Gradientes de Acento y Bordes */
+    /* 7. Gradientes de Acento y Bordes */
     --gradient-accent: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 50%, ${adjustColorBrightness(validPrimaryColor, -15)} 100%) !important;
     --color-accent-gradient: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 100%) !important;
   }
@@ -402,8 +424,29 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .btn-header-cta,
   .btn-primary,
   .btn-hero-book,
-  .btn-cta-primary {
+  .btn-cta-primary,
+  .btn-hero-primary,
+  .btn-footer-cta,
+  .btn-hero-cta,
+  .btn-action-cta {
     color: ${ctaTextColor} !important;
+    box-shadow: 0 6px 22px ${validPrimaryColor}4d !important;
+  }
+
+  .btn-header-cta:hover,
+  .btn-hero-primary:hover,
+  .btn-footer-cta:hover,
+  .btn-hero-book:hover,
+  .btn-primary:hover,
+  .btn-cta-primary:hover {
+    color: ${hoverCtaTextColor} !important;
+    box-shadow: 0 8px 28px ${validPrimaryColor}66 !important;
+  }
+
+  /* Pilares y elementos decorativos con soporte dinámico */
+  .pillar-icon {
+    background: ${validPrimaryColor}1f !important;
+    border-color: ${validPrimaryColor}4d !important;
   }
   ` : '';
 

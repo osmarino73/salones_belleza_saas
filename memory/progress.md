@@ -1,3 +1,9 @@
+- [x] **Corrección de Tokens Cromáticos para Sandra Color´s y Plantillas con `--accent-primary` ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Resuelto el problema por el cual cambiar el color principal en Sandra Color´s desde el Superadmin no producía cambios evidentes en la web pública.
+  - La plantilla nativa de Sandra Color´s controla más de 28 reglas CSS de títulos H1, acentos, botones, tarjetas de servicios y footer mediante tokens `--accent-primary`, `--accent-light`, `--accent-hover`, `--accent-soft` y `--gold-border`.
+  - El inyector de CSS (`colorOverridesCss`) omitía estos tokens; se han incorporado a `:root` con `!important`, junto a los tokens de Nails/Pink (`--color-rose*`), control de sombras dinámicas y contraste de texto para `.btn-hero-primary` y `.btn-footer-cta`.
+  - Compilación validada exitosamente con `npm run build` (código 0).
+
 - [x] **Paso Extra de Seguridad en Eliminación de Prospectos y Salones Activos ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
   - Implementado flujo de seguridad en dos pasos para la eliminación de prospectos en el Embudo de Ventas: Paso 1 (Impacto y purga opcional en Cloudflare R2) y Paso 2 (Paso extra de seguridad con validación por teclado que exige escribir `ELIMINAR` para desbloquear el botón 🔒 ➔ 🔓).
   - Eliminado el `window.confirm()` rudimentario en la eliminación de salones activos SaaS y reemplazado por un modal de máxima seguridad en dos pasos: Paso 1 (Diagnóstico forense de citas, colaboradoras, servicios, CRM y web que serán destruidos en cascada) y Paso 2 (Desafío de Superadmin exigiendo escribir el nombre del salón o `ELIMINAR`).
