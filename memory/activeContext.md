@@ -14,6 +14,24 @@
 
 ---
 
+-71. **Actualización de Canal de Cobro en Mensaje de Activación Paso 2 a Nequi / Bancolombia ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+    - **Requerimiento**: Modificar la vía de pago de activación de $89.000 COP en el Paso 2 de prospección: cambiar `(vía Nequi o Daviplata)` por `(vía Nequi o Bancolombia)`.
+    - **Implementación**:
+      1. En `generateStep2Pitch` de `whatsappPitchGenerator.ts`, se actualizó el texto del pago único a `(vía Nequi o Bancolombia)` y la pregunta final de cierre a `¿Les comparto los datos de Nequi/Bancolombia para dejarles el acceso administrativo activo hoy mismo? ⚡`.
+      2. Se actualizó el tip del Paso 2 en el modal de prospección de `SuperadminDashboardPage.tsx` (`💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Bancolombia para activar`).
+      3. Se sincronizó el documento estratégico comercial en `PLANES_Y_MERCADOLOGIA.md`.
+      4. Compilación validada exitosamente con `npm run build`.
+
+-70. **Actualización de Copy Persuasivo en Mensaje de Primer Contacto para Nicho Nails ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+    - **Requerimiento**: Sustituir la pregunta de cierre en el mensaje inicial de prospección (`Paso 1`) del nicho de uñas:
+      - *Antes*: `"¿Les gustaría que sus clientas agenden sus citas solas viendo los diseños y horarios sin saturarles el WhatsApp?"`
+      - *Ahora*: `"¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?"` (e.g. `Dp Beauty Nails`).
+    - **Implementación Dinámica**:
+      1. Se actualizó `painQuestion` en la configuración de nicho `nails` (`NICHE_CONFIGS.nails`) con el marcador `{businessName}`.
+      2. En `generateStep1Pitch`, se implementó la resolución dinámica mediante `.replace(/\{businessName\}/g, cleanName)`, garantizando que el nombre real del negocio (como *"Dp Beauty Nails"*) se integre con precisión y de forma personalizada en cada prospecto.
+      3. Se sincronizó la plantilla oficial en la skill `whatsapp-persuasive-copy` (`SKILL.md`).
+      4. Compilación validada exitosamente con `npm run build`.
+
 -69. **Corrección Integral de Inyección Cromática Dinámica para Prospectos y Nichos Múltiples ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
     - **Problema Reportado**: Al cambiar el color principal desde el Superadmin en un prospecto no activo (específicamente My Spacio Nails u otras plantillas Nails/Barberías), el sitio web público no reflejaba el nuevo tono, mientras que en otros salones activos sí funcionaba.
     - **Causa Raíz Diagnosticada**:

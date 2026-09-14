@@ -14,7 +14,7 @@ export interface NicheCopyConfig {
   catalogPhrase: string;
   teamPhrase: string;
   painQuestion: string;
-  // Términos para el Paso 2 (Oferta Patrocinada $89k con Cierre Nequi/Daviplata)
+  // Términos para el Paso 2 (Oferta Patrocinada $89k con Cierre Nequi/Bancolombia)
   targetClientsWord: string;
   roleSingular: string;
   collaboratorsWord: string;
@@ -55,7 +55,7 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     badgeLabel: 'Studio de Uñas',
     catalogPhrase: 'catálogo de diseños de uñas y sistema de reservas online:',
     teamPhrase: 'manicuristas y servicios son 100% editables',
-    painQuestion: '¿Les gustaría que sus clientas agenden sus citas solas viendo los diseños y horarios sin saturarles el WhatsApp?',
+    painQuestion: '¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?',
     targetClientsWord: 'clientas',
     roleSingular: 'manicurista',
     collaboratorsWord: 'manicuristas',
@@ -157,6 +157,7 @@ export function generateStep1Pitch({
   const cfg = NICHE_CONFIGS[niche] || NICHE_CONFIGS.salon;
   const siteUrl = `${origin}/sitio/${slug}`;
   const cleanName = businessName?.trim() || 'su negocio';
+  const resolvedPainQuestion = cfg.painQuestion.replace(/\{businessName\}/g, cleanName);
 
   return `¡Hola equipo de ${cleanName}! 👋${cfg.emoji}
 Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su página web con ${cfg.catalogPhrase}
@@ -164,11 +165,11 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 (Todo el contenido, ${cfg.teamPhrase}).
 
-"${cfg.painQuestion}"`;
+"${resolvedPainQuestion}"`;
 }
 
 /**
- * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Cierre Nequi/Daviplata $89k)
+ * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Cierre Nequi/Bancolombia $89k)
  */
 export function generateStep2Pitch({
   businessName,
@@ -180,7 +181,7 @@ export function generateStep2Pitch({
 
   return `¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan ${cfg.targetClientsWord} por responder tarde al WhatsApp.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Bancolombia), se llevan:
 
 🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
 
@@ -190,7 +191,7 @@ Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activac
 
 Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
 
-¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡`;
+¿Les comparto los datos de Nequi/Bancolombia para dejarles el acceso administrativo activo hoy mismo? ⚡`;
 }
 
 /**

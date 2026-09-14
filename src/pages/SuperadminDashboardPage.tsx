@@ -3260,7 +3260,7 @@ export const SuperadminDashboardPage: React.FC = () => {
               <span>
                 {modalPitchStep === 1
                   ? '💡 Tip Paso 1: Envía una foto/captura de su web en el celular junto a este mensaje.'
-                  : '💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Daviplata para activar.'}
+                  : '💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Bancolombia para activar.'}
               </span>
               <button
                 type="button"

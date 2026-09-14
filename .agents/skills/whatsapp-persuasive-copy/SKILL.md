@@ -92,7 +92,7 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 (Todo el contenido, manicuristas y servicios son 100% editables).
 
-"¿Les gustaría que sus clientas agenden sus citas solas viendo los diseños y horarios sin saturarles el WhatsApp?"
+"¿Qué les pareció el demo que preparamos para [Nombre del Estudio]? ¿Les gustó cómo quedó?"
 ```
 
 #### 🧖‍♀️ Opción D: Spa & Centro de Estética

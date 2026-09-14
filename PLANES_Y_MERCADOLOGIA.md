@@ -8,7 +8,7 @@
 En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse / Lead Magnet de Alto Impacto**:
 1. **La Página Web es 100% GRATIS en desarrollo y diseño** (Plan Gratuito sin mensualidades). Esto rompe la desconfianza y abre la puerta con el dueño del salón.
 2. **Anclaje de Alto Valor ($680.000 COP):** Se posiciona el valor regular de desarrollo web, agendador y sistema en **$680.000 COP**.
-3. **Cupo de Activación & Hosting Anual ($89.000 COP):** Se ofrece una tarifa de activación de solo **$89.000 COP** (por Nequi o Daviplata) que incluye:
+3. **Cupo de Activación & Hosting Anual ($89.000 COP):** Se ofrece una tarifa de activación de solo **$89.000 COP** (por Nequi o Bancolombia) que incluye:
    - Personalización y montaje del catálogo y especialistas.
    - **1 Año Completo de Hosting Seguro y Certificado SSL en la nube** (cero mensualidades de hosting el primer año).
    - **Kit de Afiches y Tarjetas QR Imprimibles** para tocadores y mostrador.
@@ -138,7 +138,7 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 ✨ Oportunidad de Digitalización Local:
 El desarrollo de esta web y la configuración del sistema de reservas tiene un valor comercial regular de ~~$680.000 COP~~.
 
-🎁 Por un aporte único de activación de solo $89.000 COP (Nequi / Daviplata), reciben:
+🎁 Por un aporte único de activación de solo $89.000 COP (Nequi / Bancolombia), reciben:
 1. ✅ La Página Web Completa y Personalizada (Valor regular $680.000 COP).
 2. 🌐 1 Año Completo de Alojamiento Web en la Nube (Hosting de alta velocidad + Certificado SSL) incluido.
 3. 🎁 1 Mes COMPLETO INCLUIDO en el Plan Crecimiento (Valor normal $120.000/mes):

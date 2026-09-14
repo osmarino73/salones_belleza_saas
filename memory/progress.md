@@ -1,3 +1,13 @@
+- [x] **Actualización de Canal de Cobro en Mensaje de Activación Paso 2 a Nequi / Bancolombia ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+  - Cambiada la referencia de pago de activación de $89.000 COP de `(vía Nequi o Daviplata)` a `(vía Nequi o Bancolombia)`.
+  - Actualizado el cierre del Paso 2 a `¿Les comparto los datos de Nequi/Bancolombia para dejarles el acceso administrativo activo hoy mismo? ⚡`.
+  - Sincronizados tips del modal en Superadmin Dashboard y documentación en `PLANES_Y_MERCADOLOGIA.md`.
+
+- [x] **Actualización de Copy Persuasivo en Mensaje de Primer Contacto para Nicho Nails ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+  - Modificada la pregunta de cierre para prospectos del nicho de uñas: ahora pregunta directamente qué les pareció el demo preparado para su negocio (`¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?`).
+  - La interpolación es dinámica con el nombre del negocio (por ejemplo *"Dp Beauty Nails"*), adaptándose automáticamente a cualquier salón o estudio de uñas prospectado.
+  - Sincronizada la skill `whatsapp-persuasive-copy`.
+
 - [x] **Inyección Cromática Dinámica Multi-Nicho para Prospectos y Sitios Web ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
   - Resuelto el problema por el cual cambiar el color principal en prospectos no activos (específicamente My Spacio Nails) no se reflejaba en el sitio web en vivo.
   - La plantilla de uñas de My Spacio Nails utiliza tokens CSS Camel (`--color-camel`, `--camel-gradient`, `--shadow-camel`, etc.) que no estaban contemplados en el inyector de estilos dinámicos.
