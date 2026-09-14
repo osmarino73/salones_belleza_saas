@@ -1,3 +1,8 @@
+- [x] **Paso Extra de Seguridad en Eliminación de Prospectos y Salones Activos ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+  - Implementado flujo de seguridad en dos pasos para la eliminación de prospectos en el Embudo de Ventas: Paso 1 (Impacto y purga opcional en Cloudflare R2) y Paso 2 (Paso extra de seguridad con validación por teclado que exige escribir `ELIMINAR` para desbloquear el botón 🔒 ➔ 🔓).
+  - Eliminado el `window.confirm()` rudimentario en la eliminación de salones activos SaaS y reemplazado por un modal de máxima seguridad en dos pasos: Paso 1 (Diagnóstico forense de citas, colaboradoras, servicios, CRM y web que serán destruidos en cascada) y Paso 2 (Desafío de Superadmin exigiendo escribir el nombre del salón o `ELIMINAR`).
+  - Compilación validada exitosamente con `npm run build`.
+
 - [x] **Actualización de Canal de Cobro en Mensaje de Activación Paso 2 a Nequi / Bancolombia ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
   - Cambiada la referencia de pago de activación de $89.000 COP de `(vía Nequi o Daviplata)` a `(vía Nequi o Bancolombia)`.
   - Actualizado el cierre del Paso 2 a `¿Les comparto los datos de Nequi/Bancolombia para dejarles el acceso administrativo activo hoy mismo? ⚡`.

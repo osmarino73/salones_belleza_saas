@@ -59,7 +59,9 @@ import {
   AlertCircle,
   UploadCloud,
   Film,
-  Palette
+  Palette,
+  Unlock,
+  ShieldAlert
 } from 'lucide-react';
 import { SANUS_SPA_SITE_DATA } from '../lib/sanusSpaSiteData';
 
@@ -322,10 +324,18 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [isSavingColor, setIsSavingColor] = useState(false);
   const [colorSaveSuccess, setColorSaveSuccess] = useState(false);
 
-  // Modal de Confirmación de Eliminación de Prospecto & Purga en Cloudflare R2
+  // Modal de Confirmación de Eliminación de Prospecto con Paso Extra de Seguridad & Purga R2
   const [deletingProspect, setDeletingProspect] = useState<ProspectSite | null>(null);
+  const [deleteProspectStep, setDeleteProspectStep] = useState<1 | 2>(1);
+  const [deleteProspectConfirmText, setDeleteProspectConfirmText] = useState<string>('');
   const [deletePurgeR2, setDeletePurgeR2] = useState<boolean>(true);
   const [isDeletingProspect, setIsDeletingProspect] = useState<boolean>(false);
+
+  // Modal de Confirmación de Eliminación de Salón Activo con Paso Extra de Seguridad (Multi-Tenant SaaS)
+  const [deletingTenant, setDeletingTenant] = useState<Tenant | null>(null);
+  const [deleteTenantStep, setDeleteTenantStep] = useState<1 | 2>(1);
+  const [deleteTenantConfirmText, setDeleteTenantConfirmText] = useState<string>('');
+  const [isDeletingTenant, setIsDeletingTenant] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -891,6 +901,8 @@ export const SuperadminDashboardPage: React.FC = () => {
 
   const handleRequestDeleteProspect = (prospect: ProspectSite) => {
     setDeletingProspect(prospect);
+    setDeleteProspectStep(1);
+    setDeleteProspectConfirmText('');
     setDeletePurgeR2(Boolean(prospect.business_data?.has_video_scroll || prospect.business_data?.frames_cdn_url));
     setIsDeletingProspect(false);
   };
@@ -937,12 +949,30 @@ export const SuperadminDashboardPage: React.FC = () => {
     }
   };
 
-  const handleDeleteTenant = async (id: string, name: string) => {
-    if (confirm(`⚠️ ¿Estás seguro de eliminar el salón "${name}"?\n\nEsta acción borrará en cascada todas sus citas, colaboradoras, servicios, inventario y liberará su sitio web público.`)) {
-      await api.deleteTenantCascade(id);
-      setTenants(tenants.filter(t => t.id !== id));
-      alert(`✅ El salón "${name}" y todos sus datos asociados fueron eliminados.`);
-      loadData();
+  const handleRequestDeleteTenant = (tenant: Tenant) => {
+    setDeletingTenant(tenant);
+    setDeleteTenantStep(1);
+    setDeleteTenantConfirmText('');
+    setIsDeletingTenant(false);
+  };
+
+  const handleConfirmDeleteTenant = async () => {
+    if (!deletingTenant) return;
+    setIsDeletingTenant(true);
+    const targetName = deletingTenant.name;
+    const targetId = deletingTenant.id;
+
+    try {
+      await api.deleteTenantCascade(targetId);
+      setTenants(prev => prev.filter(t => t.id !== targetId));
+      alert(`✅ El salón "${targetName}" y todos sus datos asociados fueron eliminados correctamente.`);
+      setDeletingTenant(null);
+      await loadData();
+    } catch (err: any) {
+      console.error('Error al eliminar salón en cascada:', err);
+      alert('Ocurrió un error al eliminar el salón: ' + (err.message || 'Intenta de nuevo.'));
+    } finally {
+      setIsDeletingTenant(false);
     }
   };
 
@@ -2700,9 +2730,9 @@ export const SuperadminDashboardPage: React.FC = () => {
 
                         <button
                           type="button"
-                          onClick={() => handleDeleteTenant(t.id, t.name)}
+                          onClick={() => handleRequestDeleteTenant(t)}
                           className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold transition-all flex items-center justify-center cursor-pointer"
-                          title="Borrar salón y todos sus datos en 1 clic"
+                          title="Eliminar salón y datos asociados con paso de seguridad"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -3861,101 +3891,447 @@ export const SuperadminDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL CONFIRMACIÓN DE ELIMINACIÓN DE PROSPECTO & PURGA R2 */}
-      {deletingProspect && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#0f1422] border border-rose-500/30 rounded-2xl w-full max-w-md shadow-2xl p-6 relative flex flex-col gap-4 text-white">
-            
-            {/* Header */}
-            <div className="flex items-start justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
-                  <Trash2 className="w-5 h-5 text-rose-400" />
+      {/* =====================================================================
+          MODAL 1: ELIMINACIÓN DE PROSPECTO CON PASO EXTRA DE SEGURIDAD
+          ===================================================================== */}
+      {deletingProspect && (() => {
+        const isProspectConfirmed = deleteProspectConfirmText.trim().toUpperCase() === 'ELIMINAR';
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            <div className="bg-[#0f1422] border border-rose-500/30 rounded-2xl w-full max-w-md shadow-2xl p-6 relative flex flex-col gap-4 text-white">
+              
+              {/* Header con Stepper */}
+              <div className="flex items-start justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-black text-white">Eliminar Prospecto</h3>
+                      <div className="flex items-center gap-1 text-[10px] font-bold">
+                        <span className={`px-1.5 py-0.5 rounded ${deleteProspectStep === 1 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-white/5 text-slate-500'}`}>
+                          Paso 1
+                        </span>
+                        <span className="text-slate-600">/</span>
+                        <span className={`px-1.5 py-0.5 rounded ${deleteProspectStep === 2 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-white/5 text-slate-500'}`}>
+                          Paso 2
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {deletingProspect.business_name} <span className="font-mono text-slate-500">(/sitio/{deletingProspect.slug})</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-white">Eliminar Prospecto</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {deletingProspect.business_name} <span className="font-mono text-slate-500">(/sitio/{deletingProspect.slug})</span>
-                  </p>
+                <button
+                  type="button"
+                  disabled={isDeletingProspect}
+                  onClick={() => setDeletingProspect(null)}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* PASO 1: DIAGNÓSTICO DE IMPACTO & OPCIONES */}
+              {deleteProspectStep === 1 && (
+                <div className="space-y-4">
+                  {/* Advertencia si está reclamado o cliente pago */}
+                  {(deletingProspect.status === 'reclamado' || deletingProspect.status === 'cliente_pago') && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Atención:</strong> Este prospecto ya fue reclamado o es cliente de pago. Al borrarlo, se desvinculará de su sitio web oficial.
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2 text-xs text-slate-300">
+                    <p className="leading-relaxed">
+                      ¿Deseas retirar a <strong className="text-white">{deletingProspect.business_name}</strong> del embudo de prospección?
+                    </p>
+                    <ul className="space-y-1 text-slate-400 text-[11px] list-disc list-inside">
+                      <li>Se eliminará de la base de datos de prospección.</li>
+                      <li>El enlace público <code className="text-rose-300 font-mono">/sitio/{deletingProspect.slug}</code> dejará de estar disponible.</li>
+                    </ul>
+                  </div>
+
+                  {/* Checkbox purgar fotogramas de Cloudflare R2 */}
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3">
+                    <input
+                      id="purge-r2-checkbox"
+                      type="checkbox"
+                      checked={deletePurgeR2}
+                      onChange={(e) => setDeletePurgeR2(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-rose-500 focus:ring-rose-500 border-white/20 bg-black/40 cursor-pointer"
+                    />
+                    <label htmlFor="purge-r2-checkbox" className="text-xs cursor-pointer select-none">
+                      <strong className="block text-white flex items-center gap-1.5">
+                        <UploadCloud className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Liberar y purgar fotogramas en Cloudflare R2</span>
+                      </strong>
+                      <span className="text-[11px] text-slate-400 mt-0.5 block">
+                        Elimina automáticamente la carpeta <code className="text-amber-300 font-mono">frames/{deletingProspect.slug}/</code> para no dejar archivos huérfanos y mantener tu cuota de almacenamiento limpia.
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Footer Paso 1 */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-2.5">
+                    <button
+                      type="button"
+                      disabled={isDeletingProspect}
+                      onClick={() => setDeletingProspect(null)}
+                      className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteProspectStep(2);
+                        setDeleteProspectConfirmText('');
+                      }}
+                      className="px-5 py-2 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-xs font-black shadow-lg shadow-rose-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <span>Continuar al Paso de Seguridad</span>
+                      <span>→</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <button
-                type="button"
-                disabled={isDeletingProspect}
-                onClick={() => setDeletingProspect(null)}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
+              )}
+
+              {/* PASO 2: PASO EXTRA DE SEGURIDAD CON DESAFÍO POR TECLADO */}
+              {deleteProspectStep === 2 && (
+                <div className="space-y-4">
+                  {/* Banner de máxima seguridad */}
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-black text-rose-200 uppercase tracking-wider">
+                        Paso Extra de Seguridad Requerido (2/2)
+                      </h4>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Para confirmar que no es un clic accidental, escribe la palabra{' '}
+                        <strong className="text-rose-300 font-mono bg-black/40 px-1.5 py-0.5 rounded border border-rose-500/30">
+                          ELIMINAR
+                        </strong>{' '}
+                        en el recuadro inferior para desbloquear el borrado:
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Campo de entrada con validación */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <label className="font-bold text-slate-300">
+                        Escribe <span className="font-mono text-rose-300">ELIMINAR</span>:
+                      </label>
+                      {isProspectConfirmed ? (
+                        <span className="text-emerald-400 flex items-center gap-1 font-bold">
+                          <Check className="w-3.5 h-3.5" /> Verificación Correcta
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 flex items-center gap-1 font-mono text-[10px]">
+                          <Lock className="w-3 h-3" /> Bloqueado
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      autoFocus
+                      value={deleteProspectConfirmText}
+                      onChange={(e) => setDeleteProspectConfirmText(e.target.value)}
+                      placeholder="Escribe ELIMINAR"
+                      className={`w-full px-3.5 py-2.5 rounded-xl text-sm font-mono tracking-wider bg-black/50 border transition-all outline-none ${
+                        isProspectConfirmed
+                          ? 'border-emerald-500/60 text-emerald-300 ring-2 ring-emerald-500/20'
+                          : 'border-white/20 text-white focus:border-rose-500/60 focus:ring-2 focus:ring-rose-500/20'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Resumen de purga si aplica */}
+                  {deletePurgeR2 && (
+                    <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] flex items-center gap-2">
+                      <UploadCloud className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                      <span>Se purgará la carpeta CDN en Cloudflare R2 (<code className="font-mono text-amber-200">frames/{deletingProspect.slug}/</code>)</span>
+                    </div>
+                  )}
+
+                  {/* Footer Paso 2 */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2.5">
+                    <button
+                      type="button"
+                      disabled={isDeletingProspect}
+                      onClick={() => setDeleteProspectStep(1)}
+                      className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <span>←</span>
+                      <span>Volver</span>
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isDeletingProspect}
+                        onClick={() => setDeletingProspect(null)}
+                        className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!isProspectConfirmed || isDeletingProspect}
+                        onClick={handleConfirmDeleteProspect}
+                        className={`px-5 py-2 rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 transition-all ${
+                          isProspectConfirmed && !isDeletingProspect
+                            ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/40 cursor-pointer scale-100 hover:scale-[1.02]'
+                            : 'bg-white/10 text-slate-500 border border-white/5 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        {isDeletingProspect ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Eliminando...</span>
+                          </>
+                        ) : isProspectConfirmed ? (
+                          <>
+                            <Unlock className="w-3.5 h-3.5 text-emerald-300" />
+                            <span>Sí, Eliminar Prospecto Definitivamente</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Desbloquear con "ELIMINAR"</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
-
-            {/* Advertencia si está reclamado o cliente pago */}
-            {(deletingProspect.status === 'reclamado' || deletingProspect.status === 'cliente_pago') && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Atención:</strong> Este salón ya fue activado o es cliente de pago. Al borrarlo, se desvinculará su sitio oficial.
-                </span>
-              </div>
-            )}
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              ¿Estás seguro de que deseas eliminar este prospecto? Se eliminará de la base de datos de prospección y ya no estará disponible en su URL pública.
-            </p>
-
-            {/* Checkbox purgar fotogramas de Cloudflare R2 */}
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3">
-              <input
-                id="purge-r2-checkbox"
-                type="checkbox"
-                checked={deletePurgeR2}
-                onChange={(e) => setDeletePurgeR2(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded text-rose-500 focus:ring-rose-500 border-white/20 bg-black/40 cursor-pointer"
-              />
-              <label htmlFor="purge-r2-checkbox" className="text-xs cursor-pointer select-none">
-                <strong className="block text-white flex items-center gap-1.5">
-                  <UploadCloud className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Liberar y purgar fotogramas en Cloudflare R2</span>
-                </strong>
-                <span className="text-[11px] text-slate-400 mt-0.5 block">
-                  Elimina automáticamente la carpeta <code className="text-amber-300 font-mono">frames/{deletingProspect.slug}/</code> para no dejar archivos huérfanos y mantener tu cuota de almacenamiento limpia.
-                </span>
-              </label>
-            </div>
-
-            {/* Footer con Acciones */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                disabled={isDeletingProspect}
-                onClick={() => setDeletingProspect(null)}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                disabled={isDeletingProspect}
-                onClick={handleConfirmDeleteProspect}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {isDeletingProspect ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Eliminando...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Sí, Eliminar Prospecto</span>
-                  </>
-                )}
-              </button>
-            </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      {/* =====================================================================
+          MODAL 2: ELIMINACIÓN DE SALÓN ACTIVO CON PASO EXTRA DE SEGURIDAD (SAAS)
+          ===================================================================== */}
+      {deletingTenant && (() => {
+        const isTenantConfirmed =
+          deleteTenantConfirmText.trim().toUpperCase() === 'ELIMINAR' ||
+          deleteTenantConfirmText.trim().toLowerCase() === deletingTenant.name.trim().toLowerCase();
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+            <div className="bg-[#0f1422] border border-rose-500/40 rounded-2xl w-full max-w-lg shadow-2xl p-6 relative flex flex-col gap-4 text-white">
+              
+              {/* Header con Stepper */}
+              <div className="flex items-start justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-black text-white">Eliminar Salón Activo SaaS</h3>
+                      <div className="flex items-center gap-1 text-[10px] font-bold">
+                        <span className={`px-1.5 py-0.5 rounded ${deleteTenantStep === 1 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-white/5 text-slate-500'}`}>
+                          Paso 1
+                        </span>
+                        <span className="text-slate-600">/</span>
+                        <span className={`px-1.5 py-0.5 rounded ${deleteTenantStep === 2 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-white/5 text-slate-500'}`}>
+                          Paso 2
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {deletingTenant.name} <span className="font-mono text-slate-500">(/reservar/{deletingTenant.slug})</span>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={isDeletingTenant}
+                  onClick={() => setDeletingTenant(null)}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* PASO 1: DIAGNÓSTICO FORENSE DE DATOS A DESTRUIR */}
+              {deleteTenantStep === 1 && (
+                <div className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs space-y-1.5">
+                    <div className="flex items-center gap-2 font-black text-rose-300 uppercase tracking-wider">
+                      <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      <span>Destrucción en Cascada Irreversible</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      Esta operación es crítica. Al eliminar este salón de la plataforma Kowy, se destruirán permanentemente en Supabase todos sus registros asociados:
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-2 text-xs">
+                    <h5 className="font-bold text-slate-300 text-[11px] uppercase tracking-wider">Registros que se eliminarán:</h5>
+                    <ul className="space-y-1.5 text-slate-400 text-[11px]">
+                      <li className="flex items-center gap-2 text-rose-300/90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                        <span><strong>Citas y Agenda:</strong> Todas las reservas históricas y programadas.</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-rose-300/90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                        <span><strong>Equipo de Colaboradoras:</strong> Accesos y perfiles de estilistas.</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-rose-300/90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                        <span><strong>Servicios y Caja POS:</strong> Catálogo de precios, fórmulas e inventario.</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-rose-300/90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                        <span><strong>CRM de Clientas:</strong> Historial y notas de contacto.</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-amber-300/90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span><strong>Portal de Reservas:</strong> La URL <code className="font-mono text-amber-200">/reservar/{deletingTenant.slug}</code> quedará inactiva.</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Footer Paso 1 */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-end gap-2.5">
+                    <button
+                      type="button"
+                      disabled={isDeletingTenant}
+                      onClick={() => setDeletingTenant(null)}
+                      className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteTenantStep(2);
+                        setDeleteTenantConfirmText('');
+                      }}
+                      className="px-5 py-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-black shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <span>Entiendo el Impacto → Paso de Seguridad</span>
+                      <span>→</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* PASO 2: DESAFÍO DE SEGURIDAD SUPERADMIN */}
+              {deleteTenantStep === 2 && (
+                <div className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/40 flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-black text-rose-200 uppercase tracking-wider">
+                        Desafío de Seguridad Superadmin (2/2)
+                      </h4>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Para autorizar la destrucción definitiva del salón{' '}
+                        <strong className="text-white font-bold">{deletingTenant.name}</strong>, escribe el nombre del salón o la palabra{' '}
+                        <strong className="text-rose-300 font-mono bg-black/40 px-1.5 py-0.5 rounded border border-rose-500/30">
+                          ELIMINAR
+                        </strong>:
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Campo de entrada con validación */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <label className="font-bold text-slate-300">
+                        Escribe <span className="font-mono text-rose-300">{deletingTenant.name}</span> o <span className="font-mono text-rose-300">ELIMINAR</span>:
+                      </label>
+                      {isTenantConfirmed ? (
+                        <span className="text-emerald-400 flex items-center gap-1 font-bold">
+                          <Check className="w-3.5 h-3.5" /> Autorizado
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 flex items-center gap-1 font-mono text-[10px]">
+                          <Lock className="w-3 h-3" /> Bloqueado
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      autoFocus
+                      value={deleteTenantConfirmText}
+                      onChange={(e) => setDeleteTenantConfirmText(e.target.value)}
+                      placeholder={`Escribe "${deletingTenant.name}" o "ELIMINAR"`}
+                      className={`w-full px-3.5 py-2.5 rounded-xl text-sm font-mono tracking-wide bg-black/50 border transition-all outline-none ${
+                        isTenantConfirmed
+                          ? 'border-emerald-500/60 text-emerald-300 ring-2 ring-emerald-500/20'
+                          : 'border-white/20 text-white focus:border-rose-500/60 focus:ring-2 focus:ring-rose-500/20'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Footer Paso 2 */}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2.5">
+                    <button
+                      type="button"
+                      disabled={isDeletingTenant}
+                      onClick={() => setDeleteTenantStep(1)}
+                      className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <span>←</span>
+                      <span>Volver</span>
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isDeletingTenant}
+                        onClick={() => setDeletingTenant(null)}
+                        className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!isTenantConfirmed || isDeletingTenant}
+                        onClick={handleConfirmDeleteTenant}
+                        className={`px-5 py-2 rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 transition-all ${
+                          isTenantConfirmed && !isDeletingTenant
+                            ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/40 cursor-pointer scale-100 hover:scale-[1.02]'
+                            : 'bg-white/10 text-slate-500 border border-white/5 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        {isDeletingTenant ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Destruyendo en cascada...</span>
+                          </>
+                        ) : isTenantConfirmed ? (
+                          <>
+                            <Unlock className="w-3.5 h-3.5 text-emerald-300" />
+                            <span>Sí, Destruir Salón y Datos en Cascada</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Bloqueado por Seguridad</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );

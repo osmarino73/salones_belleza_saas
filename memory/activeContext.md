@@ -12,7 +12,17 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
----
+-72. **Paso Extra de Seguridad en Eliminación de Prospectos y Salones Activos ([`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Requerimiento**: Proteger la plataforma Kowy contra eliminaciones accidentales de prospectos del embudo de ventas o de salones activos SaaS en producción, implementando un paso extra de seguridad obligatorio.
+    - **Implementación**:
+      1. **Eliminación de Prospectos (Embudo de Ventas)**:
+         - *Paso 1: Diagnóstico de Impacto & Opciones*: Detalla el negocio, despublicación del enlace `/sitio/:slug`, advertencia si es cliente de pago o reclamado, y checkbox para purga coordinada de fotogramas en Cloudflare R2 (`frames/:slug/`).
+         - *Paso 2: Paso Extra de Seguridad*: Alerta de máxima protección con input de confirmación por teclado. El botón de eliminación permanece bloqueado con candado 🔒 hasta que el Superadmin escribe exactamente la palabra `ELIMINAR` (validación en tiempo real con desbloqueo 🔓 en verde/esmeralda y botón destructivo carmesí).
+      2. **Eliminación de Salones Activos SaaS (Multi-Tenant)**:
+         - Eliminado el `window.confirm()` nativo del navegador.
+         - *Paso 1: Diagnóstico de Destrucción en Cascada*: Muestra la lista explícita de registros que se destruirán irreversiblemente en Supabase (agenda y citas, colaboradoras y estilistas, servicios, inventario, CRM y portal `/reservar/:slug`).
+         - *Paso 2: Desafío de Seguridad Superadmin*: Exige escribir el nombre exacto del salón o la palabra `ELIMINAR` para desbloquear la destrucción en cascada (`api.deleteTenantCascade`).
+      3. **Compilación**: Verificada mediante `npm run build` (código 0).
 
 -71. **Actualización de Canal de Cobro en Mensaje de Activación Paso 2 a Nequi / Bancolombia ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
     - **Requerimiento**: Modificar la vía de pago de activación de $89.000 COP en el Paso 2 de prospección: cambiar `(vía Nequi o Daviplata)` por `(vía Nequi o Bancolombia)`.
