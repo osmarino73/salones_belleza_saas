@@ -761,7 +761,7 @@ ${colorOverridesCss}
       padding: 10px 20px !important;
     }
 
-    /* 6. Suavizado del degradado negro enfocado únicamente en la franja del 30% inferior */
+    /* 6. Suavizado ultra-ligero del degradado negro para máxima luminosidad de la imagen en móviles */
     .hero-overlay,
     .hero-bg-overlay,
     .hero-gradient,
@@ -775,9 +775,9 @@ ${colorOverridesCss}
       background: linear-gradient(
         180deg, 
         rgba(11, 15, 25, 0) 0%, 
-        rgba(11, 15, 25, 0.12) 45%, 
-        rgba(11, 15, 25, 0.52) 75%, 
-        rgba(11, 15, 25, 0.78) 100%
+        rgba(11, 15, 25, 0) 65%, 
+        rgba(11, 15, 25, 0.22) 85%, 
+        rgba(11, 15, 25, 0.48) 100%
       ) !important;
     }
 

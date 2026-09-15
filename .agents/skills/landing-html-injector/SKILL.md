@@ -53,7 +53,7 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
 
 ### 8. Calibración de Opacidad y Límite del 30% Inferior para el Hero en Móviles (< 640px)
 - **Restricción de Altura del Bloque de Texto (30% Max)**: En celulares, la caja contenedora del texto del Hero (`.hero-scroll-content`, `.hero-scroll-step`, `.hero-content`) se limita a una altura máxima de `30dvh` (`max-height: 30dvh !important`), ubicada estrictamente en el borde inferior. El 70% superior de la pantalla se mantiene libre para la visibilidad de la modelo.
-- **Degradado Inferior Suavizado**: Los degradados oscuros del Hero se atenuan en la franja del 30% (`rgba(11, 15, 25, 0.78)` max al fondo) para dar máxima iluminación.
+- **Degradado Inferior Ultra-Ligero**: Los degradados oscuros del Hero se mantienen al 0% de opacidad desde el 0% al 65% superior y se atenuan a un máximo ligero de `rgba(11, 15, 25, 0.48)` al fondo para dar máxima luminosidad y brillo natural al video o foto.
 - **Legibilidad Tipográfica Nítida**: Se aplica sombra paralela profunda (`text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important`) a la tipografía.
 
 ---
