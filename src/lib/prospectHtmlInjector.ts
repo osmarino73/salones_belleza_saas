@@ -677,6 +677,36 @@ ${colorOverridesCss}
       padding-top: 12px !important;
       padding-bottom: 24px !important;
     }
+
+    /* 5. Suavizado del degradado negro inferior en móviles para máxima luminosidad de la modelo */
+    .hero-overlay,
+    .hero-bg-overlay,
+    .hero-gradient,
+    .hero-bottom-gradient,
+    .hero-scroll-section::after,
+    .hero-wrapper::after,
+    .canvas-sticky-wrapper::after,
+    .hero-container-align::after,
+    .hero-bottom-content,
+    .hero-overlay-content {
+      background: linear-gradient(
+        180deg, 
+        rgba(11, 15, 25, 0) 0%, 
+        rgba(11, 15, 25, 0.18) 40%, 
+        rgba(11, 15, 25, 0.58) 78%, 
+        rgba(11, 15, 25, 0.80) 100%
+      ) !important;
+    }
+
+    /* 6. Refuerzo de sombra paralela en tipografía para legibilidad nítida sobre degradado ligero */
+    .hero-title,
+    .hero-script-tag,
+    .hero-eyebrow,
+    .hero-desc,
+    header.hero-section h1,
+    header.hero-section p {
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important;
+    }
   }
 </style>
 `;

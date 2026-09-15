@@ -12,6 +12,13 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-78. **Suavizado del Degradado Negro en Dispositivos Móviles ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Requerimiento**: Reducir la intensidad del degradado negro inferior en móviles para permitir que la imagen/fotogramas de la modelo se aprecie con mayor luminosidad y brillo en teléfonos celulares.
+    - **Implementación**:
+      1. Se ajustó el gradiente de fondo en `@media (max-width: 640px)` para iniciar más abajo con una opacidad reducida (~18% a 40% de scroll, 58% en zona media y máximo 80% en la base inferior).
+      2. Se reforzaron las sombras tipográficas (`text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 4px 22px rgba(0,0,0,0.90)`) para asegurar legibilidad AAA en títulos H1, script tags, párrafos y botones.
+      3. Compilación validada exitosamente mediante `npm run build` (código 0).
+
 -77. **Resolución de Precedencia Directa del Prospecto & Reintento Seguro en Supabase ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
     - **Problema Reportado**: Al cambiar el color desde el Superadmin a un nuevo tono (ej. azul, verde, violeta), la página del sitio web continuaba mostrando el color naranja/anterior.
     - **Causas Raíz Diagnosticadas**:
