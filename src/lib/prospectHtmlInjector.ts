@@ -629,6 +629,46 @@ ${colorOverridesCss}
     transform: translateY(-2px);
   }
 
+  /* Eliminación del encabezado Sarón Spa / Tagline y Subtítulo Eyebrow por requerimiento de diseño */
+  .hero-script-tag,
+  .hero-eyebrow,
+  .hero-tagline-script {
+    display: none !important;
+  }
+
+  /* Incremento del 20% en la escala tipográfica y botones del Hero */
+  .hero-title,
+  header.hero-section h1,
+  .hero-content h1,
+  .hero-text h1,
+  .hero-body h1 {
+    font-size: clamp(2.6rem, 5.0vw, 4.4rem) !important;
+    line-height: 1.12 !important;
+    margin-bottom: 18px !important;
+  }
+
+  .hero-desc,
+  .hero-description,
+  .hero-subtitle,
+  header.hero-section p {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem) !important;
+    line-height: 1.6 !important;
+    margin-bottom: 24px !important;
+  }
+
+  .hero-actions .btn,
+  .btn-primary,
+  .btn-outline {
+    font-size: 1.02rem !important;
+    padding: 15px 30px !important;
+  }
+
+  .hero-rating,
+  .hero-reviews-subtext,
+  .badge-rating-label {
+    font-size: 0.92rem !important;
+  }
+
   /* Optimización Mobile-First para proteger el rostro de la modelo y evitar superposición de textos en celulares */
   @media (max-width: 640px) {
     /* 1. Viewport Dinámico Móvil para prevenir compresión por barras del navegador */
@@ -650,23 +690,31 @@ ${colorOverridesCss}
       background-position: center 12% !important;
     }
 
-    /* 3. Escala tipográfica adaptativa clamp() e interlineado en móviles */
+    /* 3. Escala tipográfica adaptativa clamp() incrementada +20% en móviles */
+    .hero-title,
     header.hero-section h1,
     .hero-content h1,
     .hero-text h1,
     .hero-body h1 {
-      font-size: clamp(1.35rem, 5.5vw, 1.95rem) !important;
-      line-height: 1.25 !important;
-      margin-bottom: 8px !important;
+      font-size: clamp(2.05rem, 6.2vw, 2.55rem) !important;
+      line-height: 1.15 !important;
+      margin-bottom: 12px !important;
     }
 
     header.hero-section p,
     .hero-subtitle,
     .hero-desc,
     .hero-description {
-      font-size: clamp(0.82rem, 3.4vw, 0.95rem) !important;
-      line-height: 1.35 !important;
-      margin-bottom: 12px !important;
+      font-size: clamp(0.98rem, 4.0vw, 1.12rem) !important;
+      line-height: 1.45 !important;
+      margin-bottom: 16px !important;
+    }
+
+    .hero-actions .btn,
+    .btn-primary,
+    .btn-outline {
+      font-size: 0.98rem !important;
+      padding: 14px 24px !important;
     }
 
     /* 4. Protección y separación del bloque inferior de texto */
