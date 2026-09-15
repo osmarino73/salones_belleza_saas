@@ -2631,27 +2631,34 @@ export const api = {
   },
 
   async updateProspectSite(id: string, siteData: Partial<ProspectSite>): Promise<ProspectSite | null> {
+    const rawBData = siteData.business_data;
+    const bObj = typeof rawBData === 'string' ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })() : (rawBData || {});
+    const cleanPrimaryColor = siteData.primary_color || bObj.primary_color;
+
+    if (cleanPrimaryColor) {
+      bObj.primary_color = cleanPrimaryColor;
+      siteData.business_data = bObj;
+    }
+
     if (supabase && isSupabaseConfigured) {
       try {
         let { error } = await supabase
           .from('prospect_sites')
           .update({ ...siteData, updated_at: new Date().toISOString() })
           .eq('id', id);
-        if (error && error.message?.includes('owner_email')) {
-          const { owner_email, ...safeSiteData } = siteData as any;
+        if (error) {
+          // Si falla por columnas raíz no existentes en el esquema (ej. primary_color o owner_email), reintentar sin ellas
+          const { owner_email, primary_color, ...safeSiteData } = siteData as any;
           const retryRes = await supabase
             .from('prospect_sites')
             .update({ ...safeSiteData, updated_at: new Date().toISOString() })
             .eq('id', id);
           error = retryRes.error;
         }
-        if (error) console.error('Error updating prospect site:', error.message);
+        if (error) console.error('Notice updating prospect site in Supabase:', error.message);
 
         // Si se actualizó el color primario, sincronizarlo inmediatamente con la tabla tenants si está reclamado o coincide por slug
-        const rawBData = siteData.business_data;
-        const bObj = typeof rawBData === 'string' ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })() : (rawBData || {});
-        const newPrimaryColor = siteData.primary_color || bObj.primary_color;
-        if (newPrimaryColor) {
+        if (cleanPrimaryColor) {
           const { data: prospectRecord } = await supabase
             .from('prospect_sites')
             .select('slug, claimed_tenant_id')
@@ -2659,10 +2666,10 @@ export const api = {
             .maybeSingle();
           if (prospectRecord) {
             if (prospectRecord.claimed_tenant_id) {
-              await supabase.from('tenants').update({ primary_color: newPrimaryColor }).eq('id', prospectRecord.claimed_tenant_id);
+              await supabase.from('tenants').update({ primary_color: cleanPrimaryColor }).eq('id', prospectRecord.claimed_tenant_id);
             }
             if (prospectRecord.slug) {
-              await supabase.from('tenants').update({ primary_color: newPrimaryColor }).ilike('slug', prospectRecord.slug);
+              await supabase.from('tenants').update({ primary_color: cleanPrimaryColor }).ilike('slug', prospectRecord.slug);
             }
           }
         }
@@ -2671,15 +2678,31 @@ export const api = {
     const current = await this.getProspectSites();
     let updatedSite: ProspectSite | null = null;
     const updated = current.map(s => {
-      if (s.id === id) {
-        updatedSite = { ...s, ...siteData, updated_at: new Date().toISOString() };
+      if (s.id === id || (siteData.slug && s.slug && s.slug.toLowerCase() === siteData.slug.toLowerCase())) {
+        const currentBData = typeof s.business_data === 'string'
+          ? (() => { try { return JSON.parse(s.business_data); } catch { return {}; } })()
+          : (s.business_data || {});
+        
+        const mergedBData = {
+          ...currentBData,
+          ...bObj,
+          primary_color: cleanPrimaryColor || currentBData.primary_color
+        };
+
+        updatedSite = {
+          ...s,
+          ...siteData,
+          primary_color: cleanPrimaryColor || s.primary_color,
+          business_data: mergedBData,
+          updated_at: new Date().toISOString()
+        };
         return updatedSite;
       }
       return s;
     });
     inMemoryProspectSitesCache = updated;
     safeSaveProspectSitesToLocalStorage(updated);
-    return updatedSite;
+    return updatedSite || (siteData as ProspectSite);
   },
 
   async deleteProspectSite(id: string): Promise<boolean> {

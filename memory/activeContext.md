@@ -12,6 +12,16 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-77. **Resolución de Precedencia Directa del Prospecto & Reintento Seguro en Supabase ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Problema Reportado**: Al cambiar el color desde el Superadmin a un nuevo tono (ej. azul, verde, violeta), la página del sitio web continuaba mostrando el color naranja/anterior.
+    - **Causas Raíz Diagnosticadas**:
+      1. *Prioridad de Carga en `PublicProspectSitePage.tsx`*: El código evaluaba `tenant?.primary_color` por delante de `(site as any).primary_color` y `bData.primary_color`. Si existía un registro de tenant asociado en la base de datos con el color anterior (`#FF5A36`), este anulaba el nuevo color guardado en el prospecto por el Superadmin.
+      2. *Fallo Silencioso en Actualización de Supabase*: Si la tabla `prospect_sites` no tenía una columna raíz `primary_color` en el esquema PostgREST, la consulta `.update({ primary_color: ... })` fallaba con error HTTP 400 y la columna `business_data` (JSONB) no alcanzaba a guardarse en la BD.
+    - **Soluciones Aplicadas**:
+      1. Se ajustó el orden de resolución en `PublicProspectSitePage.tsx` a `(site as any).primary_color || bData.primary_color || tenant?.primary_color || undefined` para garantizar que los cambios hechos por el Superadmin al prospecto tengan máxima prioridad.
+      2. Se implementó un reintento seguro en `updateProspectSite` en `supabase.ts` para capturar cualquier columna no existente en el esquema DB y garantizar la actualización dentro de `business_data` (JSONB), sincronizando a la vez `inMemoryProspectSitesCache` y `localStorage`.
+    - **Compilación**: Validada mediante `npm run build` (código 0).
+
 -76. **Corrección de Cortocircuito en `getProspectSiteBySlug` para Persistencia de Cambios ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
     - **Problema Reportado**: Al intentar cambiar el color principal a un nuevo tono desde el Superadmin para un sitio demo (ej. `sanus-spa`, `kapa-spa`, `luxus-beauty-spa`, `milena-gomez-salon`), la base de datos y la memoria se actualizaban, pero la vista pública seguía congelada en el color original.
     - **Causa Raíz Diagnosticada**: La función `getProspectSiteBySlug(slug)` tenía una condición cortocircuitada al inicio (`if (slug === 'sanus-spa') return SANUS_SPA_SITE_DATA;`) que retornaba inmediatamente la constante JS estática e inmutable sin consultar Supabase ni la caché local de modificaciones.
