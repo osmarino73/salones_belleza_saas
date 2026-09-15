@@ -761,7 +761,17 @@ ${colorOverridesCss}
       padding: 10px 20px !important;
     }
 
-    /* 6. Suavizado ultra-ligero del degradado negro para máxima luminosidad de la imagen en móviles */
+    /* 0. Ocultar logotipo tipográfico del header (SARÓN SPA / ESTÉTICA MÉDICA) en móviles por requerimiento */
+    .brand-logo,
+    .brand-name,
+    .brand-subtitle,
+    header .brand-logo,
+    header .brand-name,
+    header .brand-subtitle {
+      display: none !important;
+    }
+
+    /* 6. Transparencia total del 0% al 80% para nitidez cristalina y 100% visibilidad de la imagen en móviles */
     .hero-overlay,
     .hero-bg-overlay,
     .hero-gradient,
@@ -775,9 +785,9 @@ ${colorOverridesCss}
       background: linear-gradient(
         180deg, 
         rgba(11, 15, 25, 0) 0%, 
-        rgba(11, 15, 25, 0) 65%, 
-        rgba(11, 15, 25, 0.22) 85%, 
-        rgba(11, 15, 25, 0.48) 100%
+        rgba(11, 15, 25, 0) 80%, 
+        rgba(11, 15, 25, 0.15) 90%, 
+        rgba(11, 15, 25, 0.32) 100%
       ) !important;
     }
 
