@@ -12,6 +12,20 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-75. **Corrección de Personalización Cromática Dinámica & Sobrescritura de Color Principal ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
+    - **Problema Reportado**: Al cambiar el color principal desde la plataforma o Superadmin no ocurría ningún cambio visual en la plantilla del sitio web.
+    - **Causas Raíz Diagnosticadas**:
+      1. *Orden de Precedencia en `PublicProspectSitePage.tsx`*: El código evaluaba `bData.primary_color` (color por defecto del JSON inicial) ANTES que `tenant?.primary_color`. Si `bData.primary_color` existía, cualquier color personalizado guardado por el usuario o admin en la tabla de tenants era completamente ignorado.
+      2. *Falta de Propiedad `background` en `prospectHtmlInjector.ts`*: En las reglas CSS de inyección cromática (`colorOverridesCss`), las clases de botones primarios (`.btn-header-cta`, `.btn-primary`, `.btn-hero-book`, etc.) solo actualizaban `color` y `box-shadow`, pero no especificaban `background` ni `background-color` con el nuevo HEX.
+      3. *Falta de Cobertura de Botones y Acentos*: Diversas plantillas de negocios utilizan clases adicionales (`.btn-agendar`, `.btn-reserve`, `.nav-cta`, `.hero-cta`, `.btn-gold`, `.text-accent`, `.bg-accent`, `.border-accent`, enlaces de agendamiento) que no recibían los overrides dinámicos.
+      4. *Parseo de `business_data` en Superadmin*: Al guardar desde el modal del Superadmin, si `business_data` venía como string JSON, se producía una propagación incorrecta de caracteres indexados (`{ '0': '{', ... }`) en lugar de un objeto.
+    - **Soluciones Aplicadas**:
+      1. Se invirtió el orden de precedencia en `PublicProspectSitePage.tsx`: `tenant?.primary_color || bData.primary_color || ...`.
+      2. Se añadieron `background: ${validPrimaryColor} !important; background-color: ${validPrimaryColor} !important; border-color: ${validPrimaryColor} !important;` y sus hover correspondientes en `prospectHtmlInjector.ts`.
+      3. Se ampliaron las clases de CTA y acentos cromáticos directos (`.btn-agendar`, `.btn-reserve`, `.text-accent`, `.bg-accent`, `.border-accent`, etc.).
+      4. Se aseguró el parseo seguro de `business_data` en `SuperadminDashboardPage.tsx` y se añadió `primary_color?: string;` a la interfaz `ProspectSite`.
+      5. Compilación validada exitosamente con `npm run build` (código 0).
+
 -74. **Optimización Mobile-First de Encuadre y Prevención de Superposición de Textos ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Problema Reportado**: En navegadores de computador la versión móvil se apreciaba limpia, pero en teléfonos celulares físicos (Safari iOS y Chrome Android) los textos del Hero (título, subtítulo y lema) se superponían directamente sobre el rostro de la modelo.
     - **Causa Raíz Diagnosticada**:

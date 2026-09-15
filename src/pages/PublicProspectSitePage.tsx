@@ -95,7 +95,7 @@ export const PublicProspectSitePage: React.FC = () => {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
-      primaryColor: bData.primary_color || (site as any).primary_color || tenant?.primary_color || undefined,
+      primaryColor: tenant?.primary_color || bData.primary_color || (site as any).primary_color || undefined,
       showTeamSection: showTeam,
       showFirstVisitDiscount: showDiscount,
       firstVisitDiscountPct: tenant?.first_visit_discount_pct || bData.first_visit_discount_pct || 15,

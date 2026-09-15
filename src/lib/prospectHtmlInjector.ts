@@ -420,7 +420,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --color-accent-gradient: linear-gradient(135deg, ${adjustColorBrightness(validPrimaryColor, 20)} 0%, ${validPrimaryColor} 100%) !important;
   }
 
-  /* Asegurar contraste y legibilidad óptima en botones CTA con el nuevo color */
+  /* Asegurar contraste, fondo y legibilidad óptima en botones CTA con el nuevo color */
   .btn-header-cta,
   .btn-primary,
   .btn-hero-book,
@@ -428,7 +428,21 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .btn-hero-primary,
   .btn-footer-cta,
   .btn-hero-cta,
-  .btn-action-cta {
+  .btn-action-cta,
+  .btn-agendar,
+  .btn-reserve,
+  .nav-cta,
+  .hero-cta,
+  .btn-gold,
+  .btn-rose,
+  .btn-camel,
+  .btn-accent,
+  .btn-view-all-services,
+  header a[href*="reservar"],
+  a[href*="reservar"].btn {
+    background: ${validPrimaryColor} !important;
+    background-color: ${validPrimaryColor} !important;
+    border-color: ${validPrimaryColor} !important;
     color: ${ctaTextColor} !important;
     box-shadow: 0 6px 22px ${validPrimaryColor}4d !important;
   }
@@ -438,9 +452,50 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .btn-footer-cta:hover,
   .btn-hero-book:hover,
   .btn-primary:hover,
-  .btn-cta-primary:hover {
+  .btn-cta-primary:hover,
+  .btn-hero-cta:hover,
+  .btn-agendar:hover,
+  .btn-view-all-services:hover,
+  header a[href*="reservar"]:hover {
+    background: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    background-color: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    border-color: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
     color: ${hoverCtaTextColor} !important;
     box-shadow: 0 8px 28px ${validPrimaryColor}66 !important;
+  }
+
+  /* Overrides directos para badges, textos destacados y bordes decorativos */
+  .text-accent,
+  .text-primary,
+  .text-gold,
+  .text-rose,
+  .text-camel,
+  .text-mocca,
+  .accent-text,
+  .highlight-text,
+  span.accent,
+  h1 .accent,
+  h2 .accent,
+  h3 .accent {
+    color: ${validPrimaryColor} !important;
+  }
+
+  .bg-accent,
+  .bg-primary,
+  .bg-gold,
+  .bg-rose,
+  .bg-camel,
+  .bg-mocca {
+    background-color: ${validPrimaryColor} !important;
+  }
+
+  .border-accent,
+  .border-primary,
+  .border-gold,
+  .border-rose,
+  .border-camel,
+  .border-mocca {
+    border-color: ${validPrimaryColor} !important;
   }
 
   /* Pilares y elementos decorativos con soporte dinámico */

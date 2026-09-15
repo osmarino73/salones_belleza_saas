@@ -1313,7 +1313,14 @@ export const SuperadminDashboardPage: React.FC = () => {
   // Manejadores para Personalización de Color Principal
   const handleOpenColorModal = (prospect: ProspectSite) => {
     setManagingColorProspect(prospect);
-    const existingColor = prospect.business_data?.primary_color || '#d4af37';
+    const bData = typeof prospect.business_data === 'string'
+      ? (() => { try { return JSON.parse(prospect.business_data); } catch { return {}; } })()
+      : (prospect.business_data || {});
+    const tMatch = tenants.find(t => 
+      (prospect.claimed_tenant_id && t.id === prospect.claimed_tenant_id) ||
+      (t.slug && prospect.slug && t.slug.toLowerCase() === prospect.slug.toLowerCase())
+    );
+    const existingColor = tMatch?.primary_color || bData.primary_color || (prospect as any).primary_color || '#d4af37';
     setSelectedColorHex(existingColor);
     setColorSaveSuccess(false);
   };
@@ -1324,13 +1331,19 @@ export const SuperadminDashboardPage: React.FC = () => {
     setColorSaveSuccess(false);
     try {
       const cleanHex = selectedColorHex.trim();
+      const rawBData = managingColorProspect.business_data;
+      const bObj = typeof rawBData === 'string'
+        ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })()
+        : (rawBData || {});
+
       const updatedBusinessData: any = {
+        ...bObj,
         nombre: managingColorProspect.business_name,
-        ...(managingColorProspect.business_data || {}),
         primary_color: cleanHex
       };
 
       await api.updateProspectSite(managingColorProspect.id, {
+        primary_color: cleanHex,
         business_data: updatedBusinessData
       });
 
@@ -1355,6 +1368,7 @@ export const SuperadminDashboardPage: React.FC = () => {
         if (p.id === managingColorProspect.id) {
           return {
             ...p,
+            primary_color: cleanHex,
             business_data: updatedBusinessData
           };
         }
@@ -1363,6 +1377,7 @@ export const SuperadminDashboardPage: React.FC = () => {
 
       setManagingColorProspect(prev => prev ? {
         ...prev,
+        primary_color: cleanHex,
         business_data: updatedBusinessData
       } : null);
 

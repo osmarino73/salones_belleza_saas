@@ -391,6 +391,7 @@ export interface ProspectSite {
   status: 'prospecto' | 'contactado' | 'reclamado' | 'cliente_pago';
   claimed_tenant_id?: string;
   owner_email?: string;
+  primary_color?: string;
   business_data?: BusinessDataPayload;
   created_by?: string;
   creator_email?: string;
