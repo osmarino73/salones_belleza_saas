@@ -51,9 +51,10 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
   2. **Diseño Vectorial Oficial**: Utiliza el glifo SVG oficial de alta fidelidad de WhatsApp con auricular blanco relleno, fondo con gradiente `#2fe577` a `#128C7E`, aura de pulso suave (`animate-ping`) y micro-borde `border-white/30`.
   3. **Neutralización Interna**: En el HTML inyectado dentro del iframe, se neutralizan (`display: none !important;`) los botones flotantes internos duplicados para prevenir desajustes de scroll.
 
-### 8. Calibración de Opacidad de Gradiente Hero en Dispositivos Móviles (< 640px)
-- **Degradado Inferior Suavizado**: En móviles, los degradados oscuros del Hero (`.hero-overlay`, `.hero-scroll-section::after`, `.canvas-sticky-wrapper::after`, etc.) se atenuan a un máximo de `rgba(11, 15, 25, 0.80)` en la base para dar máxima iluminación a las fotos/videos de fondo.
-- **Legibilidad Tipográfica Nítida**: Se aplica sombra paralela profunda (`text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important`) a los títulos, subtítulos y descripciones para garantizar contraste perfecto sin oscurecer la imagen.
+### 8. Calibración de Opacidad y Límite del 30% Inferior para el Hero en Móviles (< 640px)
+- **Restricción de Altura del Bloque de Texto (30% Max)**: En celulares, la caja contenedora del texto del Hero (`.hero-scroll-content`, `.hero-scroll-step`, `.hero-content`) se limita a una altura máxima de `30dvh` (`max-height: 30dvh !important`), ubicada estrictamente en el borde inferior. El 70% superior de la pantalla se mantiene libre para la visibilidad de la modelo.
+- **Degradado Inferior Suavizado**: Los degradados oscuros del Hero se atenuan en la franja del 30% (`rgba(11, 15, 25, 0.78)` max al fondo) para dar máxima iluminación.
+- **Legibilidad Tipográfica Nítida**: Se aplica sombra paralela profunda (`text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important`) a la tipografía.
 
 ---
 

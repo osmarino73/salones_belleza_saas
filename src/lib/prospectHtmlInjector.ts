@@ -669,14 +669,14 @@ ${colorOverridesCss}
     font-size: 0.92rem !important;
   }
 
-  /* Optimización Mobile-First para proteger el rostro de la modelo y evitar superposición de textos en celulares */
+  /* Optimización Mobile-First para proteger el rostro de la modelo y limitar texto al 30% inferior de la pantalla */
   @media (max-width: 640px) {
     /* 1. Viewport Dinámico Móvil para prevenir compresión por barras del navegador */
     .hero, header.hero-section, .hero-scroll-section, .hero-wrapper {
       min-height: 100dvh !important;
     }
 
-    /* 2. Re-encuadre del rostro de la modelo en el tercio superior de la pantalla */
+    /* 2. Re-encuadre del rostro de la modelo en los 2 tercios superiores de la pantalla */
     .model-image-frame img,
     #hero-canvas,
     .hero-bg-cover,
@@ -690,43 +690,78 @@ ${colorOverridesCss}
       background-position: center 12% !important;
     }
 
-    /* 3. Escala tipográfica adaptativa clamp() incrementada +20% en móviles */
+    /* 3. Alineación forzada del contenedor de texto en la zona inferior (30% máximo de altura) */
+    .hero-container-align,
+    .hero-content,
+    .hero-text-box,
+    .hero-bottom-content,
+    .hero-overlay-content {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      padding-top: 0 !important;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+      height: 100% !important;
+    }
+
+    /* 4. Restricción estricta de la caja de texto al 30% inferior de la pantalla en celulares */
+    .hero-scroll-content,
+    .hero-scroll-step,
+    .hero-content,
+    .hero-text-box {
+      min-height: unset !important;
+      max-height: 30dvh !important;
+      max-height: 30vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      text-align: center !important;
+      margin-top: auto !important;
+      margin-bottom: 0 !important;
+      box-sizing: border-box !important;
+    }
+
+    /* 5. Escala tipográfica compacta adaptativa para encajar todo en el 30% sin tapar la modelo */
     .hero-title,
     header.hero-section h1,
     .hero-content h1,
     .hero-text h1,
     .hero-body h1 {
-      font-size: clamp(2.05rem, 6.2vw, 2.55rem) !important;
+      font-size: clamp(1.4rem, 5.0vw, 1.8rem) !important;
       line-height: 1.15 !important;
-      margin-bottom: 12px !important;
+      margin-bottom: 6px !important;
     }
 
     header.hero-section p,
     .hero-subtitle,
     .hero-desc,
     .hero-description {
-      font-size: clamp(0.98rem, 4.0vw, 1.12rem) !important;
-      line-height: 1.45 !important;
-      margin-bottom: 16px !important;
+      font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
+      line-height: 1.3 !important;
+      margin-bottom: 8px !important;
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+    }
+
+    .hero-actions {
+      gap: 8px !important;
+      margin-top: 4px !important;
+      width: 100% !important;
+      justify-content: center !important;
     }
 
     .hero-actions .btn,
     .btn-primary,
     .btn-outline {
-      font-size: 0.98rem !important;
-      padding: 14px 24px !important;
+      font-size: 0.84rem !important;
+      padding: 10px 20px !important;
     }
 
-    /* 4. Protección y separación del bloque inferior de texto */
-    .hero-content,
-    .hero-text-box,
-    .hero-bottom-content,
-    .hero-overlay-content {
-      padding-top: 12px !important;
-      padding-bottom: 24px !important;
-    }
-
-    /* 5. Suavizado del degradado negro inferior en móviles para máxima luminosidad de la modelo */
+    /* 6. Suavizado del degradado negro enfocado únicamente en la franja del 30% inferior */
     .hero-overlay,
     .hero-bg-overlay,
     .hero-gradient,
@@ -740,13 +775,13 @@ ${colorOverridesCss}
       background: linear-gradient(
         180deg, 
         rgba(11, 15, 25, 0) 0%, 
-        rgba(11, 15, 25, 0.18) 40%, 
-        rgba(11, 15, 25, 0.58) 78%, 
-        rgba(11, 15, 25, 0.80) 100%
+        rgba(11, 15, 25, 0.12) 45%, 
+        rgba(11, 15, 25, 0.52) 75%, 
+        rgba(11, 15, 25, 0.78) 100%
       ) !important;
     }
 
-    /* 6. Refuerzo de sombra paralela en tipografía para legibilidad nítida sobre degradado ligero */
+    /* 7. Refuerzo de sombra paralela en tipografía para legibilidad nítida */
     .hero-title,
     .hero-script-tag,
     .hero-eyebrow,
