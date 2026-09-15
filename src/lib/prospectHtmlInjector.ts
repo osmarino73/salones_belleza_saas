@@ -761,14 +761,16 @@ ${colorOverridesCss}
       padding: 10px 20px !important;
     }
 
-    /* 0. Ocultar logotipo tipográfico del header (SARÓN SPA / ESTÉTICA MÉDICA) en móviles por requerimiento */
+    /* Restauración del logotipo del header con comportamiento inteligente al hacer scroll */
     .brand-logo,
     .brand-name,
-    .brand-subtitle,
-    header .brand-logo,
-    header .brand-name,
-    header .brand-subtitle {
-      display: none !important;
+    .brand-subtitle {
+      display: flex !important;
+    }
+
+    .header-sticky-wrapper.header-hidden,
+    #navbar.header-hidden {
+      transform: translateY(-100%) !important;
     }
 
     /* 6. Transparencia total del 0% al 80% para nitidez cristalina y 100% visibilidad de la imagen en móviles */
