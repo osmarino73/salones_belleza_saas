@@ -491,6 +491,56 @@ ${colorOverridesCss}
   .btn-promo-discount:hover {
     transform: translateY(-2px);
   }
+
+  /* Optimización Mobile-First para proteger el rostro de la modelo y evitar superposición de textos en celulares */
+  @media (max-width: 640px) {
+    /* 1. Viewport Dinámico Móvil para prevenir compresión por barras del navegador */
+    .hero, header.hero-section, .hero-scroll-section, .hero-wrapper {
+      min-height: 100dvh !important;
+    }
+
+    /* 2. Re-encuadre del rostro de la modelo en el tercio superior de la pantalla */
+    .model-image-frame img,
+    #hero-canvas,
+    .hero-bg-cover,
+    .canvas-poster-img,
+    .hero-main-img-box img,
+    .hero-photo img,
+    .hero-image img,
+    header.hero-section img.hero-bg,
+    .hero-bg-img {
+      object-position: center 12% !important;
+      background-position: center 12% !important;
+    }
+
+    /* 3. Escala tipográfica adaptativa clamp() e interlineado en móviles */
+    header.hero-section h1,
+    .hero-content h1,
+    .hero-text h1,
+    .hero-body h1 {
+      font-size: clamp(1.35rem, 5.5vw, 1.95rem) !important;
+      line-height: 1.25 !important;
+      margin-bottom: 8px !important;
+    }
+
+    header.hero-section p,
+    .hero-subtitle,
+    .hero-desc,
+    .hero-description {
+      font-size: clamp(0.82rem, 3.4vw, 0.95rem) !important;
+      line-height: 1.35 !important;
+      margin-bottom: 12px !important;
+    }
+
+    /* 4. Protección y separación del bloque inferior de texto */
+    .hero-content,
+    .hero-text-box,
+    .hero-bottom-content,
+    .hero-overlay-content {
+      padding-top: 12px !important;
+      padding-bottom: 24px !important;
+    }
+  }
 </style>
 `;
   // Garantizar resolución universal de rutas en iframes con srcDoc

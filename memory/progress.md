@@ -1,3 +1,10 @@
+- [x] **Optimización Mobile-First de Encuadre y Prevención de Superposición de Textos ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Resuelto el problema por el cual en teléfonos móviles físicos (Safari iOS y Chrome Android) los textos del Hero (título H1, subtítulo y eyebrow) se superponían sobre el rostro de la modelo.
+  - Se configuró `min-height: 100dvh !important` para prevenir la compresión causada por la barra de direcciones de navegadores móviles.
+  - Se re-encuadró la imagen/canvas del rostro en el tercio superior de la pantalla mediante `object-position: center 12% !important` en `@media (max-width: 640px)`.
+  - Se implementó tipografía adaptativa `clamp(1.35rem, 5.5vw, 1.95rem)` para evitar que los títulos H1 colapsen en 3-4 renglones y padding de protección vertical.
+  - Compilación validada exitosamente con `npm run build` (código 0).
+
 - [x] **Corrección de Tokens Cromáticos para Sandra Color´s y Plantillas con `--accent-primary` ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - Resuelto el problema por el cual cambiar el color principal en Sandra Color´s desde el Superadmin no producía cambios evidentes en la web pública.
   - La plantilla nativa de Sandra Color´s controla más de 28 reglas CSS de títulos H1, acentos, botones, tarjetas de servicios y footer mediante tokens `--accent-primary`, `--accent-light`, `--accent-hover`, `--accent-soft` y `--gold-border`.

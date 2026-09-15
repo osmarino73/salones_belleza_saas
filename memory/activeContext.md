@@ -12,6 +12,19 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-74. **Optimización Mobile-First de Encuadre y Prevención de Superposición de Textos ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Problema Reportado**: En navegadores de computador la versión móvil se apreciaba limpia, pero en teléfonos celulares físicos (Safari iOS y Chrome Android) los textos del Hero (título, subtítulo y lema) se superponían directamente sobre el rostro de la modelo.
+    - **Causa Raíz Diagnosticada**:
+      1. Compresión de altura por la barra de navegación del navegador del teléfono móvil al usar `100vh` tradicional en lugar de `100dvh` (Dynamic Viewport Height).
+      2. Algoritmo `object-fit: cover` o `background-position: center` centrando el rostro hacia la mitad inferior en pantallas de celulares reales.
+      3. Crecimiento vertical hacia arriba de la caja de texto inferior al hacer salto de línea de 3-4 renglones en pantallas estrechas.
+    - **Solución Implementada**:
+      1. Se aplicó `min-height: 100dvh !important` a los contenedores Hero para respetar la altura real útil del navegador móvil.
+      2. Se re-encuadró el rostro en la parte superior con `object-position: center 12% !important; background-position: center 12% !important;` en `@media (max-width: 640px)`.
+      3. Se inyectó tipografía fluida adaptativa `clamp(1.35rem, 5.5vw, 1.95rem)` para títulos H1 y subtítulos con interlineado controlado.
+      4. Se protegió la caja de texto inferior con padding controlado.
+      5. Compilación validada exitosamente con `npm run build` (código 0).
+
 -73. **Corrección de Tokens Cromáticos para Sandra Color´s y Plantillas con `--accent-primary` ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Problema Reportado**: Al intentar cambiar el color principal desde el Superadmin en Sandra Color´s (`sandra-color-s`), la base de datos guardaba el valor (ej. `#be123c`), pero en la web pública no se apreciaban cambios evidentes.
     - **Causa Raíz Diagnosticada**:
