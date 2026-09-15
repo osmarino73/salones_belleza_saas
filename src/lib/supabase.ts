@@ -2326,28 +2326,17 @@ export const api = {
   },
 
   async getProspectSiteBySlug(slug: string): Promise<ProspectSite | null> {
-    if (slug === 'demo' || slug === 'demo-salon' || slug === 'studio-glamour' || slug === 'studio-glamour-spa' || slug === 'studio_glamour') {
-      return DEMO_SALON_SITE_DATA;
-    }
-    if (slug === 'luxus-beauty-spa' || slug === 'luxus_beauty_spa') {
-      return LUXUS_BEAUTY_SITE_DATA;
-    }
-    if (slug === 'milena-gomez-salon' || slug === 'milena_gomez_salon') {
-      return MILENA_GOMEZ_SITE_DATA;
-    }
-    if (slug === 'kapa-spa' || slug === 'kapa_spa') {
-      return KAPA_SPA_SITE_DATA;
-    }
-    if (slug === 'sanus-spa' || slug === 'sanus_spa') {
-      return SANUS_SPA_SITE_DATA;
-    }
+    if (!slug) return null;
+    const cleanSlug = slug.trim().toLowerCase();
+
+    // 1. Consultar en Supabase para obtener la versión activa y actualizada de la base de datos
     if (supabase && isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
           .from('prospect_sites')
           .select('*')
-          .eq('slug', slug)
-          .single();
+          .ilike('slug', cleanSlug)
+          .maybeSingle();
         if (!error && data) {
           const site = data as ProspectSite;
           if (inMemoryProspectSitesCache) {
@@ -2357,8 +2346,30 @@ export const api = {
         }
       } catch (e) {}
     }
+
+    // 2. Consultar memoria o caché local (tras haber guardado cambios reactivos)
     const sites = await this.getProspectSites();
-    return sites.find(s => s.slug === slug || s.slug.toLowerCase() === slug.toLowerCase()) || null;
+    const cached = sites.find(s => (s.slug || '').toLowerCase() === cleanSlug);
+    if (cached) return cached;
+
+    // 3. Fallback estático a demostraciones iniciales si no existe en DB ni caché
+    if (cleanSlug === 'demo' || cleanSlug === 'demo-salon' || cleanSlug === 'studio-glamour' || cleanSlug === 'studio-glamour-spa' || cleanSlug === 'studio_glamour') {
+      return DEMO_SALON_SITE_DATA;
+    }
+    if (cleanSlug === 'luxus-beauty-spa' || cleanSlug === 'luxus_beauty_spa') {
+      return LUXUS_BEAUTY_SITE_DATA;
+    }
+    if (cleanSlug === 'milena-gomez-salon' || cleanSlug === 'milena_gomez_salon') {
+      return MILENA_GOMEZ_SITE_DATA;
+    }
+    if (cleanSlug === 'kapa-spa' || cleanSlug === 'kapa_spa') {
+      return KAPA_SPA_SITE_DATA;
+    }
+    if (cleanSlug === 'sanus-spa' || cleanSlug === 'sanus_spa') {
+      return SANUS_SPA_SITE_DATA;
+    }
+
+    return null;
   },
 
   async checkBusinessDuplicate(params: {
@@ -2637,7 +2648,9 @@ export const api = {
         if (error) console.error('Error updating prospect site:', error.message);
 
         // Si se actualizó el color primario, sincronizarlo inmediatamente con la tabla tenants si está reclamado o coincide por slug
-        const newPrimaryColor = siteData.business_data?.primary_color;
+        const rawBData = siteData.business_data;
+        const bObj = typeof rawBData === 'string' ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })() : (rawBData || {});
+        const newPrimaryColor = siteData.primary_color || bObj.primary_color;
         if (newPrimaryColor) {
           const { data: prospectRecord } = await supabase
             .from('prospect_sites')

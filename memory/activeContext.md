@@ -12,6 +12,12 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-76. **Corrección de Cortocircuito en `getProspectSiteBySlug` para Persistencia de Cambios ([`supabase.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Problema Reportado**: Al intentar cambiar el color principal a un nuevo tono desde el Superadmin para un sitio demo (ej. `sanus-spa`, `kapa-spa`, `luxus-beauty-spa`, `milena-gomez-salon`), la base de datos y la memoria se actualizaban, pero la vista pública seguía congelada en el color original.
+    - **Causa Raíz Diagnosticada**: La función `getProspectSiteBySlug(slug)` tenía una condición cortocircuitada al inicio (`if (slug === 'sanus-spa') return SANUS_SPA_SITE_DATA;`) que retornaba inmediatamente la constante JS estática e inmutable sin consultar Supabase ni la caché local de modificaciones.
+    - **Solución Aplicada**: Se reordenó `getProspectSiteBySlug` para consultar **primero** Supabase (si está configurado), **segundo** la caché reactiva/localStorage (`inMemoryProspectSitesCache`), y **únicamente como fallback** las constantes estáticas si el sitio no existe en DB ni caché.
+    - **Compilación**: Validada mediante `npm run build` (código 0).
+
 -75. **Corrección de Personalización Cromática Dinámica & Sobrescritura de Color Principal ([`PublicProspectSitePage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`types/index.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/types/index.ts))**:
     - **Problema Reportado**: Al cambiar el color principal desde la plataforma o Superadmin no ocurría ningún cambio visual en la plantilla del sitio web.
     - **Causas Raíz Diagnosticadas**:
