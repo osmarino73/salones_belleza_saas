@@ -464,20 +464,111 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     box-shadow: 0 8px 28px ${validPrimaryColor}66 !important;
   }
 
-  /* Overrides directos para badges, textos destacados y bordes decorativos */
+  /* Overrides directos para etiquetas script, fuentes cursivas, marcas y copete */
+  .hero-script-tag,
+  .section-script,
+  .experience-script,
+  .script-tag,
+  .script-title,
+  .hero-script,
+  .font-script,
+  span[class*="script"],
+  .hero-eyebrow,
+  .section-eyebrow,
+  .brand-subtitle,
+  .tagline,
+  .hero-subtitle-accent {
+    color: ${validPrimaryColor} !important;
+  }
+
+  /* Palabras destacadas e itálicas dentro de títulos H1, H2, H3 (ej. "descubre tu mejor versión", "Cuidado Integral", "Pasión por tu Belleza") */
+  h1 em,
+  h2 em,
+  h3 em,
+  h4 em,
+  h1 i,
+  h2 i,
+  h3 i,
+  h4 i,
+  h1 span.accent,
+  h2 span.accent,
+  h3 span.accent,
+  h1 font,
+  h2 font,
+  .hero-title em,
+  .hero-title i,
+  .hero-title span,
+  .section-title em,
+  .section-title i,
+  .experience-title em,
+  .experience-title i,
+  .title-accent,
+  .accent-text,
+  .highlight-text,
   .text-accent,
   .text-primary,
   .text-gold,
   .text-rose,
   .text-camel,
-  .text-mocca,
-  .accent-text,
-  .highlight-text,
-  span.accent,
-  h1 .accent,
-  h2 .accent,
-  h3 .accent {
+  .text-mocca {
     color: ${validPrimaryColor} !important;
+    -webkit-text-fill-color: ${validPrimaryColor} !important;
+    background: none !important;
+  }
+
+  /* Gradiente del Logotipo Tipográfico (.brand-name, .logo-text) */
+  .brand-name,
+  .logo-text,
+  .brand-logo .brand-name {
+    background: linear-gradient(135deg, #ffffff 40%, ${validPrimaryColor} 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  /* Estrellas de Reseñas, Métricas, Precios, Íconos y Destacados Numéricos */
+  .badge-stars,
+  .badge-stars i,
+  .badge-rating-val,
+  .metric-number,
+  .service-card-price,
+  .price-val,
+  .team-role,
+  .rating-stars,
+  .star-rating,
+  i.fa-star,
+  .stars i,
+  .contact-icon,
+  .social-btn,
+  .pillar-icon-box,
+  .pillar-icon-box i,
+  .pillar-icon,
+  .pillar-icon i,
+  .btn-card-book-minimal i,
+  .divider-diamond i {
+    color: ${validPrimaryColor} !important;
+  }
+
+  /* Bordes, Sombras y Líneas Decorativas */
+  .divider-diamond span,
+  .service-card-accent-line,
+  .team-card-accent-line,
+  .footer-col-title::after,
+  .hero-eyebrow::after,
+  .hero-eyebrow::before,
+  .nav-link::after {
+    background: ${validPrimaryColor} !important;
+    background-color: ${validPrimaryColor} !important;
+  }
+
+  .border-accent,
+  .border-primary,
+  .border-gold,
+  .border-rose,
+  .border-camel,
+  .border-mocca,
+  .scroll-mouse,
+  .scroll-wheel {
+    border-color: ${validPrimaryColor} !important;
   }
 
   .bg-accent,
@@ -487,15 +578,6 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   .bg-camel,
   .bg-mocca {
     background-color: ${validPrimaryColor} !important;
-  }
-
-  .border-accent,
-  .border-primary,
-  .border-gold,
-  .border-rose,
-  .border-camel,
-  .border-mocca {
-    border-color: ${validPrimaryColor} !important;
   }
 
   /* Pilares y elementos decorativos con soporte dinámico */
