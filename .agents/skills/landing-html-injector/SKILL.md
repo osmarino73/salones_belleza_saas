@@ -51,10 +51,10 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
   2. **Diseño Vectorial Oficial**: Utiliza el glifo SVG oficial de alta fidelidad de WhatsApp con auricular blanco relleno, fondo con gradiente `#2fe577` a `#128C7E`, aura de pulso suave (`animate-ping`) y micro-borde `border-white/30`.
   3. **Neutralización Interna**: En el HTML inyectado dentro del iframe, se neutralizan (`display: none !important;`) los botones flotantes internos duplicados para prevenir desajustes de scroll.
 
-### 8. Calibración de Opacidad y Límite del 30% Inferior para el Hero en Móviles (< 640px)
-- **Restricción de Altura del Bloque de Texto (30% Max)**: En celulares, la caja contenedora del texto del Hero (`.hero-scroll-content`, `.hero-scroll-step`, `.hero-content`) se limita a una altura máxima de `30dvh` (`max-height: 30dvh !important`), ubicada estrictamente en el borde inferior. El 70% superior de la pantalla se mantiene libre para la visibilidad de la modelo.
+### 8. Calibración de Opacidad y Límite del 36% Inferior para el Hero en Móviles (< 640px)
+- **Restricción de Altura de la Caja de Texto (36% Max)**: En celulares, la caja contenedora del texto del Hero (`.hero-scroll-content`, `.hero-scroll-step`, `.hero-content`) se limita a una altura máxima de `36dvh` (`max-height: 36dvh !important`), ubicada estrictamente en el borde inferior con `overflow: visible !important`. El 64% superior de la pantalla se mantiene libre para la visibilidad de la modelo sin cortar los títulos ni botones inferiores.
 - **Degradado Inferior Ultra-Ligero**: Los degradados oscuros del Hero se mantienen al 0% de opacidad desde el 0% al 65% superior y se atenuan a un máximo ligero de `rgba(11, 15, 25, 0.48)` al fondo para dar máxima luminosidad y brillo natural al video o foto.
-- **Legibilidad Tipográfica Nítida**: Se aplica sombra paralela profunda (`text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important`) a la tipografía.
+- **Legibilidad Tipográfica Nítida**: Se aplica sombra paralela profunda (`text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 22px rgba(0, 0, 0, 0.90) !important`) a la tipografía y escalado dinámico `clamp()`.
 
 ---
 

@@ -690,7 +690,7 @@ ${colorOverridesCss}
       background-position: center 12% !important;
     }
 
-    /* 3. Alineación forzada del contenedor de texto en la zona inferior (30% máximo de altura) */
+    /* 3. Alineación forzada del contenedor de texto en la zona inferior (36% máximo de altura) */
     .hero-container-align,
     .hero-content,
     .hero-text-box,
@@ -701,18 +701,18 @@ ${colorOverridesCss}
       justify-content: flex-end !important;
       align-items: center !important;
       padding-top: 0 !important;
-      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+      padding-bottom: max(22px, env(safe-area-inset-bottom, 22px)) !important;
       height: 100% !important;
     }
 
-    /* 4. Restricción estricta de la caja de texto al 30% inferior de la pantalla en celulares */
+    /* 4. Restricción calibrada de la caja de texto (36% máximo en celulares) para evitar recortes */
     .hero-scroll-content,
     .hero-scroll-step,
     .hero-content,
     .hero-text-box {
       min-height: unset !important;
-      max-height: 30dvh !important;
-      max-height: 30vh !important;
+      max-height: 36dvh !important;
+      max-height: 36vh !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-end !important;
@@ -721,16 +721,17 @@ ${colorOverridesCss}
       margin-top: auto !important;
       margin-bottom: 0 !important;
       box-sizing: border-box !important;
+      overflow: visible !important;
     }
 
-    /* 5. Escala tipográfica compacta adaptativa para encajar todo en el 30% sin tapar la modelo */
+    /* 5. Escala tipográfica compacta adaptativa para encajar todo cómodamente en la zona inferior */
     .hero-title,
     header.hero-section h1,
     .hero-content h1,
     .hero-text h1,
     .hero-body h1 {
-      font-size: clamp(1.4rem, 5.0vw, 1.8rem) !important;
-      line-height: 1.15 !important;
+      font-size: clamp(1.25rem, 4.6vw, 1.65rem) !important;
+      line-height: 1.16 !important;
       margin-bottom: 6px !important;
     }
 
@@ -738,7 +739,7 @@ ${colorOverridesCss}
     .hero-subtitle,
     .hero-desc,
     .hero-description {
-      font-size: clamp(0.82rem, 3.2vw, 0.92rem) !important;
+      font-size: clamp(0.80rem, 3.0vw, 0.90rem) !important;
       line-height: 1.3 !important;
       margin-bottom: 8px !important;
       display: -webkit-box !important;
@@ -757,8 +758,8 @@ ${colorOverridesCss}
     .hero-actions .btn,
     .btn-primary,
     .btn-outline {
-      font-size: 0.84rem !important;
-      padding: 10px 20px !important;
+      font-size: 0.82rem !important;
+      padding: 9px 18px !important;
     }
 
     /* Restauración del logotipo del header con comportamiento inteligente al hacer scroll */
