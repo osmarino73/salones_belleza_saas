@@ -1,3 +1,9 @@
+- [x] **Integración de Pitch Persuasivo "Estatus Makloz Tech" ($7.417/mes) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+  - Incorporada nueva función `generateMaklozTechPitch({ businessName, ownerName })` con enfoque de estatus, autoridad, subsidio tecnológico del 85% de Makloz Tech e inversión anual de $89.000 COP ($7.417/mes) para hosting y certificado SSL.
+  - Actualizado el modal de prospectos de WhatsApp y la tarjeta de sitio creado en el Superadmin con soporte para selector de 3 pasos (Paso 1: Gancho Visual, Paso 2: Oferta $89k SaaS, Paso 3: Estatus Makloz Tech).
+  - Registrada la Plantilla 3B en la skill `whatsapp-persuasive-copy`.
+  - Compilación validada exitosamente con `npm run build` (código 0).
+
 - [x] **Optimización Mobile-First de Encuadre y Prevención de Superposición de Textos ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - Resuelto el problema por el cual en teléfonos móviles físicos (Safari iOS y Chrome Android) los textos del Hero (título H1, subtítulo y eyebrow) se superponían sobre el rostro de la modelo.
   - Se configuró `min-height: 100dvh !important` para prevenir la compresión causada por la barra de direcciones de navegadores móviles.

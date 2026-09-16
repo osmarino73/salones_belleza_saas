@@ -195,12 +195,44 @@ Sin contratos forzados: si después del mes gratis deciden no seguir con la app 
 }
 
 /**
- * Generador Universal según el paso (1 o 2)
+ * Genera el mensaje de WhatsApp Paso 3 / Alternativa de Estatus Makloz Tech
+ * Enfocado en estatus de marca, patrocinio de desarrollo e inversión en hosting ($7.417/mes = $89.000/año)
+ */
+export function generateMaklozTechPitch({
+  businessName,
+  ownerName
+}: {
+  businessName: string;
+  ownerName?: string;
+}): string {
+  const cleanName = businessName?.trim() || 'su negocio';
+  const greeting = ownerName?.trim() ? `¡Hola ${ownerName.trim()}! 👋` : '¡Hola! 👋';
+
+  return `${greeting}
+
+El trabajo y la calidad que tienen en ${cleanName} merecen verse con otro estatus.
+
+Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y cobras con mayor autoridad 🌟.
+
+Por la iniciativa *"Negocio Online"* de *Makloz Tech*, abrimos un cupo de patrocinio tecnológico único:
+Absorbemos más del 85% del costo de diseño e ingeniería (un desarrollo que normalmente supera los $650.000 COP) para que tu marca solo asuma el costo del servidor 🚀.
+
+👉 Por solo *$7.417 pesos al mes* (un único pago anual de *$89.000 COP* que cubre su hosting seguro y certificado SSL), dejas activa esa web que te mostramos por todo el año.
+
+Literalmente cuesta menos que un solo servicio de tu negocio, pero posiciona a ${cleanName} como un referente en tu zona 💡.
+
+Estamos asignando los cupos subsidiados de esta semana, ¿te aparto el de ustedes para dejarla activa hoy mismo? ⚡`;
+}
+
+/**
+ * Generador Universal según el paso (1, 2 o 3)
  */
 export function generateWhatsAppPitch(
-  opts: PitchOptions & { step: 1 | 2 }
+  opts: PitchOptions & { step: 1 | 2 | 3; ownerName?: string }
 ): string {
-  return opts.step === 1 ? generateStep1Pitch(opts) : generateStep2Pitch(opts);
+  if (opts.step === 1) return generateStep1Pitch(opts);
+  if (opts.step === 2) return generateStep2Pitch(opts);
+  return generateMaklozTechPitch({ businessName: opts.businessName, ownerName: opts.ownerName });
 }
 
 /**

@@ -16,6 +16,7 @@ import { extractWebsiteDataFromHtml } from '../lib/prospectHtmlInjector';
 import {
   generateStep1Pitch as genStep1,
   generateStep2Pitch as genStep2,
+  generateMaklozTechPitch as genMaklozPitch,
   generateWhatsAppPitch as genUniversalPitch,
   generateWelcomeCredentialsPitch as genWelcomePitch,
   detectBusinessNiche,
@@ -89,9 +90,9 @@ export const SuperadminDashboardPage: React.FC = () => {
   // Homepage Studio Modal State
   const [showHomepageStudioModal, setShowHomepageStudioModal] = useState(false);
 
-  // Modal para ver y alternar Mensaje 1 y Mensaje 2 de WhatsApp desde la tabla de prospectos
+  // Modal para ver y alternar Mensaje 1, Mensaje 2 y Mensaje 3 de WhatsApp desde la tabla de prospectos
   const [viewingWhatsAppPitchProspect, setViewingWhatsAppPitchProspect] = useState<ProspectSite | null>(null);
-  const [modalPitchStep, setModalPitchStep] = useState<1 | 2>(1);
+  const [modalPitchStep, setModalPitchStep] = useState<1 | 2 | 3>(1);
   const [modalNicheOverride, setModalNicheOverride] = useState<BusinessNiche | null>(null);
   const [modalCopiedPitch, setModalCopiedPitch] = useState(false);
 
@@ -981,8 +982,8 @@ export const SuperadminDashboardPage: React.FC = () => {
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
   };
 
-  // Estado del paso del pitch de prospección (1: Gancho Visual, 2: Oferta Patrocinada)
-  const [pitchStep, setPitchStep] = useState<1 | 2>(1);
+  // Estado del paso del pitch de prospección (1: Gancho Visual, 2: Oferta $89k, 3: Estatus Makloz Tech)
+  const [pitchStep, setPitchStep] = useState<1 | 2 | 3>(1);
   // Nicho personalizado opcional para afinar tono de pitch en vivo
   const [pitchNicheOverride, setPitchNicheOverride] = useState<BusinessNiche | null>(null);
 
@@ -2230,9 +2231,9 @@ export const SuperadminDashboardPage: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Selector de Paso 1 vs Paso 2 */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
+                    {/* Selector de Paso 1 vs Paso 2 vs Paso 3 */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => setPitchStep(1)}
@@ -2255,17 +2256,30 @@ export const SuperadminDashboardPage: React.FC = () => {
                         >
                           🎁 Paso 2: Oferta $89k
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setPitchStep(3)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                            pitchStep === 3
+                              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          💎 Paso 3: Estatus Makloz
+                        </button>
                       </div>
 
                       <span className="text-[10px] text-slate-400 font-mono">
-                        {pitchStep === 1 ? 'Gancho + Dolor' : 'Jornada Lanzamiento'}
+                        {pitchStep === 1 ? 'Gancho + Dolor' : pitchStep === 2 ? 'Jornada Lanzamiento' : 'Estatus Makloz Tech'}
                       </span>
                     </div>
 
                     <div className="text-[10px] text-slate-400 italic">
                       {pitchStep === 1 
                         ? '💡 Tip: Envía primero una captura de pantalla de su web en el celular y acompaña la imagen con este mensaje optimizado para su nicho:' 
-                        : '💡 Tip: Cuando respondan diciendo que les gustó el diseño, envíales la propuesta del cupo de $89k:'}
+                        : pitchStep === 2
+                        ? '💡 Tip: Cuando respondan diciendo que les gustó el diseño, envíales la propuesta del cupo de $89k:'
+                        : '💡 Tip: Mensaje enfocado en estatus de marca, subsidio de desarrollo del 85% y $7.417/mes para hosting y seguridad SSL:'}
                     </div>
 
                     <div className="bg-[#0A0D14]/90 p-3 rounded-xl border border-white/5 text-[11px] text-slate-200 font-sans whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto selection:bg-emerald-500/30">
@@ -2284,7 +2298,7 @@ export const SuperadminDashboardPage: React.FC = () => {
                       className="w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
                     >
                       <MessageCircle className="w-4 h-4 fill-current" />
-                      <span>Enviar {pitchStep === 1 ? 'Paso 1' : 'Paso 2'} por WhatsApp ({createdSite.phone_whatsapp})</span>
+                      <span>Enviar Paso {pitchStep} por WhatsApp ({createdSite.phone_whatsapp})</span>
                     </a>
                   </div>
 
@@ -3273,133 +3287,132 @@ export const SuperadminDashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Selector de Mensaje 1 vs Mensaje 2 */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Selector de Mensaje 1 vs Mensaje 2 vs Mensaje 3 */}
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setModalPitchStep(1)}
-                className={`py-2.5 px-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+                className={`py-2 px-2 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
                   modalPitchStep === 1
                     ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20'
                     : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20'
                 }`}
               >
-                <span>📸 Mensaje 1: Gancho Visual</span>
+                <span>📸 1: Gancho</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalPitchStep(2)}
-                className={`py-2.5 px-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+                className={`py-2 px-2 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
                   modalPitchStep === 2
                     ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20'
                     : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20'
                 }`}
               >
-                <span>🎁 Mensaje 2: Oferta $89k</span>
+                <span>🎁 2: Oferta $89k</span>
               </button>
-            </div>
 
-            {/* Tips de Soporte según el mensaje activo */}
-            <div className="text-[11px] text-slate-300 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between gap-2">
-              <span>
-                {modalPitchStep === 1
-                  ? '💡 Tip Paso 1: Envía una foto/captura de su web en el celular junto a este mensaje.'
-                  : '💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Bancolombia para activar.'}
-              </span>
               <button
                 type="button"
-                onClick={() => {
-                  const txt = modalPitchStep === 1
-                    ? genStep1({
-                        businessName: viewingWhatsAppPitchProspect.business_name,
-                        slug: viewingWhatsAppPitchProspect.slug,
-                        origin: window.location.origin,
-                        category: viewingWhatsAppPitchProspect.category,
-                        customNiche: modalNicheOverride || undefined
-                      })
-                    : genStep2({
-                        businessName: viewingWhatsAppPitchProspect.business_name,
-                        category: viewingWhatsAppPitchProspect.category,
-                        customNiche: modalNicheOverride || undefined
-                      });
-                  navigator.clipboard.writeText(txt);
-                  setModalCopiedPitch(true);
-                  setTimeout(() => setModalCopiedPitch(false), 2500);
-                }}
-                className="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                onClick={() => setModalPitchStep(3)}
+                className={`py-2 px-2 rounded-2xl text-[11px] font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                  modalPitchStep === 3
+                    ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-500/20'
+                    : 'bg-white/5 text-slate-400 hover:text-white border-white/10 hover:border-white/20'
+                }`}
               >
-                <Copy className="w-3 h-3" />
-                <span>{modalCopiedPitch ? '¡Copiado!' : 'Copiar Texto'}</span>
+                <span>💎 3: Makloz Tech</span>
               </button>
             </div>
 
-            {/* Burbuja con el Texto Completo */}
-            <div className="bg-[#0B141A] p-4 rounded-2xl border border-white/10 shadow-inner relative max-h-56 overflow-y-auto">
-              <div className="text-xs text-[#E9EDEF] font-sans whitespace-pre-line leading-relaxed selection:bg-emerald-500/30">
-                {modalPitchStep === 1
-                  ? genStep1({
-                      businessName: viewingWhatsAppPitchProspect.business_name,
-                      slug: viewingWhatsAppPitchProspect.slug,
-                      origin: window.location.origin,
-                      category: viewingWhatsAppPitchProspect.category,
-                      customNiche: modalNicheOverride || undefined
-                    })
-                  : genStep2({
-                      businessName: viewingWhatsAppPitchProspect.business_name,
-                      category: viewingWhatsAppPitchProspect.category,
-                      customNiche: modalNicheOverride || undefined
-                    })}
-              </div>
-            </div>
+            {(() => {
+              const currentPitchText = modalPitchStep === 1
+                ? genStep1({
+                    businessName: viewingWhatsAppPitchProspect.business_name,
+                    slug: viewingWhatsAppPitchProspect.slug,
+                    origin: window.location.origin,
+                    category: viewingWhatsAppPitchProspect.category,
+                    customNiche: modalNicheOverride || undefined
+                  })
+                : modalPitchStep === 2
+                ? genStep2({
+                    businessName: viewingWhatsAppPitchProspect.business_name,
+                    category: viewingWhatsAppPitchProspect.category,
+                    customNiche: modalNicheOverride || undefined
+                  })
+                : genMaklozPitch({
+                    businessName: viewingWhatsAppPitchProspect.business_name
+                  });
 
-            {/* Acciones del Modal */}
-            <div className="space-y-2 pt-1">
-              <a
-                href={`https://wa.me/${viewingWhatsAppPitchProspect.phone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
-                  modalPitchStep === 1
-                    ? genStep1({
-                        businessName: viewingWhatsAppPitchProspect.business_name,
-                        slug: viewingWhatsAppPitchProspect.slug,
-                        origin: window.location.origin,
-                        category: viewingWhatsAppPitchProspect.category,
-                        customNiche: modalNicheOverride || undefined
-                      })
-                    : genStep2({
-                        businessName: viewingWhatsAppPitchProspect.business_name,
-                        category: viewingWhatsAppPitchProspect.category,
-                        customNiche: modalNicheOverride || undefined
-                      })
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => {
-                  if (viewingWhatsAppPitchProspect.status === 'prospecto') {
-                    handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
-                  }
-                }}
-                className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
-              >
-                <MessageCircle className="w-4 h-4 fill-current" />
-                <span>Enviar Mensaje {modalPitchStep} a WhatsApp ({viewingWhatsAppPitchProspect.phone_whatsapp})</span>
-              </a>
+              return (
+                <>
+                  {/* Tips de Soporte según el mensaje activo */}
+                  <div className="text-[11px] text-slate-300 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-xl flex items-center justify-between gap-2">
+                    <span>
+                      {modalPitchStep === 1
+                        ? '💡 Tip Paso 1: Envía una foto/captura de su web en el celular junto a este mensaje.'
+                        : modalPitchStep === 2
+                        ? '💡 Tip Paso 2: Cuando digan que les gustó el diseño, envíales esta oferta con Nequi/Bancolombia para activar.'
+                        : '💡 Tip Paso 3: Mensaje enfocado en estatus, subsidio del 85% y $7.417/mes para hosting y seguridad SSL.'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentPitchText);
+                        setModalCopiedPitch(true);
+                        setTimeout(() => setModalCopiedPitch(false), 2500);
+                      }}
+                      className="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{modalCopiedPitch ? '¡Copiado!' : 'Copiar Texto'}</span>
+                    </button>
+                  </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
-                <span>Estado actual: <strong className="text-white capitalize">{viewingWhatsAppPitchProspect.status}</strong></span>
-                {viewingWhatsAppPitchProspect.status === 'prospecto' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
-                      setViewingWhatsAppPitchProspect({ ...viewingWhatsAppPitchProspect, status: 'contactado' });
-                    }}
-                    className="text-emerald-400 hover:underline font-bold cursor-pointer"
-                  >
-                    ✓ Marcar como Contactado WA
-                  </button>
-                )}
-              </div>
-            </div>
+                  {/* Burbuja con el Texto Completo */}
+                  <div className="bg-[#0B141A] p-4 rounded-2xl border border-white/10 shadow-inner relative max-h-56 overflow-y-auto">
+                    <div className="text-xs text-[#E9EDEF] font-sans whitespace-pre-line leading-relaxed selection:bg-emerald-500/30">
+                      {currentPitchText}
+                    </div>
+                  </div>
+
+                  {/* Acciones del Modal */}
+                  <div className="space-y-2 pt-1">
+                    <a
+                      href={`https://wa.me/${viewingWhatsAppPitchProspect.phone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(currentPitchText)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => {
+                        if (viewingWhatsAppPitchProspect.status === 'prospecto') {
+                          handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
+                        }
+                      }}
+                      className="w-full py-3.5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                    >
+                      <MessageCircle className="w-4 h-4 fill-current" />
+                      <span>Enviar Mensaje {modalPitchStep} a WhatsApp ({viewingWhatsAppPitchProspect.phone_whatsapp})</span>
+                    </a>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-1">
+                      <span>Estado actual: <strong className="text-white capitalize">{viewingWhatsAppPitchProspect.status}</strong></span>
+                      {viewingWhatsAppPitchProspect.status === 'prospecto' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleUpdateStatus(viewingWhatsAppPitchProspect.id, 'contactado');
+                            setViewingWhatsAppPitchProspect({ ...viewingWhatsAppPitchProspect, status: 'contactado' });
+                          }}
+                          className="text-emerald-400 hover:underline font-bold cursor-pointer"
+                        >
+                          ✓ Marcar como Contactado WA
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
 
           </div>
         </div>

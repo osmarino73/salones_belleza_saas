@@ -12,6 +12,15 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-79. **Integración de Pitch Persuasivo de WhatsApp "Estatus Makloz Tech" ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+    - **Requerimiento**: Mensaje extra de WhatsApp para prospectos comunicando la iniciativa *"Negocio Online"* de Makloz Tech, enfocado en elevar el estatus del negocio, subsidio del 85% en ingeniería/diseño ($650.000+ regular) y activación por $7.417/mes ($89.000/año) para hosting seguro y certificado SSL.
+    - **Implementación**:
+      1. Se creó `generateMaklozTechPitch({ businessName, ownerName })` en `whatsappPitchGenerator.ts`.
+      2. Se actualizó `generateWhatsAppPitch` para soportar `step: 1 | 2 | 3`.
+      3. Se añadieron selectores de pestaña de 3 pasos en el modal de WhatsApp del Superadmin y en la tarjeta de sitio creado en `SuperadminDashboardPage.tsx` (Paso 1: Gancho Visual, Paso 2: Oferta $89k SaaS, Paso 3: Estatus Makloz Tech).
+      4. Se documentó la nueva Plantilla 3B en la skill `whatsapp-persuasive-copy`.
+      5. Compilación validada exitosamente con `npm run build` (código 0).
+
 -78. **Suavizado del Degradado Negro en Dispositivos Móviles ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Requerimiento**: Reducir la intensidad del degradado negro inferior en móviles para permitir que la imagen/fotogramas de la modelo se aprecie con mayor luminosidad y brillo en teléfonos celulares.
     - **Implementación**:

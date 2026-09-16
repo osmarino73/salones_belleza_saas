@@ -189,6 +189,27 @@ Si te gustaría asegurar el cupo de [Nombre del Salón], me confirmas para dejar
 
 ---
 
+### 💎 Plantilla 3B: Estatus Makloz Tech (Iniciativa Negocio Online - $7.417/mes)
+> **Enfoque**: Estatus de marca, autoridad, subsidio del 85% de desarrollo tecnológico por Makloz Tech y aporte anual de hosting seguro ($89.000 COP / $7.417/mes).
+```text
+¡Hola [Nombre]! 👋 
+
+El trabajo y la calidad que tienen en [Nombre del Negocio] merecen verse con otro estatus. 
+
+Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y cobras con mayor autoridad 🌟.
+
+Por la iniciativa *"Negocio Online"* de *Makloz Tech*, abrimos un cupo de patrocinio tecnológico único: 
+Absorbemos más del 85% del costo de diseño e ingeniería (un desarrollo que normalmente supera los $650.000 COP) para que tu marca solo asuma el costo del servidor 🚀.
+
+👉 Por solo *$7.417 pesos al mes* (un único pago anual de *$89.000 COP* que cubre su hosting seguro y certificado SSL), dejas activa esa web que te mostramos por todo el año.
+
+Literalmente cuesta menos que un solo servicio de tu negocio, pero posiciona a [Nombre del Negocio] como un referente en tu zona 💡.
+
+Estamos asignando los cupos subsidiados de esta semana, ¿te aparto el de ustedes para dejarla activa hoy mismo? ⚡
+```
+
+---
+
 ### 🔑 Plantilla 4: Entrega de Credenciales & Onboarding
 ```text
 ¡Hola [Nombre de la Dueña]! 🎉 ¡Pago confirmado! Ya activamos tu plataforma Kowy.app con tu 1er Mes de Plan Crecimiento totalmente incluido.
