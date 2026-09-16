@@ -705,14 +705,12 @@ ${colorOverridesCss}
       height: 100% !important;
     }
 
-    /* 4. Restricción calibrada de la caja de texto (36% máximo en celulares) para evitar recortes */
-    .hero-scroll-content,
-    .hero-scroll-step,
-    .hero-content,
-    .hero-text-box {
-      min-height: unset !important;
-      max-height: 36dvh !important;
-      max-height: 36vh !important;
+    /* 4. Restricción calibrada y reseteo de posicionamiento del texto en celulares para prevenir solapamientos */
+    .hero-scroll-content {
+      min-height: 0 !important;
+      height: auto !important;
+      max-height: 38dvh !important;
+      max-height: 38vh !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-end !important;
@@ -722,6 +720,36 @@ ${colorOverridesCss}
       margin-bottom: 0 !important;
       box-sizing: border-box !important;
       overflow: visible !important;
+      position: relative !important;
+      width: 100% !important;
+    }
+
+    .hero-scroll-step,
+    .hero-content,
+    .hero-text-box {
+      position: relative !important;
+      top: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      right: auto !important;
+      transform: none !important;
+      width: 100% !important;
+      min-height: 0 !important;
+      max-height: 38dvh !important;
+      max-height: 38vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      text-align: center !important;
+      margin-top: auto !important;
+      margin-bottom: 0 !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+    }
+
+    .hero-scroll-step.active {
+      transform: none !important;
     }
 
     /* 5. Escala tipográfica compacta adaptativa para encajar todo cómodamente en la zona inferior */
