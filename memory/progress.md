@@ -1,3 +1,12 @@
+- [x] **Optimización del Texto del Hero en Móviles (Anclaje Inferior) ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - **Requerimiento**: Mover y mejorar el texto del header/hero en móviles para que quede fijado en la parte inferior de la imagen sin tapar el rostro de la modelo.
+  - **Implementación**:
+    1. Se ampliaron los selectores de contenedores en `@media (max-width: 640px)` (`.hero-content`, `.hero-text-box`, `.hero-container-align`, `.hero-caption`, `.hero-intro`, `.hero-inner`, `.hero-header-box`, `.hero-main-content`, etc.) con `position: absolute !important; bottom: 0 !important; top: auto !important; margin-bottom: 0 !important;`.
+    2. Se configuró escala tipográfica ultracompacta `clamp(1.10rem, 4.0vw, 1.40rem)` para H1, interlineado ajustado `1.18` y márgenes reducidos para la tipografía, botones y badges.
+    3. Se re-encuadró el rostro de la modelo en los dos tercios superiores de la pantalla con `object-position: center 5% !important`.
+    4. Se optimizó el gradiente oscuro suave (`height: 55% !important`) desde la base inferior para garantizar legibilidad y contraste AAA sobre cualquier fotografía o video canvas.
+    5. Compilación validada exitosamente mediante `npm run build` (código 0).
+
 - [x] **Integración de Pitch Persuasivo "Estatus Makloz Tech" ($7.417/mes) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
   - Incorporada nueva función `generateMaklozTechPitch({ businessName, ownerName })` con enfoque de estatus, autoridad, subsidio tecnológico del 85% de Makloz Tech e inversión anual de $89.000 COP ($7.417/mes) para hosting y certificado SSL.
   - Actualizado el modal de prospectos de WhatsApp y la tarjeta de sitio creado en el Superadmin con soporte para selector de 3 pasos (Paso 1: Gancho Visual, Paso 2: Oferta $89k SaaS, Paso 3: Estatus Makloz Tech).

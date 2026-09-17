@@ -669,11 +669,22 @@ ${colorOverridesCss}
     font-size: 0.92rem !important;
   }
 
-  /* Optimización Mobile-First para proteger el rostro de la modelo y limitar texto al 30% inferior de la pantalla */
+  /* Optimización Mobile-First: Anclaje estricto del texto del Hero en la parte inferior de la imagen */
   @media (max-width: 640px) {
-    /* 1. Viewport Dinámico Móvil para prevenir compresión por barras del navegador */
-    .hero, header.hero-section, .hero-scroll-section, .hero-wrapper {
+    /* 1. Viewport Dinámico Móvil para la sección principal */
+    .hero, 
+    header.hero-section, 
+    .hero-scroll-section, 
+    .hero-wrapper,
+    .hero-section,
+    .hero-banner,
+    .hero-main {
       min-height: 100dvh !important;
+      position: relative !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
     }
 
     /* 2. Re-encuadre del rostro de la modelo en los 2 tercios superiores de la pantalla */
@@ -685,112 +696,209 @@ ${colorOverridesCss}
     .hero-photo img,
     .hero-image img,
     header.hero-section img.hero-bg,
-    .hero-bg-img {
-      object-position: center 12% !important;
-      background-position: center 12% !important;
+    .hero-bg-img,
+    .hero-image-container img,
+    .hero img {
+      object-position: center 5% !important;
+      background-position: center 5% !important;
     }
 
-    /* 3. Alineación forzada del contenedor de texto en la zona inferior (36% máximo de altura) */
+    /* 3. Anclaje forzado del contenedor de texto en la zona inferior de la pantalla */
+    .hero-grid,
+    .hero-container,
+    .hero-main-container,
+    .hero-content-wrapper,
+    .hero-flex-wrapper {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+      align-items: center !important;
+      position: relative !important;
+      min-height: 100dvh !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
     .hero-container-align,
     .hero-content,
     .hero-text-box,
     .hero-bottom-content,
-    .hero-overlay-content {
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-end !important;
-      align-items: center !important;
-      padding-top: 0 !important;
-      padding-bottom: max(22px, env(safe-area-inset-bottom, 22px)) !important;
-      height: 100% !important;
-    }
-
-    /* 4. Restricción calibrada y reseteo de posicionamiento del texto en celulares para prevenir solapamientos */
-    .hero-scroll-content {
-      min-height: 0 !important;
-      height: auto !important;
-      max-height: 38dvh !important;
-      max-height: 38vh !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-end !important;
-      align-items: center !important;
-      text-align: center !important;
-      margin-top: auto !important;
-      margin-bottom: 0 !important;
-      box-sizing: border-box !important;
-      overflow: visible !important;
-      position: relative !important;
-      width: 100% !important;
-    }
-
+    .hero-overlay-content,
+    .hero-scroll-content,
     .hero-scroll-step,
-    .hero-content,
-    .hero-text-box {
-      position: relative !important;
+    .hero-text,
+    .hero-body,
+    .hero-caption,
+    .hero-intro,
+    .hero-header-box,
+    .hero-inner,
+    .hero-main-content,
+    .hero-details,
+    .hero-card,
+    .hero-center-box,
+    .hero-caption-box,
+    .hero-box {
+      position: absolute !important;
+      bottom: 0 !important;
       top: auto !important;
-      bottom: auto !important;
-      left: auto !important;
-      right: auto !important;
-      transform: none !important;
+      left: 0 !important;
+      right: 0 !important;
       width: 100% !important;
-      min-height: 0 !important;
-      max-height: 38dvh !important;
-      max-height: 38vh !important;
+      z-index: 10 !important;
+      margin: 0 auto !important;
+      margin-bottom: 0 !important;
+      padding-top: 8px !important;
+      padding-left: 14px !important;
+      padding-right: 14px !important;
+      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-end !important;
       align-items: center !important;
       text-align: center !important;
-      margin-top: auto !important;
-      margin-bottom: 0 !important;
       box-sizing: border-box !important;
-      overflow: visible !important;
+      transform: none !important;
     }
 
     .hero-scroll-step.active {
       transform: none !important;
     }
 
-    /* 5. Escala tipográfica compacta adaptativa para encajar todo cómodamente en la zona inferior */
+    /* 4. Escala tipográfica ultracompacta para anclar todo cómodamente en el 25% inferior */
     .hero-title,
     header.hero-section h1,
     .hero-content h1,
     .hero-text h1,
-    .hero-body h1 {
-      font-size: clamp(1.25rem, 4.6vw, 1.65rem) !important;
-      line-height: 1.16 !important;
-      margin-bottom: 6px !important;
+    .hero-body h1,
+    .hero h1,
+    .hero-inner h1,
+    .hero-caption h1 {
+      font-size: clamp(1.10rem, 4.0vw, 1.40rem) !important;
+      line-height: 1.18 !important;
+      margin-top: 0 !important;
+      margin-bottom: 4px !important;
+      padding: 0 !important;
+      font-weight: 700 !important;
+    }
+
+    .hero-title em,
+    .hero-title i,
+    .hero-title span,
+    .hero-content h1 em,
+    .hero-content h1 i,
+    .hero-content h1 span,
+    .hero h1 em,
+    .hero h1 i,
+    .hero h1 span {
+      font-size: clamp(1.02rem, 3.7vw, 1.28rem) !important;
+      display: block !important;
+      margin-top: 2px !important;
     }
 
     header.hero-section p,
     .hero-subtitle,
     .hero-desc,
-    .hero-description {
-      font-size: clamp(0.80rem, 3.0vw, 0.90rem) !important;
-      line-height: 1.3 !important;
-      margin-bottom: 8px !important;
+    .hero-description,
+    .hero p,
+    .hero-content p {
+      font-size: clamp(0.76rem, 2.6vw, 0.84rem) !important;
+      line-height: 1.25 !important;
+      margin-top: 0 !important;
+      margin-bottom: 6px !important;
+      max-width: 90% !important;
       display: -webkit-box !important;
       -webkit-line-clamp: 2 !important;
       -webkit-box-orient: vertical !important;
       overflow: hidden !important;
     }
 
-    .hero-actions {
-      gap: 8px !important;
-      margin-top: 4px !important;
+    /* 5. Botones y enlaces de acción */
+    .hero-actions,
+    .hero-ctas,
+    .hero-buttons,
+    .hero-links {
+      gap: 4px !important;
+      margin-top: 2px !important;
+      margin-bottom: 6px !important;
+      padding: 0 !important;
       width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
       justify-content: center !important;
     }
 
     .hero-actions .btn,
+    .hero-ctas .btn,
+    .hero-buttons .btn,
     .btn-primary,
-    .btn-outline {
+    .btn-outline,
+    .btn-secondary,
+    .btn-agendar,
+    .btn-hero-book,
+    .btn-header-cta,
+    .btn-hero-primary,
+    .btn-cta-primary {
       font-size: 0.82rem !important;
-      padding: 9px 18px !important;
+      padding: 8px 22px !important;
+      border-radius: 9999px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      max-width: 260px !important;
+      width: auto !important;
     }
 
-    /* Restauración del logotipo del header con comportamiento inteligente al hacer scroll */
+    a[href*="servicios"],
+    a[href*="#servicios"],
+    .hero-ctas a:not(.btn-primary):not(.btn-agendar),
+    .hero-actions a:not(.btn-primary):not(.btn-agendar),
+    .hero-sublink,
+    .btn-link-services {
+      font-size: 0.78rem !important;
+      padding: 2px 8px !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: rgba(255, 255, 255, 0.92) !important;
+      text-decoration: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      margin-top: 2px !important;
+    }
+
+    /* Insignias de calificación en Google Reviews y Métricas */
+    .hero-rating,
+    .hero-reviews-subtext,
+    .badge-rating-label,
+    .floating-card-review,
+    .hero-stats-row,
+    .badge-rating,
+    .hero-badge,
+    .top-bar-rating,
+    .review-card,
+    .google-reviews-badge,
+    .hero-review-box {
+      margin-top: 4px !important;
+      margin-bottom: 0 !important;
+      font-size: 0.72rem !important;
+      padding: 4px 12px !important;
+      border-radius: 9999px !important;
+      background: rgba(20, 16, 14, 0.70) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      max-width: 92% !important;
+    }
+
+    /* 6. Restauración del logotipo del header */
     .brand-logo,
     .brand-name,
     .brand-subtitle {
@@ -802,7 +910,7 @@ ${colorOverridesCss}
       transform: translateY(-100%) !important;
     }
 
-    /* 6. Transparencia total del 0% al 80% para nitidez cristalina y 100% visibilidad de la imagen en móviles */
+    /* 7. Degradado oscuro suave en la base inferior (55% de altura) para contraste legibilidad AAA */
     .hero-overlay,
     .hero-bg-overlay,
     .hero-gradient,
@@ -811,18 +919,28 @@ ${colorOverridesCss}
     .hero-wrapper::after,
     .canvas-sticky-wrapper::after,
     .hero-container-align::after,
-    .hero-bottom-content,
-    .hero-overlay-content {
+    .hero-bottom-content::after,
+    .hero-overlay-content::after,
+    .hero::after,
+    header.hero-section::after {
+      content: '' !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 55% !important;
+      pointer-events: none !important;
       background: linear-gradient(
-        180deg, 
-        rgba(11, 15, 25, 0) 0%, 
-        rgba(11, 15, 25, 0) 80%, 
-        rgba(11, 15, 25, 0.15) 90%, 
-        rgba(11, 15, 25, 0.32) 100%
+        to top, 
+        rgba(8, 7, 10, 0.95) 0%, 
+        rgba(8, 7, 10, 0.68) 50%, 
+        rgba(8, 7, 10, 0.18) 80%, 
+        rgba(8, 7, 10, 0) 100%
       ) !important;
+      z-index: 2 !important;
     }
 
-    /* 7. Refuerzo de sombra paralela en tipografía para legibilidad nítida */
+    /* 8. Refuerzo de sombra paralela en tipografía */
     .hero-title,
     .hero-script-tag,
     .hero-eyebrow,

@@ -12,6 +12,15 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-82. **Optimización del Texto del Hero en Móviles (Anclaje Inferior) ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Requerimiento**: Mover y optimizar el bloque de texto del header/hero en teléfonos móviles para que quede fijado de forma compacta en la parte inferior de la imagen sin tapar el rostro de la modelo.
+    - **Implementación**:
+      1. Se ampliaron los selectores de contenedores en `@media (max-width: 640px)` (`.hero-content`, `.hero-text-box`, `.hero-container-align`, `.hero-caption`, `.hero-intro`, `.hero-inner`, `.hero-header-box`, `.hero-main-content`, etc.) con `position: absolute !important; bottom: 0 !important; top: auto !important; margin-bottom: 0 !important;`.
+      2. Se aplicó escala tipográfica ultracompacta `clamp(1.10rem, 4.0vw, 1.40rem)` para el título H1, interlineado ajustado `1.18` y márgenes reducidos para la descripción, botones de agendamiento y badge de calificación Google Reviews.
+      3. Se encuadró el rostro de la modelo en la zona superior mediante `object-position: center 5% !important`.
+      4. Se amplió el degradado oscuro inferior a `55%` de altura con opacidad progresiva para contraste de legibilidad AAA.
+      5. Compilación validada exitosamente mediante `npm run build` (código 0).
+
 -81. **Ajuste de Pregunta de Cierre en Primer Mensaje de WhatsApp (Paso 1) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
     - **Requerimiento**: Ajustar el primer mensaje de prospección de WhatsApp (Paso 1) para usar de forma consistente la pregunta amigable: `"${resolvedPainQuestion}"` (e.g. `"¿Qué les pareció el demo que preparamos para Luciana Nails? ¿Les gustó cómo quedó?"`).
     - **Implementación**:
