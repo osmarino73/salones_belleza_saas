@@ -640,38 +640,7 @@ ${colorOverridesCss}
     margin-bottom: 6px !important;
   }
 
-  /* Incremento del 20% en la escala tipográfica y botones del Hero */
-  .hero-title,
-  header.hero-section h1,
-  .hero-content h1,
-  .hero-text h1,
-  .hero-body h1 {
-    font-size: clamp(2.6rem, 5.0vw, 4.4rem) !important;
-    line-height: 1.12 !important;
-    margin-bottom: 18px !important;
-  }
 
-  .hero-desc,
-  .hero-description,
-  .hero-subtitle,
-  header.hero-section p {
-    font-size: clamp(1.05rem, 2.2vw, 1.25rem) !important;
-    line-height: 1.6 !important;
-    margin-bottom: 24px !important;
-  }
-
-  .hero-actions .btn,
-  .btn-primary,
-  .btn-outline {
-    font-size: 1.02rem !important;
-    padding: 15px 30px !important;
-  }
-
-  .hero-rating,
-  .hero-reviews-subtext,
-  .badge-rating-label {
-    font-size: 0.92rem !important;
-  }
 
   /* Optimización Mobile-First de Alta Fidelidad para el Hero */
   @media (max-width: 640px) {
