@@ -17,7 +17,7 @@
     - **Solución Aplicada**:
       1. Se removió la regla CSS `.hero-script-tag, .hero-eyebrow, .hero-tagline-script { display: none !important; }` en `prospectHtmlInjector.ts`.
       2. Se configuró la visualización limpia en desktop y responsive móvil (`@media (max-width: 640px)`), garantizando que las escrituras cursivas y subtítulos de cabecera se rendericen con tipografía fluida y sombra de contraste sin tapar el contenido.
-      3. Compilación validada exitosamente con `npm run build` (código 0).
+      3. Compilado y publicado exitosamente en GitHub (`f0b8335`).
 
 -82. **Corrección de Visibilidad y Anclaje Inferior del Hero en Móviles ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Problema**: Al forzar `overflow: hidden` y `display: flex` en wrappers generales del hero, la estructura de canvas con `position: sticky` de los sitios con Video-Scroll Scrubbing (como Atemporal) colapsaba a pantalla negra en móviles.
