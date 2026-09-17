@@ -629,11 +629,15 @@ ${colorOverridesCss}
     transform: translateY(-2px);
   }
 
-  /* Eliminación del encabezado Sarón Spa / Tagline y Subtítulo Eyebrow por requerimiento de diseño */
+  /* Preservación de la tipografía script y copete nativo del Hero (eyebrow, script-tag, etc.) del HTML base */
   .hero-script-tag,
   .hero-eyebrow,
+  .hero-script,
+  .script-eyebrow,
+  .script-tag,
   .hero-tagline-script {
-    display: none !important;
+    display: block !important;
+    margin-bottom: 6px !important;
   }
 
   /* Incremento del 20% en la escala tipográfica y botones del Hero */
@@ -721,6 +725,21 @@ ${colorOverridesCss}
       align-items: center !important;
       text-align: center !important;
       box-sizing: border-box !important;
+    }
+
+    /* 2.5 Preservación de escrituras y copetes superiores en móvil */
+    .hero-script-tag,
+    .hero-eyebrow,
+    .hero-script,
+    .script-eyebrow,
+    .script-tag,
+    .hero-tagline-script {
+      display: block !important;
+      font-size: clamp(0.90rem, 3.2vw, 1.15rem) !important;
+      line-height: 1.2 !important;
+      margin-top: 0 !important;
+      margin-bottom: 2px !important;
+      padding: 0 !important;
     }
 
     /* 3. Escala tipográfica ultracompacta */

@@ -12,6 +12,13 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-83. **Preservación Fiel del Texto del Header & Eyebrows Nativos de las Plantillas Base ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Requerimiento**: Restaurar el texto nativo del header y escrituras cursivas/eyebrows del HTML base (ej. "Katerine Canedo", "ESTÉTICA FACIAL INTEGRAL · MONTERÍA"), eliminando reglas forzadas que ocultan los elementos nativos.
+    - **Solución Aplicada**:
+      1. Se removió la regla CSS `.hero-script-tag, .hero-eyebrow, .hero-tagline-script { display: none !important; }` en `prospectHtmlInjector.ts`.
+      2. Se configuró la visualización limpia en desktop y responsive móvil (`@media (max-width: 640px)`), garantizando que las escrituras cursivas y subtítulos de cabecera se rendericen con tipografía fluida y sombra de contraste sin tapar el contenido.
+      3. Compilación validada exitosamente con `npm run build` (código 0).
+
 -82. **Corrección de Visibilidad y Anclaje Inferior del Hero en Móviles ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Problema**: Al forzar `overflow: hidden` y `display: flex` en wrappers generales del hero, la estructura de canvas con `position: sticky` de los sitios con Video-Scroll Scrubbing (como Atemporal) colapsaba a pantalla negra en móviles.
     - **Solución Implementada**:

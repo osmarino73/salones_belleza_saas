@@ -1,3 +1,11 @@
+- [x] **Preservación Fiel del Texto del Header & Eyebrows Nativos del HTML Base ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - **Requerimiento**: Tomar tal cual el texto del header y escrituras/eyebrows cursivos como vienen maquetados originalmente en la plantilla HTML base (ej. "Katerine Canedo", "ESTÉTICA FACIAL INTEGRAL · MONTERÍA", eslóganes y taglines).
+  - **Implementación**:
+    1. Se eliminó la regla CSS restrictiva `.hero-script-tag, .hero-eyebrow, .hero-tagline-script { display: none !important; }` en `prospectHtmlInjector.ts`.
+    2. Se configuró la visualización limpia con `display: block !important` y tipografía adaptable fluida tanto en computadores como en pantallas móviles (`@media (max-width: 640px)`).
+    3. Se mantuvieron intactos los textos, fuentes cursivas, acentos de color y jerarquía visual nativa.
+    4. Compilación validada exitosamente mediante `npm run build` (código 0).
+
 - [x] **Optimización del Texto del Hero en Móviles (Anclaje Inferior) ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - **Requerimiento**: Mover y mejorar el texto del header/hero en móviles para que quede fijado en la parte inferior de la imagen sin tapar el rostro de la modelo.
   - **Implementación**:
