@@ -696,66 +696,7 @@ ${colorOverridesCss}
       box-sizing: border-box !important;
     }
 
-    /* 2.5 Preservación de escrituras y copetes superiores en móvil */
-    .hero-script-tag,
-    .hero-eyebrow,
-    .hero-script,
-    .script-eyebrow,
-    .script-tag,
-    .hero-tagline-script {
-      display: block !important;
-      font-size: clamp(0.90rem, 3.2vw, 1.15rem) !important;
-      line-height: 1.2 !important;
-      margin-top: 0 !important;
-      margin-bottom: 2px !important;
-      padding: 0 !important;
-    }
 
-    /* 3. Escala tipográfica ultracompacta */
-    .hero-title,
-    header.hero-section h1,
-    .hero-content h1,
-    .hero-text h1,
-    .hero-body h1,
-    .hero h1 {
-      font-size: clamp(1.15rem, 4.2vw, 1.45rem) !important;
-      line-height: 1.15 !important;
-      margin-top: 0 !important;
-      margin-bottom: 4px !important;
-      padding: 0 !important;
-      font-weight: 700 !important;
-    }
-
-    .hero-title em,
-    .hero-title i,
-    .hero-title span,
-    .hero-content h1 em,
-    .hero-content h1 i,
-    .hero-content h1 span,
-    .hero h1 em,
-    .hero h1 i,
-    .hero h1 span {
-      font-size: clamp(1.05rem, 3.8vw, 1.30rem) !important;
-      display: block !important;
-      margin-top: 2px !important;
-    }
-
-    header.hero-section p,
-    .hero-subtitle,
-    .hero-desc,
-    .hero-description,
-    .hero p,
-    .hero-content p {
-      font-size: clamp(0.78rem, 2.7vw, 0.86rem) !important;
-      line-height: 1.25 !important;
-      margin-top: 0 !important;
-      margin-bottom: 6px !important;
-      max-width: 92% !important;
-      display: -webkit-box !important;
-      -webkit-line-clamp: 2 !important;
-      -webkit-box-orient: vertical !important;
-      overflow: hidden !important;
-    }
 
     /* 4. Botones y enlaces de acción */
     .hero-actions,
