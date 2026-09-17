@@ -669,25 +669,9 @@ ${colorOverridesCss}
     font-size: 0.92rem !important;
   }
 
-  /* Optimización Mobile-First: Anclaje estricto del texto del Hero en la parte inferior de la imagen */
+  /* Optimización Mobile-First de Alta Fidelidad para el Hero */
   @media (max-width: 640px) {
-    /* 1. Viewport Dinámico Móvil para la sección principal */
-    .hero, 
-    header.hero-section, 
-    .hero-scroll-section, 
-    .hero-wrapper,
-    .hero-section,
-    .hero-banner,
-    .hero-main {
-      min-height: 100dvh !important;
-      position: relative !important;
-      overflow: hidden !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-end !important;
-    }
-
-    /* 2. Re-encuadre del rostro de la modelo en los 2 tercios superiores de la pantalla */
+    /* 1. Re-encuadre del rostro de la modelo en el tercio superior */
     .model-image-frame img,
     #hero-canvas,
     .hero-bg-cover,
@@ -697,43 +681,22 @@ ${colorOverridesCss}
     .hero-image img,
     header.hero-section img.hero-bg,
     .hero-bg-img,
-    .hero-image-container img,
-    .hero img {
-      object-position: center 5% !important;
-      background-position: center 5% !important;
+    .hero-image-container img {
+      object-fit: cover !important;
+      object-position: center 8% !important;
+      background-position: center 8% !important;
     }
 
-    /* 3. Anclaje forzado del contenedor de texto en la zona inferior de la pantalla */
-    .hero-grid,
-    .hero-container,
-    .hero-main-container,
-    .hero-content-wrapper,
-    .hero-flex-wrapper {
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: flex-end !important;
-      align-items: center !important;
-      position: relative !important;
-      min-height: 100dvh !important;
-      height: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-
+    /* 2. Anclaje forzado del contenedor de texto en la base inferior */
     .hero-container-align,
     .hero-content,
     .hero-text-box,
     .hero-bottom-content,
     .hero-overlay-content,
-    .hero-scroll-content,
-    .hero-scroll-step,
     .hero-text,
     .hero-body,
     .hero-caption,
-    .hero-intro,
     .hero-header-box,
-    .hero-inner,
-    .hero-main-content,
     .hero-details,
     .hero-card,
     .hero-center-box,
@@ -748,34 +711,27 @@ ${colorOverridesCss}
       z-index: 10 !important;
       margin: 0 auto !important;
       margin-bottom: 0 !important;
-      padding-top: 8px !important;
-      padding-left: 14px !important;
-      padding-right: 14px !important;
-      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+      padding-top: 10px !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-end !important;
       align-items: center !important;
       text-align: center !important;
       box-sizing: border-box !important;
-      transform: none !important;
     }
 
-    .hero-scroll-step.active {
-      transform: none !important;
-    }
-
-    /* 4. Escala tipográfica ultracompacta para anclar todo cómodamente en el 25% inferior */
+    /* 3. Escala tipográfica ultracompacta */
     .hero-title,
     header.hero-section h1,
     .hero-content h1,
     .hero-text h1,
     .hero-body h1,
-    .hero h1,
-    .hero-inner h1,
-    .hero-caption h1 {
-      font-size: clamp(1.10rem, 4.0vw, 1.40rem) !important;
-      line-height: 1.18 !important;
+    .hero h1 {
+      font-size: clamp(1.15rem, 4.2vw, 1.45rem) !important;
+      line-height: 1.15 !important;
       margin-top: 0 !important;
       margin-bottom: 4px !important;
       padding: 0 !important;
@@ -791,7 +747,7 @@ ${colorOverridesCss}
     .hero h1 em,
     .hero h1 i,
     .hero h1 span {
-      font-size: clamp(1.02rem, 3.7vw, 1.28rem) !important;
+      font-size: clamp(1.05rem, 3.8vw, 1.30rem) !important;
       display: block !important;
       margin-top: 2px !important;
     }
@@ -802,23 +758,23 @@ ${colorOverridesCss}
     .hero-description,
     .hero p,
     .hero-content p {
-      font-size: clamp(0.76rem, 2.6vw, 0.84rem) !important;
+      font-size: clamp(0.78rem, 2.7vw, 0.86rem) !important;
       line-height: 1.25 !important;
       margin-top: 0 !important;
       margin-bottom: 6px !important;
-      max-width: 90% !important;
+      max-width: 92% !important;
       display: -webkit-box !important;
       -webkit-line-clamp: 2 !important;
       -webkit-box-orient: vertical !important;
       overflow: hidden !important;
     }
 
-    /* 5. Botones y enlaces de acción */
+    /* 4. Botones y enlaces de acción */
     .hero-actions,
     .hero-ctas,
     .hero-buttons,
     .hero-links {
-      gap: 4px !important;
+      gap: 6px !important;
       margin-top: 2px !important;
       margin-bottom: 6px !important;
       padding: 0 !important;
@@ -882,10 +838,10 @@ ${colorOverridesCss}
     .hero-review-box {
       margin-top: 4px !important;
       margin-bottom: 0 !important;
-      font-size: 0.72rem !important;
-      padding: 4px 12px !important;
+      font-size: 0.74rem !important;
+      padding: 5px 14px !important;
       border-radius: 9999px !important;
-      background: rgba(20, 16, 14, 0.70) !important;
+      background: rgba(18, 15, 12, 0.75) !important;
       backdrop-filter: blur(8px) !important;
       -webkit-backdrop-filter: blur(8px) !important;
       border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -898,7 +854,7 @@ ${colorOverridesCss}
       max-width: 92% !important;
     }
 
-    /* 6. Restauración del logotipo del header */
+    /* 5. Restablecimiento de marca en header */
     .brand-logo,
     .brand-name,
     .brand-subtitle {
@@ -910,37 +866,30 @@ ${colorOverridesCss}
       transform: translateY(-100%) !important;
     }
 
-    /* 7. Degradado oscuro suave en la base inferior (55% de altura) para contraste legibilidad AAA */
+    /* 6. Degradado oscuro suave en la base inferior (48% de altura) respetando la visibilidad del fotograma/modelo */
     .hero-overlay,
     .hero-bg-overlay,
     .hero-gradient,
     .hero-bottom-gradient,
-    .hero-scroll-section::after,
-    .hero-wrapper::after,
-    .canvas-sticky-wrapper::after,
-    .hero-container-align::after,
     .hero-bottom-content::after,
-    .hero-overlay-content::after,
-    .hero::after,
-    header.hero-section::after {
+    .hero-overlay-content::after {
       content: '' !important;
       position: absolute !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
-      height: 55% !important;
+      height: 48% !important;
       pointer-events: none !important;
       background: linear-gradient(
         to top, 
-        rgba(8, 7, 10, 0.95) 0%, 
-        rgba(8, 7, 10, 0.68) 50%, 
-        rgba(8, 7, 10, 0.18) 80%, 
-        rgba(8, 7, 10, 0) 100%
+        rgba(10, 10, 14, 0.92) 0%, 
+        rgba(10, 10, 14, 0.50) 60%, 
+        rgba(10, 10, 14, 0) 100%
       ) !important;
       z-index: 2 !important;
     }
 
-    /* 8. Refuerzo de sombra paralela en tipografía */
+    /* 7. Refuerzo de sombra paralela en tipografía */
     .hero-title,
     .hero-script-tag,
     .hero-eyebrow,
