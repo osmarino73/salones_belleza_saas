@@ -15,6 +15,8 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
 
 ### 1. Respeto Absoluto a la Estética y Estructura Nativa (Cero Overrides Forzados)
 - **No inyectar estilos CSS invasivos** que alteren fondos, colores de tarjetas, cuadrículas, fuentes ni cabeceras del template base.
+- **Preservación Pura de la Tipografía e Interlineado Nativo**: Prohibido inyectar sobreescalados de fuente (`font-size: clamp(...) !important`), interlineados forzados o reglas `display: block !important` sobre títulos H1, script tags (`.hero-script-tag`), escrituras cursivas o copetes (`.hero-eyebrow`).
+- **Respeto a los saltos de línea nativos**: Si un título H1 en el HTML base se compone en 2 renglones (ej. *"El arte de revitalizar tu rostro"* en línea 1 y *"con ciencia y elegancia."* en línea 2), el inyector DEBE permitir que adopte su tamaño y maquetación tipográfica nativa exacta tanto en desktop como en dispositivos móviles.
 - **Preservar el diseño revisado del HTML**: No forzar jerarquías visuales artificiales (ej. inyectar etiquetas de subtítulo adicionales o clases CSS inventadas como `.section-subtitle`) en secciones como `NUESTROS SERVICIOS` / `Servicios Populares` ni en ninguna otra parte del HTML.
 - Se respetan íntegramente las clases, colores, tipografías, encabezados y el diseño de las tarjetas (cards) del HTML original ya aprobado.
 
@@ -51,10 +53,10 @@ Como las plantillas base ya vienen optimizadas y maquetadas de forma nativa para
   2. **Diseño Vectorial Oficial**: Utiliza el glifo SVG oficial de alta fidelidad de WhatsApp con auricular blanco relleno, fondo con gradiente `#2fe577` a `#128C7E`, aura de pulso suave (`animate-ping`) y micro-borde `border-white/30`.
   3. **Neutralización Interna**: En el HTML inyectado dentro del iframe, se neutralizan (`display: none !important;`) los botones flotantes internos duplicados para prevenir desajustes de scroll.
 
-### 8. Preservación de Canvas Sticky y Anclaje Inferior del Hero en Móviles (< 640px)
+### 8. Preservación de Canvas Sticky, Tipografía Nativa y Anclaje Inferior del Hero en Móviles (< 640px)
 - **Preservación Estricta de Arquitectura Sticky**: No aplicar `overflow: hidden` ni `display: flex` en contenedores de scroll o wrappers de canvas (`.hero-scroll-section`, `.canvas-sticky-wrapper`), garantizando que la reproducción fluida del video/fotogramas WebP por scroll no colapse ni muestre pantallas negras en teléfonos móviles.
 - **Anclaje Exclusivo sobre Cajas de Texto**: Aplicar `position: absolute !important; bottom: 0 !important; top: auto !important; margin-bottom: 0 !important;` exclusivamente a las cajas contenedoras de texto (`.hero-content`, `.hero-text-box`, `.hero-bottom-content`, `.hero-overlay-content`, `.hero-caption`, `.hero-container-align`), manteniendo el encuadre del rostro de la modelo despejado en los tercios superiores (`object-position: center 8% !important`).
-- **Tipografía Ultracompacta y Degradado Suave**: Escala `clamp(1.15rem, 4.2vw, 1.45rem)` para H1, interlineado `1.15` y degradado tenue al `48%` de altura (`rgba(10, 10, 14, 0.92)`) con sombras paralelas de alta definición (`text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 4px 22px rgba(0,0,0,0.90)`) para asegurar legibilidad AAA sobre cualquier fotografía o video de fondo.
+- **Tipografía Nativa Mobile-First**: Respetar 100% las fuentes, tamaños e interlineados nativos del HTML base en celulares. La caja inferior utiliza un degradado tenue al `48%` de altura (`rgba(10, 10, 14, 0.92)`) con sombras paralelas de alta definición (`text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 4px 22px rgba(0,0,0,0.90)`) para asegurar legibilidad AAA sobre cualquier fotografía o video de fondo sin achicar ni truncar el texto.
 
 ---
 
