@@ -19,6 +19,7 @@ export interface NicheCopyConfig {
   roleSingular: string;
   collaboratorsWord: string;
   physicalSpots: string;
+  establishmentWord: string;
 }
 
 export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
@@ -29,11 +30,12 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     badgeLabel: 'Barbería',
     catalogPhrase: 'catálogo de cortes y sistema de reservas online:',
     teamPhrase: 'barberos y servicios son 100% editables',
-    painQuestion: '¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?',
+    painQuestion: '¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?',
     targetClientsWord: 'clientes',
     roleSingular: 'barbero',
     collaboratorsWord: 'barberos',
-    physicalSpots: 'el mostrador y los espejos'
+    physicalSpots: 'espejos y mostrador',
+    establishmentWord: 'barbería'
   },
   salon: {
     id: 'salon',
@@ -42,11 +44,12 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     badgeLabel: 'Salón de Belleza',
     catalogPhrase: 'catálogo de servicios y sistema de reservas online:',
     teamPhrase: 'estilistas y servicios son 100% editables',
-    painQuestion: '¿Les gustaría que sus clientas agenden citas solas 24/7 sin tener que responder tantos chats de WhatsApp mientras están atendiendo?',
+    painQuestion: '¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?',
     targetClientsWord: 'clientas',
     roleSingular: 'estilista',
     collaboratorsWord: 'estilistas',
-    physicalSpots: 'el mostrador y los tocadores'
+    physicalSpots: 'tocadores y mostrador',
+    establishmentWord: 'salón'
   },
   nails: {
     id: 'nails',
@@ -59,7 +62,8 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     targetClientsWord: 'clientas',
     roleSingular: 'manicurista',
     collaboratorsWord: 'manicuristas',
-    physicalSpots: 'el mostrador y las mesas de manicure'
+    physicalSpots: 'mesas de manicure y mostrador',
+    establishmentWord: 'estudio'
   },
   spa: {
     id: 'spa',
@@ -68,11 +72,12 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     badgeLabel: 'Spa & Bienestar',
     catalogPhrase: 'carta de tratamientos y sistema de reservas online:',
     teamPhrase: 'especialistas y tratamientos son 100% editables',
-    painQuestion: '¿Les gustaría que sus clientes o pacientes reserven sus citas y valoraciones automáticamente sin tener que responder tantos chats de WhatsApp?',
+    painQuestion: '¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?',
     targetClientsWord: 'clientes y pacientes',
     roleSingular: 'especialista',
     collaboratorsWord: 'terapeutas y especialistas',
-    physicalSpots: 'la recepción y las cabinas'
+    physicalSpots: 'recepción y cabinas',
+    establishmentWord: 'spa'
   },
   estetica: {
     id: 'estetica',
@@ -81,11 +86,12 @@ export const NICHE_CONFIGS: Record<BusinessNiche, NicheCopyConfig> = {
     badgeLabel: 'Estética & Facial',
     catalogPhrase: 'carta de procedimientos y sistema de reservas online:',
     teamPhrase: 'profesionales y protocolos son 100% editables',
-    painQuestion: '¿Les gustaría que sus pacientes reserven sus valoraciones y citas automáticamente sin tener que responder tantos chats de WhatsApp?',
+    painQuestion: '¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?',
     targetClientsWord: 'pacientes y clientas',
     roleSingular: 'profesional',
     collaboratorsWord: 'especialistas y cosmetólogas',
-    physicalSpots: 'la recepción y las cabinas'
+    physicalSpots: 'recepción y cabinas',
+    establishmentWord: 'clínica'
   }
 };
 
@@ -169,7 +175,7 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 }
 
 /**
- * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Cierre Nequi/Bancolombia $89k)
+ * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Cierre Nequi/Bancolombia $89k con anclaje de $650k)
  */
 export function generateStep2Pitch({
   businessName,
@@ -178,20 +184,25 @@ export function generateStep2Pitch({
 }: Omit<PitchOptions, 'slug'>): string {
   const niche = customNiche || detectBusinessNiche(businessName, category);
   const cfg = NICHE_CONFIGS[niche] || NICHE_CONFIGS.salon;
+  const cleanName = businessName?.trim() || 'su negocio';
 
-  return `¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan ${cfg.targetClientsWord} por responder tarde al WhatsApp.
+  return `¡Qué bueno que les guste! 🚀 El nivel y la calidad de ${cleanName} merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Bancolombia), se llevan:
+Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
 
-🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
 
-📲 1 mes gratis de agenda y reservas: Sus ${cfg.targetClientsWord} eligen ${cfg.roleSingular} y horario; ustedes controlan la agenda desde el celular.
+Por ese valor —que cuesta menos que un solo servicio en su ${cfg.establishmentWord}— reciben:
 
-🖨️ Material QR listo para imprimir: Afiches y tarjetas para ${cfg.physicalSpots}.
+🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
 
-Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+📲 1 mes gratis de agenda inteligente: Sus ${cfg.targetClientsWord} eligen horario y ${cfg.roleSingular} sin que ustedes pierdan tiempo respondiendo chats.
 
-¿Les comparto los datos de Nequi/Bancolombia para dejarles el acceso administrativo activo hoy mismo? ⚡`;
+🖨️ Kits QR listos para imprimir: Material para ${cfg.physicalSpots}.
+
+🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
+
+Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡`;
 }
 
 /**

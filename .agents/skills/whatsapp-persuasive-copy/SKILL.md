@@ -60,7 +60,7 @@ Esta skill proporciona las reglas maestras, frameworks psicológicos y plantilla
 ### 🟢 Plantilla 1: Primer Contacto (Paso 1: Gancho Visual + Demo Adaptado por Nicho)
 
 > [!IMPORTANT]
-> **Regla de Nicho**: El mensaje debe adaptarse a la identidad y jerga del negocio (barbería vs salón vs uñas vs spa). La pregunta de cierre apunta al dolor agudo de estar atendiendo mientras el teléfono no para de sonar con preguntas de agenda.
+> **Regla de Nicho**: El mensaje se adapta a la identidad y jerga del negocio (barbería vs salón vs uñas vs spa), manteniendo una pregunta de cierre amigable y directa sobre el diseño del demo.
 
 #### 💈 Opción A: Barbería / Barber Shop
 ```text
@@ -70,7 +70,7 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 (Todo el contenido, barberos y servicios son 100% editables).
 
-"¿Les gustaría que sus clientes agenden turnos solos sin tener que responder tantos chats de WhatsApp?"
+"¿Qué les pareció el demo que preparamos para [Nombre del Negocio]? ¿Les gustó cómo quedó?"
 ```
 
 #### ✨ Opción B: Salón de Belleza / Peluquería
@@ -81,7 +81,7 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 (Todo el contenido, estilistas y servicios son 100% editables).
 
-"¿Les gustaría que sus clientas agenden citas solas 24/7 sin tener que responder tantos chats de WhatsApp mientras están atendiendo?"
+"¿Qué les pareció el demo que preparamos para [Nombre del Salón]? ¿Les gustó cómo quedó?"
 ```
 
 #### 💅 Opción C: Nail Bar / Estudio de Uñas
@@ -103,79 +103,95 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 (Todo el contenido, especialistas y protocolos son 100% editables).
 
-"¿Les gustaría que sus clientes o pacientes reserven sus citas y valoraciones automáticamente sin tener que responder tantos chats de WhatsApp?"
+"¿Qué les pareció el demo que preparamos para [Nombre del Spa]? ¿Les gustó cómo quedó?"
 ```
 
 ---
 
-### 🎁 Plantilla 2: Respuesta al Interés & Cierre (Paso 2: Cupos de Lanzamiento $89k)
+### 🎁 Plantilla 2: Respuesta al Interés & Cierre (Paso 2: Cupos de Lanzamiento $89k con Anclaje de $650k)
 
-#### 💈 Opción A: Barbería / Barber Shop
+#### ✨ Opción Principal (Salón de Belleza / Peluquería - Ejemplo Sandra Color´s)
 ```text
-¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes por responder tarde al WhatsApp.
+¡Qué bueno que les guste! 🚀 El nivel y la calidad de Sandra Color´s merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
 
-🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
 
-📲 1 mes gratis de agenda y reservas: Sus clientes eligen barbero y horario; ustedes controlan la agenda desde el celular.
+Por ese valor —que cuesta menos que un solo servicio en su salón— reciben:
 
-🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y los espejos.
+🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
 
-Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+📲 1 mes gratis de agenda inteligente: Sus clientas eligen horario y estilista sin que ustedes pierdan tiempo respondiendo chats.
 
-¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+🖨️ Kits QR listos para imprimir: Material para tocadores y mostrador.
+
+🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
+
+Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
 ```
 
-#### ✨ Opción B: Salón de Belleza / Peluquería
+#### 💈 Opción Adaptada: Barbería / Barber Shop
 ```text
-¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientas por responder tarde al WhatsApp.
+¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre de la Barbería] merecen ese estatus ante cualquier cliente que los busque en Google.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
 
-🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
 
-📲 1 mes gratis de agenda y reservas: Sus clientas eligen estilista y horario; ustedes controlan la agenda desde el celular.
+Por ese valor —que cuesta menos que un solo servicio en su barbería— reciben:
 
-🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y los tocadores.
+🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
 
-Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+📲 1 mes gratis de agenda inteligente: Sus clientes eligen horario y barbero sin que ustedes pierdan tiempo respondiendo chats.
 
-¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+🖨️ Kits QR listos para imprimir: Material para espejos y mostrador.
+
+🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
+
+Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
 ```
 
-#### 💅 Opción C: Nail Bar / Estudio de Uñas
+#### 💅 Opción Adaptada: Nail Bar / Estudio de Uñas
 ```text
-¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientas por responder tarde al WhatsApp.
+¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre del Estudio] merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
 
-🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
 
-📲 1 mes gratis de agenda y reservas: Sus clientas eligen manicurista y horario; ustedes controlan la agenda desde el celular.
+Por ese valor —que cuesta menos que un solo servicio en su estudio— reciben:
 
-🖨️ Material QR listo para imprimir: Afiches y tarjetas para el mostrador y las mesas de manicure.
+🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
 
-Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+📲 1 mes gratis de agenda inteligente: Sus clientas eligen horario y manicurista sin que ustedes pierdan tiempo respondiendo chats.
 
-¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+🖨️ Kits QR listos para imprimir: Material para mesas de manicure y mostrador.
+
+🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
+
+Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
 ```
 
-#### 🧖‍♀️ Opción D: Spa & Centro de Estética
+#### 🧖‍♀️ Opción Adaptada: Spa & Centro de Estética
 ```text
-¡Qué bueno que les guste! 🚀 La armamos pensando en que no pierdan clientes o pacientes por responder tarde al WhatsApp.
+¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre del Spa] merecen ese estatus ante cualquier cliente que los busque en Google.
 
-Justo hoy abrimos cupos de lanzamiento en su zona. Por un pago único de activación de $89.000 COP (vía Nequi o Daviplata), se llevan:
+Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
 
-🌐 Web oficial activa por 1 año: Optimizada para móviles, con dominio, hosting rápido y botón directo a su WhatsApp.
+👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
 
-📲 1 mes gratis de agenda y reservas: Sus clientes o pacientes eligen especialista y horario; ustedes controlan la agenda desde el celular.
+Por ese valor —que cuesta menos que un solo servicio en su spa— reciben:
 
-🖨️ Material QR listo para imprimir: Afiches y tarjetas para la recepción y las cabinas.
+🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
 
-Sin contratos forzados: si después del mes gratis deciden no seguir con la app de citas, su página web sigue funcionando todo el año sin costo adicional.
+📲 1 mes gratis de agenda inteligente: Sus clientes y pacientes eligen horario y especialista sin que ustedes pierdan tiempo respondiendo chats.
 
-¿Les comparto los datos de Nequi/Daviplata para dejarles el acceso administrativo activo hoy mismo? ⚡
+🖨️ Kits QR listos para imprimir: Material para recepción y cabinas.
+
+🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
+
+Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
 ```
 
 ---

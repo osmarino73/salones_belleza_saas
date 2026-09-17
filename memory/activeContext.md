@@ -12,6 +12,21 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-81. **Ajuste de Pregunta de Cierre en Primer Mensaje de WhatsApp (Paso 1) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+    - **Requerimiento**: Ajustar el primer mensaje de prospección de WhatsApp (Paso 1) para usar de forma consistente la pregunta amigable: `"${resolvedPainQuestion}"` (e.g. `"¿Qué les pareció el demo que preparamos para Luciana Nails? ¿Les gustó cómo quedó?"`).
+    - **Implementación**:
+      1. Se actualizó `painQuestion` en `NICHE_CONFIGS` dentro de `whatsappPitchGenerator.ts` con la estructura `'¿Qué les pareció el demo que preparamos para {businessName}? ¿Les gustó cómo quedó?'`.
+      2. Se actualizó la skill `whatsapp-persuasive-copy` en `.agents/skills/whatsapp-persuasive-copy/SKILL.md`.
+      3. Compilación validada exitosamente mediante `npm run build` (código 0).
+
+-80. **Actualización de Copy Persuasivo en Mensaje 2 de WhatsApp (Anclaje $650k ➔ $7.417/mes / $89.000/año Nequi/Bancolombia) ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
+    - **Requerimiento**: Actualizar el mensaje de WhatsApp Paso 2 por el nuevo copy persuasivo que comunica el estatus del negocio (ej. *"El nivel y la calidad de Sandra Color´s merecen ese estatus ante cualquier cliente que las busque en Google"*), anclando el valor regular de desarrollo web ($650.000 COP) y presentando la iniciativa Negocio Online de Makloz Tech ($7.417 COP/mes - pago único anual de $89.000 COP vía Nequi/Bancolombia).
+    - **Implementación**:
+      1. Se actualizó `generateStep2Pitch` en `whatsappPitchGenerator.ts` con la nueva plantilla persuasiva y adaptación dinámica por nicho (`establishmentWord`, `targetClientsWord`, `roleSingular`, `physicalSpots`).
+      2. Se incluyó la propiedad `establishmentWord` en `NicheCopyConfig` y `NICHE_CONFIGS` (salón, barbería, estudio, spa, clínica).
+      3. Se actualizó la skill `whatsapp-persuasive-copy` en `.agents/skills/whatsapp-persuasive-copy/SKILL.md`.
+      4. Compilación validada exitosamente mediante `npm run build` (código 0).
+
 -79. **Integración de Pitch Persuasivo de WhatsApp "Estatus Makloz Tech" ([`whatsappPitchGenerator.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`whatsapp-persuasive-copy/SKILL.md`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/.agents/skills/whatsapp-persuasive-copy/SKILL.md))**:
     - **Requerimiento**: Mensaje extra de WhatsApp para prospectos comunicando la iniciativa *"Negocio Online"* de Makloz Tech, enfocado en elevar el estatus del negocio, subsidio del 85% en ingeniería/diseño ($650.000+ regular) y activación por $7.417/mes ($89.000/año) para hosting seguro y certificado SSL.
     - **Implementación**:
