@@ -72,67 +72,189 @@ function parseLocation(addressText, plusCodeText = '') {
   return { ciudad, departamento_pais };
 }
 
-function normalizeBusinessData(p) {
-  if (p.business_data && p.business_data.negocio) {
-    return p.business_data;
+function cleanCategoryString(rawCategory, businessName = '') {
+  if (!rawCategory) return '';
+  let cat = clean(rawCategory);
+  cat = cat.replace(/\d[.,]\d\s*\(\d+[\d.,]*\)/g, '').trim();
+  cat = cat.replace(/\b\d[.,]\d\b/g, '').trim();
+  cat = cat.replace(/^[·•|\s-]+|[·•|\s-]+$/g, '').trim();
+  if (businessName) {
+    const escapedName = businessName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    cat = cat.replace(new RegExp('^' + escapedName + '\\s*', 'i'), '').trim();
+    cat = cat.replace(new RegExp('\\s*' + escapedName + '$', 'i'), '').trim();
+  }
+  cat = cat.replace(/^[·•|\s-]+|[·•|\s-]+$/g, '').trim();
+  return cat;
+}
+
+function normalizePhone(rawPhone) {
+  if (!rawPhone || !clean(rawPhone) || /no visible|no registrado|sin teléfono/i.test(rawPhone)) {
+    return {
+      formatted: 'No visible en Google Maps',
+      international: '',
+      link: '',
+      isWhatsApp: false
+    };
   }
 
-  const name = p.name || 'Negocio Local';
-  const phone = p.phone || '';
-  const digits = phone.replace(/\D/g, '');
-  let intPhone = '';
+  const digits = rawPhone.replace(/\D/g, '');
+  if (!digits || digits.length < 7) {
+    return {
+      formatted: 'No visible en Google Maps',
+      international: '',
+      link: '',
+      isWhatsApp: false
+    };
+  }
 
-  if (digits.startsWith('57') && digits.length >= 12) {
-    intPhone = `+${digits}`;
+  let international = '';
+  let formatted = rawPhone;
+  let isWhatsApp = false;
+
+  // Celular colombiano: empieza en 3
+  if (digits.startsWith('57') && digits.length >= 12 && digits.charAt(2) === '3') {
+    international = `+${digits.slice(0, 12)}`;
+    const core = digits.slice(2, 12);
+    formatted = `(+57) ${core.slice(0, 3)} ${core.slice(3, 6)} ${core.slice(6)}`;
+    isWhatsApp = true;
   } else if (digits.length === 10 && digits.startsWith('3')) {
-    intPhone = `+57${digits}`;
-  } else if (digits.length > 8) {
-    intPhone = `+57${digits}`;
+    international = `+57${digits}`;
+    formatted = `(+57) ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+    isWhatsApp = true;
+  } 
+  // Fijo de Colombia: empieza en 60 -> NO ES WHATSAPP
+  else if (digits.startsWith('5760') && digits.length >= 12) {
+    international = `+${digits.slice(0, 12)}`;
+    const code = digits.slice(2, 5);
+    const local = digits.slice(5, 12);
+    formatted = `(${code}) ${local.slice(0, 3)} ${local.slice(3)}`;
+    isWhatsApp = false;
+  } else if (digits.length === 10 && digits.startsWith('60')) {
+    international = `+57${digits}`;
+    const code = digits.slice(0, 3);
+    const local = digits.slice(3);
+    formatted = `(${code}) ${local.slice(0, 3)} ${local.slice(3)}`;
+    isWhatsApp = false;
+  }
+  // Fijo 7 dígitos
+  else if (digits.length === 7) {
+    international = `+57604${digits}`;
+    formatted = `(604) ${digits.slice(0, 3)} ${digits.slice(3)}`;
+    isWhatsApp = false;
+  }
+  // Otros números internacionales
+  else if (digits.length >= 10) {
+    if (rawPhone.trim().startsWith('+')) {
+      international = `+${digits}`;
+    } else {
+      international = `+57${digits}`;
+    }
+    formatted = international;
+    isWhatsApp = digits.startsWith('3') || (digits.startsWith('573') && digits.length >= 12);
   } else {
-    intPhone = digits ? `+57${digits}` : '';
+    formatted = rawPhone;
+    international = `+57${digits}`;
+    isWhatsApp = false;
   }
 
-  const loc = parseLocation(p.address, p.plusCode);
-  const rawCat = p.category || 'Negocio Local';
-
-  let catKey = 'general';
-  const lowerCat = `${rawCat} ${name}`.toLowerCase();
-  if (/dent|odontol|ortodon/i.test(lowerCat)) catKey = 'dental';
-  else if (/barber|barba/i.test(lowerCat)) catKey = 'barberia';
-  else if (/spa|masaje/i.test(lowerCat)) catKey = 'spa';
-  else if (/nail|uña/i.test(lowerCat)) catKey = 'nails';
-  else if (/ceja|pestaña/i.test(lowerCat)) catKey = 'cejas_pestanas';
-  else if (/est[eé]tic|facial/i.test(lowerCat)) catKey = 'estetica';
-  else if (/peluquer|sal[oó]n/i.test(lowerCat)) catKey = 'salon';
-  else if (rawCat && rawCat.length > 1) catKey = rawCat.toLowerCase().trim().replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  const waNumber = isWhatsApp ? international.replace(/\D/g, '') : '';
+  const link = waNumber ? `https://wa.me/${waNumber}` : '';
 
   return {
+    formatted: formatted || international || 'No visible en Google Maps',
+    international: waNumber ? international : '',
+    link,
+    isWhatsApp
+  };
+}
+
+function detectCategoryKey(categoryText, nameText) {
+  const combined = `${categoryText || ''} ${nameText || ''}`.toLowerCase();
+  if (/dent|odontol|ortodon|sonrisa|implante|dient/i.test(combined)) return 'dental';
+  if (/barber|barba|corte\s+caballero|fade|barberia/i.test(combined)) return 'barberia';
+  if (/spa|masaje|relaj|sauna|hidroterap|bienestar|holistic/i.test(combined)) return 'spa';
+  if (/nail|uña|manicur|pedicur|acrilic|polygel/i.test(combined)) return 'nails';
+  if (/ceja|pestaña|brow|lash|microblad|laminad/i.test(combined)) return 'cejas_pestanas';
+  if (/est[eé]tic|facial|corporal|dermo|peeling|laser|depila|cosmiatr/i.test(combined)) return 'estetica';
+  if (/peluquer|sal[oó]n de belleza|hair|estilist|balayage|peinado/i.test(combined)) return 'salon';
+  
+  if (categoryText && categoryText.trim().length > 1) {
+    return categoryText.toLowerCase().trim().replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+  return 'general';
+}
+
+function getRubroName(categoryText, catKey) {
+  if (categoryText && categoryText.trim().length > 1) {
+    return categoryText.trim();
+  }
+  const map = {
+    salon: 'Salón de Belleza & Peluquería',
+    barberia: 'Barbería & Peluquería Masculina',
+    spa: 'Spa & Centro de Masajes',
+    nails: 'Nails Bar & Manicura',
+    cejas_pestanas: 'Estudio de Cejas & Pestañas',
+    estetica: 'Centro de Estética',
+    dental: 'Clínica Odontológica'
+  };
+  return map[catKey] || 'Negocio Local';
+}
+
+function generateSlogan(rubro, name, ciudad) {
+  if (name && ciudad) {
+    return `${name} — ${rubro} en ${ciudad}`;
+  }
+  return `${name} — ${rubro}`;
+}
+
+function normalizeBusinessData(p, index = 1) {
+  const name = p.name || (p.negocio && p.negocio.nombre) || 'Negocio Local';
+  const rawCat = cleanCategoryString(p.category || (p.negocio && p.negocio.rubro) || '', name);
+  const rawPhone = p.phone || (p.negocio && p.negocio.contacto && (p.negocio.contacto.telefono_principal || (p.negocio.contacto.whatsapp && p.negocio.contacto.whatsapp.numero))) || '';
+  const phoneData = normalizePhone(rawPhone);
+  const rawAddress = p.address || (p.negocio && p.negocio.ubicacion && p.negocio.ubicacion.direccion) || '';
+  const loc = parseLocation(rawAddress, p.plusCode);
+  const catKey = detectCategoryKey(rawCat, name);
+  const rubro = getRubroName(rawCat, catKey);
+  const eslogan = generateSlogan(rubro, name, loc.ciudad);
+
+  const waNumber = phoneData.isWhatsApp ? phoneData.international.replace(/\D/g, '') : '';
+  const waLink = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(`Hola ${name}, quisiera solicitar información.`)}` : '';
+
+  const bookingStatus = p.bookingStatus || (p.negocio && p.negocio.sistema_reservas && p.negocio.sistema_reservas.estado) || (p.booking?.hasBookingSystem ? 'CON RESERVAS' : 'SIN RESERVAS');
+  const isNoBooking = bookingStatus === 'SIN RESERVAS';
+
+  return {
+    id: p.id || (p.negocio && p.negocio.id) || `lead-${Date.now()}-${index}`,
+    status: p.status || 'nuevo',
     negocio: {
       nombre: name,
-      rubro: rawCat,
+      rubro: rubro,
       categoria: catKey,
-      eslogan: `${name} — ${rawCat} en ${loc.ciudad}`,
-      calificacion: p.rating || 'No calificado',
-      resenas: p.reviews || '0',
+      eslogan: eslogan,
+      calificacion: p.rating || (p.negocio && p.negocio.calificacion) || '5.0',
+      resenas: p.reviews || (p.negocio && p.negocio.resenas) || '0',
       contacto: {
-        telefono_principal: phone || intPhone || 'No visible en Google Maps',
+        telefono_principal: phoneData.formatted,
         whatsapp: {
-          numero: intPhone,
-          link: intPhone ? `https://wa.me/${intPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${name}, quisiera solicitar información.`)}` : ''
+          numero: phoneData.isWhatsApp ? phoneData.international : '',
+          link: waLink
         }
       },
       ubicacion: {
-        direccion: p.address || 'Dirección no visible en Google Maps',
+        direccion: rawAddress || 'Dirección no visible en Google Maps',
         ciudad: loc.ciudad,
         departamento_pais: loc.departamento_pais,
-        google_maps_url: p.googleMapsUrl || 'https://maps.google.com'
+        google_maps_url: p.googleMapsUrl || (p.negocio && p.negocio.ubicacion && p.negocio.ubicacion.google_maps_url) || 'https://maps.google.com'
       },
-      horario_atencion: p.schedule || 'No especificado en Google Maps',
-      sitio_web: p.website || '',
+      horario_atencion: p.schedule || (p.negocio && p.negocio.horario_atencion) || 'No especificado en Google Maps',
+      sitio_web: p.website || (p.negocio && p.negocio.sitio_web) || '',
       sistema_reservas: {
-        estado: p.bookingStatus || 'SIN RESERVAS'
+        estado: bookingStatus,
+        oportunidad_saas: isNoBooking ? 'ALTA (Lead Calificado)' : 'MEDIA',
+        motivo_auditoria: p.website ? 'Sitio web analizado.' : 'Sin sitio web (Oportunidad alta).'
       },
-      servicios: p.services || [],
+      servicios: (p.services && p.services.length > 0) ? p.services : (p.negocio && p.negocio.servicios) || [],
       especialistas: []
     }
   };
@@ -201,19 +323,28 @@ async function render() {
 
     const item = document.createElement('div');
     item.className = 'item';
+
+    const hasWa = !!businessObj.negocio.contacto.whatsapp.numero;
+    const phoneVal = businessObj.negocio.contacto.telefono_principal;
+    const phoneBadge = hasWa
+      ? `<span style="color:#10b981;font-weight:bold;margin-left:4px;">🟢 WA</span>`
+      : (phoneVal && phoneVal !== 'No visible en Google Maps'
+        ? `<span style="color:#94a3b8;font-size:11px;margin-left:4px;">☎️ Fijo</span>`
+        : `<span style="color:#f59e0b;font-style:italic;font-size:11px;margin-left:4px;">Sin teléfono</span>`);
+
     item.innerHTML = `
       <div class="item-header">
         <div class="name">${esc(p.name)} ${p.rating ? `<span class="rating-badge">★ ${esc(businessObj.negocio.calificacion)} (${esc(businessObj.negocio.resenas)})</span>` : ''}</div>
         <button class="btn-delete" title="Eliminar este prospecto">×</button>
       </div>
-      <div class="meta meta-category">📂 ${esc(businessObj.negocio.rubro || p.category || 'Salón & Spa')}</div>
-      <div class="meta">📍 ${esc(businessObj.negocio.ubicacion.direccion || p.address || 'Sin dirección')}</div>
+      <div class="meta meta-category">📂 ${esc(businessObj.negocio.rubro || 'Comercio / Servicios')}</div>
+      <div class="meta">📍 ${esc(businessObj.negocio.ubicacion.direccion || 'Sin dirección')}</div>
       <div class="meta">🏙️ ${esc(businessObj.negocio.ubicacion.ciudad)} (${esc(businessObj.negocio.ubicacion.departamento_pais)})</div>
-      <div class="meta meta-phone">📞 ${esc(businessObj.negocio.contacto.whatsapp.numero || p.phone || 'Sin teléfono')}</div>
+      <div class="meta meta-phone">📞 <strong>${esc(phoneVal)}</strong> ${phoneBadge}</div>
       <div class="meta">🌐 ${p.website ? `<a href="${esc(p.website)}" target="_blank">${esc(p.website)}</a>` : '<span style="color:#ef4444;">Sin sitio web</span>'}</div>
       <div class="meta status-badge-container">
-        <span class="status-badge ${p.bookingStatus === 'CON RESERVAS' ? 'status-ok' : 'status-lead'}">
-          ${esc(p.bookingStatus || 'SIN RESERVAS (OPORTUNIDAD)')}
+        <span class="status-badge ${businessObj.negocio.sistema_reservas.estado === 'CON RESERVAS' ? 'status-ok' : 'status-lead'}">
+          ${businessObj.negocio.sistema_reservas.estado === 'CON RESERVAS' ? '✅ CON RESERVAS' : '🔥 SIN RESERVAS (OPORTUNIDAD)'}
         </span>
       </div>
 
@@ -243,14 +374,28 @@ function csvCell(v) {
   return `"${String(v || '').replace(/"/g, '""')}"`;
 }
 
-// Exportar todos a JSON (Bundle para SaaS Homepage Studio)
+// Copiar todos a JSON (Bundle para CRM Z-Control)
+const copyBundleBtn = document.querySelector('#copy-bundle');
+if (copyBundleBtn) {
+  copyBundleBtn.onclick = async (e) => {
+    const data = await get();
+    if (!data.length) {
+      alert('No hay prospectos guardados para copiar.');
+      return;
+    }
+    const bundle = data.map((p, idx) => normalizeBusinessData(p, idx + 1));
+    await copyToClipboard(JSON.stringify(bundle, null, 2), e.target);
+  };
+}
+
+// Exportar todos a JSON (Bundle para SaaS Homepage Studio y CRM)
 document.querySelector('#export-json').onclick = async () => {
   const data = await get();
   if (!data.length) {
     alert('No hay prospectos guardados para exportar.');
     return;
   }
-  const bundle = data.map(p => normalizeBusinessData(p));
+  const bundle = data.map((p, idx) => normalizeBusinessData(p, idx + 1));
   downloadJson(`DATOS_NEGOCIOS_BUNDLE_${new Date().toISOString().slice(0, 10)}.json`, bundle);
 };
 
@@ -261,21 +406,22 @@ document.querySelector('#export').onclick = async () => {
     alert('No hay prospectos para exportar.');
     return;
   }
-  const header = ['nombre', 'categoria_rubro', 'calificacion', 'resenas', 'telefono_whatsapp', 'direccion', 'ciudad', 'sitio_web', 'estado_reservas', 'maps_url', 'fecha_guardado'];
-  const rows = data.map(p => {
-    const b = normalizeBusinessData(p);
+  const header = ['nombre', 'categoria_rubro', 'calificacion', 'resenas', 'telefono_principal', 'whatsapp_numero', 'direccion', 'ciudad', 'sitio_web', 'estado_reservas', 'maps_url', 'fecha_guardado'];
+  const rows = data.map((p, idx) => {
+    const b = normalizeBusinessData(p, idx + 1);
     return [
       p.name,
       b.negocio.rubro,
       b.negocio.calificacion,
       b.negocio.resenas,
+      b.negocio.contacto.telefono_principal,
       b.negocio.contacto.whatsapp.numero,
       b.negocio.ubicacion.direccion,
       b.negocio.ubicacion.ciudad,
       p.website,
-      p.bookingStatus,
-      p.googleMapsUrl,
-      p.savedAt
+      b.negocio.sistema_reservas.estado,
+      b.negocio.ubicacion.google_maps_url,
+      p.savedAt || new Date().toISOString()
     ].map(csvCell).join(',');
   });
 
