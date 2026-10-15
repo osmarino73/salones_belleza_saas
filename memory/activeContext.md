@@ -12,6 +12,54 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-87. **Botón de Copiado de JSON Completo por Negocio en CRM Z-Control (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+    - **Requerimiento**: El usuario solicitó un botón para copiar el JSON con toda la información de ese negocio específico.
+    - **Implementación**:
+      1. **Botón en Tabla (`.leads-table`)**: En la columna "Acciones de Copiado", se añadió `<button class="copy-pill btn-copy-lead-json"><i class="fa-solid fa-code"></i> JSON</button>`.
+      2. **Botón en Tarjetas (Grid View)**: En la barra inferior `.quick-copy-bar`, se agregó el botón `<i class="fa-solid fa-code"></i> JSON`.
+      3. **Botón en Tarjetas Kanban**: Se integró el botón JSON en la barra de acciones de cada tarjeta kanban.
+      4. **Botón en Modal de Detalle/Edición (`#modal-detail`)**: Se añadió en el pie del modal el botón destacado `Copiar JSON de este Negocio`.
+      5. **Función `copyLeadJsonById(id)`**: Extrae el objeto completo del negocio (`item` con `id`, `status`, `notes`, y `negocio: { nombre, rubro, contacto, ubicacion, sitio_web, sistema_reservas, servicios, especialistas }`), lo formatea con sangría limpia de 2 espacios y lo copia al portapapeles con notificación toast inmediata (`¡JSON de "[Nombre Negocio]" copiado!`).
+    - **Validación**: Sintaxis JS validada en VM sin errores, compilación general limpia con `npm run build`.
+
+-86. **Incorporación de Columnas 'Oportunidad' y 'Sitio Web' en Tablero CRM Z-Control (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+    - **Requerimiento**: El usuario solicitó agregar al tablero las columnas de "Oportunidad" y "Sitio Web".
+    - **Implementación**:
+      1. **Cabeceras de Tabla (`<thead>`)**: Se agregaron `<th>Oportunidad</th>` y `<th>Sitio Web</th>` en la vista de tabla (`#table-view .leads-table`), actualizando el `colspan` a 9 para estados vacíos.
+      2. **Badges de Oportunidad Reactivos**: Detección de oportunidad SaaS (`ALTA`, `MEDIA`, `BAJA`). Si el prospecto no tiene sitio web, se cataloga automáticamente con badge rosa de oportunidad `🔥 ALTA`.
+      3. **Célula de Sitio Web Inteligente**: Si el negocio posee URL, se muestra un enlace seguro con ícono de globo y dominio recortado (`🌐 dominio.com ↗`). Si no posee web registrada, se muestra la etiqueta discreta `Sin web`, facilitando al asesor detectar candidatos ideales para venderles Kowy.
+      4. **Sincronización Multivista**: Se incluyeron también los badges y accesos a la web en la vista de tarjetas (Grid), vista Kanban y en el exportador HTML (`generateHTML()`).
+    - **Validación**: Sintaxis de JavaScript y compilación general verificadas sin errores.
+
+-85. **Soporte Drag & Drop y Explorador de Archivos para Importación JSON en Z-Control CRM (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+    - **Requerimiento**: El usuario solicitó poder arrastrar y soltar el archivo `.json` o tener un botón para buscar y seleccionar el archivo directamente desde su computador en el modal "Importador & Editor JSON".
+    - **Implementación**:
+      1. **Zona Drag & Drop Visual (`#json-dropzone`)**: Diseño glassmorphic con borde punteado reactivo (`2px dashed rgba(99, 102, 241, 0.45)`), ícono en la nube `fa-cloud-arrow-up`, animaciones al arrastrar (`.dragover`), y texto explicativo.
+      2. **Selector de Archivos Nativo (`#btn-browse-file` + `#json-file-input`)**: Botón *"Buscar Archivo JSON..."* que abre el diálogo de exploración de archivos de Windows/navegador (`accept=".json,application/json"`).
+      3. **Doble Detección Drag & Drop**: Se capturan los eventos tanto en la zona de drop superior como directamente soltando el archivo sobre el `<textarea id="json-input">`.
+      4. **Lectura Asíncrona y Formateo**: Lectura con `FileReader.readAsText(file, 'UTF-8')`, validación de estructura con `JSON.parse()`, formateo estético indentado a 2 espacios y notificación toast con conteo de prospectos cargados.
+      5. **Badge de Confirmación Visual (`#json-file-badge`)**: Muestra en tiempo real el nombre del archivo cargado, tamaño formateado (KB/MB) y cantidad de prospectos listos para importar.
+    - **Validación**: Sintaxis de JavaScript y árbol HTML verificados sin errores.
+
+-84. **Corrección de Extracción de Datos Reales, WhatsApp y Resiliencia en Maps Reservation Prospector AI ([`content.js`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/document/maps-reservation-prospector-v2/content.js))**:
+    - **Problema Reportado**: 
+      1. En "⚡ Analizar Búsqueda", el número de WhatsApp aparecía como el genérico ficticio `+573000000000`.
+      2. Al ejecutar el análisis, el proceso comenzaba bien pero en algún momento se detenía o quedaba congelado.
+    - **Causas Raíz Diagnosticadas**: 
+      1. Google Maps oculta teléfonos y direcciones completas en las tarjetas superficiales del feed de búsqueda; `normalizePhone` forzaba un fallback a `+573000000000`.
+      2. Desincronización de nodos DOM: al abrir y cerrar fichas, Google Maps re-renderiza el feed virtual, dejando las referencias DOM de las tarjetas siguientes desconectadas (`!isConnected`).
+      3. Botón de regreso con textos dinámicos ("Volver a los resultados de la búsqueda", "Volver", "Regresar") que impedían cerrar la ficha y bloqueaban el feed.
+      4. Sitios web externos con tiempos de respuesta lentos o caídos en `CHECK_WEBSITE` que dejaban esperando indefinidamente la llamada asíncrona.
+      5. Errores no aislados por tarjeta: si una tarjeta lanzaba un error, se abortaba todo el bucle de escaneo.
+    - **Solución Implementada**:
+      1. Erradicación total del número ficticio `+573000000000`. Negocios sin teléfono retornan vacío legítimo y se muestran como *"No registrado en Maps"*.
+      2. **Inspección Profunda Automática y Blindada**: Consulta dinámica de tarjetas frescas conectadas al DOM en cada ciclo `i`, scroll suave para asegurar visibilidad e interactividad.
+      3. **Retorno Seguro al Feed (`closeDetailAndReturnToFeed`)**: Soporte para todas las variantes de botones de regreso en español/inglés, con espera activa de visibilidad del feed y fallback a `window.history.back()`.
+      4. **Auditoría de Reservas con Timeout (`checkWebsiteWithTimeout`)**: Límite de 3.0 segundos con `Promise.race` para evitar congelamiento ante sitios lentos o caídos.
+      5. **Aislamiento de Errores por Negocio**: Bloque `try / catch` por cada tarjeta con recuperación automática del feed si una ficha quedó abierta.
+      6. Botón de detención `⏹️ Detener Escaneo`, botón `💾 Guardar Todos` y edición rápida `✏️`.
+    - **Validación**: Pruebas unitarias de parsing aprobadas, verificación de sintaxis JS limpia y compilación `npm run build` (código 0).
+
 -83. **Preservación Fiel del Texto y Escala Tipográfica Nativa (Desktop y Móvil) del HTML Base ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Requerimiento**: Coincidir 100% con la maquetación, tamaños y saltos de línea del HTML base tanto en computadores como en pantallas móviles.
     - **Solución Aplicada**:

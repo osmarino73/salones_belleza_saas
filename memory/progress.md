@@ -1,3 +1,46 @@
+- [x] **Botón de Copiado de JSON Completo por Negocio en CRM Z-Control (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+  - **Requerimiento**: Botón para copiar el JSON con toda la información de ese negocio específico.
+  - **Implementación**:
+    1. **Botón en Tabla**: En la columna de acciones de copiado se añadió el botón `<button class="copy-pill btn-copy-lead-json"><i class="fa-solid fa-code"></i> JSON</button>`.
+    2. **Botón en Cuadrícula (Cards)**: En `.quick-copy-bar` se incorporó el botón `JSON`.
+    3. **Botón en Tarjetas Kanban**: Integrado junto a los botones de Chat y Editar.
+    4. **Botón en Modal de Detalle**: Botón destacado en el pie del modal: `Copiar JSON de este Negocio`.
+    5. **Copiado al Portapapeles**: Obtiene el objeto íntegro del lead con toda la información del negocio (`nombre`, `rubro`, `contacto`, `ubicacion`, `sitio_web`, `sistema_reservas`, `servicios`, `especialistas`, `status`, `notes`), formateado en JSON con sangría (2 espacios), y muestra toast confirmando el copiado.
+  - **Validación**: Sintaxis JS verificada en VM y compilación exitosa con `npm run build`.
+
+- [x] **Columnas 'Oportunidad' y 'Sitio Web' en Tablero CRM Z-Control (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+  - **Requerimiento**: Agregar las columnas de "Oportunidad" y "Sitio Web" en el tablero de prospectos.
+  - **Implementación**:
+    1. **Encabezados de Tabla**: Añadidos `<th>Oportunidad</th>` y `<th>Sitio Web</th>` en `.leads-table`.
+    2. **Badges de Oportunidad**: Insignias visuales temáticas (`🔥 ALTA` en rosa brillante, `⚡ MEDIA` en ámbar, `⚪ BAJA` en gris). Si el prospecto no posee sitio web registrado, clasifica automáticamente como oportunidad ALTA para vender el SaaS Kowy.
+    3. **Enlace a Sitio Web**: Si existe URL, genera un enlace interactivo con dominio limpio (`🌐 dominio.com ↗`); si no tiene sitio web, exhibe una etiqueta limpia `Sin web`.
+    4. **Sincronización Transversal**: Badges de oportunidad y botones de acceso al sitio web añadidos también a la vista de Cuadrícula (Cards), vista Kanban y al generador de tabla HTML exportable.
+  - **Validación**: Análisis y validación de sintaxis JS en VM y compilación limpia con `npm run build`.
+
+- [x] **Soporte Drag & Drop y Explorador de Archivos JSON en Z-Control CRM (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
+  - **Requerimiento**: Poder arrastrar y soltar archivos `.json` directamente o disponer de un botón para buscar y seleccionar el archivo en el computador dentro del modal "Importador & Editor JSON".
+  - **Implementación**:
+    1. **Zona Drag & Drop Visual (`#json-dropzone`)**: Caja con borde punteado interactivo, feedback visual al pasar el cursor (`.dragover`), ícono de nube y textos explicativos.
+    2. **Explorador de Archivos Nativo (`#btn-browse-file` + `#json-file-input`)**: Botón *"Buscar Archivo JSON..."* que abre el selector de archivos del sistema operativo con filtro para archivos `.json`.
+    3. **Doble Captura de Eventos**: Permite soltar el archivo tanto en la dropzone superior como directamente sobre el área de texto `<textarea id="json-input">`.
+    4. **Lectura y Formateo Instantáneo**: Carga mediante `FileReader`, parseo JSON seguro, auto-indentación estética (2 espacios) y notificación toast con el total de prospectos detectados.
+    5. **Badge de Confirmación (`#json-file-badge`)**: Muestra el nombre del archivo cargado, tamaño formateado (KB/MB) y cantidad de prospectos listos para importar.
+  - **Validación**: Pruebas de sintaxis JS pasadas exitosamente sin errores.
+
+- [x] **Corrección de Extracción de Datos Reales y WhatsApp en Maps Reservation Prospector AI ([`content.js`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/document/maps-reservation-prospector-v2/content.js))**:
+  - **Problema**: Al presionar "⚡ Analizar Búsqueda", los datos de los negocios quedaban incompletos y el WhatsApp se reemplazaba con el valor genérico ficticio `+573000000000`. Además, en listas largas el proceso podía detenerse a mitad de camino.
+  - **Causa Raíz**: 
+    1. Google Maps oculta el teléfono, dirección completa y servicios en las tarjetas compactas del feed; el scraper anterior leía únicamente el HTML estático superficial sin abrir las fichas.
+    2. `normalizePhone` tenía programado por defecto el fallback ficticio `+573000000000`.
+    3. Detenciones a mitad de camino: desincronización de nodos DOM tras abrir y cerrar fichas (nodos DOM huérfanos/desconectados), variantes de texto en el botón Volver de Maps ("Volver a los resultados de la búsqueda") que dejaban la ficha abierta, o sitios web con tiempos de respuesta lentos en el auditor de reservas.
+  - **Solución Implementada**:
+    1. Eliminación total del fallback `+573000000000`. Si un negocio no tiene teléfono, ahora retorna cadena vacía y se etiqueta como `"No registrado en Maps"`.
+    2. **Inspección Profunda Automática y Blindada**: en `scan()`, el extractor consulta dinámicamente tarjetas frescas conectadas al DOM en cada iteración, hace scroll suave al negocio, abre la ficha, extrae teléfono real (`button[data-item-id*="phone"]`), dirección completa, horario, sitio web y chips de servicios reales.
+    3. **Retorno Seguro al Feed (`closeDetailAndReturnToFeed`)**: soporte para selectores de regreso en español ("Volver", "Atrás", "Regresar", `hV10qc`) con fallback a `history.back()`, esperando la confirmación activa del feed antes del siguiente negocio.
+    4. **Auditoría de Reservas con Timeout (`checkWebsiteWithTimeout`)**: límite de 3.0s con `Promise.race` para evitar que páginas caídas o lentas congelen el análisis.
+    5. **Aislamiento de Errores por Tarjeta**: `try / catch` independiente por cada negocio para que un fallo o anuncio patrocinado nunca detenga el escaneo global.
+    6. Control de flujo con botón interactivo `⏹️ Detener Escaneo`, botón `💾 Guardar Todos` y edición rápida `✏️`.
+
 - [x] **Preservación Fiel del Texto del Header & Eyebrows Nativos del HTML Base ([`prospectHtmlInjector.ts`](file:///c:/Users/Rio%20Belen/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
   - **Requerimiento**: Tomar tal cual el texto del header y escrituras/eyebrows cursivos como vienen maquetados originalmente en la plantilla HTML base (ej. "Katerine Canedo", "ESTÉTICA FACIAL INTEGRAL · MONTERÍA", eslóganes y taglines).
   - **Implementación**:
