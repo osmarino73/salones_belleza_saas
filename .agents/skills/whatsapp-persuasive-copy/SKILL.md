@@ -108,120 +108,114 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 
 ---
 
-### 🎁 Plantilla 2: Respuesta al Interés & Cierre (Paso 2: Cupos de Lanzamiento $89k con Anclaje de $650k)
+### 🎁 Plantilla 2: Respuesta al Interés & Cierre (Paso 2: Oferta 14 Días Gratis Plan Inicio $29k)
 
 #### ✨ Opción Principal (Salón de Belleza / Peluquería - Ejemplo Sandra Color´s)
 ```text
 ¡Qué bueno que les guste! 🚀 El nivel y la calidad de Sandra Color´s merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
+Queremos que lo prueben en el día a día sin riesgo:
 
-👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
+🎁 Les activamos 14 DÍAS DE PRUEBA 100% GRATIS (2 semanas completas) en el Plan Inicio.
+Cero cobro por desarrollo web, cero cobro por hosting ni costos ocultos.
 
-Por ese valor —que cuesta menos que un solo servicio en su salón— reciben:
+Durante sus 14 días de prueba disfrutan:
+🌐 Su página web oficial activa con fotos y catálogo de servicios.
+📅 Sistema interactivo de agendamiento 24/7 para hasta 3 estilistas.
+📲 Enlace directo de reservas para la bio de su Instagram, TikTok y WhatsApp.
+📊 Panel de control para gestionar sus citas y turnos del día sin llamadas.
 
-🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
+Si tras los 14 días les encanta el sistema, continúan por solo $29.000 COP al mes (sin contratos ni permanencia). Si no, no pagan absolutamente nada.
 
-📲 1 mes gratis de agenda inteligente: Sus clientas eligen horario y estilista sin que ustedes pierdan tiempo respondiendo chats.
-
-🖨️ Kits QR listos para imprimir: Material para tocadores y mostrador.
-
-🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
-
-Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
+¿A qué correo electrónico les creamos el acceso administrativo para dejársela activa hoy mismo? ⚡
 ```
 
 #### 💈 Opción Adaptada: Barbería / Barber Shop
 ```text
 ¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre de la Barbería] merecen ese estatus ante cualquier cliente que los busque en Google.
 
-Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
+Queremos que lo prueben en el día a día sin riesgo:
 
-👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
+🎁 Les activamos 14 DÍAS DE PRUEBA 100% GRATIS (2 semanas completas) en el Plan Inicio.
+Cero cobro por desarrollo web, cero cobro por hosting ni costos ocultos.
 
-Por ese valor —que cuesta menos que un solo servicio en su barbería— reciben:
+Durante sus 14 días de prueba disfrutan:
+🌐 Su página web oficial activa con fotos y catálogo de cortes.
+📅 Sistema interactivo de agendamiento 24/7 para hasta 3 barberos.
+📲 Enlace directo de reservas para la bio de su Instagram, TikTok y WhatsApp.
+📊 Panel de control para gestionar sus citas y turnos del día sin llamadas.
 
-🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
+Si tras los 14 días les encanta el sistema, continúan por solo $29.000 COP al mes (sin contratos ni permanencia). Si no, no pagan absolutamente nada.
 
-📲 1 mes gratis de agenda inteligente: Sus clientes eligen horario y barbero sin que ustedes pierdan tiempo respondiendo chats.
-
-🖨️ Kits QR listos para imprimir: Material para espejos y mostrador.
-
-🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
-
-Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
+¿A qué correo electrónico les creamos el acceso administrativo para dejársela activa hoy mismo? ⚡
 ```
 
 #### 💅 Opción Adaptada: Nail Bar / Estudio de Uñas
 ```text
 ¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre del Estudio] merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
+Queremos que lo prueben en el día a día sin riesgo:
 
-👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
+🎁 Les activamos 14 DÍAS DE PRUEBA 100% GRATIS (2 semanas completas) en el Plan Inicio.
+Cero cobro por desarrollo web, cero cobro por hosting ni costos ocultos.
 
-Por ese valor —que cuesta menos que un solo servicio en su estudio— reciben:
+Durante sus 14 días de prueba disfrutan:
+🌐 Su página web oficial activa con fotos y catálogo de diseños de uñas.
+📅 Sistema interactivo de agendamiento 24/7 para hasta 3 manicuristas.
+📲 Enlace directo de reservas para la bio de su Instagram, TikTok y WhatsApp.
+📊 Panel de control para gestionar sus citas y turnos del día sin llamadas.
 
-🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
+Si tras los 14 días les encanta el sistema, continúan por solo $29.000 COP al mes (sin contratos ni permanencia). Si no, no pagan absolutamente nada.
 
-📲 1 mes gratis de agenda inteligente: Sus clientas eligen horario y manicurista sin que ustedes pierdan tiempo respondiendo chats.
-
-🖨️ Kits QR listos para imprimir: Material para mesas de manicure y mostrador.
-
-🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
-
-Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
+¿A qué correo electrónico les creamos el acceso administrativo para dejársela activa hoy mismo? ⚡
 ```
 
 #### 🧖‍♀️ Opción Adaptada: Spa & Centro de Estética
 ```text
 ¡Qué bueno que les guste! 🚀 El nivel y la calidad de [Nombre del Spa] merecen ese estatus ante cualquier cliente que los busque en Google.
 
-Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
+Queremos que lo prueben en el día a día sin riesgo:
 
-👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
+🎁 Les activamos 14 DÍAS DE PRUEBA 100% GRATIS (2 semanas completas) en el Plan Inicio.
+Cero cobro por desarrollo web, cero cobro por hosting ni costos ocultos.
 
-Por ese valor —que cuesta menos que un solo servicio en su spa— reciben:
+Durante sus 14 días de prueba disfrutan:
+🌐 Su página web oficial activa con fotos y carta de tratamientos.
+📅 Sistema interactivo de agendamiento 24/7 para hasta 3 especialistas.
+📲 Enlace directo de reservas para la bio de su Instagram, TikTok y WhatsApp.
+📊 Panel de control para gestionar sus citas y turnos del día sin llamadas.
 
-🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
+Si tras los 14 días les encanta el sistema, continúan por solo $29.000 COP al mes (sin contratos ni permanencia). Si no, no pagan absolutamente nada.
 
-📲 1 mes gratis de agenda inteligente: Sus clientes y pacientes eligen horario y especialista sin que ustedes pierdan tiempo respondiendo chats.
-
-🖨️ Kits QR listos para imprimir: Material para recepción y cabinas.
-
-🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
-
-Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡
+¿A qué correo electrónico les creamos el acceso administrativo para dejársela activa hoy mismo? ⚡
 ```
 
 ---
 
 ### 🔴 Plantilla 3: Cierre de Urgencia & Cupo Limitado
 ```text
-¡Hola [Nombre]! 👋 Te cuento que estamos asignando los últimos 3 cupos patrocinados de digitalización de esta semana en [Ciudad] ($89.000 COP en vez de $680.000 COP con 1 año de hosting y el mes de Plan Crecimiento incluido).
+¡Hola [Nombre]! 👋 Te cuento que estamos asignando los últimos 3 cupos de prueba gratuita de esta semana en [Ciudad] (14 Días 100% Gratis en el Plan Inicio con web, agendador 24/7 y $0 hosting).
 
-Si te gustaría asegurar el cupo de [Nombre del Salón], me confirmas para dejarlo activo hoy mismo 🚀
+Si te gustaría asegurar la prueba de [Nombre del Salón], me confirmas tu correo para dejarlo activo hoy mismo 🚀
 ```
 
 ---
 
-### 💎 Plantilla 3B: Estatus Makloz Tech (Iniciativa Negocio Online - $7.417/mes)
-> **Enfoque**: Estatus de marca, autoridad, subsidio del 85% de desarrollo tecnológico por Makloz Tech y aporte anual de hosting seguro ($89.000 COP / $7.417/mes).
+### 💎 Plantilla 3B: Estatus Makloz Tech (Iniciativa Negocio Online - 14 Días Gratis Plan Inicio)
+> **Enfoque**: Estatus de marca, autoridad, $0 de desarrollo y hosting, y activación con 14 días gratis en Plan Inicio ($29.000 COP/mes).
 ```text
 ¡Hola [Nombre]! 👋 
 
 El trabajo y la calidad que tienen en [Nombre del Negocio] merecen verse con otro estatus. 
 
-Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y cobras con mayor autoridad 🌟.
+Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y agendamientos automáticos 🌟.
 
-Por la iniciativa *"Negocio Online"* de *Makloz Tech*, abrimos un cupo de patrocinio tecnológico único: 
-Absorbemos más del 85% del costo de diseño e ingeniería (un desarrollo que normalmente supera los $650.000 COP) para que tu marca solo asuma el costo del servidor 🚀.
+Para apoyarlos, no les cobramos desarrollo ni hosting:
+🎁 Les habilitamos *14 Días de Prueba 100% Gratis* en el Plan Inicio con su web y agendador interactivo listo para operar.
 
-👉 Por solo *$7.417 pesos al mes* (un único pago anual de *$89.000 COP* que cubre su hosting seguro y certificado SSL), dejas activa esa web que te mostramos por todo el año.
+Lo prueban sin pagar un solo peso. Si ven que les ahorra tiempo y les llena la agenda, continúan por solo *$29.000 COP al mes* (menos de $1.000 al día) 💡.
 
-Literalmente cuesta menos que un solo servicio de tu negocio, pero posiciona a [Nombre del Negocio] como un referente en tu zona 💡.
-
-Estamos asignando los cupos subsidiados de esta semana, ¿te aparto el de ustedes para dejarla activa hoy mismo? ⚡
+¿A qué correo te activo tus accesos para que lo empiecen a usar hoy mismo? ⚡
 ```
 
 ---

@@ -116,15 +116,15 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                 <>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#FF5A36] shrink-0" />
-                    <span><strong>Agendador Interactivo 24/7</strong> (<code className="text-[#FF5A36]">/reservar/:slug</code>)</span>
+                    <span><strong>Citas Online Ilimitadas 24/7</strong> (sin tope de 25 citas/mes)</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#FF5A36] shrink-0" />
-                    <span>Hasta <strong>4 Colaboradores</strong> con agenda</span>
+                    <span>Hasta <strong>3 Colaboradores</strong> con agenda (+ extras por $10k/mes c/u)</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#FF5A36] shrink-0" />
-                    <span>Panel de control de citas del día</span>
+                    <span>Control de citas del día y confirmaciones por WhatsApp</span>
                   </li>
                 </>
               )}

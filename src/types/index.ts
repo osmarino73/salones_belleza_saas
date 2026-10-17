@@ -39,6 +39,8 @@ export interface Tenant {
   currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
   business_hours?: { summary?: string; open?: string; close?: string };
   hero_image_url?: string;
+  hero_mobile_image_url?: string;
+  logo_url?: string;
   logo_icon?: string; // Emoji o icono (ej. '✨', '✂️', '🪄', '👑', '💅', '🧖‍♀️')
   hero_eyebrow?: string; // Saludo superior (ej. 'Bienvenidas a ❤️')
   slogan?: string; // Nombre o título principal
@@ -377,6 +379,24 @@ export interface BusinessDataPayload {
   [key: string]: any;
 }
 
+export interface FieldAgent {
+  id: string;
+  user_id?: string;
+  nombre: string;
+  email: string;
+  telefono?: string;
+  zona?: string;
+  estado: 'activo' | 'inactivo';
+  metricas?: {
+    totalProspectos: number;
+    prospectosHoy: number;
+    prospectosSemana: number;
+    convertidos: number;
+  };
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ProspectSite {
   id: string;
   slug: string;
@@ -395,6 +415,8 @@ export interface ProspectSite {
   business_data?: BusinessDataPayload;
   created_by?: string;
   creator_email?: string;
+  creator_agent_id?: string;
+  gps_coordinates?: string;
   views_count: number;
   created_at: string;
   updated_at?: string;
@@ -459,4 +481,26 @@ export interface HomepageStudioState {
   services: StudioServiceItem[];
   specialists: StudioSpecialistItem[];
 }
+
+export type BeautyImageType = 'servicio' | 'hero_desktop' | 'hero_mobile' | 'banner_catalogo' | 'story';
+
+export interface BeautyStockImage {
+  id: string;
+  title: string;
+  category: 'barberia' | 'peluqueria' | 'unas' | 'pestanas' | 'spa' | 'todos';
+  categoryLabel: string;
+  imageType?: BeautyImageType;
+  imageUrl: string;
+  thumbnailUrl: string;
+  tags: string[];
+}
+
+export interface BeautyImageSectionType {
+  id: 'todos' | BeautyImageType;
+  name: string;
+  ratio: string;
+  icon: string;
+  description: string;
+}
+
 

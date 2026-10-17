@@ -7,6 +7,9 @@ export interface PlanFeatureConfig {
   price_cop: number;
   price_label: string;
   max_stylists: number;
+  max_monthly_appointments: number;
+  extra_stylist_price_cop?: number;
+  extra_stylist_price_label?: string;
   can_use_booking_saas: boolean;
   can_use_pos: boolean;
   can_use_commissions: boolean;
@@ -28,25 +31,7 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     price_cop: 0,
     price_label: '$0 COP (De por vida)',
     max_stylists: 1,
-    can_use_booking_saas: false,
-    can_use_pos: false,
-    can_use_commissions: false,
-    can_use_inventory: false,
-    can_use_stylist_portal: false,
-    can_use_color_crm: false,
-    can_use_loyalty_reactivation: false,
-    can_use_templates: false,
-    can_use_ai_whatsapp: false,
-    can_use_automatic_reminders: false,
-    description: 'Página web profesional completa con catálogo de fotos, dirección en Google Maps y botón de WhatsApp.'
-  },
-  inicio: {
-    id: 'inicio',
-    name: 'Plan Inicio',
-    badge: '🚀 Plan Inicio',
-    price_cop: 50000,
-    price_label: '$50.000 COP / mes',
-    max_stylists: 4,
+    max_monthly_appointments: 25,
     can_use_booking_saas: true,
     can_use_pos: false,
     can_use_commissions: false,
@@ -57,7 +42,29 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     can_use_templates: false,
     can_use_ai_whatsapp: false,
     can_use_automatic_reminders: false,
-    description: 'Agendador interactivo 24/7 y control de citas del día para hasta 4 colaboradoras.'
+    description: 'Página web profesional con agendador interactivo para 1 profesional (hasta 25 citas/mes) y botón de WhatsApp.'
+  },
+  inicio: {
+    id: 'inicio',
+    name: 'Plan Inicio',
+    badge: '🚀 Plan Inicio',
+    price_cop: 29000,
+    price_label: '$29.000 COP / mes',
+    max_stylists: 3,
+    max_monthly_appointments: 999999,
+    extra_stylist_price_cop: 10000,
+    extra_stylist_price_label: '+$10.000 COP / mes c/u',
+    can_use_booking_saas: true,
+    can_use_pos: false,
+    can_use_commissions: false,
+    can_use_inventory: false,
+    can_use_stylist_portal: false,
+    can_use_color_crm: false,
+    can_use_loyalty_reactivation: false,
+    can_use_templates: false,
+    can_use_ai_whatsapp: false,
+    can_use_automatic_reminders: false,
+    description: 'Agendador interactivo ilimitado 24/7 y control de citas del día para hasta 3 colaboradores (+ extras por $10k/mes c/u).'
   },
   crecimiento: {
     id: 'crecimiento',
@@ -66,6 +73,7 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     price_cop: 120000,
     price_label: '$120.000 COP / mes',
     max_stylists: 9999,
+    max_monthly_appointments: 999999,
     can_use_booking_saas: true,
     can_use_pos: true,
     can_use_commissions: true,
@@ -85,6 +93,7 @@ export const PLAN_CONFIGS: Record<SubscriptionPlan, PlanFeatureConfig> = {
     price_cop: 240000,
     price_label: '$240.000 COP / mes',
     max_stylists: 9999,
+    max_monthly_appointments: 999999,
     can_use_booking_saas: true,
     can_use_pos: true,
     can_use_commissions: true,
@@ -113,13 +122,49 @@ export function getPlanConfig(plan?: string): PlanFeatureConfig {
   return PLAN_CONFIGS[normalizePlan(plan)];
 }
 
+export function checkMonthlyBookingLimit(
+  monthlyAppointmentsCount: number,
+  plan?: string
+): {
+  allowed: boolean;
+  max: number;
+  current: number;
+  remaining: number;
+  isFreePlan: boolean;
+  message?: string;
+} {
+  const config = getPlanConfig(plan);
+  const isFree = config.id === 'free';
+  const max = config.max_monthly_appointments;
+  const current = Math.max(0, monthlyAppointmentsCount || 0);
+  const remaining = Math.max(0, max - current);
+  const allowed = !isFree || current < max;
+
+  return {
+    allowed,
+    max,
+    current,
+    remaining,
+    isFreePlan: isFree,
+    message: !allowed
+      ? `Has alcanzado el límite de ${max} citas mensuales de tu ${config.name}. Pasa al Plan Inicio ($29.000 COP/mes) para tener agendamiento 100% ilimitado o tus clientes pueden contactarte por WhatsApp.`
+      : undefined
+  };
+}
+
 export function canAddMoreStylists(currentCount: number, plan?: string): { allowed: boolean; max: number; message?: string } {
   const config = getPlanConfig(plan);
   if (currentCount >= config.max_stylists) {
+    const isFree = config.id === 'free';
+    const isInicio = config.id === 'inicio';
     return {
       allowed: false,
       max: config.max_stylists,
-      message: `Has alcanzado el límite de ${config.max_stylists} profesional(es) de tu ${config.name}. Pásate al Plan Crecimiento para tener colaboradoras ilimitadas.`
+      message: isFree
+        ? `Has alcanzado el límite de ${config.max_stylists} profesional de tu ${config.name}. Pasa al Plan Inicio ($29.000 COP/mes) para habilitar hasta 3 colaboradores o al Plan Crecimiento para ilimitados.`
+        : isInicio
+        ? `Has alcanzado el límite base de ${config.max_stylists} colaboradores de tu ${config.name}. Puedes agregar colaboradores extra por solo $10.000 COP/mes cada uno o pasarte al Plan Crecimiento para tener acceso ilimitado.`
+        : `Has alcanzado el límite de ${config.max_stylists} profesional(es) de tu ${config.name}. Pásate al Plan Crecimiento para tener colaboradoras ilimitadas.`
     };
   }
   return { allowed: true, max: config.max_stylists };

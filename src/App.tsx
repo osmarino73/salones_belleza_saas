@@ -9,6 +9,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { SuperadminDashboardPage } from './pages/SuperadminDashboardPage';
 import { SuperadminGuard } from './components/SuperadminGuard';
 import { PublicProspectSitePage } from './pages/PublicProspectSitePage';
+import { AgentIntakePage } from './pages/AgentIntakePage';
 
 export const App: React.FC = () => {
   return (
@@ -24,6 +25,8 @@ export const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/colaborador" element={<StylistPortalPage />} />
         <Route path="/colaborador/:stylistId" element={<StylistPortalPage />} />
+        <Route path="/agente" element={<AgentIntakePage />} />
+        <Route path="/campo" element={<AgentIntakePage />} />
         <Route
           path="/superadmin"
           element={

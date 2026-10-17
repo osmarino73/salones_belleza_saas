@@ -714,11 +714,11 @@ export const LandingPage: React.FC = () => {
                   $0 <span className="text-xs font-normal text-slate-400">/ mes (Sin mensualidades)</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Página Web Profesional completa (móvil y PC)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>1er Año de Hosting & SSL incluido con tu activación</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Botón flotante directo a tu WhatsApp</span></li>
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Página Web Profesional ($0 hosting)</span></li>
+                  <li className="flex items-start gap-2 text-emerald-300 font-semibold"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>Agendador online para 1 especialista (hasta 25 citas/mes)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" /> <span>Desvío automático a WhatsApp al coparse</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" /> <span>Galería de fotos y catálogo de servicios</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" /> <span>Dirección física y mapa en Google Maps</span></li>
                 </ul>
               </div>
               <a
@@ -729,40 +729,41 @@ export const LandingPage: React.FC = () => {
               </a>
             </div>
 
-            {/* Plan 1: Inicio */}
-            <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
+            {/* Plan 1: Inicio (DESTACADO CON 14 DÍAS GRATIS) */}
+            <div className="bg-[#121829] border-2 border-cyan-500 rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-cyan-500/15 relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-black uppercase px-3.5 py-1 rounded-full tracking-wider shadow-lg flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> 14 DÍAS DE PRUEBA GRATIS
+              </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
                   BARBERÍAS & INDEPENDIENTES
                 </span>
                 <h3 className="text-xl font-extrabold text-white mt-3">🚀 Plan Inicio</h3>
                 <p className="text-xs text-slate-400 mt-1">Citas automáticas sin llamadas</p>
                 <div className="text-3xl font-black text-white my-4">
-                  $50.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
+                  $29.000 <span className="text-xs font-normal text-slate-400">COP / mes</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-300 mb-6">
-                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Todo lo del Plan Gratuito</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Agendador Interactivo 24/7 (<strong className="text-white">/reservar/:slug</strong>)</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Hasta 4 Colaboradores con agenda</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Enlace para Bio de Instagram & TikTok</span></li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-[#FF5A36] shrink-0 mt-0.5" /> <span>Panel de control de citas del día</span></li>
+                  <li className="flex items-start gap-2 font-bold text-white"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" /> <span>Todo lo del Plan Gratuito ($0 hosting)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" /> <span>Agendador Interactivo 24/7 (<strong className="text-white">/reservar/:slug</strong>)</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" /> <span>Hasta 3 Colaboradores con agenda</span></li>
+                  <li className="flex items-start gap-2 text-emerald-400 font-semibold"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> <span>+$10.000 COP por colaborador extra</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" /> <span>Enlace para Bio de Instagram & TikTok</span></li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" /> <span>Panel de control de citas del día</span></li>
                 </ul>
               </div>
               <a
                 href="#solicitar"
-                className="w-full text-center py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10"
+                className="w-full text-center py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-95 text-white text-xs font-black shadow-lg shadow-cyan-500/30 transition-all hover:scale-[1.02]"
               >
-                Comenzar con Inicio
+                Probar 14 Días Gratis
               </a>
             </div>
 
-            {/* Plan 2: Crecimiento (ESTRELLA - MES 1 INCLUIDO) */}
-            <div className="bg-[#121829] border-2 border-[#FF5A36] rounded-3xl p-6 flex flex-col justify-between shadow-2xl shadow-[#FF5A36]/15 relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#FF5A36] text-white text-[10px] font-black uppercase px-3.5 py-1 rounded-full tracking-wider shadow-lg flex items-center gap-1">
-                <Crown className="w-3 h-3" /> 30 DÍAS DE REGALO
-              </div>
+            {/* Plan 2: Crecimiento */}
+            <div className="bg-[#0E1322] border border-white/10 rounded-3xl p-6 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/30">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/5 text-slate-300 border border-white/10">
                   MÁS POPULAR • CAJA & COMISIONES
                 </span>
                 <h3 className="text-xl font-extrabold text-white mt-3">📈 Plan Crecimiento</h3>
@@ -780,9 +781,9 @@ export const LandingPage: React.FC = () => {
               </div>
               <a
                 href="#solicitar"
-                className="w-full text-center py-3.5 rounded-2xl bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-black shadow-lg shadow-[#FF5A36]/30 transition-all hover:scale-[1.02]"
+                className="w-full text-center py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all border border-white/10"
               >
-                Reclamar con Mes 1 de Regalo
+                Elegir Crecimiento
               </a>
             </div>
 
@@ -956,12 +957,12 @@ export const LandingPage: React.FC = () => {
         <div className="space-y-3">
           {[
             {
-              q: '¿Por qué el diseño y desarrollo de la web no tiene costo?',
-              a: 'Porque queremos que experimentes el poder de tener presencia digital profesional sin barreras. Nosotros bonificamos el costo de desarrollo y diseño web. Tu aporte de activación solo cubre la puesta en marcha técnica, tu primer año de hosting seguro y tus afiches QR.'
+              q: '¿Por qué la web y el hosting no tienen costo?',
+              a: 'Porque queremos que experimentes el poder de tener presencia digital profesional sin barreras. Nosotros bonificamos el 100% del diseño web, hosting en la nube de alta velocidad y certificado SSL de por vida.'
             },
             {
-              q: '¿Qué incluye la activación de $89.000 COP?',
-              a: 'Incluye la personalización comercial completa de tu página web en 48 horas (fotos, servicios, horarios y Google Maps), 1 Año Completo de Hosting seguro y certificado SSL en la nube, más 30 Días de Regalo del Plan Crecimiento ($120.000 COP) para probar el agendador online, app móvil para estilistas y caja POS, junto con tu kit de afiches QR listos para imprimir. A partir del 2do mes tienes total libertad: puedes continuar con el sistema de reservas desde $50.000/mes o quedarte solo con tu web vitrina activa en Google Maps renovando únicamente tu hosting por $89.000 al año a partir del 2do año.'
+              q: '¿Cómo funcionan los 14 Días de Prueba Gratis?',
+              a: 'Al activar tu cuenta, recibes 14 días completos de prueba (2 semanas completas con 2 fines de semana) en el Plan Inicio para usar tu agendador interactivo 24/7 con tus clientas y hasta 3 colaboradores. Cero cobro de hosting ni tarjetas de crédito. A partir del día 15, tú decides si continúas con el sistema desde solo $29.000 COP al mes o te quedas con tu Plan Gratuito (1 profesional y 25 citas/mes) sin costo.'
             },
             {
               q: '¿Mis clientas necesitan descargar alguna app para agendar?',

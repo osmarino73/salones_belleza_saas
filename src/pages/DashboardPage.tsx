@@ -90,12 +90,13 @@ import { ImageUploadField } from '../components/ImageUploadField';
 import { ServiceImagePicker } from '../components/ServiceImagePicker';
 import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
 import { PlanUpgradeModal } from '../components/PlanUpgradeModal';
-import { getPlanConfig, canAddMoreStylists, SubscriptionPlan } from '../lib/planPermissions';
+import { getPlanConfig, canAddMoreStylists, checkMonthlyBookingLimit, SubscriptionPlan } from '../lib/planPermissions';
+import { WebsiteEditorTab } from '../components/dashboard/WebsiteEditorTab';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates' | 'loyalty'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates' | 'loyalty' | 'website'>('overview');
   const [posInitialClient, setPosInitialClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -412,6 +413,18 @@ export const DashboardPage: React.FC = () => {
       (activeTenantObj as any)?.business_data?.has_video_scroll
     );
   }, [prospectRawHtml, activeTenantObj]);
+
+  // Cálculo de citas online del mes y control de cupo mensual (Plan Gratuito - Opción 2)
+  const monthlyAppointmentsCount = useMemo(() => {
+    const currentMonthPrefix = new Date().toISOString().slice(0, 7);
+    return appointments.filter(apt => 
+      apt && apt.date && apt.date.startsWith(currentMonthPrefix) && apt.status !== 'no_show'
+    ).length;
+  }, [appointments]);
+
+  const monthlyLimitInfo = useMemo(() => {
+    return checkMonthlyBookingLimit(monthlyAppointmentsCount, activeTenantObj?.plan_tier);
+  }, [monthlyAppointmentsCount, activeTenantObj?.plan_tier]);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -793,10 +806,11 @@ export const DashboardPage: React.FC = () => {
   const handleOpenNewStylist = () => {
     const check = canAddMoreStylists(stylists.length, activeTenantObj?.plan_tier);
     if (!check.allowed) {
+      const isFree = (activeTenantObj?.plan_tier || 'free') === 'free';
       setUpgradeModalState({
         isOpen: true,
-        requiredPlan: 'crecimiento',
-        featureName: 'Colaboradoras Ilimitadas',
+        requiredPlan: isFree ? 'inicio' : 'crecimiento',
+        featureName: isFree ? 'Agregar Colaboradores (Plan Inicio)' : 'Colaboradoras Ilimitadas',
         featureDescription: check.message
       });
       return;
@@ -1618,7 +1632,8 @@ export const DashboardPage: React.FC = () => {
             {[
               { id: 'overview', label: 'Overview', icon: Layers, locked: false },
               { id: 'crm', label: 'CRM Color', icon: Users, locked: !getPlanConfig(activeTenantObj?.plan_tier).can_use_color_crm },
-              { id: 'whatsapp', label: 'Mensajes', icon: MessageSquare, locked: false }
+              { id: 'whatsapp', label: 'Mensajes', icon: MessageSquare, locked: false },
+              { id: 'website', label: 'Página Web', icon: Globe, locked: false }
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1703,7 +1718,7 @@ export const DashboardPage: React.FC = () => {
                       <strong className="text-xs font-bold block">{ownerName}</strong>
                       <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase border bg-white/5 border-white/10 text-slate-300">
                         {activeTenantObj?.plan_tier === 'crecimiento' ? '📈 Crecimiento ($120k)' :
-                         activeTenantObj?.plan_tier === 'inicio' ? '🚀 Inicio ($50k)' :
+                         activeTenantObj?.plan_tier === 'inicio' ? '🚀 Inicio ($29k)' :
                          activeTenantObj?.plan_tier === 'pro_ia' ? '🤖 Pro Flow IA ($240k)' :
                          activeTenantObj?.plan_tier === 'escala' ? '🎯 Escala ($720k)' :
                          activeTenantObj?.plan_tier === 'agencia' ? '👑 Agencia VIP ($1.4M)' : '🌐 Plan Gratis ($0)'}
@@ -1834,15 +1849,19 @@ export const DashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setIsWebsiteCustomizerOpen(true);
                       setIsProfileMenuOpen(false);
+                      handleNavigateTab('website');
                     }}
-                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2.5 transition-all cursor-pointer ${
-                      theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
+                    className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl flex items-center justify-between gap-2.5 transition-all cursor-pointer ${
+                      activeTab === 'website'
+                        ? 'bg-[#FF5A36]/10 text-[#FF5A36] font-bold'
+                        : theme === 'dark' ? 'hover:bg-white/5 text-slate-200' : 'hover:bg-slate-100 text-slate-800'
                     }`}
                   >
-                    <Palette className="w-4 h-4 text-slate-400" />
-                    <span>Personalizar Página Web (Portada)</span>
+                    <div className="flex items-center gap-2.5">
+                      <Globe className="w-4 h-4 text-slate-400" />
+                      <span>Editor Visual Página Web</span>
+                    </div>
                   </button>
 
                   <button
@@ -1992,6 +2011,73 @@ export const DashboardPage: React.FC = () => {
                   >
                     <span>Manual</span>
                     <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Widget de Consumo de Citas Online para Plan Gratuito (Opción 2) */}
+            {monthlyLimitInfo.isFreePlan && (
+              <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                monthlyLimitInfo.current >= monthlyLimitInfo.max
+                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+                  : monthlyLimitInfo.current >= 20
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                  : theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/5 shadow-sm'
+              }`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/10">
+                        🌐 Plan Gratuito
+                      </span>
+                      <strong className={`text-xs sm:text-sm font-extrabold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        Cupo de Citas Online este mes: {monthlyLimitInfo.current} / {monthlyLimitInfo.max}
+                      </strong>
+                      {monthlyLimitInfo.current >= monthlyLimitInfo.max ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white">
+                          Cupo Completo
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-semibold">
+                          ({monthlyLimitInfo.remaining} citas disponibles)
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Barra de progreso */}
+                    <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden border border-white/5">
+                      <div 
+                        className={`h-full transition-all duration-500 rounded-full ${
+                          monthlyLimitInfo.current >= monthlyLimitInfo.max
+                            ? 'bg-rose-500'
+                            : monthlyLimitInfo.current >= 20
+                            ? 'bg-amber-400'
+                            : 'bg-gradient-to-r from-emerald-400 to-teal-400'
+                        }`}
+                        style={{ width: `${Math.min(100, Math.round((monthlyLimitInfo.current / monthlyLimitInfo.max) * 100))}%` }}
+                      />
+                    </div>
+
+                    <p className={`text-[11px] leading-snug ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {monthlyLimitInfo.current >= monthlyLimitInfo.max
+                        ? 'Has alcanzado las 25 citas de tu plan gratis. Las nuevas clientas se derivan automáticamente a tu WhatsApp para que nunca pierdas un turno.'
+                        : 'Tus clientas pueden agendar turnos online automáticamente desde tu página web. Al llegar al límite mensual de 25 citas, se derivan a tu WhatsApp.'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setUpgradeModalState({
+                      isOpen: true,
+                      requiredPlan: 'inicio',
+                      featureName: 'Citas Online Ilimitadas',
+                      featureDescription: 'Pasa al Plan Inicio ($29.000 COP/mes) para eliminar el límite de 25 citas/mes, habilitar hasta 3 colaboradoras con agenda y tener control total.'
+                    })}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FF5A36] to-amber-500 hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-[#FF5A36]/20 flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-transform hover:scale-105"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Desbloquear Citas Ilimitadas ($29k/mes)</span>
                   </button>
                 </div>
               </div>
@@ -2572,6 +2658,33 @@ export const DashboardPage: React.FC = () => {
                       <span>Lista</span>
                     </button>
                   </div>
+
+                  {/* Badge de Cupo Citas Online Plan Gratis */}
+                  {monthlyLimitInfo.isFreePlan && (
+                    <button
+                      type="button"
+                      onClick={() => setUpgradeModalState({
+                        isOpen: true,
+                        requiredPlan: 'inicio',
+                        featureName: 'Citas Online Ilimitadas',
+                        featureDescription: 'Pasa al Plan Inicio ($29.000 COP/mes) para eliminar el límite de 25 citas/mes y agendar con hasta 3 colaboradoras.'
+                      })}
+                      className={`px-3 py-1.5 rounded-2xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        monthlyLimitInfo.current >= monthlyLimitInfo.max
+                          ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 hover:bg-rose-500/25'
+                          : monthlyLimitInfo.current >= 20
+                          ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 hover:bg-amber-500/25'
+                          : theme === 'dark'
+                          ? 'bg-white/5 border-white/10 text-slate-300 hover:border-[#FF5A36]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-[#FF5A36] shadow-xs'
+                      }`}
+                      title="Ver consumo de reservas online del mes"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-[#FF5A36]" />
+                      <span>Online: <strong>{monthlyLimitInfo.current}/{monthlyLimitInfo.max}</strong></span>
+                      <span className="text-[10px] text-[#FF5A36] font-extrabold uppercase">Upgrade</span>
+                    </button>
+                  )}
 
                   {/* Botón Agendar Cita */}
                   <button
@@ -4779,6 +4892,26 @@ export const DashboardPage: React.FC = () => {
               setNewClientName(c.full_name);
               setNewClientPhone(c.phone_whatsapp);
               setIsNewAppointmentOpen(true);
+            }}
+          />
+        )}
+
+        {/* =========================================================================
+            VIEW 9: EDITOR VISUAL DE PÁGINA WEB & BIBLIOTECA HD (KEWE ENGINE)
+            ========================================================================= */}
+        {activeTab === 'website' && (
+          <WebsiteEditorTab
+            tenant={activeTenantObj}
+            onSaved={() => {
+              if (activeTenantObj?.id) {
+                api.getAllTenants().then((allT: Tenant[]) => {
+                  const updated = allT.find((t: Tenant) => t.id === activeTenantObj.id);
+                  if (updated) {
+                    setActiveTenantObj(updated);
+                    localStorage.setItem('bf_tenant_active', JSON.stringify(updated));
+                  }
+                }).catch(console.error);
+              }
             }}
           />
         )}
@@ -7898,10 +8031,10 @@ export const DashboardPage: React.FC = () => {
                 <div className="p-4 rounded-2xl bg-[#0A0D14] border border-blue-500/30 space-y-2 hover:border-blue-500/50 transition-all">
                   <div className="flex justify-between items-center">
                     <strong className="text-blue-300 font-bold">🚀 Plan Inicio</strong>
-                    <span className="text-blue-400 font-black text-xs">$50.000 / mes</span>
+                    <span className="text-blue-400 font-black text-xs">$29.000 / mes</span>
                   </div>
-                  <p className="text-[11px] text-slate-300 leading-snug">Agendador online interactivo + hasta 4 colaboradores con agenda individual.</p>
-                  <span className="text-[10px] text-blue-400/80 block font-semibold">Ideal para salones pequeños</span>
+                  <p className="text-[11px] text-slate-300 leading-snug">Agendador online interactivo + hasta 3 colaboradores con agenda (+ $10k/mes por extra).</p>
+                  <span className="text-[10px] text-blue-400/80 block font-semibold">Ideal para salones independientes</span>
                 </div>
 
                 {/* 2. Plan Crecimiento (ACTUAL) */}
@@ -8168,7 +8301,7 @@ export const DashboardPage: React.FC = () => {
         ownerName={ownerName}
         servicesCount={services.length}
         stylistsCount={stylists.length}
-        onOpenCustomizer={() => setIsWebsiteCustomizerOpen(true)}
+        onOpenCustomizer={() => handleNavigateTab('website')}
         onOpenNewService={() => {
           setActiveTab('catalog_team');
           setCatalogSubTab('services');

@@ -6,6 +6,7 @@
  */
 
 import { MediaItem } from '../types';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 export interface StockImageItem {
   id: string;
@@ -413,7 +414,10 @@ export function getSuggestedImageForService(title: string = '', categoryHint?: s
     return 'https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=800&q=80';
   }
   if (t.includes('infantil') || t.includes('kid') || t.includes('niño')) {
-    return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
+    return 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80';
+  }
+  if (t.includes('facial') || t.includes('exfolia') || t.includes('mascarilla') || t.includes('craneal') || t.includes('black mask')) {
+    return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';
   }
   if (t.includes('barber') || t.includes('caballero') || t.includes('hombre')) {
     return 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80';
@@ -582,6 +586,230 @@ export function optimizeProspectHtml(html: string, category: string = 'salon'): 
 }
 
 const CUSTOM_MEDIA_STORAGE_KEY = 'bf_custom_media_library_v1';
+const STOCK_LIBRARY_STORAGE_KEY = 'kowy_stock_library_items_v2';
+
+/**
+ * Obtiene la biblioteca completa administrable (predeterminadas + creadas/editadas por el usuario)
+ */
+export function getManagedStockLibrary(): StockImageItem[] {
+  try {
+    const raw = localStorage.getItem(STOCK_LIBRARY_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return [...BEAUTY_STOCK_LIBRARY];
+}
+
+/**
+ * Guarda la lista administrable completa en almacenamiento persistente
+ */
+export function saveManagedStockLibrary(items: StockImageItem[]): void {
+  try {
+    localStorage.setItem(STOCK_LIBRARY_STORAGE_KEY, JSON.stringify(items));
+  } catch (e) {
+    console.warn('Error guardando biblioteca stock en localStorage:', e);
+  }
+}
+
+/**
+ * Crea y añade una nueva imagen a la biblioteca
+ */
+export function createStockImage(item: Omit<StockImageItem, 'id'>): StockImageItem {
+  const current = getManagedStockLibrary();
+  const newItem: StockImageItem = {
+    ...item,
+    id: `stock-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  };
+  const updated = [newItem, ...current];
+  saveManagedStockLibrary(updated);
+  return newItem;
+}
+
+/**
+ * Actualiza una imagen existente en la biblioteca
+ */
+export function updateStockImage(id: string, updates: Partial<StockImageItem>): StockImageItem | null {
+  const current = getManagedStockLibrary();
+  let updatedItem: StockImageItem | null = null;
+  const updated = current.map(item => {
+    if (item.id === id) {
+      updatedItem = { ...item, ...updates };
+      return updatedItem;
+    }
+    return item;
+  });
+  if (updatedItem) {
+    saveManagedStockLibrary(updated);
+  }
+  return updatedItem;
+}
+
+/**
+ * Elimina una imagen de la biblioteca por ID
+ */
+export function deleteStockImage(id: string): boolean {
+  const current = getManagedStockLibrary();
+  const filtered = current.filter(item => item.id !== id);
+  if (filtered.length !== current.length) {
+    saveManagedStockLibrary(filtered);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Restaura toda la biblioteca al catálogo original de fábrica
+ */
+export function resetStockLibrary(): StockImageItem[] {
+  try {
+    localStorage.removeItem(STOCK_LIBRARY_STORAGE_KEY);
+  } catch (e) {}
+  return [...BEAUTY_STOCK_LIBRARY];
+}
+
+/**
+ * Sube un archivo binario (WebP / JPEG) a Supabase Storage bucket 'stock-images' o 'avatars'
+ */
+export async function uploadStockImageBlob(blob: Blob, originalName: string): Promise<{ url: string | null; error?: string }> {
+  if (!supabase || !isSupabaseConfigured) {
+    return { url: null, error: 'Supabase no está configurado.' };
+  }
+
+  try {
+    const cleanName = originalName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filePath = `${Date.now()}_${cleanName || 'foto'}.webp`;
+    
+    // 1. Intentar en bucket stock-images
+    const { data, error } = await supabase.storage.from('stock-images').upload(filePath, blob, {
+      contentType: 'image/webp',
+      upsert: true
+    });
+
+    if (error) {
+      console.warn('Fallo en bucket stock-images, intentando en avatars:', error.message);
+      // Fallback a bucket avatars
+      const avatarRes = await supabase.storage.from('avatars').upload(filePath, blob, {
+        contentType: 'image/webp',
+        upsert: true
+      });
+      if (avatarRes.error) {
+        console.error('Error subiendo a bucket avatars:', avatarRes.error);
+        return { url: null, error: error.message || avatarRes.error.message };
+      }
+      const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      return { url: publicData?.publicUrl || null };
+    }
+
+    const { data: publicData } = supabase.storage.from('stock-images').getPublicUrl(filePath);
+    return { url: publicData?.publicUrl || null };
+  } catch (err: any) {
+    console.error('Excepción al subir imagen a Supabase Storage:', err);
+    return { url: null, error: err?.message || 'Error de red' };
+  }
+}
+
+/**
+ * Consulta las imágenes guardadas en Supabase (tabla stock_library_images)
+ * y las fusiona con la biblioteca administrable
+ */
+export async function fetchStockLibraryFromSupabase(): Promise<StockImageItem[]> {
+  const localItems = getManagedStockLibrary();
+  if (!supabase || !isSupabaseConfigured) return localItems;
+
+  try {
+    const { data, error } = await supabase
+      .from('stock_library_images')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const dbItems: StockImageItem[] = data.map(row => ({
+        id: row.id,
+        title: row.title,
+        url: row.url,
+        category: row.category,
+        tags: Array.isArray(row.tags) ? row.tags : []
+      }));
+
+      // Fusionar: items de base de datos toman precedencia sobre locales con mismo ID
+      const dbIds = new Set(dbItems.map(i => i.id));
+      const merged = [...dbItems, ...localItems.filter(i => !dbIds.has(i.id))];
+      saveManagedStockLibrary(merged);
+      return merged;
+    }
+  } catch (err) {
+    console.warn('Error consultando stock_library_images en Supabase:', err);
+  }
+
+  return localItems;
+}
+
+/**
+ * Persiste una nueva imagen en Supabase y localmente
+ */
+export async function createStockImageAsync(item: Omit<StockImageItem, 'id'>): Promise<StockImageItem> {
+  const localItem = createStockImage(item);
+
+  if (supabase && isSupabaseConfigured) {
+    try {
+      await supabase.from('stock_library_images').insert([{
+        id: localItem.id,
+        title: localItem.title,
+        url: localItem.url,
+        category: localItem.category,
+        tags: localItem.tags,
+        is_active: true
+      }]);
+    } catch (err) {
+      console.warn('Error guardando imagen en Supabase:', err);
+    }
+  }
+
+  return localItem;
+}
+
+/**
+ * Actualiza una imagen en Supabase y localmente
+ */
+export async function updateStockImageAsync(id: string, updates: Partial<StockImageItem>): Promise<StockImageItem | null> {
+  const localUpdated = updateStockImage(id, updates);
+
+  if (supabase && isSupabaseConfigured && localUpdated) {
+    try {
+      await supabase.from('stock_library_images').update({
+        title: localUpdated.title,
+        url: localUpdated.url,
+        category: localUpdated.category,
+        tags: localUpdated.tags,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+    } catch (err) {
+      console.warn('Error actualizando imagen en Supabase:', err);
+    }
+  }
+
+  return localUpdated;
+}
+
+/**
+ * Elimina una imagen en Supabase y localmente
+ */
+export async function deleteStockImageAsync(id: string): Promise<boolean> {
+  const localDeleted = deleteStockImage(id);
+
+  if (supabase && isSupabaseConfigured) {
+    try {
+      await supabase.from('stock_library_images').delete().eq('id', id);
+    } catch (err) {
+      console.warn('Error eliminando imagen de Supabase:', err);
+    }
+  }
+
+  return localDeleted;
+}
 
 /**
  * Obtiene las imágenes personalizadas guardadas por el usuario
@@ -629,11 +857,12 @@ export function deleteCustomMediaItem(id: string): void {
  * Devuelve todas las imágenes (predeterminadas de stock CDN + personalizadas subidas por el usuario)
  */
 export function getAllMediaItems(): MediaItem[] {
-  const stockAsMedia: MediaItem[] = BEAUTY_STOCK_LIBRARY.map(s => ({
+  const managedStock = getManagedStockLibrary();
+  const stockAsMedia: MediaItem[] = managedStock.map(s => ({
     id: s.id,
     title: s.title,
     url: s.url,
-    category: s.category,
+    category: s.category as any,
     tags: s.tags,
     is_custom: false
   }));

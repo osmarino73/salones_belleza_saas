@@ -29,6 +29,92 @@ export const PublicProspectSitePage: React.FC = () => {
         try {
           const tenantData = await api.getTenantBySlug(slug);
           if (tenantData) {
+            // Parsear business_data del prospecto para enriquecer o reparar el tenant si tiene campos vacíos
+            const rawBData = (found as any).business_data;
+            const bData = typeof rawBData === 'string'
+              ? (() => { try { return JSON.parse(rawBData); } catch { return {}; } })()
+              : (rawBData || {});
+
+            const catClean = (found.category || bData.specialty_id || 'salon').toLowerCase();
+            const isBarberSalon = (catClean.includes('barber') || found.slug?.includes('barber') || found.business_name?.toLowerCase().includes('barber') || bData.template_id === 'dark-luxury-gold');
+            const isNailsSalon = (catClean.includes('unas') || catClean.includes('uñas') || catClean.includes('nail') || catClean.includes('manicura') || bData.template_id === 'rose-gold-blush');
+
+            // Detectar si el tenant en la base de datos tiene campos pendientes o los defaults genéricos
+            const needsSync = !tenantData.hero_image_url
+              || !tenantData.slogan
+              || !tenantData.about_description
+              || (isBarberSalon && tenantData.primary_color === '#d92672')
+              || (isBarberSalon && tenantData.title_accent === 'Centro de Estética')
+              || (isBarberSalon && tenantData.about_badge_text === 'VIP EXPERIENCIA SALÓN')
+              || (isBarberSalon && tenantData.hero_eyebrow === 'Bienvenidas a ❤️')
+              || (isNailsSalon && tenantData.title_accent === 'Centro de Estética')
+              || (isNailsSalon && tenantData.about_badge_text === 'VIP EXPERIENCIA SALÓN')
+              || (tenantData.about_title === 'CUIDADO. DEFINICIÓN.');
+
+            if (needsSync) {
+              const defaultHero = isBarberSalon 
+                ? 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80'
+                : (isNailsSalon 
+                  ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792148861583_Woman_posing_for_beauty_campaign_20261016060037.webp'
+                  : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792079931885_Stylist_blow-drying_client_hair_2K_20261015104423.webp');
+
+              const defaultAboutImg = isBarberSalon
+                ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp'
+                : (isNailsSalon 
+                  ? 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80'
+                  : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80');
+
+              const defaultSlogan = isBarberSalon
+                ? 'Donde el ritual de la barba y el buen gusto se encuentran'
+                : (isNailsSalon ? 'El diseño y la elegancia que tus manos merecen' : 'Donde tu belleza encuentra su máxima expresión');
+
+              const defaultTitleAccent = isBarberSalon 
+                ? 'Barbería Tradicional & Urbana' 
+                : (isNailsSalon ? 'Nail Spa & Beauty Lounge' : 'Colorimetría & Estética Integral');
+
+              const defaultAboutTitle = isBarberSalon 
+                ? 'Tradición Clásica con Maestría Urbana' 
+                : (isNailsSalon ? 'El Arte de Cuidar Tus Manos y Pies' : 'Un Espacio Exclusivo Pensado Para Ti');
+
+              const defaultAboutAccent = isBarberSalon 
+                ? 'MAESTRÍA & DETALLE.' 
+                : (isNailsSalon ? 'PERFECCIÓN EN TUS MANOS.' : 'PASIÓN POR TU BELLEZA.');
+
+              const defaultAboutBadge = isBarberSalon 
+                ? 'CLUB MASCULINO VIP' 
+                : (isNailsSalon ? 'VIP NAIL LOUNGE' : 'VIP EXPERIENCIA SALÓN');
+
+              const defaultPrimaryColor = isBarberSalon 
+                ? '#e5a854' 
+                : (isNailsSalon ? '#d87d7d' : '#cbb39c');
+
+              const defaultLogoIcon = isBarberSalon ? '💈' : (isNailsSalon ? '💅' : '✨');
+
+              const syncPayload: any = {
+                id: tenantData.id,
+                hero_image_url: tenantData.hero_image_url || bData.banner_url || bData.hero_image_desktop || defaultHero,
+                about_image_url: tenantData.about_image_url || bData.about_image_url || bData.hero_image_mobile || defaultAboutImg,
+                slogan: tenantData.slogan || bData.slogan || bData.copywriting?.slogan || bData.headline || defaultSlogan,
+                subtitle: tenantData.subtitle || bData.subheadline || bData.copywriting?.subheadline || (bData.about?.p1 ? bData.about.p1 : undefined),
+                title_accent: (tenantData.title_accent && tenantData.title_accent !== 'Centro de Estética' && tenantData.title_accent !== 'Barbería Tradicional & Urbana' && tenantData.title_accent !== bData.headline) ? tenantData.title_accent : (bData.title_accent || null),
+                hero_eyebrow: (tenantData.hero_eyebrow && tenantData.hero_eyebrow !== 'Bienvenidas a ❤️') ? tenantData.hero_eyebrow : (bData.hero_badge || (isBarberSalon ? '💈 Cortes de Precisión & Ritual de Barba' : (isNailsSalon ? '💅 Nail Spa & Beauty Lounge' : '✨ Sanctuary of Beauty'))),
+                about_title: (tenantData.about_title && tenantData.about_title !== 'CUIDADO. DEFINICIÓN.') ? tenantData.about_title : (bData.about?.title || bData.about_title || defaultAboutTitle),
+                about_title_accent: (tenantData.about_title_accent && tenantData.about_title_accent !== 'PASIÓN POR TU BELLEZA.') ? tenantData.about_title_accent : (bData.about_title_accent || defaultAboutAccent),
+                about_badge_text: (tenantData.about_badge_text && tenantData.about_badge_text !== 'VIP EXPERIENCIA SALÓN') ? tenantData.about_badge_text : (bData.about_badge || defaultAboutBadge),
+                about_description: tenantData.about_description || (bData.about?.p1 ? `${bData.about.p1} ${bData.about.p2 || ''}`.trim() : (bData.about_description || undefined)),
+                primary_color: isBarberSalon ? '#e5a854' : (tenantData.primary_color || bData.primary_color || defaultPrimaryColor),
+                logo_icon: tenantData.logo_icon || bData.logo_icon || defaultLogoIcon
+              };
+
+              // Limpiar claves undefined
+              Object.keys(syncPayload).forEach(k => {
+                if (syncPayload[k] === undefined) delete syncPayload[k];
+              });
+
+              Object.assign(tenantData, syncPayload);
+              api.updateTenant(syncPayload as any).catch(err => console.warn('Auto-sync tenant notice:', err));
+            }
+
             setTenant(tenantData);
             const tid = tenantData.id;
             if (tid && tid !== '00000000-0000-0000-0000-000000000001') {
@@ -72,36 +158,62 @@ export const PublicProspectSitePage: React.FC = () => {
       ? tenant.show_first_visit_discount
       : (bData.show_first_visit_discount !== undefined ? bData.show_first_visit_discount : false);
 
+    const isBarber = site.category === 'barberia' 
+      || bData.template_id === 'dark-luxury-gold' 
+      || site.raw_html.includes('hero-track')
+      || site.business_name?.toLowerCase().includes('barber')
+      || site.slug?.toLowerCase().includes('barber');
+
     // Filtrar textos de muestra o fallbacks antiguos para no sobreescribir la plantilla base
-    const rawTitleAccent = tenant?.title_accent || bData.title_accent;
-    const cleanTitleAccent = rawTitleAccent && rawTitleAccent !== 'Centro de Estética' ? rawTitleAccent : undefined;
-
-    const rawEyebrow = tenant?.hero_eyebrow || bData.hero_eyebrow;
-    const cleanEyebrow = rawEyebrow && rawEyebrow !== 'Bienvenidas a ❤️' ? rawEyebrow : undefined;
-
-    const rawSlogan = tenant?.slogan || bData.slogan;
+    const rawSlogan = bData.copywriting?.headline || bData.headline || tenant?.slogan || bData.slogan;
     const cleanSlogan = rawSlogan && rawSlogan !== 'Sandra Color´s' && rawSlogan !== site.business_name ? rawSlogan : undefined;
 
-    const rawAboutBadge = tenant?.about_badge_text || bData.about_badge_text;
-    const cleanAboutBadge = rawAboutBadge && rawAboutBadge !== 'VIP EXPERIENCIA SALÓN' ? rawAboutBadge : undefined;
+    const rawTitleAccent = tenant?.title_accent || bData.title_accent;
+    const normAccent = (rawTitleAccent || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    const normSlogan = (cleanSlogan || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    const isRedundantAccent = normAccent && normSlogan && (normSlogan.includes(normAccent) || normAccent.includes(normSlogan));
+    const cleanTitleAccent = rawTitleAccent && rawTitleAccent !== 'Centro de Estética' && !isRedundantAccent ? rawTitleAccent : undefined;
+
+    const rawEyebrow = tenant?.hero_eyebrow || bData.hero_eyebrow || bData.hero_badge || bData.copywriting?.badge;
+    const cleanEyebrow = rawEyebrow && rawEyebrow !== 'Bienvenidas a ❤️' 
+      ? rawEyebrow 
+      : (isBarber ? '💈 Cortes de Precisión & Ritual de Barba' : undefined);
+
+    const rawAboutBadge = isBarber ? undefined : (tenant?.about_badge_text || bData.about_badge_text);
+    const cleanAboutBadge = rawAboutBadge && rawAboutBadge !== 'VIP EXPERIENCIA SALÓN' && rawAboutBadge !== 'VIP EXPERIENCIA CLUB' ? rawAboutBadge : undefined;
 
     const rawAboutAccent = tenant?.about_title_accent || bData.about_title_accent;
     const cleanAboutAccent = rawAboutAccent && rawAboutAccent !== 'PASIÓN POR TU BELLEZA.' ? rawAboutAccent : undefined;
 
-    const rawAboutDesc = tenant?.about_description || bData.about_description;
+    const rawAboutTitle = bData.about_title || bData.copywriting?.about_title || tenant?.about_title;
+    const cleanAboutTitle = rawAboutTitle && rawAboutTitle !== 'CUIDADO. DEFINICIÓN.' ? rawAboutTitle : undefined;
+
+    const rawAboutDesc = bData.about_description || bData.copywriting?.about_description || tenant?.about_description;
     const cleanAboutDesc = rawAboutDesc && !rawAboutDesc.includes('Transformamos el cuidado') && !rawAboutDesc.startsWith('Especialistas certificadas') ? rawAboutDesc : undefined;
+
+    const mData = bData.metrics || {};
+    const cleanYearsExp = mData.metric1Val || bData.metric1_val || (tenant?.about_years_exp && tenant.about_years_exp !== '+8' ? tenant.about_years_exp : undefined);
+    const cleanClientsCount = mData.metric2Val || bData.metric2_val || (tenant?.about_clients_count && tenant.about_clients_count !== '+3.5K' ? tenant.about_clients_count : undefined);
+    const cleanStat3Text = mData.metric3Val || bData.metric3_val || tenant?.about_stat3_text;
+    const cleanRatingText = mData.metric4Val || bData.metric4_val || tenant?.about_rating_text;
+
+    // Regla Sagrada de Estética: Si es barbería y el color primario es el fucsia por defecto de PostgreSQL (#d92672 / #c82d5a), ignorarlo para que brille el dorado nativo
+    const candidateColor = (site as any).primary_color || bData.primary_color || tenant?.primary_color || undefined;
+    const isDefaultFuchsia = candidateColor === '#d92672' || candidateColor === '#c82d5a';
+    const cleanPrimaryColor = (isBarber && isDefaultFuchsia) ? undefined : candidateColor;
 
     return injectProspectLinks(site.raw_html, {
       slug: site.slug,
       businessName: site.business_name,
       phoneWhatsapp: site.phone_whatsapp,
-      primaryColor: (site as any).primary_color || bData.primary_color || tenant?.primary_color || undefined,
+      primaryColor: cleanPrimaryColor,
       showTeamSection: showTeam,
       showFirstVisitDiscount: showDiscount,
       firstVisitDiscountPct: tenant?.first_visit_discount_pct || bData.first_visit_discount_pct || 15,
       firstVisitDiscountTitle: tenant?.first_visit_discount_title || bData.first_visit_discount_title || undefined,
       heroImageUrl: tenant?.hero_image_url || bData.hero_image_url || undefined,
       logoIcon: tenant?.logo_icon || bData.logo_icon || undefined,
+      heroBadge: cleanEyebrow,
       heroEyebrow: cleanEyebrow,
       slogan: cleanSlogan,
       titleAccent: cleanTitleAccent,
@@ -110,21 +222,24 @@ export const PublicProspectSitePage: React.FC = () => {
         ? tenant.business_hours.summary
         : typeof bData.business_hours?.summary === 'string'
         ? bData.business_hours.summary
+        : typeof bData.horario === 'string'
+        ? bData.horario
         : typeof bData.horario_atencion === 'string'
         ? bData.horario_atencion
         : bData.horario_atencion && typeof bData.horario_atencion === 'object'
         ? Object.entries(bData.horario_atencion).filter(([_, v]) => typeof v === 'string').map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(' | ')
         : undefined,
-      subtitle: tenant?.subtitle || bData.subtitle || undefined,
+      subtitle: tenant?.subtitle || bData.copywriting?.subheadline || bData.subtitle || undefined,
       aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
       aboutBadgeText: cleanAboutBadge,
       aboutEyebrow: tenant?.about_eyebrow || bData.about_eyebrow || undefined,
-      aboutTitle: tenant?.about_title || bData.about_title || undefined,
+      aboutTitle: cleanAboutTitle,
       aboutTitleAccent: cleanAboutAccent,
       aboutDescription: cleanAboutDesc,
-      aboutYearsExp: tenant?.about_years_exp || bData.about_years_exp || undefined,
-      aboutClientsCount: tenant?.about_clients_count || bData.about_clients_count || undefined,
-      aboutStat3Text: tenant?.about_stat3_text || bData.about_stat3_text || undefined,
+      aboutYearsExp: cleanYearsExp,
+      aboutClientsCount: cleanClientsCount,
+      aboutStat3Text: cleanStat3Text,
+      aboutRatingText: cleanRatingText,
       showAboutSection: showAbout,
       framesBaseUrl: tenant?.frames_cdn_url || bData.frames_cdn_url || (site as any).frames_cdn_url || (import.meta.env.VITE_R2_CDN_URL ? `${import.meta.env.VITE_R2_CDN_URL}/frames/${site.slug}` : `https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/frames/${site.slug}`),
       liveServices: liveServices.length > 0 ? liveServices : undefined,

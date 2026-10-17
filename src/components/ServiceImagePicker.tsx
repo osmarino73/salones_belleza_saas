@@ -8,7 +8,7 @@ import {
   Search,
   ExternalLink
 } from 'lucide-react';
-import { BEAUTY_STOCK_LIBRARY, StockImageItem } from '../lib/beautyImageLibrary';
+import { BEAUTY_STOCK_LIBRARY, StockImageItem, getManagedStockLibrary } from '../lib/beautyImageLibrary';
 import { compressImage } from '../utils/imageCompressor';
 
 interface ServiceImagePickerProps {
@@ -51,7 +51,7 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
     { id: 'maquillaje', label: 'Maquillaje & Cejas' }
   ];
 
-  const filteredStock = BEAUTY_STOCK_LIBRARY.filter((item) => {
+  const filteredStock = getManagedStockLibrary().filter((item) => {
     // Excluir fachadas y avatares de estilistas para enfoque en tratamientos/servicios
     if (item.category.startsWith('hero_') || item.category === 'especialistas') return false;
 

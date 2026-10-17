@@ -175,7 +175,7 @@ Vimos su perfil en Google Maps y les preparamos un demo de cómo se vería su p�
 }
 
 /**
- * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Cierre Nequi/Bancolombia $89k con anclaje de $650k)
+ * Genera el mensaje de WhatsApp Paso 2 (Respuesta al Interés + Oferta 14 Días Gratis Plan Inicio $29k)
  */
 export function generateStep2Pitch({
   businessName,
@@ -188,26 +188,25 @@ export function generateStep2Pitch({
 
   return `¡Qué bueno que les guste! 🚀 El nivel y la calidad de ${cleanName} merecen ese estatus ante cualquier cliente que las busque en Google.
 
-Un desarrollo web como este supera fácilmente los $650.000 COP, pero mediante la iniciativa Negocio Online de Makloz Tech, absorbemos más del 85% del diseño e ingeniería. Ustedes solo asumen el costo del servidor:
+Queremos que lo prueben en el día a día sin riesgo:
 
-👉 $7.417 COP al mes (un único pago anual de $89.000 COP).
+🎁 Les activamos 14 DÍAS DE PRUEBA 100% GRATIS (2 semanas completas) en el Plan Inicio.
+Cero cobro por desarrollo web, cero cobro por hosting ni costos ocultos.
 
-Por ese valor —que cuesta menos que un solo servicio en su ${cfg.establishmentWord}— reciben:
+Durante sus 14 días de prueba disfrutan:
+🌐 Su página web oficial activa con fotos y catálogo de servicios.
+📅 Sistema interactivo de agendamiento 24/7 para hasta 3 ${cfg.collaboratorsWord}.
+📲 Enlace directo de reservas para la bio de su Instagram, TikTok y WhatsApp.
+📊 Panel de control para gestionar sus citas y turnos del día sin llamadas.
 
-🌐 Web oficial activa por 1 año: Dominio, hosting seguro y certificado SSL.
+Si tras los 14 días les encanta el sistema, continúan por solo $29.000 COP al mes (sin contratos ni permanencia). Si no, no pagan absolutamente nada.
 
-📲 1 mes gratis de agenda inteligente: Sus ${cfg.targetClientsWord} eligen horario y ${cfg.roleSingular} sin que ustedes pierdan tiempo respondiendo chats.
-
-🖨️ Kits QR listos para imprimir: Material para ${cfg.physicalSpots}.
-
-🔒 Cero ataduras: Si tras el mes gratis no desean continuar con la app de citas, su página web sigue activa todo el año sin cobros extra.
-
-Estamos confirmando los cupos subsidiados de esta semana, ¿les comparto los datos de Nequi o Bancolombia para dejársela lista hoy mismo? ⚡`;
+¿A qué correo electrónico les creamos el acceso administrativo para dejársela activa hoy mismo? ⚡`;
 }
 
 /**
  * Genera el mensaje de WhatsApp Paso 3 / Alternativa de Estatus Makloz Tech
- * Enfocado en estatus de marca, patrocinio de desarrollo e inversión en hosting ($7.417/mes = $89.000/año)
+ * Enfocado en estatus de marca, $0 hosting y 14 días gratis en Plan Inicio ($29.000/mes)
  */
 export function generateMaklozTechPitch({
   businessName,
@@ -223,16 +222,14 @@ export function generateMaklozTechPitch({
 
 El trabajo y la calidad que tienen en ${cleanName} merecen verse con otro estatus.
 
-Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y cobras con mayor autoridad 🌟.
+Cuando un cliente te busca en Google y encuentra tu propia *Página Web Oficial*, la percepción de tu marca cambia por completo: generas confianza inmediata, prestigio y agendamientos automáticos 🌟.
 
-Por la iniciativa *"Negocio Online"* de *Makloz Tech*, abrimos un cupo de patrocinio tecnológico único:
-Absorbemos más del 85% del costo de diseño e ingeniería (un desarrollo que normalmente supera los $650.000 COP) para que tu marca solo asuma el costo del servidor 🚀.
+Para apoyarlos, no les cobramos desarrollo ni hosting:
+🎁 Les habilitamos *14 Días de Prueba 100% Gratis* en el Plan Inicio con su web y agendador interactivo listo para operar.
 
-👉 Por solo *$7.417 pesos al mes* (un único pago anual de *$89.000 COP* que cubre su hosting seguro y certificado SSL), dejas activa esa web que te mostramos por todo el año.
+Lo prueban sin pagar un solo peso. Si ven que les ahorra tiempo y les llena la agenda, continúan por solo *$29.000 COP al mes* (menos de $1.000 al día) 💡.
 
-Literalmente cuesta menos que un solo servicio de tu negocio, pero posiciona a ${cleanName} como un referente en tu zona 💡.
-
-Estamos asignando los cupos subsidiados de esta semana, ¿te aparto el de ustedes para dejarla activa hoy mismo? ⚡`;
+¿A qué correo te activo tus accesos para que lo empiecen a usar hoy mismo? ⚡`;
 }
 
 /**
@@ -272,7 +269,7 @@ export function generateWelcomeCredentialsPitch({
   const siteUrl = `${origin}/sitio/${slug}`;
   const bookingUrl = `${origin}/reservar/${slug}`;
 
-  return `¡Hola ${tenantName}! 🎉 Ya activamos tu acceso de administración a tu plataforma Kowy.app (Plan Crecimiento 1 Mes Incluido).
+  return `¡Hola ${tenantName}! 🎉 Ya activamos tu acceso de administración a tu plataforma Kowy.app (Plan Inicio - 14 Días de Prueba Gratis).
 
 🌐 Tu Panel de Administración:
 👉 ${loginUrl}
@@ -286,8 +283,8 @@ export function generateWelcomeCredentialsPitch({
 
 📱 Próximos pasos recomendados:
 1. Ingresa a tu panel con tu correo y clave temporal.
-2. Revisa tus ${cfg.collaboratorsWord} y catálogo de servicios.
-3. Comparte tu enlace de agendamiento (${bookingUrl}) en tu perfil de Instagram y estados de WhatsApp.
+2. Revisa tus ${cfg.collaboratorsWord} (hasta 3 incluidas en tu Plan Inicio) y catálogo de servicios.
+3. Comparte tu enlace de agendamiento (${bookingUrl}) en tu perfil de Instagram, TikTok y estados de WhatsApp.
 
-¡Muchos éxitos y bienvenida a la familia Kowy! 🚀${cfg.emoji}`;
+Tienes 14 días de prueba 100% bonificada para disfrutar tu sistema. ¡Muchos éxitos y bienvenida a la familia Kowy! 🚀${cfg.emoji}`;
 }

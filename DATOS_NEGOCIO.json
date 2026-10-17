@@ -75,16 +75,19 @@
     {
       "nivel": 1,
       "nombre": "Plan Inicio",
-      "precio_mensual": "$50.000 COP",
+      "precio_mensual": "$29.000 COP",
       "periodo": "/mes",
-      "destacado": false,
-      "publico": "Salones pequeños y barberías (1 a 4 personas)",
+      "destacado": true,
+      "etiqueta_destacado": "14 DÍAS DE PRUEBA GRATIS ($0 HOSTING)",
+      "publico": "Salones independientes y barberías (1 a 3 personas base)",
+      "precio_colaborador_extra": "$10.000 COP/mes",
       "caracteristicas": [
         "Todo lo del Plan Gratuito",
         "Botón y Sistema de Reservas Online (/reservar)",
-        "Hasta 4 Colaboradores con agenda propia",
+        "Hasta 3 Colaboradores con agenda propia",
+        "Opción de Colaboradores Extra (+$10.000 COP/mes c/u)",
         "Catálogo de servicios y precios dinámicos",
-        "Panel de administración web",
+        "Panel de administración web de citas del día",
         "Notificaciones de confirmación a WhatsApp"
       ]
     },
@@ -93,8 +96,8 @@
       "nombre": "Plan Crecimiento",
       "precio_mensual": "$120.000 COP",
       "periodo": "/mes",
-      "destacado": true,
-      "etiqueta_destacado": "INCLUIDO EN MES 1 ($89k SETUP)",
+      "destacado": false,
+      "etiqueta_destacado": "MÁS POPULAR PARA EQUIPOS",
       "publico": "Salones y Spas con equipo (4 a 10 personas)",
       "caracteristicas": [
         "Todo lo del Plan Inicio",

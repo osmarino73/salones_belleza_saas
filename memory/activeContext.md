@@ -12,6 +12,272 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-112. **Forzado Estricto de `title_accent: null` y Eliminación de Sufijos Artificiales ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), Supabase `tenants`)**:
+    - **Requerimiento**: Cumplir con la convención arquitectónica acordada: la columna `title_accent` debe ser estrictamente `null` por defecto, evitando cualquier sufijo artificial concatenado (como *"Barbería Tradicional & Urbana"* o *"Colorimetría & Estética Integral"*).
+    - **Implementación**:
+      1. En `activateProspectAsTenant` de `supabase.ts`, se eliminaron los fallbacks de texto y se fijó `titleAccent = bData.title_accent || null`.
+      2. En `PublicProspectSitePage.tsx`, se fijó el syncPayload con `title_accent: bData.title_accent || null`.
+      3. Se ejecutó migración en la base de datos de Supabase reseteando a `title_accent = null` en todos los tenants que contenían sufijos artificiales (`Barber Oscar`, `Barber Monster`, `Barberia imperial`, `Barber twiss`, `Blessed barbería`, `Barber namia`, `Angeless Spa`).
+      4. Comprobado visualmente en el navegador en `/sitio/barber-oscar`: el H1 renderiza exclusivamente el titular auténtico (*"MAESTRÍA EN CADA DETALLE PARA EL HOMBRE CONTEMPORÁNEO EN APARTADÓ"*) con nitidez total y sin ningún sufijo.
+
+-111. **Corrección de Titular H1 Duplicado en el Hero ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Problema Reportado**: En el sitio público de Barber Oscar (`/sitio/barber-oscar`), el titular H1 aparecía repetido dos veces consecutivas: una en blanco y la misma línea en color dorado (*"MAESTRÍA EN CADA DETALLE PARA EL HOMBRE CONTEMPORÁNEO EN APARTADÓ"* duplicado).
+    - **Causa Raíz Diagnosticada**:
+      1. En `activateProspectAsTenant` de `supabase.ts` y en `PublicProspectSitePage.tsx`, el campo `title_accent` se calculaba erróneamente usando `bData.headline || bData.title_accent`, provocando que el titular completo se asignara como acento de título (`tenants.title_accent`).
+      2. En `prospectHtmlInjector.ts`, la rutina de inyección del H1 (`isTitleAccentChanged`) verificaba si existía una etiqueta `<span>` para reemplazar; al no existir en el H1 base generado por la plantilla, ejecutaba incondicionalmente `updatedH1Inner += <span class="accent-gold">${titleAccent}</span>`, concatenando todo el titular por segunda vez.
+    - **Solución Implementada**:
+      1. Se añadió un guardián de contención en `prospectHtmlInjector.ts`: si `titleAccent` ya está presente en el H1 o coincide con el texto principal (`isAccentAlreadyInH1`), no se concatena como sufijo.
+      2. En `PublicProspectSitePage.tsx` y `supabase.ts`, se eliminó el fallback de `title_accent` hacia `headline`, preservando acentos de diseño reales o valores por defecto limpios (`Barbería Tradicional & Urbana`).
+      3. Se actualizó el registro en Supabase de Barber Oscar corrigiendo `title_accent` a `'Barbería Tradicional & Urbana'`, comprobando visualmente con captura de pantalla en el navegador que el H1 ahora luce impecable con texto principal y acento dorado diferenciados.
+
+-110. **Auditoría y Calibración al 100% de las 3 Plantillas Oficiales ([`plantillaBarberia.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaBarberia.ts), [`plantillaSalonFemenino.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaSalonFemenino.ts), [`plantillaNails.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaNails.ts), [`beautyHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyHtmlInjector.ts))**:
+    - **Alcance**: Revisión integral de código, tokens y renderizado en vivo para las 3 plantillas de producción:
+      1. **Plantilla 1 (Barbería - Legend Dark & Amber Gold)**: Paleta obsidian/gold (#e5a854), layout móvil de 2 columnas para servicios y barberos, 0 filtraciones cromáticas hacia fucsia, botones interactivos SaaS `/reservar/:slug?service=...`.
+      2. **Plantilla 2 (Salón Femenino & Colorimetría)**: Paleta camel rose (#cbb39c / personalizado), degradados suaves, servicios de visagismo y colorimetría. Se corrigió token faltante `{{ADDRESS_URI}}` en `beautyHtmlInjector.ts`.
+      3. **Plantilla 3 (Nails Studio & Spa - Rose Gold Blush)**: Paleta porcelana blush (#d87d7d), tarjetas minimalistas de catálogo y especialistas con rating de estrellas. Se eliminó el signo `+` duplicado que antecedía a `{{PHONE_DISPLAY}}`, dejando el formato telefónico limpio `(+57) 3XX XXX XXXX`.
+    - **Validación**:
+      - 0 tokens `{{...}}` sin reemplazar en todas las plantillas.
+      - 0 `null`, `undefined` o `NaN` en atributos o textos.
+      - Verificación visual fotográfica con capturas de pantalla de los 3 sitios en ejecución (`/sitio/barber-ivonnoo`, `/sitio/karis-colors`, `/sitio/nails-fama`).
+      - Chequeo de tipos `npx tsc --noEmit` completado con 0 errores.
+
+-109. **Scroll Independiente en Tarjetas de Edición (Imágenes, Colores, Textos) ([`WebsiteEditorTab.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/components/dashboard/WebsiteEditorTab.tsx))**:
+    - **Requerimiento**: Poder hacer scroll vertical fluido dentro de la card izquierda de edición (Imágenes, Colores y Textos) sin desplazar toda la página ni perder de vista la previsualización interactiva de la derecha.
+    - **Solución Implementada**:
+      1. Se fijó la columna izquierda con `lg:sticky lg:top-6` alineada con la columna de previsualización.
+      2. El selector de tabs (Imágenes, Colores, Textos) permanece siempre visible en la parte superior.
+      3. Se envolvió el contenido dinámico de las tarjetas en un contenedor con `max-h-[820px] xl:max-h-[860px] overflow-y-auto` y scrollbar estético personalizado en tono ámbar dorado (`amber-500/40`), permitiendo revisar y editar cómodamente todas las fotos, paletas, textos de autor y métricas.
+
+-108. **Viewport Desktop Escalado a 1200px y Modal Fullscreen en Editor Web ([`WebsiteEditorTab.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/components/dashboard/WebsiteEditorTab.tsx))**:
+    - **Problema Reportado**: Al cambiar a modo "Escritorio" en el Editor Web del Dashboard, seguía apareciendo el contenido y maquetación de móvil (banner vertical recortado, sin enlaces en el navbar, textos centrados y servicios en 2 columnas).
+    - **Causa Raíz**: El iframe de previsualización está montado dentro de una columna de 7 columnas del grid (~600px de ancho). Dado que el iframe tenía `width: 100%`, su ancho interno era ~600px, provocando que los navegadores evalúen las media queries CSS (`@media (max-width: 768px)`) y los `<source media="(max-width: 768px)">` de las imágenes como verdaderos, forzando la visualización móvil.
+    - **Solución Implementada**:
+      1. Se desacopló el viewport del iframe en modo escritorio configurándolo en `width: 1200px` nativo y escalándolo mediante `transform: scale(scale)` con `transformOrigin: 'top left'` y cálculo reactivo del ancho del contenedor vía `ResizeObserver`.
+      2. Con este ancho de 1200px, el iframe activa el menú de navegación completo (`Inicio`, `Servicios`, `Nosotros`, `Ubicación`), el banner 16:9 de escritorio y las cuadrículas de 4 columnas.
+      3. Se agregó un botón interactivo **"Expandir"** junto a los botones de dispositivo que abre un modal a pantalla completa (100% Pantalla Real) para previsualizar el sitio de escritorio en resolución nativa.
+
+-107. **Eliminación del Subtítulo en el Logo del Navbar en Previsualizador y Plantilla de Barberías ([`plantillaBarberia.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaBarberia.ts))**:
+    - **Problema Reportado**: En el Editor Visual del Dashboard, la previsualización en vivo mostraba `APARTADÓ • CLUB MASCULINO VIP` justo debajo del nombre del negocio (`BARBER MONSTER`) en el navbar.
+    - **Causa Raíz**: En `src/lib/templates/plantillaBarberia.ts`, el marcado base del header contenía `<div class="brand-subtitle">{{CITY}} &bull; Club Masculino VIP</div>`. Como `WebsiteEditorTab` renderiza el iframe usando `injectBeautyHtml` que compila directamente `PLANTILLA_BARBERIA_HTML`, se inyectaba dinámicamente ese subtítulo en el logo.
+    - **Solución Implementada**:
+      1. Se eliminó la etiqueta `<div class="brand-subtitle">{{CITY}} &bull; Club Masculino VIP</div>` en `plantillaBarberia.ts`, dejando únicamente `<div class="brand-name">{{BUSINESS_NAME}}</div>`.
+      2. El navbar queda limpio y uniforme mostrando exclusivamente el nombre del negocio con su botón de acción "Agendar".
+
+-106. **Persistencia de Propuesta de Valor (`subtitle`), Slogan y Corrección de Error PGRST204 en Editor Web ([`WebsiteEditorTab.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/components/dashboard/WebsiteEditorTab.tsx), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx))**:
+    - **Problema Reportado**: Al editar el campo "Subtítulo / Propuesta de Valor" (o el titular) desde el Editor Web del Dashboard y hacer clic en Guardar, los cambios no se guardaban en la base de datos de Supabase en la tabla `tenants`.
+    - **Causa Raíz Diagnosticada**:
+      1. En `handleSave` de `WebsiteEditorTab.tsx`, el payload enviado a la tabla `tenants` incluía la propiedad `hero_badge: heroBadge`. Debido a que la columna `hero_badge` no existe en la tabla `tenants` (su columna oficial es `hero_eyebrow`), Supabase abortaba la actualización completa con el error `code: PGRST204` (*"Could not find the 'hero_badge' column of 'tenants' in the schema cache"*).
+      2. Además, `tenantPayload` no tenía definidos los campos `subtitle: subheadline` ni `slogan: headline`, impidiendo que los textos se guardaran en la base de datos.
+    - **Solución Implementada**:
+      1. Se eliminó la propiedad espuria `hero_badge` del payload de actualización en `WebsiteEditorTab.tsx`.
+      2. Se mapearon explícitamente en el payload `subtitle: subheadline`, `slogan: headline`, `whatsapp_number: phoneWhatsapp` y `about_rating_text: metric4Val`, actualizando por `id` o por `slug`.
+      3. Se integraron `slogan` y `subtitle` en el objeto `business_data` de `prospect_sites`.
+      4. Se agregó fallback a `bData.copywriting?.subheadline` en `PublicProspectSitePage.tsx`.
+      5. Se sincronizó la base de datos para Barber Monster con el nuevo subtítulo (*"En Barber Monster cuidamos cada detalle para ofrecerte una experiencia unica."*) y titular (*"Cortes de Precisión, Barba Impecable y Estilo Auténtico en Uraba"*), verificado visualmente en el navegador en vivo.
+
+-105. **Mapeo Completo y Heredabilidad Fiel de `business_data` (Subtitle, Copywriting y Métricas) a `tenants` ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Problema Reportado**: Al activar un prospecto como tenant, existían campos clave de `business_data` que quedaban en `null` o sin migrar (especialmente `subtitle`, que contiene la bajada descriptiva de `copywriting.subheadline`, así como `hero_image_url` que no leía `banner_url`, `about_title_accent` que caía en defaults de SQL, y métricas `about_years_exp`, `about_clients_count`, `about_rating_text`).
+    - **Causa Raíz**: En `activateProspectAsTenant` de `src/lib/supabase.ts`, la construcción de `newTenant` y `dbTenantPayload` no incluía `subtitle`, no consideraba `bData.copywriting?.subheadline`, omitía `banner_url` y no extraía las métricas numéricas.
+    - **Solución Implementada**:
+      1. Se actualizó `activateProspectAsTenant` para mapear exhaustivamente todos los campos:
+         - `subtitle`: `bData.copywriting?.subheadline || bData.subtitle || ...`
+         - `slogan`: `bData.copywriting?.headline || bData.headline || bData.slogan || ...`
+         - `hero_eyebrow`: `bData.copywriting?.badge || bData.hero_badge || ...`
+         - `hero_image_url`: `bData.banner_url || bData.hero_image_desktop || ...`
+         - `about_title`: `bData.copywriting?.about_title || bData.about_title || ...`
+         - `about_description`: `bData.copywriting?.about_description || bData.about_description || ...`
+         - `about_years_exp`, `about_clients_count`, `about_rating_text`: mapeados desde `bData.metrics` y `bData.metricX_val`.
+         - `title_accent: null` y `about_title_accent: null` explícitos para evitar defaults de PostgreSQL.
+      2. Se sincronizó en caliente el tenant de Barber Monster (`d628d08d-4af7-40eb-8032-04104a1c3154`) en Supabase con sus datos completos y fidedignos.
+
+-104. **Logotipo Tipográfico Blanco Puro, H1 Sincronizado con Apartadó y Eliminación de Subtítulo Redundante en Navbar ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), Supabase `tenants` y `prospect_sites`)**:
+    - **Problema Reportado**:
+      1. El nombre del logo en el navbar (`BARBER MONSTER`) tenía un degradado fucsia/rosado (`linear-gradient(135deg, #ffffff 40%, #e11d48 100%)`) que desentonaba con la estética masculina Dark Luxury.
+      2. El H1 del Hero mostraba un slogan genérico en lugar del titular SEO geo-localizado de Apartadó (`Cortes de Precisión, Barba Impecable y Estilo Auténtico en Apartadó`).
+      3. En el navbar aparecía el subtítulo saturado `[Apartadó • Club Masculino VIP]`, restando jerarquía al nombre de la marca.
+    - **Solución Implementada**:
+      1. Se estableció el logotipo en blanco puro (`#ffffff !important; -webkit-text-fill-color: #ffffff !important; background: none !important;`) en `prospectHtmlInjector.ts`.
+      2. En `PublicProspectSitePage.tsx` se priorizó `bData.copywriting?.headline || bData.headline` para el slogan/H1 y se actualizó `tenants.slogan` en Supabase con `"Cortes de Precisión, Barba Impecable y Estilo Auténtico en Apartadó"`.
+      3. Se eliminó la etiqueta `<div class="brand-subtitle">Apartadó &bull; Club Masculino VIP</div>` del navbar en `prospect_sites.raw_html` y se reforzó con la regla CSS `.header-nav .brand-subtitle, .brand-logo .brand-subtitle { display: none !important; }`.
+      4. Verificado visualmente en navegador en `http://localhost:3000/sitio/barber-monster` confirmando nitidez y elegancia total.
+
+-103. **Default `title_accent: null` y Erradicación de Sufijos Concatenados en la Marca ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Problema Reportado**: En el sitio web activado de Barber Monster (`/sitio/barber-monster`), el nombre de marca en el navbar y en el footer aparecía como `BARBER MONSTER BARBERÍA VIP & CLUB MASCULINO`, duplicando palabras y concatenando un subtítulo largo al nombre del negocio.
+    - **Causa Raíz Diagnosticada**:
+      1. En `prospectHtmlInjector.ts`, `brandTitleRegex` aplicaba un fallback forzado: `if (titleAccent) newBrandInner = `${businessName} <span>${titleAccent}</span>``, forzando la concatenación incluso cuando el HTML original no tenía un `<span>` interno para acento de marca.
+      2. En `activateProspectAsTenant` (`src/lib/supabase.ts`), se generaba un `titleAccent` artificial a partir del eslogan o de la especialidad, guardándolo en la base de datos de Supabase en lugar de dejarlo en `null`.
+    - **Solución Implementada**:
+      1. Se configuró `title_accent: null` de forma obligatoria en la creación y activación de tenants (`newTenant` y `dbTenantPayload` en `supabase.ts`).
+      2. Se modificó `prospectHtmlInjector.ts` para que `newBrandInner` tome estrictamente `businessName`. Solo si el template nativo posee una etiqueta interior (`<span>`, `<em>`) y existe un `titleAccent` legítimo se inyecta; en cualquier otro caso se respeta únicamente el nombre del negocio limpio.
+      3. Se actualizó el registro en la base de datos de Supabase para Barber Monster (`d628d08d-4af7-40eb-8032-04104a1c3154`) estableciendo `title_accent = null`.
+
+-102. **Heredabilidad Editorial Total de Prospecto a Tenant (`business_data` a `tenants`) ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Problema**: Al activar un negocio como tenant desde un prospecto, los valores en la tabla `tenants` discrepaban drásticamente de los generados en el prospecto (`prospect_sites`). En Barber Monster, el tenant mostraba horarios de apertura erróneos (`Lun a Sáb: 8:00 AM – 7:00 PM`), slogan en `null`, descripción de sobre nosotros en `null`, `logo_icon` en `'🪄'` (varita mágica de salón), `hero_eyebrow` en `'Bienvenidas a ❤️'` y `title_accent` en `'Centro de Estética'`.
+    - **Causa Raíz**:
+      1. La tabla `tenants` en Supabase tiene valores por defecto a nivel SQL pensados originalmente para salones femeninos.
+      2. `activateProspectAsTenant` en `src/lib/supabase.ts` solo armaba y enviaba un payload con datos fiscales y de autenticación básicos (`name`, `slug`, `phone`, `address`, etc.), dejando que PostgreSQL rellenara los campos editoriales con sus defaults obsoletos.
+      3. Se leía `horario_atencion` en lugar de `horario`, provocando caída al fallback de horarios de 7:00 PM.
+    - **Solución Implementada**:
+      1. Se parseó `business_data` de forma segura (objeto o string JSON) en `activateProspectAsTenant`.
+      2. Se mapearon explícitamente en el payload del tenant: `slogan`, `business_hours` (con `horario` normalizado), `hero_eyebrow`, `title_accent`, `about_title`, `about_description`, `about_badge_text`, `hero_image_url`, `about_image_url`, `primary_color` y `logo_icon` temático según la categoría (ej: `💈` para barbería, `💅` para uñas, `💆‍♀️` para spa).
+      3. Se sincronizó en caliente el tenant de Barber Monster (`d628d08d-4af7-40eb-8032-04104a1c3154`) en Supabase con los datos de su prospecto.
+
+-101. **Corrección de Precios Corruptos, Duración Sobrescrita y Auto-Poblado de Fotos en Activación de Servicios ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`plantillaBarberia.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaBarberia.ts), [`beautySpecialties.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautySpecialties.ts), [`beautyImageLibrary.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyImageLibrary.ts))**:
+    - **Problema Reportado**: Tras activar un negocio (Barber Monster, slug `barber-monster`), los servicios se crearon sin `image_url` (quedando en `null` en la tabla `services` de Supabase y sin miniaturas en el Dashboard). En la web pública (`/sitio/barber-monster`), los precios aparecían corruptos (ej. `$25.0005.000 COP COP`), las insignias de duración de servicio mostraban el horario de apertura (`Lun a Sáb: 8:00 AM – 7:00 PM`), la imagen del servicio 5 estaba rota (404) y el corte infantil mostraba a un hombre barbudo adulto con gafas.
+    - **Causas Raíz Identificadas**:
+      1. En `prospectHtmlInjector.ts`, `inner.replace(regex, '$1' + formattedPrice + '$3')` provocaba que si el precio formateado comenzaba con `$2` (ej. `$25.000`), JavaScript interpretara `$2` como el segundo grupo de captura de la expresión regular, duplicando los números. Además, la expresión abarcaba `.service-price-block` rompiendo el cierre `</span>` y duplicando `COP COP`.
+      2. `footerClockHoursRegex` buscaba `<i class="...fa-clock..."></i>` sin restricción de contenedor, reemplazando la píldora de duración (`.service-badge-pill`) de cada tarjeta por el horario comercial.
+      3. En `supabase.ts` (`activateProspectAsTenant`), al procesar los servicios no se leía `srv.imagen_url` ni existía fallback a `getSuggestedImageForService`, dejando `image_url` en `null`.
+      4. En `plantillaBarberia.ts` y `beautySpecialties.ts`, la foto de exfoliación facial tenía una URL de Unsplash eliminada (404) y el corte infantil apuntaba a un retrato de un hombre adulto con barba.
+    - **Solución Implementada**:
+      1. Se reemplazó la lógica de inyección de precio en `prospectHtmlInjector.ts` con una función callback segura dirigida a `.service-price-val` / `.price-val`, eliminando la expansión accidental de `$2`.
+      2. Se acotó `footerContactClockRegex` exclusivamente al footer y bloques de contacto, protegiendo las insignias de duración de servicios.
+      3. Se integró `getSuggestedImageForService` en `supabase.ts` y se incluyó `srv.imagen_url`, garantizando que todo servicio sembrado automáticamente reciba su imagen temática oficial de alta resolución.
+      4. Se actualizaron las URLs en las plantillas y librerías con imágenes activas (200 OK) de Unsplash, y se sincronizaron en caliente los 6 servicios y el sitio web de Barber Monster en Supabase.
+
+-100. **Actualización Comercial y Técnica a 14 Días de Prueba Gratis en Plan Inicio ([`whatsappPitchGenerator.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/whatsappPitchGenerator.ts), [`LandingPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/LandingPage.tsx), [`AgentIntakePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/AgentIntakePage.tsx), [`SuperadminDashboardPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Requerimiento**: Ampliar el periodo de prueba gratis oficial del Plan Inicio ($29.000 COP) de 8 días a 14 días (2 semanas completas).
+    - **Fundamentación Técnica y Comercial**: Los salones y barberías operan en ciclos semanales con su mayor volumen de jueves a sábado. Un periodo de 8 días sólo abarca un fin de semana (riesgoso si hubo lluvia o retraso en la difusión). 14 días captura 2 fines de semana completos, consolida el hábito de uso de las clientas, afianza la adopción del producto y maximiza la tasa de conversión a pago.
+    - **Implementación**:
+      1. Sincronizadas las plantillas persuasivas de WhatsApp (Paso 2, Paso 3 y Bienvenida) y la skill `whatsapp-persuasive-copy`.
+      2. Actualizadas las tarjetas de precios y preguntas frecuentes en `LandingPage.tsx`.
+      3. Actualizado el esquema en `DATOS_NEGOCIO.json` y `PLANES_Y_MERCADOLOGIA.md`.
+      4. Actualizado el fallback de días de prueba a 14 días en `supabase.ts`, `prospectActivationService.ts`, `AgentIntakePage.tsx` y `SuperadminDashboardPage.tsx`.
+
+-99. **Botón Enviar Credenciales por WhatsApp en Activación In-Field ([`AgentIntakePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/AgentIntakePage.tsx))**:
+    - **Requerimiento**: Permitir al asesor comercial despachar las credenciales de acceso (usuario, clave temporal y enlace al panel administrativo) directamente al WhatsApp del dueño en un solo clic tras activar la cuenta SaaS en terreno.
+    - **Solución Implementada**: Se integró el botón destacado «📲 Enviar por WhatsApp» junto al botón de copiado en la tarjeta de activación inmediata de `AgentIntakePage.tsx`, reutilizando el generador dinámico de mensajes y abriendo directamente `wa.me/`.
+
+-98. **Implementación de la Opción 2 para el Plan Gratuito (Freemium de Escala: 1 Especialista + 25 Citas / mes) ([`planPermissions.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/planPermissions.ts), [`BookingPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/BookingPage.tsx), [`DashboardPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/DashboardPage.tsx), [`LandingPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/LandingPage.tsx), [`PLANES_Y_MERCADOLOGIA.md`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/PLANES_Y_MERCADOLOGIA.md))**:
+    - **Requerimiento**: Dotar al Plan Gratuito ($0 de por vida, $0 hosting) de agendamiento online interactivo real para permitir a profesionales independientes o salones en prueba experimentar el SaaS, con límites claros que incentiven el upgrade a Plan Inicio ($29.000 COP) sin perder clientas.
+    - **Reglas del Modelo Opción 2**:
+      1. **1 Especialista / Profesional**: El agendador interactivo (`/reservar/:slug`) enfoca la atención en el profesional principal del negocio.
+      2. **Cupo de 25 Citas Online al Mes**: Se contabilizan las citas online del mes en curso (excluyendo cancelaciones y `no_show`).
+      3. **Desvío Suave a WhatsApp (Zero Churn)**: Al completarse las 25 citas, el agendador online nunca rechaza a la clienta: conmuta automáticamente al botón interactivo *"Agendar por WhatsApp Directo"* con el mensaje prellenado con todos los detalles del turno, servicios y total estimado.
+      4. **Métricas en Dashboard**: Banner dinámico con barra de progreso (`Llevas X/25 citas online este mes`), alertas de cupo próximo a agotarse y botón directo para pasar a Plan Inicio ($29.000 COP/mes).
+
+-97. **Imagen Oficial Predeterminada de Hero Móvil para Plantilla Nails ([`beautySpecialties.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautySpecialties.ts), [`beautyHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyHtmlInjector.ts))**:
+    - **Requerimiento**: Establecer la imagen de Supabase Storage `https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792160934258_Complete_image_leaving_lower_third_20261016092835.webp` como predeterminada oficial de Hero Móvil para la plantilla y especialidad de uñas.
+    - **Implementación**: Actualizado en `BEAUTY_SPECIALTIES.nails.heroMobileImage`, en el fallback de `beautyHtmlInjector.ts` y sincronizado en el registro de `nail-maxx` en Supabase.
+
+-96. **Edición Dinámica de `{{HERO_BADGE}}` y Contundencia Tipográfica en Hero de Uñas ([`WebsiteEditorTab.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/components/dashboard/WebsiteEditorTab.tsx), [`AgentIntakePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/AgentIntakePage.tsx), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`plantillaNails.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/templates/plantillaNails.ts))**:
+    - **Requerimiento**: Permitir que el usuario edite la variable `{{HERO_BADGE}}` (el script tag caligráfico superior como *"Nail Spa & Esthetic"*) desde el editor web / intake, y darle más peso tipográfico y presencia de marca al titular H1: *"El diseño y la elegancia que tus manos merecen en Apartadó."*.
+    - **Solución Implementada**:
+      1. **Editor Web y Wizard de Agentes**: Se habilitó el campo de texto con extracción y guardado reactivo para `heroBadge` / `.hero-script-tag` en `WebsiteEditorTab.tsx` y `AgentIntakePage.tsx`, sincronizado con `bData.copywriting.badge` y `bData.hero_badge`.
+      2. **Inyección Dinámica**: Se actualizó `prospectHtmlInjector.ts` para extraer y reemplazar dinámicamente `.hero-script-tag` sin alterar el resto del documento.
+      3. **Peso Editorial al H1**: `.hero-title` pasó a `font-weight: 700`, escala armónica `clamp(2.2rem, 3.6vw, 3.2rem)` y `line-height: 1.14` con acento en cursiva `font-weight: 600`.
+      4. **Estética Glow & Cápsula Translúcida**: Efecto glow difuminado en la firma caligráfica y botón «Ver Servicios» rediseñado como píldora translúcida con micro-borde `rgba(255, 255, 255, 0.20)` y `backdrop-filter: blur(10px)`.
+      5. **Sincronización en Supabase**: Se parchó el registro del prospecto `nail-maxx` con el nuevo HTML y configuración.
+
+-95. **Rediseño Dark Luxury Gold de Barbería & Corrección de Pisado de Logo en Navbar ([`cris_barbershop_standalone.html`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/document/barberia/cris_barbershop_standalone.html), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`crisBarbershopSiteData.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/crisBarbershopSiteData.ts), [`beautyHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyHtmlInjector.ts))**:
+    - **Causa Raíz Identificada**:
+      1. En `prospectHtmlInjector.ts`, `brandTitleRegex` incluía `logo-text`, que contenía el `h1` del navbar. Al procesar el sitio, se reemplazaba el nombre de la barbería por el `slogan` ("Maestría en degradados...").
+      2. El selector del `h1` del Hero no estaba acotado al contenedor del Hero, pisando el primer `h1` del documento (el logo del navbar). Además, pisaba el titular estructurado de alta gama de la ciudad.
+      3. La plantilla base `cris_barbershop_standalone.html` era un diseño claro en crema/blanco (`#faf8f5`) con tarjetas desabridas y las fotos al pie, muy alejado del estándar de alta gama **Dark Luxury** solicitado (idéntico a la referencia de "Barbería El Man").
+    - **Solución Implementada**:
+      1. **Corrección de Regex e Inyección**: Se aseguró que el navbar siempre mantenga el nombre del negocio (`businessName`) y no el eslogan. Se acotó el reemplazo de H1 al contenedor del Hero (`.hero-title` o `.hero`) y se protegió la frase editorial *"EL ESTILO Y LA PRECISIÓN QUE DEFINEN TU IMAGEN EN [CIUDAD]"*.
+      2. **Rediseño Dark Luxury Gold**:
+         - Fondo negro profundo `#09090b` con acentos dorados `#d4af37`.
+         - Navbar sticky con logo en SVG dorado inline y botón dorado `AGENDAR CITA 🗓️`.
+         - Hero de alto impacto centrado con badge `✨ CITAS DISPONIBLES HOY EN KOWY` y botón primario dorado.
+         - Info Strip flotante con Horarios, Ubicación y botón directo `RESERVAR AHORA ➔`.
+         - Tarjetas de servicio oscuras (`#141416`) con foto ARRIBA, badges flotantes (`POPULAR`, `TOP`, `RECOMENDADO`, etc.) y duración `⏱️ 45 min`, categoría dorada, descripción nítida, bloque de inversión/precio y botón dorado `RESERVAR 🗓️`.
+         - Sección Sobre Nosotros en 2 columnas oscuras y footer minimalista.
+      3. **Sincronización Total**: Se sincronizó el HTML en `crisBarbershopSiteData.ts`, `beautyHtmlInjector.ts` y se actualizó el registro en Supabase de `barberia-imperial-7077`, verificado visualmente en navegador en `http://localhost:3000/sitio/barberia-imperial-7077`.
+
+-94. **Corrección de Generador de Plantillas en Intake de Agentes ([`beautyHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyHtmlInjector.ts), [`beautySpecialties.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautySpecialties.ts))**:
+    - **Causa Raíz Identificada**: El formulario de 3 pasos (`AgentIntakePage.tsx`) utilizaba una función `injectBeautyHtml` que generaba un HTML básico Tailwind improvisado (layout centrado oscuro con botones amarillos) en lugar de inyectar los datos en las plantillas reales y aprobadas. Además, la categoría de barbería tenía un enlace roto en el servicio 5 ("Exfoliación facial") y una foto de una mujer adulta en el servicio 6 ("Corte infantil").
+    - **Solución Implementada**:
+      1. Se reescribió `beautyHtmlInjector.ts` para que tome directamente las plantillas maestras completas:
+         - **Barberías**: Inyecta en la plantilla oficial de lujo [cris_barbershop_standalone.html](file:///c:/Users/comer/kowy.app/salones_belleza_saas/document/barberia/cris_barbershop_standalone.html) (`CRIS_BARBERSHOP_SITE_DATA`), con su banner de cuero oscuro, tarjetas elegantes y Hero responsive dual.
+         - **Salones Femeninos & Colorimetría**: Inyecta en la plantilla [document/index.html](file:///c:/Users/comer/kowy.app/salones_belleza_saas/document/index.html) (`FANTASTIC_MONTERIA_SITE_DATA`).
+         - **Uñas**: Inyecta en `KAPA_SPA_SITE_DATA`.
+         - **Spas & Estética**: Inyecta en `MILENA_GOMEZ_SITE_DATA`.
+      2. Se corrigieron en `beautySpecialties.ts` los enlaces de fotos de muestra para barbería:
+         - Servicio 5: Mascarilla/facial masculino de alta definición.
+         - Servicio 6: Corte de niño / corte juvenil de alta calidad.
+
+-93. **Integración de Plantilla de Salón Femenino Fantastic Montería con Hero Dual Responsive ([`document/index.html`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/document/index.html), [`fantasticMonteriaSiteData.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/fantasticMonteriaSiteData.ts), [`beautySpecialties.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautySpecialties.ts), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Requerimiento**: Establecer `document/index.html` como la plantilla oficial para salones femeninos, configurando las imágenes del Hero con las URLs oficiales de Supabase Storage.
+    - **Hero Dual Responsive con `<picture>`**:
+      - **Escritorio**: `https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792079931885_Stylist_blow-drying_client_hair_2K_20261015104423.webp`
+      - **Móvil (`max-width: 768px`)**: `https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792083289211_Stylist_cutting_client_hair_20261015115430.webp`
+    - **Salvaguarda de Video Canvas**:
+      - Se eliminaron las rutas 404 locales relativas (`public/frames/...`) y se añadió una guarda en `preloadImages` para asegurar que el poster dual responsive permanezca visible a máxima resolución sin colapsar en pantallas negras.
+    - **Mapeo de Reservas SaaS**:
+      - Botones de agendamiento (Header, Hero Step 1 & 2, Tarjetas de Servicios y Especialistas, Banner CTA y Footer) mapeados a `/reservar/fantastic-monteria`.
+      - Plantilla empaquetada como `FANTASTIC_MONTERIA_SITE_DATA` y registrada en `supabase.ts` y `beautySpecialties.ts`.
+
+-92. **Integración y Optimización de Plantilla de Barbería Cris Barbershop con Hero Responsive Supabase ([`cris_barbershop_standalone.html`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/document/barberia/cris_barbershop_standalone.html), [`crisBarbershopSiteData.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/crisBarbershopSiteData.ts), [`beautySpecialties.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautySpecialties.ts), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts))**:
+    - **Requerimiento**: Establecer la plantilla `cris_barbershop_standalone.html` como la plantilla oficial para barberías, configurando el Hero Desktop y Mobile con las imágenes oficiales WebP de Supabase Storage.
+    - **Optimización Radical de Peso**:
+      - El archivo original pesaba **8.9 MB** debido a cadenas Base64 incrustadas. Se limpiaron todos los Base64 y se reemplazaron por imágenes WebP CDN optimizadas, reduciendo el archivo a **48 KB** (reducción del 99.4% en peso y carga instantánea).
+    - **Hero Dual Responsive con `<picture>`**:
+      - **Desktop (min-width: 769px)**: `https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp`
+      - **Mobile (max-width: 768px)**: `https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792081956862_Barber_executing_skin_fade_haircut_20261015113222.webp`
+    - **Cumplimiento Protocolo `landing-html-injector`**:
+      - Todos los botones de reserva (Header, Hero CTA, Service Cards, Barbers CTA, Footer Banner) mapeados directamente al agendador interactivo SaaS (`/reservar/cris-barbershop`).
+      - El canal WhatsApp queda exclusivamente para el botón flotante oficial y consultas directas.
+      - Exportado a `CRIS_BARBERSHOP_SITE_DATA` y registrado en `supabase.ts` para resolución inmediata de slug `/sitio/cris-barbershop`.
+
+-91. **Sistema CRUD Completo para la Biblioteca de Imágenes Stock CDN ([`beautyImageLibrary.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/beautyImageLibrary.ts), [`SuperadminDashboardPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx), [`ServiceImagePicker.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/components/ServiceImagePicker.tsx))**:
+    - **Requerimiento**: Permitir crear, editar y eliminar imágenes de la biblioteca directamente desde el panel de Superadmin, con búsqueda en tiempo real, filtrado por categorías, vista previa en vivo y persistencia local/SaaS sin alterar la experiencia existente.
+    - **Implementación**:
+      1. **Capa de Servicio de Biblioteca Administrable (`src/lib/beautyImageLibrary.ts`)**:
+         - `getManagedStockLibrary()`: Carga imágenes persistentes con clave `kowy_stock_library_items_v2` con fallback automático al catálogo predeterminado `BEAUTY_STOCK_LIBRARY`.
+         - `createStockImage(item)`: Genera ID único (`custom-img-...`), normaliza tags y persiste el nuevo recurso visual.
+         - `updateStockImage(id, updates)`: Modifica título, URL WebP/CDN, categoría y etiquetas manteniendo la inmutabilidad de la colección.
+         - `deleteStockImage(id)`: Remueve el elemento de la biblioteca administrable.
+         - `resetStockLibrary()`: Restaura el catálogo de imágenes a la configuración predeterminada de fábrica.
+         - Integración con `getAllMediaItems()`, `getHeroImageForCategory()` y `getSuggestedImageForService()`.
+      2. **Interfaz de Superadmin (`src/pages/SuperadminDashboardPage.tsx`)**:
+         - Barra de herramientas con buscador en tiempo real por título, categoría o tags `#`, contador dinámico de imágenes (`X disponibles`) y botón destacado `+ Nueva Imagen`.
+         - Botones de acción rápida por tarjeta: `✏️ Editar`, `🗑️ Eliminar` y `📋 Copiar Enlace CDN` con feedback toast visual inmediato.
+         - Modal de creación y edición (`ImageEditorModal`) con vista previa en vivo de la imagen, selector de 12 categorías y tags asistidos.
+         - Botón discreto `🔄 Restaurar Todo` para revertir a las imágenes de fábrica en caso de ser necesario.
+      4. **Sincronización en Base de Datos y Almacenamiento Centralizado (`create_stock_library_table.sql`)**:
+         - Se creó el script SQL para la tabla `public.stock_library_images` con políticas RLS públicas de lectura y bucket público `stock-images`.
+         - Se implementaron métodos asíncronos (`uploadStockImageBlob`, `fetchStockLibraryFromSupabase`, `createStockImageAsync`, `updateStockImageAsync`, `deleteStockImageAsync`) que suben el WebP a Supabase Storage y guardan los metadatos en Postgres con fallback local y offline automático.
+
+-90. **Corrección de Colapso Visual (Efecto Persianas/Rayas Horizontales) en Galería Stock CDN ([`SuperadminDashboardPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/SuperadminDashboardPage.tsx))**:
+    - **Problema Reportado**: Al abrir el modal *"🖼️ Galería Stock CDN"*, las tarjetas aparecían aplastadas horizontalmente como una persiana veneciana de líneas y la barra de categorías se reducía a un scrollbar sin botones.
+    - **Causa Raíz**: En el contenedor flex-col con `max-h-[88vh]`, el elemento grid tenía `flex-1 overflow-y-auto` directo sin `min-h-0`. El motor de renderizado de Chromium intentaba comprimir los más de 30 items al alto disponible, forzando cada tarjeta a medir ~4px de altura.
+    - **Solución Implementada**:
+      1. Se añadió `shrink-0` a la cabecera del modal, a la barra de filtros de categorías y al pie de página.
+      2. Se aisló el scroll en un contenedor intermedio `flex-1 min-h-0 overflow-y-auto custom-scrollbar`.
+      3. Se estableció `min-h-[300px]` en cada tarjeta de imagen y `h-44` en el contenedor de foto, permitiendo scroll fluido y visualización nítida de todas las fotos de muestra.
+
+-89. **Adaptación Fiel del Flujo de 3 Pasos para Agentes de Campo Kowy (Ficha Negocio ➔ Fotos & Servicios ➔ ¡Listo!)**:
+    - **Requerimiento**: Replicar y adaptar con máxima precisión la interfaz y experiencia visual de las imágenes de referencia para el módulo de prospección en terreno de Kowy.
+    - **Implementación**:
+      1. **Paso 1: Ficha del Salón / Negocio**:
+         - *Ubicación & Ciudad*: GPS Auto con coordenadas precisas, selector de ciudad con pills rápidas (`Medellín`, `Bogotá`, `Cali`, `Barranquilla`, `Apartadó`, `Turbo`, etc.) y campo de dirección física.
+         - *Nombre Comercial*: Input con generación en tiempo real del slug limpio (`kowy.app/s/:slug`).
+         - *11 Especialidades de Belleza*: Grilla de 11 categorías interactivas (Barbería Clásica & Fade, Salón Femenino & Colorimetría, Uñas & Nails Bar, Spa Facial & Masajes, Cejas & Pestañas, Estética Médica, Peluquería Infantil, Podología, Maquillaje Social, Terapias Holísticas, Peluquería Mixta).
+         - *Eslogan con IA*: Generador de frases distintivas adaptadas al salón, la especialidad y la ciudad seleccionada.
+         - *WhatsApp de Citas*: Prefijo país +57 y número directo para confirmaciones del agendador interactivo.
+         - *Constructor de Horarios*: Selector de días que abre, toggle interactivo de días de la semana `[L][M][X][J][V][S][D]`, horas de apertura y cierre, opción "Viernes y Sábado cierran más tarde", y caja de Horario Resultante con botón para retocar texto.
+      2. **Paso 2: Fotos & Carta de Servicios**:
+         - *8 Plantillas Visuales Base*: Selección de estilo con previews reales, badges y tokens de color (Dark Luxury & Gold, Cyber Cyan Neon, Rose Gold & Blush, Emerald Botanical, Caramel Mocca, Ruby Velvet, Monochrome Editorial, Lavanda Serenity).
+         - *Fotos Hero y Banner*: Slots para Hero Desktop (16:9), Hero Móvil (9:16) y Banner de Catálogo con URLs y subida.
+         - *Copywriting Personalizado con IA*: Bloque Hero (Título de Impacto + Subtítulo) y Bloque Sobre Nosotros (Título + Párrafo 1 Origen + Párrafo 2 Experiencia) con botón "🪄 Regenerar IA".
+         - *Servicios del Salón (6)*: 6 servicios precargados con nombres, descripciones y precios reales en COP ajustados por nicho, editables en caliente con botón "⚡ Auto Plantilla".
+      3. **Paso 3: ¡Listo!**:
+         - Enlaces directos a Demo (`/sitio/:slug`) y Agendador 24/7 (`/reservar/:slug`).
+         - Pitch persuasivo de WhatsApp en 3 pasos (Gancho visual, Oferta 8 Días Gratis $29k Plan Inicio, Estatus Makloz Tech) con botón de copiado y apertura directa de `wa.me/`.
+         - Activación B2B inmediata en calle: conversión en 1 clic del prospecto a tenant en producción con 8 días gratis ($0 hosting), incluyendo campo editable de contraseña de acceso, botón para autogenerar claves aleatorias (`🎲 Generar otra`) y toggle para mostrar/ocultar contraseña (`👁️ / 🙈`).
+
+-88. **Módulo Agentes de Campo PWA y Reforma Comercial Plan Inicio ($29.000 COP + 8 Días Gratis + $0 Hosting)**:
+    - **Requerimiento**: Adaptar el módulo de agentes de campo (`kewe_export_module`) para prospección comercial en calle de salones y barberías sin dependencias rotas, reformando el Plan Inicio a $29.000 COP/mes (hasta 3 colaboradores + $10.000 por colaborador extra), 8 días de prueba gratis sin costo de hosting ($0 hosting permanente).
+    - **Implementación**:
+      1. **Rutas y Vista Móvil PWA (`src/pages/AgentIntakePage.tsx`, `src/App.tsx`)**: Rutas `/agente` y `/campo` con geolocalización GPS automática, captura rápida de prospecto en 30 segundos, generación de demo 1-clic con estética nativa Mobile-First y presets de nichos de belleza (Barbería, Salón Femenino, Nails Bar, Spa Facial).
+      2. **Inyector HTML de Belleza (`src/lib/beautyHtmlInjector.ts`)**: Genera landings ultra optimizadas con reserva en `/reservar/:slug` y botón flotante verde a WhatsApp oficial, respetando al 100% el diseño y las reglas de Kowy.
+      3. **Servicio de Agentes y Métricas (`src/lib/agentService.ts`)**: Manejo de sesión de agente (código/teléfono) con persistencia en Supabase (`agentes_campo`) y fallback local seguro, cálculo de prospecciones del día y tasa de conversión.
+      4. **Activación B2B Efímera (`src/lib/prospectActivationService.ts`)**: Permite al agente en la calle convertir un prospecto en salón activo SaaS en 1 clic (8 días de prueba gratis, $0 hosting) sin cerrar su sesión de agente.
+      5. **Actualización de Planes & Mensajes**: `PLANES_Y_MERCADOLOGIA.md`, `DATOS_NEGOCIO.json`, `planPermissions.ts`, `LandingPage.tsx`, `DashboardPage.tsx`, `SuperadminDashboardPage.tsx`, `supabase.ts`, `whatsappPitchGenerator.ts` y skill `whatsapp-persuasive-copy` actualizados al nuevo modelo comercial.
+      6. **DDL de Base de Datos (`create_field_agents_table.sql`)**: Creación de tabla `agentes_campo` y columnas `gps_coordinates` y `creator_agent_id` en `prospect_sites`.
+      7. **Accesos en Superadmin**: Botones directos a `/agente` en el topbar y barra de pestañas de `SuperadminDashboardPage.tsx`.
+
 -87. **Botón de Copiado de JSON Completo por Negocio en CRM Z-Control (`C:\Users\Rio Belen\zcontrolprospecto\index.html`)**:
     - **Requerimiento**: El usuario solicitó un botón para copiar el JSON con toda la información de ese negocio específico.
     - **Implementación**:

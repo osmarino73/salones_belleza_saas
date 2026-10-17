@@ -33,3 +33,9 @@ lerna-debug.log*
 
 # Agent Skills & Customizations
 !.agents/skills/
+
+# Local Scratch & Temporary
+.gemini/
+scratch/
+document/*copy*.html
+

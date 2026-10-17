@@ -26,6 +26,7 @@ import {
   Moon
 } from 'lucide-react';
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
+import { checkMonthlyBookingLimit } from '../lib/planPermissions';
 import { Service, Stylist, Client } from '../types';
 
 interface DayScheduleResult {
@@ -151,6 +152,7 @@ export const BookingPage: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [stylists, setStylists] = useState<Stylist[]>([]);
   const [existingAppointments, setExistingAppointments] = useState<any[]>([]);
+  const [currentTenant, setCurrentTenant] = useState<any>(null);
 
   const [step, setStep] = useState<number>(1);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
@@ -293,12 +295,37 @@ export const BookingPage: React.FC = () => {
     });
   }, [stylists, primaryService]);
 
-  useEffect(() => {
-    if (filteredStylists.length > 0 && selectedStylist) {
-      const isCurrentValid = filteredStylists.some(s => s.id === selectedStylist.id);
-      if (!isCurrentValid) setSelectedStylist(filteredStylists[0]);
+  const monthlyAppointmentsCount = useMemo(() => {
+    const currentMonthPrefix = new Date().toISOString().slice(0, 7);
+    return existingAppointments.filter(apt => 
+      apt && apt.date && apt.date.startsWith(currentMonthPrefix) && apt.status !== 'cancelada' && apt.status !== 'no_show'
+    ).length;
+  }, [existingAppointments]);
+
+  const bookingLimitCheck = useMemo(() => {
+    const plan = currentTenant?.plan_tier || currentTenant?.plan || 'free';
+    return checkMonthlyBookingLimit(monthlyAppointmentsCount, plan);
+  }, [monthlyAppointmentsCount, currentTenant]);
+
+  const selectableStylists = useMemo(() => {
+    if (bookingLimitCheck.isFreePlan && filteredStylists.length > 0) {
+      return filteredStylists.slice(0, 1);
     }
-  }, [filteredStylists]);
+    return filteredStylists;
+  }, [filteredStylists, bookingLimitCheck.isFreePlan]);
+
+  useEffect(() => {
+    if (bookingLimitCheck.isFreePlan && selectableStylists.length > 0 && !selectedStylist) {
+      setSelectedStylist(selectableStylists[0]);
+    }
+  }, [bookingLimitCheck.isFreePlan, selectableStylists, selectedStylist]);
+
+  useEffect(() => {
+    if (selectableStylists.length > 0 && selectedStylist) {
+      const isCurrentValid = selectableStylists.some(s => s.id === selectedStylist.id);
+      if (!isCurrentValid) setSelectedStylist(selectableStylists[0]);
+    }
+  }, [selectableStylists]);
 
   useEffect(() => {
     async function loadBookingData() {
@@ -349,6 +376,7 @@ export const BookingPage: React.FC = () => {
 
         // 3. Aplicar datos del negocio encontrado
         if (resolvedTenant) {
+          setCurrentTenant(resolvedTenant);
           tid = resolvedTenant.id;
           if (resolvedTenant.name) setSalonName(resolvedTenant.name);
           if (resolvedTenant.phone) setSalonPhone(resolvedTenant.phone);
@@ -655,7 +683,33 @@ export const BookingPage: React.FC = () => {
     else setCouponMessage('❌ Código no válido o expirado.');
   };
 
+  const handleWhatsAppDirectBooking = () => {
+    if (!clientName.trim() || phone10Digits.length < 7) {
+      alert('Por favor completa tu nombre y WhatsApp para coordinar tu cita.');
+      return;
+    }
+    const cleanPhone = salonPhone.replace(/\D/g, '') || '573000000000';
+    const srvNames = selectedServices.map(s => s.name).join(' + ') || 'Servicios';
+    const styName = selectedStylist ? selectedStylist.name : 'Primer Disponible';
+    const msg = encodeURIComponent(
+      `✨ *¡Hola ${salonName}!* Quiero coordinar mi cita:\n\n` +
+      `👤 *Cliente:* ${clientName.trim()}\n` +
+      `📱 *WhatsApp:* ${countryCode} ${phone10Digits.trim()}\n` +
+      `✂️ *Servicios:* ${srvNames}\n` +
+      `💈 *Especialista:* ${styName}\n` +
+      `📅 *Fecha solicitada:* ${selectedDate}\n` +
+      `⏰ *Hora solicitada:* ${selectedTime || 'Por coordinar'}\n` +
+      `💰 *Total estimado:* ${formatCurrency(finalPrice, salonCurrency)}\n\n` +
+      `¿Tienen disponibilidad en este horario? ¡Muchas gracias! 💖`
+    );
+    window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+  };
+
   const handleConfirmBooking = async () => {
+    if (bookingLimitCheck.isFreePlan && !bookingLimitCheck.allowed) {
+      handleWhatsAppDirectBooking();
+      return;
+    }
     if (!clientName.trim() || phone10Digits.length < 7) return alert('Por favor completa tu nombre y WhatsApp.');
     localStorage.setItem('bf_client_name', clientName.trim());
     localStorage.setItem('bf_client_phone', phone10Digits.trim());
@@ -733,6 +787,21 @@ export const BookingPage: React.FC = () => {
       </div>
 
       <div className="max-w-3xl mx-auto bg-[#141926] border border-white/10 rounded-3xl shadow-2xl p-5 sm:p-8 relative z-10">
+        {/* Banner de Aviso Amigable: Cupo Mensual Completo en Plan Gratuito */}
+        {bookingLimitCheck.isFreePlan && !bookingLimitCheck.allowed && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#FF5A36]/15 to-amber-500/15 border border-amber-500/30 text-amber-200 space-y-1.5 animate-fade-in shadow-lg shadow-amber-500/5">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-amber-400 shrink-0" />
+              <strong className="text-xs sm:text-sm font-black text-white">
+                Cupo de agendamiento online completado este mes ({bookingLimitCheck.max} citas)
+              </strong>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              ¡No te preocupes! Puedes seleccionar tus servicios y coordinar tu turno directamente por <strong>WhatsApp</strong> con <strong>{salonName}</strong> en 1 clic.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-4 gap-2 mb-6 pb-5 border-b border-white/10">
           {[1,2,3,4].map((n) => (
             <div key={n} className={`text-center p-2 rounded-xl border ${step === n ? 'border-[#FF5A36] bg-[#FF5A36]/15' : 'border-white/5 bg-white/[0.02]'}`}>
@@ -937,6 +1006,13 @@ export const BookingPage: React.FC = () => {
               )}
             </div>
 
+            {bookingLimitCheck.isFreePlan && (
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center gap-2.5 text-xs text-blue-200">
+                <User className="w-4 h-4 text-blue-400 shrink-0" />
+                <span>Atención directa y personalizada con el especialista principal de <strong>{salonName}</strong>.</span>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div
                 onClick={() => setSelectedStylist(null)}
@@ -956,7 +1032,7 @@ export const BookingPage: React.FC = () => {
                 </div>
               </div>
 
-              {filteredStylists.map((sty) => {
+              {selectableStylists.map((sty) => {
                 const isSelected = selectedStylist?.id === sty.id;
                 return (
                   <div
@@ -1384,14 +1460,25 @@ export const BookingPage: React.FC = () => {
               >
                 <ChevronLeft className="w-4 h-4" /> Volver
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmBooking}
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-8 py-3 rounded-2xl flex items-center gap-2 text-xs sm:text-sm shadow-xl shadow-emerald-500/25 cursor-pointer transition-all hover:scale-105"
-              >
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>Confirmar Reserva</span>
-              </button>
+              {bookingLimitCheck.isFreePlan && !bookingLimitCheck.allowed ? (
+                <button
+                  type="button"
+                  onClick={handleWhatsAppDirectBooking}
+                  className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-500 hover:opacity-95 text-slate-950 font-black px-7 py-3 rounded-2xl flex items-center gap-2 text-xs sm:text-sm shadow-xl shadow-emerald-500/30 cursor-pointer transition-all hover:scale-105"
+                >
+                  <MessageCircle className="w-4 h-4 fill-slate-950" />
+                  <span>Agendar por WhatsApp Directo</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConfirmBooking}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black px-8 py-3 rounded-2xl flex items-center gap-2 text-xs sm:text-sm shadow-xl shadow-emerald-500/25 cursor-pointer transition-all hover:scale-105"
+                >
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Confirmar Reserva</span>
+                </button>
+              )}
             </div>
           </div>
         )}

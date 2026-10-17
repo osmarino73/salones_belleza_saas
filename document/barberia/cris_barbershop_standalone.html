@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cris Barbershop | Barbería & Grooming de Autor</title>
+  <meta name="description" content="Cris Barbershop. Barbería de alta gama para caballeros. Cortes de precisión, perfilado de barba a navaja y cuidado masculino exclusivo.">
+  <meta name="keywords" content="cris barbershop, barberia de lujo, cortes de precision, fade, barba, grooming masculino, reserva online">
+  <meta name="robots" content="index, follow">
+
+  <!-- Mobile WebApp PWA Meta Tags -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#09090b">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Cris Barbershop | Barbería & Grooming de Autor">
+  <meta property="og:description" content="El estilo y la precisión que definen tu imagen. Agenda tu cita en segundos.">
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+/* ==========================================================================
+   DARK LUXURY GOLD BARBERSHOP THEME
+   Inspirado en la excelencia y estética visual de alta gama Kowy
+   ========================================================================== */
+
+:root {
+  --color-bg: #09090b;
+  --color-surface: #111114;
+  --color-card: #141416;
+  --color-card-hover: #1c1c20;
+  
+  --color-gold: #d4af37;
+  --color-gold-hover: #e5b869;
+  --color-gold-glow: rgba(212, 175, 55, 0.28);
+  
+  --color-text: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-gold: rgba(212, 175, 55, 0.35);
+
+  --font-main: 'Outfit', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Header & Sticky Navbar */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: rgba(9, 9, 11, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border);
+  padding: 14px 24px;
+  transition: var(--transition);
+}
+
+.nav-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.05));
+  border: 1px solid var(--color-border-gold);
+  color: var(--color-gold);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.logo-text h1,
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nav-cta-btn {
+  background: var(--color-gold);
+  color: #09090b;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+  box-shadow: 0 4px 18px var(--color-gold-glow);
+  letter-spacing: 0.3px;
+}
+
+.nav-cta-btn:hover {
+  background: var(--color-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.45);
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  padding: 60px 24px 70px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 20%, rgba(212, 175, 55, 0.08) 0%, rgba(9, 9, 11, 0) 70%),
+              linear-gradient(180deg, #09090b 0%, #111114 100%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero-container {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--color-border-gold);
+  color: var(--color-gold);
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.hero-title {
+  font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  max-width: 900px;
+}
+
+.hero-title span,
+.hero-title .accent-gold {
+  color: var(--color-gold);
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--color-text-muted);
+  max-width: 680px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.btn-hero-primary {
+  background: var(--color-gold);
+  color: #09090b;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 14px 34px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition);
+  box-shadow: 0 6px 24px var(--color-gold-glow);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.btn-hero-primary:hover {
+  background: var(--color-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.5);
+}
+
+.btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid var(--color-border);
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 13px 28px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Info Strip Flotante */
+.info-strip-card {
+  max-width: 1080px;
+  margin: -32px auto 60px;
+  position: relative;
+  z-index: 10;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 24px;
+  align-items: center;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.info-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--color-border-gold);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.info-text-box h4 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-gold);
+  margin-bottom: 2px;
+}
+
+.info-text-box p {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.info-cta-btn {
+  background: var(--color-gold);
+  color: #09090b;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-cta-btn:hover {
+  background: var(--color-gold-hover);
+  transform: translateY(-2px);
+}
+
+/* Catálogo de Servicios */
+.section {
+  padding: 40px 24px 80px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.section-tag {
+  color: var(--color-gold);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.section-subtitle {
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+/* Grid de Servicios */
+.services-grid-10 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.service-card-item {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.service-card-item:hover {
+  transform: translateY(-6px);
+  border-color: var(--color-border-gold);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.12);
+}
+
+.service-card-media {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  overflow: hidden;
+  background-color: #1a1a1e;
+}
+
+.service-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.service-card-item:hover .service-card-img {
+  transform: scale(1.05);
+}
+
+.service-badge-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(212, 175, 55, 0.95);
+  color: #09090b;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.service-badge-duration {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(9, 9, 11, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.service-card-body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.service-card-cat {
+  color: var(--color-gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.service-card-body h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.service-card-body p {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin-bottom: 22px;
+  flex: 1;
+}
+
+.service-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.service-price-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-price-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.service-price-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.service-book-btn {
+  background: var(--color-gold);
+  color: #09090b;
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.service-book-btn:hover {
+  background: var(--color-gold-hover);
+  transform: translateY(-2px);
+}
+
+/* Sobre Nosotros */
+.about-section {
+  padding: 60px 24px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 48px;
+}
+
+.about-image-wrap {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 380px;
+}
+
+.about-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-loc-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(9, 9, 11, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.about-content h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+.about-content p {
+  font-size: 14.5px;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+/* Footer */
+.footer {
+  padding: 60px 24px 80px;
+  background-color: #070708;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.footer-info {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.footer-cta-btn {
+  background: var(--color-gold);
+  color: #09090b;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  transition: var(--transition);
+}
+
+.footer-cta-btn:hover {
+  background: var(--color-gold-hover);
+  transform: translateY(-2px);
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: #52525b;
+}
+
+.footer-copy a {
+  color: var(--color-gold);
+  text-decoration: none;
+}
+
+/* Botón flotante de WhatsApp */
+.wa-float-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 58px;
+  height: 58px;
+  background: #25D366;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.wa-float-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.55);
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .services-grid-10 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .info-strip-card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 24px;
+  }
+  .about-grid {
+    grid-template-columns: 1fr;
+    padding: 32px;
+  }
+  .about-image-wrap {
+    height: 280px;
+  }
+}
+
+@media (max-width: 640px) {
+  .services-grid-10 {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding: 44px 18px 56px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  .info-strip-card {
+    margin: -20px 16px 40px;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Navbar -->
+  <header class="header">
+    <div class="nav-container">
+      <a href="#inicio" class="logo-box">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1 class="brand-name">Cris Barbershop</h1>
+        </div>
+      </a>
+      <a href="/reservar/cris-barbershop" class="nav-cta-btn">
+        AGENDAR CITA 🗓️
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="inicio">
+    <div class="hero-container">
+      <div class="hero-badge-pill">
+        <i class="fa-solid fa-sparkles"></i>
+        <span>CITAS DISPONIBLES HOY EN KOWY</span>
+      </div>
+
+      <h1 class="hero-title">
+        EL ESTILO Y LA PRECISIÓN QUE DEFINEN TU IMAGEN EN <span class="accent-gold">MONTERÍA</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Degradados milimétricos, toallas calientes y perfilado a navaja tradicional.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/reservar/cris-barbershop" class="btn-hero-primary">
+          🗓️ AGENDAR CITA ONLINE
+        </a>
+        <a href="#servicios" class="btn-hero-secondary">
+          Ver Catálogo (6 Servicios)
+        </a>
+      </div>
+
+      <!-- Picture Responsive con las fotos de Supabase -->
+      <picture style="display: none;">
+        <source media="(max-width: 768px)" srcset="https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792081956862_Barber_executing_skin_fade_haircut_20261015113222.webp">
+        <img src="https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp" alt="Cris Barbershop" class="hero-main-img">
+      </picture>
+    </div>
+  </section>
+
+  <!-- Info Strip Flotante -->
+  <div class="info-strip-card">
+    <div class="info-item">
+      <div class="info-icon">
+        <i class="fa-solid fa-clock"></i>
+      </div>
+      <div class="info-text-box">
+        <h4>Horario de Atención</h4>
+        <p>Lunes a Sábado: 08:00 AM - 08:00 PM</p>
+      </div>
+    </div>
+
+    <div class="info-item">
+      <div class="info-icon" style="color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.1);">
+        <i class="fa-solid fa-location-dot"></i>
+      </div>
+      <div class="info-text-box">
+        <h4>Ubicación</h4>
+        <p>Montería, Colombia</p>
+      </div>
+    </div>
+
+    <a href="/reservar/cris-barbershop" class="info-cta-btn">
+      RESERVAR AHORA ➔
+    </a>
+  </div>
+
+  <!-- Catálogo de Servicios -->
+  <section class="section" id="servicios">
+    <div class="section-header">
+      <span class="section-tag">MENÚ &amp; TARIFAS</span>
+      <h2 class="section-title">Nuestros Servicios Exclusivos</h2>
+      <p class="section-subtitle">Selecciona tu servicio y reserva tu turno en tiempo real.</p>
+    </div>
+
+    <div class="services-grid-10">
+      <!-- Card 1: Corte Fade -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=800&q=80" alt="Corte Fade Degradado" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag">POPULAR</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 45 min</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">CORTES &amp; FADE</span>
+          <h3>Corte Fade Degradado (Low / Mid / High)</h3>
+          <p>Degradado milimétrico con shaver y máquina, pulido superior a tijera, lavado refrescante y fijación mate.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 25.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Barba Royal -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80" alt="Ritual de Barba Royal" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag">TOP</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 30 min</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">BARBA RITUAL</span>
+          <h3>Ritual de Barba Royal con Toalla Caliente</h3>
+          <p>Vapor de ozono relajante, toalla caliente perfumada, perfilado a navaja japonesa y bálsamo hidratante.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 20.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: Combo Completo VIP -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=800&q=80" alt="Combo Completo VIP" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag" style="background: #f59e0b;">RECOMENDADO</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 1h 15m</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">COMBOS VIP</span>
+          <h3>Combo Completo: Fade de Autor + Barba + Black Mask</h3>
+          <p>Experiencia total: corte personalizado, ritual de barba completo y mascarilla negra purificante de carbón activado.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 45.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 4: Corte Clásico -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80" alt="Corte Clásico Tradicional" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag">CLÁSICO</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 40 min</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">CORTES &amp; ESTILO</span>
+          <h3>Corte Clásico Tradicional a Tijera</h3>
+          <p>Corte sobrio y elegante realizado enteramente a tijera según visagismo facial, con terminación natural.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 22.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 5: Exfoliación Facial -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1512290900672-1f4142f10b77?auto=format&fit=crop&w=800&q=80" alt="Exfoliación Facial" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag" style="background: #06b6d4; color: #fff;">RELAX</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 35 min</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">CUIDADO FACIAL</span>
+          <h3>Exfoliación Facial Antiestrés &amp; Masaje Craneal</h3>
+          <p>Limpieza de poros con micropartículas botánicas, tónico astringente y masaje relajante de cuello y cráneo.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 18.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 6: Corte Infantil Kids -->
+      <article class="service-card-item">
+        <div class="service-card-media">
+          <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=800&q=80" alt="Corte Infantil Kids" class="service-card-img" loading="lazy">
+          <span class="service-badge-tag" style="background: #ec4899; color: #fff;">KIDS</span>
+          <span class="service-badge-duration"><i class="fa-solid fa-clock"></i> 35 min</span>
+        </div>
+        <div class="service-card-body">
+          <span class="service-card-cat">CORTES &amp; FADE</span>
+          <h3>Corte Infantil Kids (Diseño &amp; Estilo)</h3>
+          <p>Atención paciente y divertida para niños. Incluye corte moderno, líneas suaves y cera hipoalergénica.</p>
+          <div class="service-card-footer">
+            <div class="service-price-box">
+              <span class="service-price-label">INVERSIÓN</span>
+              <span class="service-price-val">$ 20.000</span>
+            </div>
+            <a href="/reservar/cris-barbershop" class="service-book-btn">
+              RESERVAR 🗓️
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Sección Sobre Nosotros -->
+  <section class="about-section" id="nosotros">
+    <div class="about-grid">
+      <div class="about-image-wrap">
+        <img src="https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp" alt="Barbero experto afeitando" loading="lazy">
+        <div class="about-loc-badge">
+          <i class="fa-solid fa-location-dot" style="color: #f43f5e;"></i>
+          <span>MONTERÍA, COLOMBIA</span>
+        </div>
+      </div>
+      <div class="about-content">
+        <span class="section-tag">SOBRE NOSOTROS</span>
+        <h2>Tradición Clásica con Maestría Urbana</h2>
+        <p>
+          Nacimos con una obsesión clara: rescatar la ceremonia de la barbería tradicional combinándola con las últimas tendencias de degradados y estilismo masculino contemporáneo.
+        </p>
+        <p>
+          Cada servicio se ejecuta con herramientas esterilizadas de grado médico, productos de fijación premium y toallas aromatizadas con aceites esenciales para una experiencia insuperable.
+        </p>
+        <a href="/reservar/cris-barbershop" class="btn-hero-primary" style="padding: 12px 28px; font-size: 13.5px;">
+          AGENDAR CITA EN EL SALÓN 🗓️
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <h3 class="footer-title">Cris Barbershop</h3>
+      <div class="footer-info">
+        <span>📍 Montería, Colombia</span>
+        <span>⏰ Lunes a Sábado: 08:00 AM - 08:00 PM</span>
+      </div>
+      <a href="/reservar/cris-barbershop" class="footer-cta-btn">
+        Agendar Cita en Kowy
+      </a>
+      <p class="footer-copy">
+        Powered by <a href="https://kowy.app" target="_blank">Kowy.app</a> • SaaS de Agendamiento para Salones de Belleza
+      </p>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Floating Button -->
+  <a href="https://wa.me/573004567890?text=Hola%20Cris%20Barbershop,%20quisiera%20agendar%20una%20cita" target="_blank" class="wa-float-btn" title="Contactar por WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+</body>
+</html>

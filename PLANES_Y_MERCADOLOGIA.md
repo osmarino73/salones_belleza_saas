@@ -2,18 +2,18 @@
 
 ---
 
-## 🎯 1. La Estrategia Comercial de Entrada (Lead Magnet + Anclaje)
+## 🎯 1. La Estrategia Comercial de Entrada (Prueba Gratuita 14 Días + $0 Hosting)
 
 ### 📌 El Concepto Central
-En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse / Lead Magnet de Alto Impacto**:
-1. **La Página Web es 100% GRATIS en desarrollo y diseño** (Plan Gratuito sin mensualidades). Esto rompe la desconfianza y abre la puerta con el dueño del salón.
-2. **Anclaje de Alto Valor ($680.000 COP):** Se posiciona el valor regular de desarrollo web, agendador y sistema en **$680.000 COP**.
-3. **Cupo de Activación & Hosting Anual ($89.000 COP):** Se ofrece una tarifa de activación de solo **$89.000 COP** (por Nequi o Bancolombia) que incluye:
-   - Personalización y montaje del catálogo y especialistas.
-   - **1 Año Completo de Hosting Seguro y Certificado SSL en la nube** (cero mensualidades de hosting el primer año).
-   - **Kit de Afiches y Tarjetas QR Imprimibles** para tocadores y mostrador.
-4. **Regalo Mes 1 (Plan Crecimiento - $120.000 COP):** Por esos mismos $89.000 COP reciben **30 días completos en el Plan Crecimiento**, permitiendo que todo el equipo del salón adopte la App móvil y la caja POS.
-5. **A partir del Mes 2:** El cliente tiene total libertad: puede continuar con el Plan Crecimiento ($120k/mes), pasar al Plan Inicio ($50k/mes), subir al Plan Pro con IA ($240k/mes) o quedarse solo con su web vitrina activa pagando únicamente el hosting anual ($89.000 COP/año) a partir del año 2, sin contratos ni cláusulas de permanencia.
+Para maximizar la conversión en frío y eliminar toda fricción con las dueñas de salón:
+1. **La Página Web y el Hosting son 100% GRATIS de por vida:** No se cobra por diseño, desarrollo ni hosting. Cero cuotas de servidor ($0 COP de hosting).
+2. **Activación con 14 Días Gratis en el Plan Inicio:** Al registrarse o activarse, el salón recibe **14 días completos de prueba sin costo en el Plan Inicio (2 semanas completas con 2 fines de semana)** para probar el agendador interactivo 24/7 (`/reservar/:slug`) y control de citas con hasta 3 colaboradores.
+3. **Cero Ataduras y Sin Tarjeta:** No se exigen tarjetas ni pagos previos para iniciar. La dueña experimenta el valor real en su operación diaria con clientas agendando solas.
+4. **Monetización 100% por Suscripción SaaS (Día 15 en adelante):**
+   - Continuar con **Plan Inicio:** **$29.000 COP / mes** (+ $10.000/mes por colaborador extra).
+   - Escalar a **Plan Crecimiento:** **$120.000 COP / mes** (colaboradoras ilimitadas, POS y comisiones).
+   - Escalar a **Plan Pro IA:** **$240.000 COP / mes** (recepcionista IA 24/7 en WhatsApp).
+   - O quedarse con su **Plan Gratuito (1 profesional + 25 citas/mes)** con botón de WhatsApp.
 
 ---
 
@@ -21,9 +21,9 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 | Nivel | Plan | Inversión Mensual ($ COP) | Enfoque & Propuesta de Valor |
 | :---: | :--- | :---: | :--- |
-| **0** | **🌐 Modalidad Solo Web** | **$89.000 / AÑO** *(~$7.400/mes)* | Vitrina digital de lujo en Google Maps con fotos, catálogo, horarios, SSL y botón directo a WhatsApp. *1er año incluido en la activación.* |
-| **1** | **🚀 Plan Inicio** | **$50.000 / mes** *(o $500k/año)* | Sistema interactivo de agendamiento online (`/reservar/:slug`) con hasta 4 colaboradores. |
-| **2** | **📈 Plan Crecimiento** ⭐ *(Regalo Mes 1)* | **$120.000 / mes** *(o $1.2M/año)* | Colaboradores ilimitados + App móvil para estilistas + Caja POS y liquidación de comisiones. |
+| **0** | **🌐 Web Vitrina (Gratis)** | **$0 / mes** *(Hosting $0 de por vida)* | Vitrina digital de lujo en Google Maps con agendador para 1 profesional (25 citas/mes) y botón directo a WhatsApp. |
+| **1** | **🚀 Plan Inicio** ⭐ *(14 Días de Prueba)* | **$29.000 / mes** *(o $290k/año)* | Sistema interactivo de agendamiento online (`/reservar/:slug`) con hasta 3 colaboradores base (+ $10.000/mes por colaborador extra). |
+| **2** | **📈 Plan Crecimiento** | **$120.000 / mes** *(o $1.2M/año)* | Colaboradores ilimitados + App móvil para estilistas + Caja POS y liquidación de comisiones. |
 | **3** | **🤖 Plan Pro Flow (IA)** | **$240.000 / mes** *(o $2.4M/año)* | Agente Virtual Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal (IG/FB) + Recordatorios anti-plantón. |
 | **4** | **🎯 Plan Escala & Tráfico** | **$720.000 / mes** | Embudos de ofertas flash + Pauta Meta Ads + Radar de reactivación de clientas inactivas (+35 días). |
 | **5** | **👑 Plan Agencia Partner VIP** | **$1.440.000 / mes** | Servicio integral "Llave en Mano": equipo dedicado, dominio propio, piezas gráficas y consultoría mensual. |
@@ -34,30 +34,34 @@ En lugar de vender software "en frío", utilizamos un modelo de **Trojan Horse /
 
 ---
 
-### 🌐 NIVEL 0: Modalidad Solo Web *(Vitrina Digital + Hosting Seguro)*
-* **Precio:** **$89.000 COP / AÑO** *(equivalente a solo ~$7.400 COP/mes)*. El primer año está 100% incluido en la activación inicial.
-* **Objetivo:** Para negocios que no desean SaaS ni agenda, pero quieren mantener su página web oficial en Google Maps.
+### 🌐 NIVEL 0: Plan Gratuito *(Presencia Digital + 1 Profesional + 25 Citas / mes)*
+* **Precio:** **$0 COP de por vida** *(Hosting seguro y certificado SSL 100% bonificado)*.
+* **Objetivo:** Para profesionales independientes o salones que están iniciando y desean probar el agendamiento online real sin costo.
 * **Características incluidas:**
   - ✅ **Página Web Profesional de Lujo** (`/sitio/:slug`) adaptada a móvil y desktop con diseño *Glassmorphism*.
+  - ✅ **Agendador online interactivo** (`/reservar/:slug`) para **1 profesional/especialista** con hasta **25 citas online al mes**.
+  - ✅ **Desvío suave a WhatsApp:** al coparse las 25 citas del mes, el agendador no bloquea clientas: conmuta automáticamente al botón de reserva vía WhatsApp directo.
   - ✅ Galería visual con fotos de referencia en alta definición.
   - ✅ Catálogo informativo de servicios con precios y duraciones.
   - ✅ Ficha de dirección física, horarios de atención y mapa interactivo de Google Maps.
-  - ✅ **Botón Flotante Directo a WhatsApp** para contacto directo.
-  - ✅ Alojamiento web en la nube de alta velocidad y certificado de seguridad SSL activo todo el año.
-  - ❌ *Sin agendador online interactivo.*
-  - ❌ *Sin panel de control ni gestión de turnos.*
+  - ✅ **Botón Flotante Directo a WhatsApp** para consultas generales.
+  - ✅ Alojamiento web en la nube de alta velocidad y certificado de seguridad SSL activo sin costo.
+  - ❌ *Sin multi-colaborador (requiere Plan Inicio para 3 o más especialistas).*
+  - ❌ *Sin caja POS ni comisiones (requiere Plan Crecimiento).*
 
 ---
 
-### 🚀 NIVEL 1: Plan Inicio *(Agendamiento Básico)*
-* **Precio:** **$50.000 COP / mes** *(o $500.000 COP / año - 2 meses gratis)*.
-* **Objetivo:** Digitalizar la agenda de salones pequeños y barberías independientes.
-* **Público:** 1 a 4 colaboradores.
+### 🚀 NIVEL 1: Plan Inicio *(Agendamiento Básico & Escalable)*
+* **Precio:** **$29.000 COP / mes** *(o $290.000 COP / año - 2 meses gratis)*.
+* **Colaboradores Extra:** **+$10.000 COP / mes** por cada colaborador adicional.
+* **Objetivo:** Digitalizar la agenda de salones pequeños y barberías independientes con máxima accesibilidad.
+* **Público:** 1 a 3 colaboradores base (ampliable según el equipo).
 * **Características incluidas:**
   - ✅ Todo lo del Plan Gratuito.
   - ✅ **Botón y Sistema Interactivo de Reservas Online** (`/reservar/:slug`).
   - ✅ Enlace directo de reservas para biografías de Instagram, TikTok y estados de WhatsApp.
-  - ✅ **Hasta 4 Colaboradores / Especialistas** con agendas individuales.
+  - ✅ **Hasta 3 Colaboradores / Especialistas** con agendas individuales incluidas.
+  - ✅ **Opción de Colaboradores Extra:** Añade colaboradores adicionales por solo $10.000 COP/mes c/u.
   - ✅ Catálogo de servicios dinámico (edición de precios, tiempos y categorías).
   - ✅ Panel de control web para la administradora (crear y mover citas manualmente).
   - ✅ Notificaciones automáticas de reserva al WhatsApp del salón.
@@ -148,7 +152,7 @@ El desarrollo de esta web y la configuración del sistema de reservas tiene un v
    - 💳 Módulo de Caja POS con arqueo y liquidación de turnos.
 4. 🖨️ Kit de Afiches y Tarjetas QR de reservas listos para imprimir en tocadores y mostrador.
 
-(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $50.000/mes, o quedarse únicamente con su página web activa renovando únicamente su hosting por $89.000 al año a partir del año 2).
+(A partir del 2do mes tienen total libertad: pueden continuar con el sistema de reservas desde $29.000/mes, o quedarse únicamente con su página web activa renovando únicamente su hosting por $89.000 al año a partir del año 2).
 
 ¿Qué les parece cómo quedó el diseño de su web? Si desean activarla hoy mismo me confirman su correo y les entrego sus accesos 📲
 ```
@@ -179,9 +183,9 @@ Al ingresar a tu panel podrás personalizar tus tarifas, agregar a tu equipo de 
 
 | Tipo de Ingreso | Detalle de Clientes | Ingreso Estimado ($ COP) |
 | :--- | :---: | :---: |
-| **Setups Iniciales (Entrada)** | 50 salones × $50.000 COP (Pago único) | **$2.500.000 COP** *(Inmediato en caja)* |
-| **Plan Inicio ($50k/mes)** | 15 salones × $50.000 COP | **$750.000 COP / mes** |
-| **Plan Crecimiento ($120k/mes)** | 25 salones × $120.000 COP | **$3.000.000 COP / mes** |
+| **Setups Iniciales (Entrada)** | 50 salones × $89.000 COP (Pago único anual) | **$4.450.000 COP** *(Inmediato en caja)* |
+| **Plan Inicio ($29k/mes)** | 20 salones × $29.000 COP (+ extras) | **$580.000 COP / mes** |
+| **Plan Crecimiento ($120k/mes)** | 20 salones × $120.000 COP | **$2.400.000 COP / mes** |
 | **Plan Pro IA ($240k/mes)** | 8 salones × $240.000 COP | **$1.920.000 COP / mes** |
 | **Plan Escala ($720k/mes)** | 2 salones × $720.000 COP | **$1.440.000 COP / mes** |
-| **TOTAL MENSUAL RECURRENTE (MRR)** | **50 Negocios Activos** | **$7.110.000 COP / mes** |
+| **TOTAL MENSUAL RECURRENTE (MRR)** | **50 Negocios Activos** | **$6.340.000 COP / mes** |

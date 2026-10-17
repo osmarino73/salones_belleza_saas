@@ -65,8 +65,8 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
       result.navbarTagline = taglineMatch[1].replace(/<[^>]*>/g, '').trim();
     }
 
-    // 3. Extraer Hero Eyebrow
-    const eyebrowMatch = html.match(/<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow|hero-tag)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p)>/i);
+    // 3. Extraer Hero Eyebrow / Script Badge
+    const eyebrowMatch = html.match(/<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-tag|hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow|hero-tag)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|p)>/i);
     if (eyebrowMatch && eyebrowMatch[1]) {
       result.heroEyebrow = eyebrowMatch[1].replace(/<[^>]*>/g, '').trim();
     }
@@ -174,8 +174,8 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
     }
 
     // 7. Extraer Horario de Atención
-    const hoursMatch = html.match(/(?:Horario\s+de\s+Atenci[oó]n|Horarios|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>([\s\S]*?)<\/p>/i)
-      || html.match(/<(?:div|li|span|p)\b[^>]*class=["'][^"']*(?:contact-hours|schedule|hours|horario)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|li|span|p)>/i);
+    const hoursMatch = html.match(/(?:Horario\s+de\s+Atenci[oó]n|Horario\s+Comercial|Horarios|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>([\s\S]*?)<\/p>/i)
+      || html.match(/<(?:div|li|span|p)\b[^>]*class=["'][^"']*(?:contact-hours|schedule|hours|horario|info-item|map-location-item)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|li|span|p)>/i);
     if (hoursMatch && hoursMatch[1]) {
       result.businessHours = hoursMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
@@ -198,6 +198,7 @@ export interface InjectProspectOptions {
   firstVisitDiscountTitle?: string;
   heroImageUrl?: string;
   logoIcon?: string;
+  heroBadge?: string;
   heroEyebrow?: string;
   slogan?: string;
   titleAccent?: string;
@@ -284,6 +285,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     firstVisitDiscountTitle,
     heroImageUrl,
     logoIcon,
+    heroBadge,
     heroEyebrow,
     slogan,
     titleAccent,
@@ -343,7 +345,12 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   processed = processed.replace(existingPosterRegex, `$1${targetFramesBase}/$2`);
 
   // Inyección cromática dinámica si primaryColor fue provisto y es un HEX válido
-  const validPrimaryColor = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
+  const rawHex = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
+  const isDefaultPinkColor = rawHex === '#d92672' || rawHex === '#c82d5a';
+  const isBarberTemplate = processed.includes('amber-gold') || processed.includes('hero-track') || processed.includes('dark-luxury-gold') || /barber/i.test(businessName || '') || /barber/i.test(slug || '');
+
+  // Regla Sagrada: Si es barbería y el color provisto es el fucsia genérico de la BD, NO sobreescribir la estética dorada nativa
+  const validPrimaryColor = (isBarberTemplate && isDefaultPinkColor) ? null : rawHex;
   const ctaTextColor = validPrimaryColor ? getContrastTextColor(validPrimaryColor) : '#ffffff';
   const hoverCtaTextColor = validPrimaryColor ? getContrastTextColor(adjustColorBrightness(validPrimaryColor, 20)) : '#ffffff';
   const colorOverridesCss = validPrimaryColor ? `
@@ -406,6 +413,12 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     --gold-gradient: linear-gradient(135deg, ${validPrimaryColor} 0%, ${adjustColorBrightness(validPrimaryColor, 20)} 100%) !important;
     --shadow-gold: 0 6px 22px ${validPrimaryColor}47 !important;
 
+    /* Tokens Legend Barbería (Amber Gold) */
+    --amber-gold: ${validPrimaryColor} !important;
+    --amber-gold-hover: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
+    --gold-subtle: ${validPrimaryColor}26 !important;
+    --border-gold: ${validPrimaryColor}40 !important;
+
     /* 6. Tokens Mocca / Warm Earth (Spas y Centros Estéticos) */
     --color-mocca: ${validPrimaryColor} !important;
     --color-mocca-light: ${adjustColorBrightness(validPrimaryColor, 18)} !important;
@@ -422,6 +435,11 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
 
   /* Asegurar contraste, fondo y legibilidad óptima en botones CTA con el nuevo color */
   .btn-header-cta,
+  .btn-legend-gold,
+  .btn-card-book,
+  .btn-team-book,
+  .btn-footer-reserve,
+  .experience-floating-badge,
   .btn-primary,
   .btn-hero-book,
   .btn-cta-primary,
@@ -516,13 +534,20 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
     background: none !important;
   }
 
-  /* Gradiente del Logotipo Tipográfico (.brand-name, .logo-text) */
+  /* Logotipo Tipográfico Blanco Puro (.brand-name, .logo-text) */
   .brand-name,
   .logo-text,
   .brand-logo .brand-name {
-    background: linear-gradient(135deg, #ffffff 40%, ${validPrimaryColor} 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: none !important;
+  }
+
+  /* Ocultar subtítulo redundante del navbar para un look minimalista y elegante */
+  .header-nav .brand-subtitle,
+  .header .brand-subtitle,
+  .brand-logo .brand-subtitle {
+    display: none !important;
   }
 
   /* Estrellas de Reseñas, Métricas, Precios, Íconos y Destacados Numéricos */
@@ -857,26 +882,17 @@ ${colorOverridesCss}
   // Extraer valores base nativos para comparación de no-invasión
   const baseline = extractWebsiteDataFromHtml(html);
 
-  // 1.15 Inyección Dinámica de Marca (Nombre, Acento y Lema) en el Navbar
-  const isNavbarBrandChanged = (slogan && slogan !== baseline.slogan) || (titleAccent && titleAccent !== baseline.titleAccent);
-  if (isNavbarBrandChanged) {
-    const brandTitleRegex = /(<(?:span|div|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-title|brand-name|logo-text|logo-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h2|h3|h4|a)>)/gi;
+  // 1.15 Inyección Dinámica de Marca (Nombre del Negocio y Acento) en el Navbar
+  if (businessName) {
+    const brandTitleRegex = /(<(?:span|div|h1|h2|h3|h4|a)\b[^>]*class=["'][^"']*(?:brand-title|brand-name|logo-title|logo-name|brand-logo-text)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|h1|h2|h3|h4|a)>)/gi;
     if (brandTitleRegex.test(processed)) {
       processed = processed.replace(brandTitleRegex, (_match: string, openTag: string, innerContent: string, closeTag: string) => {
         let newBrandInner = innerContent;
-        if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(newBrandInner)) {
-          if (titleAccent) {
-            newBrandInner = newBrandInner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
-          }
-          if (slogan) {
-            newBrandInner = newBrandInner.replace(/^([^<]+)/, `${slogan} `);
-          }
+        if (titleAccent && /(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(newBrandInner)) {
+          newBrandInner = newBrandInner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
+          newBrandInner = newBrandInner.replace(/^([^<]+)/, `${businessName} `);
         } else {
-          if (slogan && titleAccent) {
-            newBrandInner = `${slogan} <span>${titleAccent}</span>`;
-          } else if (slogan) {
-            newBrandInner = slogan;
-          }
+          newBrandInner = businessName;
         }
         return `${openTag}${newBrandInner}${closeTag}`;
       });
@@ -891,11 +907,12 @@ ${colorOverridesCss}
     );
   }
 
-  // 1.2 Inyección Dinámica de Saludo Superior (Eyebrow) (solo si fue modificado)
-  if (heroEyebrow && heroEyebrow !== baseline.heroEyebrow) {
+  // 1.2 Inyección Dinámica de Saludo Superior / Badge Caligráfico (Eyebrow) (solo si fue modificado)
+  const activeEyebrow = heroBadge || heroEyebrow;
+  if (activeEyebrow && activeEyebrow !== baseline.heroEyebrow) {
     processed = processed.replace(
-      /(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i,
-      `$1${heroEyebrow}$3`
+      /(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:hero-script-tag|hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i,
+      `$1${activeEyebrow}$3`
     );
   }
 
@@ -919,27 +936,57 @@ ${colorOverridesCss}
   const isSloganChanged = slogan && slogan !== baseline.slogan;
 
   if (isTitleAccentChanged || isSloganChanged) {
-    if (/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i.test(processed)) {
-      processed = processed.replace(/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i, (_match: string, h1Open: string, h1Inner: string, h1Close: string) => {
-        let updatedH1Inner = h1Inner;
+    // Apuntar específicamente al H1 dentro del Hero o con clase hero-title para no alterar h1 de logo/navbar
+    const targetH1Regex = /(<h1\b[^>]*class=["'][^"']*(?:hero-title|hero-heading|headline|main-title)[^"']*["'][^>]*>)([\s\S]*?)(<\/h1>)/i;
+    const heroContainerH1Regex = /(<(?:header|section|div)\b[^>]*class=["'][^"']*(?:hero|header-main|hero-section|hero-container)[^"']*["'][^>]*>[\s\S]*?)(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/i;
 
-        // Si cambió el acento destacado y el H1 contiene un elemento hijo (span/em/i), actualizar SOLO su texto interior
+    if (targetH1Regex.test(processed)) {
+      processed = processed.replace(targetH1Regex, (_match: string, h1Open: string, h1Inner: string, h1Close: string) => {
+        let updatedH1Inner = h1Inner;
         if (isTitleAccentChanged) {
+          const strippedH1Before = updatedH1Inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const strippedAccent = titleAccent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const isAccentAlreadyInH1 = strippedH1Before.includes(strippedAccent) || strippedAccent.includes(strippedH1Before);
+
           if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(updatedH1Inner)) {
             updatedH1Inner = updatedH1Inner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
-          } else {
+          } else if (!isAccentAlreadyInH1) {
             updatedH1Inner += ` <span class="magenta-accent accent-gold">${titleAccent}</span>`;
           }
         }
+        const isBarberStyleH1 = /EL ESTILO Y LA PRECISI[OÓ]N/i.test(updatedH1Inner);
+        const strippedH1 = updatedH1Inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        const strippedSlogan = slogan ? slogan.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase() : '';
+        const alreadyHasSlogan = strippedSlogan ? (strippedH1.includes(strippedSlogan) || strippedSlogan.includes(strippedH1)) : false;
 
-        // Si cambió el título principal
-        if (isSloganChanged) {
-          if (/^([^<]+)/.test(updatedH1Inner)) {
-            updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+        if (isSloganChanged && slogan && !isBarberStyleH1 && !alreadyHasSlogan && /^([^<]+)/.test(updatedH1Inner)) {
+          updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+        }
+        return `${h1Open}${updatedH1Inner}${h1Close}`;
+      });
+    } else if (heroContainerH1Regex.test(processed)) {
+      processed = processed.replace(heroContainerH1Regex, (_match: string, containerPrefix: string, h1Open: string, h1Inner: string, h1Close: string) => {
+        let updatedH1Inner = h1Inner;
+        if (isTitleAccentChanged) {
+          const strippedH1Before = updatedH1Inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const strippedAccent = titleAccent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const isAccentAlreadyInH1 = strippedH1Before.includes(strippedAccent) || strippedAccent.includes(strippedH1Before);
+
+          if (/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i.test(updatedH1Inner)) {
+            updatedH1Inner = updatedH1Inner.replace(/(<(?:span|em|i)\b[^>]*>)([\s\S]*?)(<\/(?:span|em|i)>)/i, `$1${titleAccent}$3`);
+          } else if (!isAccentAlreadyInH1) {
+            updatedH1Inner += ` <span class="magenta-accent accent-gold">${titleAccent}</span>`;
           }
         }
+        const isBarberStyleH1 = /EL ESTILO Y LA PRECISI[OÓ]N/i.test(updatedH1Inner);
+        const strippedH1 = updatedH1Inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        const strippedSlogan = slogan ? slogan.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase() : '';
+        const alreadyHasSlogan = strippedSlogan ? (strippedH1.includes(strippedSlogan) || strippedSlogan.includes(strippedH1)) : false;
 
-        return `${h1Open}${updatedH1Inner}${h1Close}`;
+        if (isSloganChanged && slogan && !isBarberStyleH1 && !alreadyHasSlogan && /^([^<]+)/.test(updatedH1Inner)) {
+          updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+        }
+        return `${containerPrefix}${h1Open}${updatedH1Inner}${h1Close}`;
       });
     }
   }
@@ -1013,17 +1060,17 @@ ${colorOverridesCss}
       (match, sectionOpen, sectionBody, sectionClose) => {
         let updatedBody = sectionBody;
 
-        // 1. Actualizar Foto de la Sección Sobre Nosotros (solo si cambió)
-        if (aboutImageUrl && aboutImageUrl !== baseline.aboutImageUrl) {
+        // 1. Actualizar Foto de la Sección Sobre Nosotros
+        if (aboutImageUrl) {
           updatedBody = updatedBody.replace(
             /(<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
             `$1${aboutImageUrl}$3`
           );
         }
 
-        // 2. Actualizar Badge VIP sobre la Foto (solo si cambió)
-        if (aboutBadgeText && aboutBadgeText !== baseline.aboutBadgeText) {
-          const badgeRegex = /(<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge|experience-badge|badge|curly|curls)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|strong)>)/i;
+        // 2. Actualizar Badge VIP sobre la Foto (solo si cambió y no es un badge de métricas nativo)
+        if (aboutBadgeText && aboutBadgeText !== baseline.aboutBadgeText && !updatedBody.includes('experience-floating-badge')) {
+          const badgeRegex = /(<(?:div|span|p|strong)\b[^>]*class=["'][^"']*(?:vip-badge|badge-gold|badge-experience|about-badge)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p|strong)>)/i;
           if (badgeRegex.test(updatedBody)) {
             updatedBody = updatedBody.replace(badgeRegex, `$1${aboutBadgeText}$3`);
           }
@@ -1168,8 +1215,20 @@ ${colorOverridesCss}
             // Actualizar precio si fue modificado en base de datos
             const priceVal = matchingSrv.price_cop || matchingSrv.price || matchingSrv.price_usd;
             if (priceVal) {
-              const formattedPrice = `$${priceVal.toLocaleString('es-CO')} COP`;
-              inner = inner.replace(/(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i, `$1${formattedPrice}$3`);
+              const formattedNum = Number(priceVal).toLocaleString('es-CO');
+              if (/class=["'][^"']*(?:service-price-val|price-val)[^"']*["']/i.test(inner)) {
+                // Si la plantilla tiene un elemento específico para el valor numérico
+                inner = inner.replace(
+                  /(<(?:span|div|p)\b[^>]*class=["'][^"']*(?:service-price-val|price-val)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:span|div|p)>)/i,
+                  (_m, openTag, _oldVal, closeTag) => `${openTag}$${formattedNum}${closeTag}`
+                );
+              } else {
+                // Si es un contenedor de precio genérico
+                inner = inner.replace(
+                  /(<(?:div|span|p)\b[^>]*class=["'][^"']*(?:price|precio|card-price|service-price)(?![^"']*-block)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:div|span|p)>)/i,
+                  (_m, openTag, _oldVal, closeTag) => `${openTag}$${formattedNum} COP${closeTag}`
+                );
+              }
             }
 
             // Actualizar imagen solo si tiene una foto propia cargada
@@ -1514,16 +1573,20 @@ ${colorOverridesCss}
   }
 
   // 6.5 Inyección Dinámica del Horario de Atención en Ubicación, Contacto y Footer
-  if (businessHours && businessHours !== baseline.businessHours) {
-    const contactItemHoursRegex = /(<(?:li|div|article)\b[^>]*class=["'][^"']*(?:contact-item|contact-box|info-box|schedule-box|hours-item|footer-col)[^"']*["'][^>]*>[\s\S]*?(?:Horario|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>)([\s\S]*?)(<\/p>[\s\S]*?<\/(?:li|div|article)>)/gi;
-    if (contactItemHoursRegex.test(processed)) {
-      processed = processed.replace(contactItemHoursRegex, `$1${businessHours}$3`);
-    } else {
-      const genericHoursRegex = /(<(?:p|span|div)\b[^>]*class=["'][^"']*(?:contact-hours|schedule-text|hours-text|horario-texto)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:p|span|div)>)/gi;
-      if (genericHoursRegex.test(processed)) {
-        processed = processed.replace(genericHoursRegex, `$1${businessHours}$3`);
-      }
+  if (businessHours) {
+    if (processed.includes('{{SCHEDULE_TEXT}}')) {
+      processed = processed.split('{{SCHEDULE_TEXT}}').join(businessHours);
     }
+    const contactItemHoursRegex = /(<(?:li|div|article)\b[^>]*class=["'][^"']*(?:info-item|map-location-item|location-detail-item|contact-item|contact-box|info-box|schedule-box|hours-item|footer-col)[^"']*["'][^>]*>[\s\S]*?(?:Horario|Atenci[oó]n|Schedule|Hours)[\s\S]*?<p\b[^>]*>)([\s\S]*?)(<\/p>[\s\S]*?<\/(?:li|div|article)>)/gi;
+    const directHeadingHoursRegex = /(<(?:h4|h5|h6|strong|b)\b[^>]*>[\s\S]*?(?:Horario\s+Comercial|Horario\s+de\s+Atenci[oó]n|Horarios|Horario)[\s\S]*?<\/(?:h4|h5|h6|strong|b)>\s*<p\b[^>]*>)([\s\S]*?)(<\/p>)/gi;
+    const footerContactClockRegex = /(<(?:div|footer|section)\b[^>]*class=["'][^"']*(?:footer-contact-info|site-footer|footer-section)[^"']*["'][\s\S]*?<p\b[^>]*><i\b[^>]*class=["'][^"']*fa-clock[^"']*["'][^>]*><\/i>\s*)([\s\S]*?)(<\/p>)/gi;
+    const genericHoursRegex = /(<(?:p|span|div)\b[^>]*class=["'][^"']*(?:contact-hours|schedule-text|hours-text|horario-texto)[^"']*["'][^>]*>)([\s\S]*?)(<\/(?:p|span|div)>)/gi;
+
+    processed = processed
+      .replace(contactItemHoursRegex, `$1${businessHours}$3`)
+      .replace(directHeadingHoursRegex, `$1${businessHours}$3`)
+      .replace(footerContactClockRegex, `$1${businessHours}$3`)
+      .replace(genericHoursRegex, `$1${businessHours}$3`);
   }
 
   // 7. Inyectar Estilos Universales y Botón Flotante de WhatsApp para Celulares

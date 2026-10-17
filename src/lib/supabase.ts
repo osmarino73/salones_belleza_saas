@@ -4,11 +4,17 @@ import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
 import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
 import { SANUS_SPA_SITE_DATA } from './sanusSpaSiteData';
+import { CRIS_BARBERSHOP_SITE_DATA } from './crisBarbershopSiteData';
+import { FANTASTIC_MONTERIA_SITE_DATA } from './fantasticMonteriaSiteData';
 import { DEMO_TENANT_DATA, DEMO_SERVICES_DATA, DEMO_STYLISTS_DATA, DEMO_SALON_SITE_DATA } from './demoSalonSiteData';
+import { getSuggestedImageForService } from './beautyImageLibrary';
 
-const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const defaultSupabaseUrl = 'https://ascskenpfcnyejaamjlb.supabase.co';
+const defaultSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzY3NrZW5wZmNueWVqYWFtamxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4ODQxNzQsImV4cCI6MjEwMjQ2MDE3NH0.fWK-nu3qEyBXH-r8n2GScQ21Lu2n93C6NUipar6ldP4';
+
+const rawSupabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_URL) || defaultSupabaseUrl;
 const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseAnonKey = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_ANON_KEY) || defaultSupabaseAnonKey;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl && 
@@ -2022,6 +2028,12 @@ export const api = {
     };
 
     let createdTenantId = generateUUID();
+    let cleanTenantSlug = params.tenant.slug;
+    try {
+      cleanTenantSlug = await this.generateUniqueTenantSlug(params.tenant.slug);
+    } catch (e) {
+      console.warn('Could not compute unique tenant slug, using fallback:', e);
+    }
 
     // 1. Supabase Auth Sign Up
     if (params.owner.email && params.owner.password) {
@@ -2044,7 +2056,7 @@ export const api = {
         const tenantPayload = {
           id: createdTenantId,
           name: params.tenant.name,
-          slug: `${params.tenant.slug}-${Date.now().toString().slice(-4)}`,
+          slug: cleanTenantSlug,
           phone: params.tenant.phone || params.tenant.whatsapp_number,
           whatsapp_number: params.tenant.whatsapp_number,
           currency: params.tenant.currency || 'COP',
@@ -2187,7 +2199,7 @@ export const api = {
     const activeTenantObj = {
       id: createdTenantId,
       name: params.tenant.name,
-      slug: params.tenant.slug,
+      slug: cleanTenantSlug || params.tenant.slug,
       phone: params.tenant.phone,
       whatsapp_number: params.tenant.whatsapp_number,
       address: params.tenant.address,
@@ -2319,7 +2331,7 @@ export const api = {
       },
       created_at: new Date().toISOString()
     };
-    const defaultSites = [DEMO_SALON_SITE_DATA, SANUS_SPA_SITE_DATA, KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, LUXUS_BEAUTY_SITE_DATA, demoSite];
+    const defaultSites = [DEMO_SALON_SITE_DATA, SANUS_SPA_SITE_DATA, KAPA_SPA_SITE_DATA, MILENA_GOMEZ_SITE_DATA, LUXUS_BEAUTY_SITE_DATA, CRIS_BARBERSHOP_SITE_DATA, FANTASTIC_MONTERIA_SITE_DATA, demoSite];
     inMemoryProspectSitesCache = defaultSites;
     safeSaveProspectSitesToLocalStorage(defaultSites);
     return defaultSites;
@@ -2352,6 +2364,13 @@ export const api = {
     const cached = sites.find(s => (s.slug || '').toLowerCase() === cleanSlug);
     if (cached) return cached;
 
+    // 2.1 Fallback resiliente: si el slug solicitado termina en -NNNN (ej. barber-namia-5199), buscar también por su base limpia
+    const baseSlugWithoutRandomNumber = cleanSlug.replace(/-\d{3,5}$/, '');
+    if (baseSlugWithoutRandomNumber !== cleanSlug) {
+      const matchBase = sites.find(s => (s.slug || '').toLowerCase() === baseSlugWithoutRandomNumber);
+      if (matchBase) return matchBase;
+    }
+
     // 3. Fallback estático a demostraciones iniciales si no existe en DB ni caché
     if (cleanSlug === 'demo' || cleanSlug === 'demo-salon' || cleanSlug === 'studio-glamour' || cleanSlug === 'studio-glamour-spa' || cleanSlug === 'studio_glamour') {
       return DEMO_SALON_SITE_DATA;
@@ -2367,6 +2386,12 @@ export const api = {
     }
     if (cleanSlug === 'sanus-spa' || cleanSlug === 'sanus_spa') {
       return SANUS_SPA_SITE_DATA;
+    }
+    if (cleanSlug === 'cris-barbershop' || cleanSlug === 'cris_barbershop' || cleanSlug === 'cris-barber') {
+      return CRIS_BARBERSHOP_SITE_DATA;
+    }
+    if (cleanSlug === 'fantastic-monteria' || cleanSlug === 'fantastic_monteria' || cleanSlug === 'fantastic' || cleanSlug === 'fantastic-salon') {
+      return FANTASTIC_MONTERIA_SITE_DATA;
     }
 
     return null;
@@ -2919,6 +2944,7 @@ export const api = {
 
   async activateProspectAsTenant(params: {
     prospectId: string;
+    prospect?: ProspectSite;
     ownerEmail: string;
     tempPassword?: string;
     businessName?: string;
@@ -2926,8 +2952,21 @@ export const api = {
     currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
     trialDays?: number;
   }): Promise<{ success: boolean; tenant: Tenant; tempPassword: string; error?: string }> {
-    const prospectSites = await this.getProspectSites();
-    const prospect = prospectSites.find(p => p.id === params.prospectId || p.slug === params.prospectId);
+    let prospect = params.prospect;
+    if (!prospect && supabase && isSupabaseConfigured && params.prospectId) {
+      try {
+        const { data } = await supabase
+          .from('prospect_sites')
+          .select('*')
+          .or(`id.eq.${params.prospectId},slug.eq.${params.prospectId}`)
+          .maybeSingle();
+        if (data) prospect = data as ProspectSite;
+      } catch (e) {}
+    }
+    if (!prospect) {
+      const prospectSites = await this.getProspectSites();
+      prospect = prospectSites.find(p => p.id === params.prospectId || p.slug === params.prospectId);
+    }
 
     const bName = params.businessName || prospect?.business_name || 'Salón & Spa';
     const wa = params.phoneWhatsapp || prospect?.phone_whatsapp || '+573000000000';
@@ -2940,32 +2979,136 @@ export const api = {
       ? crypto.randomUUID() 
       : '00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0').slice(-12);
 
+    // Si el prospecto ya tiene un tenant reclamado o asociado, reutilizar ese ID prioritariamente
+    const effectiveTenantId = prospect?.claimed_tenant_id || generatedUUID;
+
     const trialDate = new Date();
-    trialDate.setDate(trialDate.getDate() + (params.trialDays || 30));
+    trialDate.setDate(trialDate.getDate() + (params.trialDays || 14));
+
+    // Parsear business_data con total seguridad (objeto o JSON string)
+    let bData: any = {};
+    if (typeof prospect?.business_data === 'string') {
+      try {
+        bData = JSON.parse(prospect.business_data);
+      } catch (e) {
+        bData = {};
+      }
+    } else if (prospect?.business_data && typeof prospect.business_data === 'object') {
+      bData = prospect.business_data;
+    }
+
+    const cat = (prospect?.category || bData.specialty_id || 'salon').toLowerCase();
+    const isBarber = cat.includes('barber') || bData.template_id === 'dark-luxury-gold';
+    const isNails = cat.includes('nail') || cat.includes('uña');
+
+    // Icono o emoji representativo del rubro
+    let categoryLogoIcon = '✨';
+    if (isBarber) categoryLogoIcon = '💈';
+    else if (isNails) categoryLogoIcon = '💅';
+    else if (cat.includes('spa') || cat.includes('relax') || cat.includes('masaj')) categoryLogoIcon = '💆‍♀️';
+    else if (cat.includes('ceja') || cat.includes('pestaña') || cat.includes('lash')) categoryLogoIcon = '👁️';
+    else if (cat.includes('tatu') || cat.includes('tattoo')) categoryLogoIcon = '🎨';
+    else if (cat.includes('salon') || cat.includes('peluqueria') || cat.includes('color')) categoryLogoIcon = '💇‍♀️';
+
+    // Horarios normalizados
+    const normalizedHorario = bData.horario || bData.horario_atencion || bData.business_hours || (prospect as any)?.business_hours || 'Lun a Sáb: 8:00 AM – 7:00 PM';
+
+    // Textos editoriales y copywriting heredados fielmente de business_data
+    const tenantSlogan = bData.slogan || bData.copywriting?.slogan || bData.headline || (prospect as any)?.slogan 
+      || (isBarber ? 'Donde el ritual de la barba y el buen gusto se encuentran' : (isNails ? 'El diseño y la elegancia que tus manos merecen' : 'Donde tu belleza encuentra su máxima expresión'));
+    
+    const tenantSubtitle = bData.subheadline || bData.copywriting?.subheadline || bData.subtitle || (bData.about?.p1 ? bData.about.p1 : null);
+    
+    const heroEyebrow = bData.hero_badge || bData.copywriting?.badge || bData.hero_eyebrow 
+      || (isBarber ? '💈 Cortes de Precisión & Ritual de Barba' : (isNails ? '💅 Nail Spa & Beauty Lounge' : '✨ Sanctuary of Beauty'));
+    
+    const titleAccent = bData.title_accent || null;
+
+    const aboutTitle = bData.about?.title || bData.copywriting?.about_title || bData.about_title 
+      || (isBarber ? 'Tradición Clásica con Maestría Urbana' : (isNails ? 'El Arte de Cuidar Tus Manos y Pies' : 'Un Espacio Exclusivo Pensado Para Ti'));
+    
+    const aboutTitleAccent = isBarber 
+      ? 'MAESTRÍA & DETALLE.' 
+      : (bData.about_title_accent || (isNails ? 'PERFECCIÓN EN TUS MANOS.' : 'PASIÓN POR TU BELLEZA.'));
+    
+    const aboutDesc = (bData.about?.p1 ? `${bData.about.p1} ${bData.about.p2 || ''}`.trim() : (bData.copywriting?.about_description || bData.about_description 
+      || (isBarber ? 'Rescatamos la ceremonia de la barbería tradicional con técnicas contemporáneas.' : (isNails ? `En ${bName} entendemos las uñas como una extensión de tu elegancia y personalidad.` : `En ${bName} fusionamos las últimas tendencias en estética capilar y colorimetría.`))));
+    
+    const aboutBadge = bData.about_badge || bData.about_badge_text 
+      || (isBarber ? 'CLUB MASCULINO VIP' : (isNails ? 'VIP NAIL LOUNGE' : 'VIP EXPERIENCIA SALÓN'));
+    
+    const aboutEyebrow = bData.about_eyebrow || 'Sobre Nosotros';
+    const aboutYearsExp = bData.metric1_val || bData.metrics?.metric1Val || '+8';
+    const aboutClientsCount = bData.metric2_val || bData.metrics?.metric2Val || '+3.5K';
+    const aboutRatingText = bData.metric4_val || bData.metrics?.metric4Val || '5.0';
+
+    const heroImageUrl = bData.banner_url || bData.hero_image_desktop || bData.hero_image || (prospect as any)?.hero_image_desktop 
+      || (isBarber 
+        ? 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80' 
+        : (isNails 
+          ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792148861583_Woman_posing_for_beauty_campaign_20261016060037.webp'
+          : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792079931885_Stylist_blow-drying_client_hair_2K_20261015104423.webp'));
+
+    const heroMobileImageUrl = bData.banner_vertical_url || bData.hero_image_mobile || (prospect as any)?.hero_image_mobile 
+      || (isBarber 
+        ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792081956862_Barber_executing_skin_fade_haircut_20261015113222.webp'
+        : (isNails 
+          ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792160934258_Complete_image_leaving_lower_third_20261016092835.webp'
+          : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792083289211_Stylist_cutting_client_hair_20261015115430.webp'));
+
+    const aboutImageUrl = bData.about_image_url || bData.hero_image_mobile || bData.hero_image_desktop || (prospect as any)?.about_image_url 
+      || (isBarber 
+        ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp'
+        : (isNails 
+          ? 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80'
+          : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80'));
+
+    const calculatedPrimaryColor = isBarber
+      ? (bData.primary_color && bData.primary_color !== '#d92672' && bData.primary_color !== '#c82d5a' ? bData.primary_color : '#e5a854')
+      : (bData.primary_color || ((prospect as any)?.primary_color) || (isNails ? '#d87d7d' : '#cbb39c'));
 
     const newTenant: Tenant = {
-      id: generatedUUID,
+      id: effectiveTenantId,
       name: bName,
       slug: cleanSlug,
       phone: wa,
-      address: prospect?.address || '',
-      city: prospect?.city || 'Medellín',
+      address: prospect?.address || bData.address || '',
+      city: prospect?.city || bData.city || 'Apartadó',
       country: prospect?.country || 'Colombia',
       is_active: true,
-      plan: 'pro_ai',
-      plan_tier: 'crecimiento',
+      plan: 'inicio' as any,
+      plan_tier: 'inicio',
       subscription_status: 'trial',
-      subscription_price_cop: 120000,
-      max_stylists: 999,
-      has_pos_access: true,
+      subscription_price_cop: 29000,
+      max_stylists: 3,
+      has_pos_access: false,
       has_ai_whatsapp: false,
       has_omnichannel: false,
       has_meta_ads: false,
+      primary_color: calculatedPrimaryColor,
       owner_email: params.ownerEmail.toLowerCase().trim(),
       currency: tenantCurrency,
       trial_started_at: new Date().toISOString(),
       trial_ends_at: trialDate.toISOString(),
-      business_hours: { summary: prospect?.business_data?.horario_atencion || 'Lun a Sáb: 8:00 AM – 7:00 PM' },
+      business_hours: { summary: normalizedHorario },
+      logo_icon: categoryLogoIcon,
+      slogan: tenantSlogan,
+      hero_eyebrow: heroEyebrow,
+      title_accent: titleAccent,
+      subtitle: tenantSubtitle || undefined,
+      about_title: aboutTitle,
+      about_title_accent: aboutTitleAccent,
+      about_description: aboutDesc,
+      about_badge_text: aboutBadge,
+      about_eyebrow: aboutEyebrow,
+      about_years_exp: aboutYearsExp,
+      about_clients_count: aboutClientsCount,
+      about_rating_text: aboutRatingText,
+      show_about_section: true,
+      show_team_section: true,
+      hero_image_url: heroImageUrl,
+      hero_mobile_image_url: heroMobileImageUrl,
+      about_image_url: aboutImageUrl,
       created_at: new Date().toISOString()
     };
 
@@ -2988,7 +3131,7 @@ export const api = {
         console.warn('Auth notice during tenant activation:', e);
       }
 
-      // 2. Insertar en tabla tenants con tolerancia a esquemas y fallback
+      // 2. Insertar o Actualizar en tabla tenants con tolerancia y persistencia total
       try {
         const dbTenantPayload: any = {
           id: newTenant.id,
@@ -2997,63 +3140,126 @@ export const api = {
           phone: newTenant.phone,
           whatsapp_number: newTenant.phone,
           currency: newTenant.currency || 'COP',
-          plan_tier: 'crecimiento',
+          plan_tier: 'inicio',
           subscription_status: 'trial',
-          subscription_price_cop: 120000,
-          max_stylists: 999,
-          has_pos_access: true,
+          subscription_price_cop: 29000,
+          max_stylists: 3,
+          has_pos_access: false,
           has_ai_whatsapp: false,
           has_omnichannel: false,
           has_meta_ads: false,
-          address: newTenant.address || 'Medellín',
-          city: newTenant.city || 'Medellín',
+          address: newTenant.address || 'Apartadó',
+          city: newTenant.city || 'Apartadó',
           country: newTenant.country || 'Colombia',
-          business_hours: newTenant.business_hours || { summary: 'Lun a Sáb: 8:00 AM – 7:00 PM' },
+          business_hours: newTenant.business_hours || { summary: normalizedHorario },
           is_active: true,
           trial_started_at: newTenant.trial_started_at,
-          trial_ends_at: newTenant.trial_ends_at
+          trial_ends_at: newTenant.trial_ends_at,
+          logo_icon: categoryLogoIcon,
+          slogan: tenantSlogan,
+          hero_eyebrow: heroEyebrow,
+          title_accent: titleAccent,
+          subtitle: tenantSubtitle,
+          about_title: aboutTitle,
+          about_title_accent: aboutTitleAccent,
+          about_description: aboutDesc,
+          about_badge_text: aboutBadge,
+          about_eyebrow: aboutEyebrow,
+          about_years_exp: aboutYearsExp,
+          about_clients_count: aboutClientsCount,
+          about_rating_text: aboutRatingText,
+          show_about_section: true,
+          show_team_section: true,
+          primary_color: calculatedPrimaryColor,
+          owner_email: newTenant.owner_email
         };
 
-        // Intentar primero con owner_email
-        let { error: insertTenantErr } = await supabase
-          .from('tenants')
-          .insert([{ ...dbTenantPayload, owner_email: newTenant.owner_email }]);
+        if (heroImageUrl) dbTenantPayload.hero_image_url = heroImageUrl;
+        if (aboutImageUrl) dbTenantPayload.about_image_url = aboutImageUrl;
 
-        // Si la columna owner_email no existe en Supabase, reintentar sin ella
-        if (insertTenantErr && (insertTenantErr.message?.includes('owner_email') || insertTenantErr.code === 'PGRST204')) {
-          console.warn('owner_email column not in tenants table, retrying insert without owner_email');
-          const retryRes = await supabase.from('tenants').insert([dbTenantPayload]);
-          insertTenantErr = retryRes.error;
-        }
-
-        // Si aún falla por columnas de planes/suscripción no migradas, usar columnas base universales
-        if (insertTenantErr) {
-          console.warn('Retrying tenant insert with base core columns:', insertTenantErr.message);
-          const baseCorePayload = {
-            id: newTenant.id,
-            name: newTenant.name,
-            slug: newTenant.slug,
-            phone: newTenant.phone,
-            whatsapp_number: newTenant.phone,
-            currency: newTenant.currency || 'COP',
-            address: newTenant.address || '',
-            city: newTenant.city || 'Medellín',
-            country: newTenant.country || 'Colombia',
-            business_hours: newTenant.business_hours || {},
-            is_active: true
-          };
-          const baseRes = await supabase.from('tenants').insert([baseCorePayload]);
-          insertTenantErr = baseRes.error;
-        }
-
-        if (insertTenantErr) {
-          console.error('Fatal: Could not insert tenant into Supabase:', insertTenantErr.message);
-          throw new Error(`No se pudo crear el salón en la base de datos: ${insertTenantErr.message}`);
+        // Comprobar si el tenant ya existe en base de datos por ID o por slug
+        let existingTenantId: string | null = null;
+        if (prospect?.claimed_tenant_id) {
+          existingTenantId = prospect.claimed_tenant_id;
         } else {
-          console.log('Tenant successfully created in Supabase:', newTenant.id);
+          try {
+            const { data: foundT } = await supabase
+              .from('tenants')
+              .select('id')
+              .or(`id.eq.${newTenant.id},slug.eq.${newTenant.slug}`)
+              .maybeSingle();
+            if (foundT) existingTenantId = foundT.id;
+          } catch (e) {}
+        }
+
+        let dbOpError: any = null;
+
+        if (existingTenantId) {
+          // El tenant ya existe: ACTUALIZAR todos los campos
+          console.log(`Tenant ${existingTenantId} ya existe en Supabase, ejecutando UPDATE...`);
+          const updatePayload = { ...dbTenantPayload };
+          delete updatePayload.id; // No sobreescribir pkey
+
+          for (let attempt = 0; attempt < 6; attempt++) {
+            const updateRes = await supabase.from('tenants').update(updatePayload).eq('id', existingTenantId);
+            dbOpError = updateRes.error;
+            if (!dbOpError) break;
+
+            const msg = dbOpError.message || '';
+            const missingColMatch = msg.match(/column ["']?([a-zA-Z0-9_]+)["']? of relation/i)
+              || msg.match(/Could not find the ['"]?([a-zA-Z0-9_]+)['"]? column/i);
+            if (missingColMatch && missingColMatch[1]) {
+              const badCol = missingColMatch[1];
+              console.warn(`Columna '${badCol}' no existe en 'tenants', reintentando update sin ella...`);
+              delete updatePayload[badCol];
+            } else {
+              break;
+            }
+          }
+        } else {
+          // El tenant no existe: INSERTAR
+          let insertPayload: any = { ...dbTenantPayload };
+          for (let attempt = 0; attempt < 6; attempt++) {
+            const insertRes = await supabase.from('tenants').insert([insertPayload]);
+            dbOpError = insertRes.error;
+            if (!dbOpError) break;
+
+            const msg = dbOpError.message || '';
+            const code = dbOpError.code || '';
+
+            // Si falla por clave duplicada, cambiar inmediatamente a UPDATE
+            if (code === '23505' || msg.includes('duplicate key') || msg.includes('already exists')) {
+              console.warn('Conflicto de clave duplicada en insert de tenant, cambiando a UPDATE...');
+              const upd = { ...insertPayload };
+              delete upd.id;
+              const updateRes = await supabase.from('tenants').update(upd).eq('slug', newTenant.slug);
+              dbOpError = updateRes.error;
+              break;
+            }
+
+            // Detectar columnas faltantes
+            const missingColMatch = msg.match(/column ["']?([a-zA-Z0-9_]+)["']? of relation/i)
+              || msg.match(/Could not find the ['"]?([a-zA-Z0-9_]+)['"]? column/i)
+              || (msg.includes('owner_email') || code === 'PGRST204' ? ['', 'owner_email'] : null);
+
+            if (missingColMatch && missingColMatch[1]) {
+              const badCol = missingColMatch[1];
+              console.warn(`Columna '${badCol}' no existe en 'tenants', reintentando insert sin ella...`);
+              delete insertPayload[badCol];
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (dbOpError) {
+          console.error('Fatal: Could not save tenant into Supabase:', dbOpError.message);
+          throw new Error(`No se pudo guardar el salón en la base de datos: ${dbOpError.message}`);
+        } else {
+          console.log('Tenant successfully persisted in Supabase:', newTenant.id);
         }
       } catch (e: any) {
-        console.error('DB tenant insert exception:', e);
+        console.error('DB tenant persistence exception:', e);
         throw e;
       }
     }
@@ -3082,7 +3288,7 @@ export const api = {
     await this.createStylist(ownerStylist, tempPassword);
 
     // 3.1 Sembrar Colaboradoras / Especialistas reales del JSON de Negocio (business_data)
-    const rawTeam = prospect?.business_data?.especialistas || prospect?.business_data?.colaboradores || prospect?.business_data?.team || [];
+    const rawTeam = bData.especialistas || bData.colaboradores || bData.team || (prospect?.business_data && typeof prospect.business_data === 'object' ? (prospect.business_data as any).especialistas : null) || [];
     const teamPhotos = [
       'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
       'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
@@ -3144,60 +3350,71 @@ export const api = {
       }
     }
 
-    // 4.1 Sembrar Servicios reales del JSON de Negocio (business_data) SOLO SI EXISTEN
-    const rawServices = prospect?.business_data?.servicios || prospect?.business_data?.services || [];
+    // 4.1 Sembrar Servicios reales del JSON de Negocio (business_data) SOLO SI NO EXISTEN PREVIAMENTE
+    const rawServices = bData.servicios || bData.services || (prospect?.business_data && typeof prospect.business_data === 'object' ? (prospect.business_data as any).servicios : null) || [];
     if (rawServices && rawServices.length > 0) {
-      const servicesToSeed = rawServices.map((srv: any) => {
-        const srvName = srv.nombre || srv.titulo || srv.name || 'Servicio Profesional';
-        let detectedCategory: any = 'corte';
-        const lower = srvName.toLowerCase();
-        if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
-        else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
-        else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
-        else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
-        else if (lower.includes('barba') || lower.includes('barber') || lower.includes('afeitad') || lower.includes('fade') || lower.includes('tattoo')) detectedCategory = 'barberia';
+      // Verificar si ya existen servicios para este tenant
+      let hasExistingServices = false;
+      if (supabase && isSupabaseConfigured) {
+        try {
+          const { count } = await supabase.from('services').select('id', { count: 'exact', head: true }).eq('tenant_id', newTenant.id);
+          if (count && count > 0) hasExistingServices = true;
+        } catch (e) {}
+      }
 
-        // Parsear duración (ej: "45 mins", "120", 45) -> 45
-        let durationMinutes = 60;
-        if (typeof srv.duracion === 'string') {
-          const match = srv.duracion.match(/\d+/);
-          if (match) durationMinutes = parseInt(match[0], 10);
-        } else if (srv.duracion_minutos || srv.duration) {
-          durationMinutes = Number(srv.duracion_minutos || srv.duration);
+      if (!hasExistingServices) {
+        const servicesToSeed = rawServices.map((srv: any) => {
+          const srvName = srv.nombre || srv.titulo || srv.name || 'Servicio Profesional';
+          let detectedCategory: any = 'corte';
+          const lower = srvName.toLowerCase();
+          if (lower.includes('color') || lower.includes('balayage') || lower.includes('mechas') || lower.includes('tinte')) detectedCategory = 'color';
+          else if (lower.includes('keratina') || lower.includes('alisado') || lower.includes('botox') || lower.includes('cirugia')) detectedCategory = 'keratina';
+          else if (lower.includes('uña') || lower.includes('manic') || lower.includes('pedic') || lower.includes('nail') || lower.includes('semi')) detectedCategory = 'nails';
+          else if (lower.includes('spa') || lower.includes('masaje') || lower.includes('facial') || lower.includes('cejas') || lower.includes('pestañ')) detectedCategory = 'spa';
+          else if (lower.includes('barba') || lower.includes('barber') || lower.includes('afeitad') || lower.includes('fade') || lower.includes('tattoo')) detectedCategory = 'barberia';
+
+          // Parsear duración (ej: "45 mins", "120", 45) -> 45
+          let durationMinutes = 60;
+          if (typeof srv.duracion === 'string') {
+            const match = srv.duracion.match(/\d+/);
+            if (match) durationMinutes = parseInt(match[0], 10);
+          } else if (srv.duracion_min || srv.duracion_minutos || srv.duration) {
+            durationMinutes = Number(srv.duracion_min || srv.duracion_minutos || srv.duration);
+          }
+
+          // Parsear precio (ej: "$25.000 COP", "$18.000", 25000) -> 25000
+          let parsedPrice = 50000;
+          const rawPriceValue = srv.precio_desde || srv.precio_cop || srv.precio || srv.price || srv.valor;
+          if (typeof rawPriceValue === 'string') {
+            const digitsOnly = rawPriceValue.replace(/[^0-9]/g, '');
+            if (digitsOnly) parsedPrice = parseInt(digitsOnly, 10);
+          } else if (typeof rawPriceValue === 'number' && !isNaN(rawPriceValue)) {
+            parsedPrice = rawPriceValue;
+          }
+
+          // Extraer imagen del servicio (imagen_url, foto_url, image_url, imagen, etc.) o sugerida por biblioteca
+          const srvImageUrl = srv.imagen_url || srv.foto_url || srv.image_url || srv.imagen || srv.photo_url || getSuggestedImageForService(srvName, detectedCategory);
+
+          return {
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
+            tenant_id: newTenant.id,
+            name: srvName,
+            category: detectedCategory,
+            duration_minutes: durationMinutes,
+            price_usd: parsedPrice,
+            price: parsedPrice,
+            price_cop: parsedPrice,
+            image_url: srvImageUrl,
+            requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
+            description: srv.descripcion || srv.description || `${srvName} con atención profesional de alta precisión.`,
+            is_featured: true,
+            is_active: true
+          };
+        });
+
+        for (const service of servicesToSeed) {
+          await this.createService(service);
         }
-
-        // Parsear precio (ej: "$25.000 COP", "$18.000", 25000) -> 25000
-        let parsedPrice = 50000;
-        const rawPriceValue = srv.precio_desde || srv.precio_cop || srv.precio || srv.price || srv.valor;
-        if (typeof rawPriceValue === 'string') {
-          const digitsOnly = rawPriceValue.replace(/[^0-9]/g, '');
-          if (digitsOnly) parsedPrice = parseInt(digitsOnly, 10);
-        } else if (typeof rawPriceValue === 'number' && !isNaN(rawPriceValue)) {
-          parsedPrice = rawPriceValue;
-        }
-
-        // Extraer imagen del servicio (foto_url, image_url, imagen, etc.)
-        const srvImageUrl = srv.foto_url || srv.image_url || srv.imagen || srv.photo_url || undefined;
-
-        return {
-          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'srv-' + Date.now() + Math.random().toString(36).slice(2, 6),
-          tenant_id: newTenant.id,
-          name: srvName,
-          category: detectedCategory,
-          duration_minutes: durationMinutes,
-          price_usd: parsedPrice,
-          price: parsedPrice,
-          price_cop: parsedPrice,
-          image_url: srvImageUrl,
-          requires_patch_test: detectedCategory === 'color' || detectedCategory === 'keratina',
-          description: srv.descripcion || srv.description || `${srvName} con atención profesional de alta precisión.`,
-          is_featured: true,
-          is_active: true
-        };
-      });
-
-      for (const service of servicesToSeed) {
-        await this.createService(service);
       }
     }
 

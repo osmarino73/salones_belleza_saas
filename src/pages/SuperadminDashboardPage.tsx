@@ -5,6 +5,16 @@ import { ProspectSite, Tenant, PlanTier } from '../types';
 import {
   BEAUTY_STOCK_LIBRARY,
   StockImageItem,
+  getManagedStockLibrary,
+  createStockImage,
+  updateStockImage,
+  deleteStockImage,
+  resetStockLibrary,
+  fetchStockLibraryFromSupabase,
+  createStockImageAsync,
+  updateStockImageAsync,
+  deleteStockImageAsync,
+  uploadStockImageBlob,
   getHeroImageForCategory,
   getSuggestedImageForService,
   getSpecialistAvatar,
@@ -28,6 +38,8 @@ import {
   Sparkles,
   Globe,
   PlusCircle,
+  Plus,
+  Upload,
   Copy,
   ExternalLink,
   MessageCircle,
@@ -287,10 +299,131 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedPitch, setCopiedPitch] = useState(false);
 
-  // Galería de Imágenes de Muestra CDN
+  // Galería de Imágenes de Muestra CDN (CRUD Administrable)
   const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [galleryItems, setGalleryItems] = useState<StockImageItem[]>(() => getManagedStockLibrary());
   const [selectedGalleryCategory, setSelectedGalleryCategory] = useState<string>('todos');
+  const [gallerySearchTerm, setGallerySearchTerm] = useState('');
   const [copiedImageUrl, setCopiedImageUrl] = useState<string | null>(null);
+
+  // Editor Modal para Crear / Editar Imagen de Biblioteca
+  const [imageEditorModal, setImageEditorModal] = useState<{
+    isOpen: boolean;
+    mode: 'create' | 'edit';
+    item?: StockImageItem;
+  }>({ isOpen: false, mode: 'create' });
+  const [editorTitle, setEditorTitle] = useState('');
+  const [editorUrl, setEditorUrl] = useState('');
+  const [editorCategory, setEditorCategory] = useState<string>('cortes');
+  const [editorTags, setEditorTags] = useState('');
+  const [editorSourceMode, setEditorSourceMode] = useState<'upload' | 'url'>('upload');
+  const [isCompressingImage, setIsCompressingImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const imageFileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleImageFilePicked = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor seleccioná un archivo de imagen válido (JPG, PNG, WebP).');
+      return;
+    }
+    setIsCompressingImage(true);
+    try {
+      const res = await compressImage(file, {
+        maxWidth: 1000,
+        maxHeight: 1000,
+        quality: 0.82,
+        mimeType: 'image/webp',
+        cropSquare: false
+      });
+      if (!editorTitle.trim()) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        setEditorTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
+      }
+      const uploadRes = await uploadStockImageBlob(res.blob, file.name);
+      if (uploadRes.url) {
+        setEditorUrl(uploadRes.url);
+      } else {
+        alert('⚠️ Error al subir a Supabase Storage: ' + (uploadRes.error || 'No se pudo generar la URL pública.'));
+      }
+    } catch (err: any) {
+      alert('Error al procesar la imagen: ' + (err?.message || 'Error desconocido'));
+    } finally {
+      setIsCompressingImage(false);
+    }
+  };
+
+  const handleOpenCreateImage = () => {
+    setEditorTitle('');
+    setEditorUrl('');
+    setEditorCategory(selectedGalleryCategory !== 'todos' ? selectedGalleryCategory : 'cortes');
+    setEditorTags('');
+    setEditorSourceMode('upload');
+    setImageEditorModal({ isOpen: true, mode: 'create' });
+  };
+
+  const handleOpenEditImage = (item: StockImageItem) => {
+    setEditorTitle(item.title);
+    setEditorUrl(item.url);
+    setEditorCategory(item.category);
+    setEditorTags(item.tags.join(', '));
+    setEditorSourceMode(item.url.startsWith('data:') ? 'upload' : 'url');
+    setImageEditorModal({ isOpen: true, mode: 'edit', item });
+  };
+
+  const handleSaveImageForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editorTitle.trim() || !editorUrl.trim()) {
+      alert('Por favor completa el título y la URL de la imagen.');
+      return;
+    }
+
+    const tagsArray = editorTags
+      .split(',')
+      .map(t => t.trim().toLowerCase().replace(/^#/, ''))
+      .filter(Boolean);
+
+    if (imageEditorModal.mode === 'create') {
+      await createStockImageAsync({
+        title: editorTitle.trim(),
+        url: editorUrl.trim(),
+        category: editorCategory as any,
+        tags: tagsArray.length > 0 ? tagsArray : ['general']
+      });
+    } else if (imageEditorModal.item) {
+      await updateStockImageAsync(imageEditorModal.item.id, {
+        title: editorTitle.trim(),
+        url: editorUrl.trim(),
+        category: editorCategory as any,
+        tags: tagsArray.length > 0 ? tagsArray : imageEditorModal.item.tags
+      });
+    }
+
+    setGalleryItems(getManagedStockLibrary());
+    setImageEditorModal({ isOpen: false, mode: 'create' });
+  };
+
+  const handleDeleteImage = async (item: StockImageItem) => {
+    if (window.confirm(`¿Estás seguro de eliminar "${item.title}" de la biblioteca?`)) {
+      await deleteStockImageAsync(item.id);
+      setGalleryItems(getManagedStockLibrary());
+    }
+  };
+
+  const handleResetGallery = () => {
+    if (window.confirm('¿Deseas restaurar la biblioteca de imágenes al catálogo predeterminado de Kowy? Se conservarán todas las imágenes oficiales.')) {
+      resetStockLibrary();
+      setGalleryItems(getManagedStockLibrary());
+    }
+  };
+
+  // Cargar en segundo plano imágenes desde Supabase si existen
+  useEffect(() => {
+    fetchStockLibraryFromSupabase().then(items => {
+      if (items && items.length > 0) {
+        setGalleryItems(items);
+      }
+    });
+  }, []);
 
   // Modal de Activación de Salón / Tenant (Solicitud de Correo & Credenciales)
   const [activatingProspect, setActivatingProspect] = useState<ProspectSite | null>(null);
@@ -1024,7 +1157,7 @@ export const SuperadminDashboardPage: React.FC = () => {
     const cleanName = p.business_name.replace(/[^a-zA-Z]/g, '').slice(0, 5) || 'Salon';
     setActivationTempPass(`${cleanName}2026*`);
     setActivationCurrency('COP');
-    setActivationTrialDays(30);
+    setActivationTrialDays(14);
     setActivationSuccessData(null);
     setCopiedCredentials(false);
   };
@@ -1427,9 +1560,21 @@ export const SuperadminDashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            to="/agente"
+            className="text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/10 text-emerald-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            title="Abrir Módulo de Agentes de Campo (PWA Móvil)"
+          >
+            <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">📍 Agente de Campo</span>
+          </Link>
+
           <button
             type="button"
-            onClick={() => setShowGalleryModal(true)}
+            onClick={() => {
+              setGalleryItems(getManagedStockLibrary());
+              setShowGalleryModal(true);
+            }}
             className="text-xs font-bold px-3 py-1.5 rounded-xl border border-pink-500/30 hover:border-pink-500/60 bg-pink-500/10 text-pink-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
@@ -1514,6 +1659,14 @@ export const SuperadminDashboardPage: React.FC = () => {
             <Building2 className="w-4 h-4" />
             <span>🏢 Salones Activos SaaS ({tenants.length})</span>
           </button>
+
+          <Link
+            to="/agente"
+            className="ml-auto px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 transition-all cursor-pointer whitespace-nowrap"
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>📱 Vista Agente Campo</span>
+          </Link>
         </div>
       </div>
 
@@ -2718,7 +2871,7 @@ export const SuperadminDashboardPage: React.FC = () => {
                             className="bg-transparent text-white font-bold text-[11px] focus:outline-none cursor-pointer"
                           >
                             <option value="free" className="bg-[#121624]">🌐 Gratis ($0)</option>
-                            <option value="inicio" className="bg-[#121624]">🌱 Inicio ($50.000 COP)</option>
+                            <option value="inicio" className="bg-[#121624]">🌱 Inicio ($29.000 COP)</option>
                             <option value="crecimiento" className="bg-[#121624]">📈 Crecimiento ($120.000 COP)</option>
                             <option value="pro_ia" className="bg-[#121624]">🤖 Pro Flow IA ($240.000 COP)</option>
                             <option value="escala" className="bg-[#121624]">🎯 Escala ($720.000 COP)</option>
@@ -2780,32 +2933,86 @@ export const SuperadminDashboardPage: React.FC = () => {
       {/* =====================================================================
           MODAL: GALERÍA DE IMÁGENES DE MUESTRA (STOCK CDN)
           ===================================================================== */}
+      {/* =====================================================================
+          MODAL DE GALERÍA DE IMÁGENES STOCK (CDN WEBP)
+          ===================================================================== */}
       {showGalleryModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#121624] border border-white/10 rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-[#121624] border border-white/10 rounded-3xl max-w-6xl w-full h-[90vh] max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             
             {/* Modal Header */}
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#151c2e]">
+            <div className="p-4 sm:p-5 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-[#151c2e] shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-[#FF5A36] flex items-center justify-center text-white">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-[#FF5A36] flex items-center justify-center text-white shadow-lg shadow-pink-500/20 shrink-0">
                   <ImageIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-white">Biblioteca de Imágenes de Muestra (CDN WebP)</h3>
-                  <p className="text-xs text-slate-400">Imágenes ultra-livianas de alta resolución para reemplazar Base64 y optimizar sitios web</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-extrabold text-white">Biblioteca de Imágenes (CDN WebP)</h3>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
+                      {galleryItems.length} disponibles
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">Administrá, creá, editá y eliminá recursos visuales optimizados para salones y barberías</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowGalleryModal(false)}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              {/* Header Actions */}
+              <div className="flex items-center gap-2 flex-wrap ml-auto">
+                {/* Search Bar */}
+                <div className="relative w-56 sm:w-64">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={gallerySearchTerm}
+                    onChange={(e) => setGallerySearchTerm(e.target.value)}
+                    placeholder="Buscar título, tag..."
+                    className="w-full bg-[#0c101a] border border-white/10 rounded-xl pl-9 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36] transition-all"
+                  />
+                  {gallerySearchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setGallerySearchTerm('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* + Nueva Imagen Button */}
+                <button
+                  type="button"
+                  onClick={handleOpenCreateImage}
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/20 cursor-pointer transition-all shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Nueva Imagen</span>
+                </button>
+
+                {/* Reset Catalog Button */}
+                <button
+                  type="button"
+                  onClick={handleResetGallery}
+                  title="Restaurar imágenes al catálogo oficial de Kowy"
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white cursor-pointer transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowGalleryModal(false)}
+                  className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Categorías Filter */}
-            <div className="px-5 py-3 border-b border-white/10 bg-[#0c101a] flex gap-2 overflow-x-auto">
+            <div className="px-5 py-2.5 border-b border-white/10 bg-[#0c101a] flex gap-2 overflow-x-auto shrink-0 custom-scrollbar">
               {[
                 { id: 'todos', label: 'Todas' },
                 { id: 'hero_salon', label: '👑 Hero Salón' },
@@ -2820,88 +3027,436 @@ export const SuperadminDashboardPage: React.FC = () => {
                 { id: 'barberia', label: '💈 Barbería' },
                 { id: 'maquillaje', label: '💄 Maquillaje' },
                 { id: 'especialistas', label: '👥 Especialistas' }
-              ].map(cat => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedGalleryCategory(cat.id)}
-                  className={`text-xs px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedGalleryCategory === cat.id
-                      ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
-                      : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
+              ].map(cat => {
+                const count = cat.id === 'todos' 
+                  ? galleryItems.length 
+                  : galleryItems.filter(i => i.category === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedGalleryCategory(cat.id)}
+                    className={`text-xs px-3.5 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                      selectedGalleryCategory === cat.id
+                        ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30'
+                        : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                      selectedGalleryCategory === cat.id ? 'bg-black/20 text-white' : 'bg-white/5 text-slate-500'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Grid of Images */}
-            <div className="p-5 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 flex-1">
-              {BEAUTY_STOCK_LIBRARY
-                .filter(img => selectedGalleryCategory === 'todos' || img.category === selectedGalleryCategory)
-                .map(img => (
-                  <div key={img.id} className="bg-[#171f30] border border-white/10 rounded-2xl overflow-hidden group hover:border-[#FF5A36]/50 transition-all flex flex-col justify-between">
-                    <div>
-                      <div className="relative h-36 overflow-hidden">
-                        <img src={img.url} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                        <span className="absolute top-2 left-2 text-[10px] font-bold bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-md uppercase">
-                          {img.category}
-                        </span>
+            {/* Scrollable Grid Container */}
+            <div className="p-5 overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+              {(() => {
+                const filtered = galleryItems.filter(img => {
+                  const matchesCategory = selectedGalleryCategory === 'todos' || img.category === selectedGalleryCategory;
+                  const searchLower = gallerySearchTerm.toLowerCase().trim();
+                  if (!searchLower) return matchesCategory;
+                  return matchesCategory && (
+                    img.title.toLowerCase().includes(searchLower) ||
+                    img.category.toLowerCase().includes(searchLower) ||
+                    img.tags.some(t => t.toLowerCase().includes(searchLower))
+                  );
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <div className="h-64 flex flex-col items-center justify-center text-center p-6 border border-dashed border-white/10 rounded-2xl">
+                      <ImageIcon className="w-12 h-12 text-slate-600 mb-3" />
+                      <p className="text-sm font-bold text-slate-300 mb-1">No se encontraron imágenes</p>
+                      <p className="text-xs text-slate-500 mb-4 max-w-sm">
+                        {gallerySearchTerm 
+                          ? `No hay resultados para "${gallerySearchTerm}" en esta categoría.` 
+                          : 'No hay imágenes registradas bajo esta categoría todavía.'}
+                      </p>
+                      <div className="flex gap-2">
+                        {gallerySearchTerm && (
+                          <button
+                            type="button"
+                            onClick={() => setGallerySearchTerm('')}
+                            className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors"
+                          >
+                            Limpiar búsqueda
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleOpenCreateImage}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#FF5A36] hover:bg-[#e04825] text-xs font-bold text-white transition-colors flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Agregar Imagen</span>
+                        </button>
                       </div>
-                      <div className="p-3">
-                        <h4 className="text-xs font-bold text-white mb-1 line-clamp-1">{img.title}</h4>
-                        <div className="flex gap-1 flex-wrap">
-                          {img.tags.map(t => (
-                            <span key={t} className="text-[9px] text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">#{t}</span>
-                          ))}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filtered.map(img => (
+                      <div 
+                        key={img.id} 
+                        className="bg-[#171f30] border border-white/10 rounded-2xl overflow-hidden group hover:border-[#FF5A36]/50 transition-all flex flex-col justify-between shadow-lg relative"
+                      >
+                        <div>
+                          {/* Image Thumbnail with Overlay Badges and Action Buttons */}
+                          <div className="relative h-44 overflow-hidden bg-black/40">
+                            <img 
+                              src={img.url} 
+                              alt={img.title} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                              loading="lazy" 
+                            />
+                            
+                            {/* Category Badge */}
+                            <span className="absolute top-2 left-2 text-[10px] font-black bg-black/75 backdrop-blur-md text-white px-2.5 py-0.5 rounded-md uppercase border border-white/10 shadow-sm">
+                              {img.category}
+                            </span>
+
+                            {/* Floating Card Actions (Edit & Delete) */}
+                            <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditImage(img)}
+                                title="Editar imagen"
+                                className="w-7 h-7 rounded-lg bg-black/75 hover:bg-blue-600 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md cursor-pointer border border-white/10"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteImage(img)}
+                                title="Eliminar imagen"
+                                className="w-7 h-7 rounded-lg bg-black/75 hover:bg-red-600 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md cursor-pointer border border-white/10"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Content Details */}
+                          <div className="p-3.5">
+                            <h4 className="text-xs font-bold text-white mb-2 line-clamp-1" title={img.title}>{img.title}</h4>
+                            <div className="flex gap-1 flex-wrap max-h-12 overflow-hidden">
+                              {img.tags.map(t => (
+                                <span key={t} className="text-[9px] text-slate-400 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded">
+                                  #{t}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card Bottom CTA */}
+                        <div className="p-3.5 pt-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(img.url);
+                              setCopiedImageUrl(img.id);
+                              setTimeout(() => setCopiedImageUrl(null), 2000);
+                            }}
+                            className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md ${
+                              copiedImageUrl === img.id
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-white/10 hover:bg-[#FF5A36] text-slate-200 hover:text-white'
+                            }`}
+                          >
+                            {copiedImageUrl === img.id ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>✓ URL Copiada</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Copiar Enlace CDN</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="p-3 pt-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(img.url);
-                          setCopiedImageUrl(img.id);
-                          setTimeout(() => setCopiedImageUrl(null), 2000);
-                        }}
-                        className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          copiedImageUrl === img.id
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-white/10 hover:bg-[#FF5A36] text-slate-200 hover:text-white'
-                        }`}
-                      >
-                        {copiedImageUrl === img.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            <span>✓ URL Copiada</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copiar Enlace CDN</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                );
+              })()}
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-white/10 bg-[#0E121B] flex items-center justify-between text-xs text-slate-400">
-              <span>💡 Todas las imágenes cargan en formato WebP comprimido a 800-1200px.</span>
+            <div className="p-4 border-t border-white/10 bg-[#0E121B] flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 shrink-0">
+              <span className="flex items-center gap-1.5">
+                <span>💡</span>
+                <span>Todas las imágenes se optimizan en WebP para máxima velocidad en sitios gancho y catálogo Kowy.</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleOpenCreateImage}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-colors flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Nueva Imagen</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGalleryModal(false)}
+                  className="px-4 py-1.5 rounded-xl bg-[#FF5A36] hover:bg-[#e04825] text-white font-bold cursor-pointer transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          SUB-MODAL: CREAR / EDITAR IMAGEN DE BIBLIOTECA
+          ===================================================================== */}
+      {imageEditorModal.isOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#151c2e] border border-white/15 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#192238]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF5A36] to-pink-500 flex items-center justify-center text-white">
+                  {imageEditorModal.mode === 'create' ? <Plus className="w-5 h-5" /> : <Edit3 className="w-4 h-4" />}
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">
+                    {imageEditorModal.mode === 'create' ? 'Nueva Imagen de Biblioteca' : 'Editar Imagen de Biblioteca'}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {imageEditorModal.mode === 'create' 
+                      ? 'Agregá un recurso visual CDN para usar en salones y prospectos' 
+                      : 'Modificá los metadatos o URL de este recurso'}
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setShowGalleryModal(false)}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer"
+                onClick={() => setImageEditorModal({ isOpen: false, mode: 'create' })}
+                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
               >
-                Cerrar
+                <X className="w-4 h-4" />
               </button>
             </div>
 
+            {/* Form */}
+            <form onSubmit={handleSaveImageForm} className="p-5 space-y-4">
+              
+              {/* Selector de Modo: Subir Archivo vs Enlace URL */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">Origen de la Imagen</label>
+                <div className="grid grid-cols-2 gap-2 bg-[#0c101a] p-1 rounded-xl border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setEditorSourceMode('upload')}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editorSourceMode === 'upload'
+                        ? 'bg-[#FF5A36] text-white shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Subir desde PC</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditorSourceMode('url')}
+                    className={`py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      editorSourceMode === 'url'
+                        ? 'bg-[#FF5A36] text-white shadow-md'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Pegar URL / CDN</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Zona de Subida / Dropzone si el modo es 'upload' */}
+              {editorSourceMode === 'upload' && (
+                <div>
+                  <input
+                    type="file"
+                    ref={imageFileInputRef}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleImageFilePicked(e.target.files[0]);
+                      }
+                    }}
+                  />
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingImage(true);
+                    }}
+                    onDragLeave={() => setIsDraggingImage(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingImage(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleImageFilePicked(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    onClick={() => imageFileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center min-h-[140px] relative overflow-hidden ${
+                      isDraggingImage
+                        ? 'border-[#FF5A36] bg-[#FF5A36]/10'
+                        : editorUrl
+                        ? 'border-emerald-500/50 bg-[#0c101a]'
+                        : 'border-white/15 hover:border-white/30 bg-[#0c101a] hover:bg-white/5'
+                    }`}
+                  >
+                    {isCompressingImage ? (
+                      <div className="flex flex-col items-center gap-2 py-3 text-slate-300">
+                        <RefreshCw className="w-6 h-6 animate-spin text-[#FF5A36]" />
+                        <span className="text-xs font-bold">Comprimiendo y convirtiendo a WebP...</span>
+                      </div>
+                    ) : editorUrl ? (
+                      <div className="w-full flex items-center justify-between gap-3">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-black/50 shrink-0 border border-white/10">
+                          <img src={editorUrl} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="text-left flex-1 min-w-0">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md mb-1">
+                            <Check className="w-3 h-3" /> Imagen WebP Lista
+                          </span>
+                          <p className="text-[11px] text-slate-400 truncate">Hacé clic o arrastrá para cambiarla</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            imageFileInputRef.current?.click();
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white shrink-0"
+                        >
+                          Cambiar
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 mb-2">
+                          <Upload className="w-5 h-5 text-[#FF5A36]" />
+                        </div>
+                        <p className="text-xs font-bold text-white mb-0.5">
+                          Arrastrá una imagen acá o hacé clic para explorar
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          JPG, PNG o WebP. Se optimiza y comprime automáticamente para máxima velocidad.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Input URL si el modo es 'url' */}
+              {editorSourceMode === 'url' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    URL de la Imagen (WebP / CDN) <span className="text-[#FF5A36]">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    required={editorSourceMode === 'url'}
+                    value={editorUrl}
+                    onChange={(e) => setEditorUrl(e.target.value)}
+                    placeholder="https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/..."
+                    className="w-full bg-[#0c101a] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36]"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">Podés pegar enlaces directos de Unsplash, Cloudflare R2 o tu propio CDN</p>
+                </div>
+              )}
+
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Título de la Imagen <span className="text-[#FF5A36]">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editorTitle}
+                  onChange={(e) => setEditorTitle(e.target.value)}
+                  placeholder="Ej: Corte Fade Degradado Urbano"
+                  className="w-full bg-[#0c101a] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36]"
+                />
+              </div>
+
+              {/* Categoría */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Categoría <span className="text-[#FF5A36]">*</span>
+                </label>
+                <select
+                  value={editorCategory}
+                  onChange={(e) => setEditorCategory(e.target.value)}
+                  className="w-full bg-[#0c101a] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                >
+                  <option value="hero_salon">👑 Hero Salón</option>
+                  <option value="hero_spa">🧖‍♀️ Hero Spa</option>
+                  <option value="hero_barber">💈 Hero Barber</option>
+                  <option value="hero_nails">💅 Hero Nails</option>
+                  <option value="color">🎨 Color & Balayage</option>
+                  <option value="cortes">✂️ Cortes & Peinados</option>
+                  <option value="keratina">✨ Alisados & Keratina</option>
+                  <option value="nails">💅 Uñas & Nails</option>
+                  <option value="spa_facial">🧖‍♀️ Spa & Faciales</option>
+                  <option value="barberia">💈 Barbería</option>
+                  <option value="maquillaje">💄 Maquillaje</option>
+                  <option value="especialistas">👥 Especialistas</option>
+                </select>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  Etiquetas / Tags (separadas por coma)
+                </label>
+                <input
+                  type="text"
+                  value={editorTags}
+                  onChange={(e) => setEditorTags(e.target.value)}
+                  placeholder="barberia, fade, degradado, estilo"
+                  className="w-full bg-[#0c101a] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36]"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">Ayudan a sugerir esta imagen automáticamente a servicios y prospectos</p>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setImageEditorModal({ isOpen: false, mode: 'create' })}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-300 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-90 text-xs font-bold text-white shadow-lg shadow-[#FF5A36]/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{imageEditorModal.mode === 'create' ? 'Crear Imagen' : 'Guardar Cambios'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -3028,18 +3583,24 @@ export const SuperadminDashboardPage: React.FC = () => {
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     Estado de la nueva cuenta del negocio:
                   </span>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-emerald-400 font-bold block">
                         ✨ Cuenta Virgen
                       </span>
-                      <span className="text-[10px] text-slate-400">0 citas ni facturación ficticia</span>
+                      <span className="text-[10px] text-slate-400">0 citas ni datos ficticios</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                      <span className="text-blue-400 font-bold block">
+                        🚀 Plan Inicio (14 Días)
+                      </span>
+                      <span className="text-[10px] text-slate-400">Prueba gratis ($0 hosting)</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-amber-400 font-bold block">
-                        🎯 Onboarding Guiado
+                        🎯 Onboarding
                       </span>
-                      <span className="text-[10px] text-slate-400">Creará servicios y colaboradoras</span>
+                      <span className="text-[10px] text-slate-400">Setup en 3 pasos</span>
                     </div>
                   </div>
                 </div>
