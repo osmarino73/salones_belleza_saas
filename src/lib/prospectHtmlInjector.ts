@@ -1880,6 +1880,57 @@ ${colorOverridesCss}
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
   }
+
+  /* Calibración visual editorial móvil para Hero (Nails y Salón de Belleza): Mayor altura (840px+), encuadre superior y despeje de rostro */
+  @media (max-width: 768px) {
+    .hero-scroll-section {
+      height: auto !important;
+      min-height: 840px !important;
+      max-height: none !important;
+    }
+    .canvas-sticky-wrapper {
+      height: 100% !important;
+      min-height: 840px !important;
+      max-height: none !important;
+      align-items: flex-end !important;
+      justify-content: center !important;
+      padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .canvas-poster-img,
+    #canvas-poster-fallback img,
+    #canvas-poster-fallback source,
+    .canvas-container img,
+    .hero-track img {
+      object-position: center top !important;
+    }
+    .canvas-gradient-overlay {
+      background: linear-gradient(
+        180deg,
+        rgba(13, 11, 13, 0) 0%,
+        rgba(13, 11, 13, 0) 44%,
+        rgba(13, 11, 13, 0.45) 58%,
+        rgba(13, 11, 13, 0.88) 76%,
+        #0d0b0d 96%
+      ) !important;
+    }
+    .hero-container-align {
+      justify-content: center !important;
+      align-items: flex-end !important;
+      padding: 0 16px !important;
+      padding-top: 0 !important;
+      padding-bottom: 24px !important;
+      width: 100% !important;
+    }
+    .hero-scroll-content {
+      max-width: 360px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+    }
+    .hero-scroll-step {
+      align-items: center !important;
+      text-align: center !important;
+    }
+  }
 </style>
 <script id="beautyflow-interaction-script">
   (function() {
