@@ -1557,6 +1557,9 @@ ${colorOverridesCss}
     }).join('\n');
   };
 
+  const effectiveWebStylists = (liveStylists || []).filter(s => s.show_on_web !== false && s.attends_clients !== false).slice(0, 8);
+  const isSingleSpecialist = effectiveWebStylists.length === 1;
+
   if (processed.includes('{{TEAM_GRID}}')) {
     if (!showTeamSection) {
       processed = processed.replace(
@@ -1565,8 +1568,7 @@ ${colorOverridesCss}
       );
       processed = processed.split('{{TEAM_GRID}}').join('');
     } else {
-      const webStylists = (liveStylists || []).filter(s => s.show_on_web !== false && s.attends_clients !== false).slice(0, 8);
-      const teamToRender = webStylists.length > 0 ? webStylists : (isBarberTemplate ? [
+      const teamToRender = effectiveWebStylists.length > 0 ? effectiveWebStylists : (isBarberTemplate ? [
         { name: "Cristian 'Crismar'", specialty: "Master Barber & Fundador", photo_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80", rating: 5.0, role: 'admin' },
         { name: "Andrés 'Andy Fade'", specialty: "Especialista en Fades & Diseños", photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80", rating: 4.9, role: 'colaborador' },
         { name: "Mateo 'Teo'", specialty: "Especialista en Barbas Clásicas", photo_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80", rating: 4.9, role: 'colaborador' },
@@ -1584,29 +1586,66 @@ ${colorOverridesCss}
     // Si la administradora decidió ocultar el equipo, ocultar solo el contenedor del equipo, preservando la historia de Nosotros
     processed = processed.replace(/<div\b[^>]*\bid=["']equipo["'][^>]*>[\s\S]*?<\/div>/gi, '');
     processed = processed.replace(/<section\b[^>]*\bid=["']equipo["'][^>]*>[\s\S]*?<\/section>/gi, '');
-  } else if (liveStylists && liveStylists.length > 0) {
-    const webStylists = liveStylists.filter(s => s.show_on_web !== false && s.attends_clients !== false).slice(0, 8);
+  } else if (effectiveWebStylists.length > 0) {
+    const liveTeamCardsHtml = renderTemplateTeamCards(effectiveWebStylists);
 
-    if (webStylists.length > 0) {
-      const liveTeamCardsHtml = renderTemplateTeamCards(webStylists);
-
-      // Reemplazo estrictamente acotado dentro de la sección actual (NUNCA cruzar </section> para no tragar la sección de mapa/ubicación)
-      const teamGridRegex = /<div\b[^>]*class=["'][^"']*team-grid[^"']*["'][^>]*>/i;
-      const teamMatch = processed.match(teamGridRegex);
-      if (teamMatch && teamMatch.index !== undefined) {
-        const startIdx = teamMatch.index + teamMatch[0].length;
-        const nextSectionEnd = processed.indexOf('</section>', startIdx);
-        if (nextSectionEnd !== -1) {
-          const sectionSlice = processed.slice(startIdx, nextSectionEnd);
-          const lastDivIdx = sectionSlice.lastIndexOf('</div>');
-          if (lastDivIdx !== -1) {
-            processed = processed.slice(0, startIdx) +
-              '\n' + liveTeamCardsHtml + '\n        ' +
-              sectionSlice.slice(lastDivIdx) +
-              processed.slice(nextSectionEnd);
-          }
+    // Reemplazo estrictamente acotado dentro de la sección actual (NUNCA cruzar </section> para no tragar la sección de mapa/ubicación)
+    const teamGridRegex = /<div\b[^>]*class=["'][^"']*team-grid[^"']*["'][^>]*>/i;
+    const teamMatch = processed.match(teamGridRegex);
+    if (teamMatch && teamMatch.index !== undefined) {
+      const startIdx = teamMatch.index + teamMatch[0].length;
+      const nextSectionEnd = processed.indexOf('</section>', startIdx);
+      if (nextSectionEnd !== -1) {
+        const sectionSlice = processed.slice(startIdx, nextSectionEnd);
+        const lastDivIdx = sectionSlice.lastIndexOf('</div>');
+        if (lastDivIdx !== -1) {
+          processed = processed.slice(0, startIdx) +
+            '\n' + liveTeamCardsHtml + '\n        ' +
+            sectionSlice.slice(lastDivIdx) +
+            processed.slice(nextSectionEnd);
         }
       }
+    }
+  }
+
+  // Si el negocio tiene exactamente 1 barbero/estilista activo, adaptar títulos de equipo y métricas a singular
+  if (isSingleSpecialist && showTeamSection) {
+    processed = processed
+      .replace(/<span\b[^>]*class=["'][^"']*eyebrow-gold[^"']*["'][^>]*>\s*NUESTRO EQUIPO\s*<\/span>/gi, '<span class="eyebrow-gold">ATENCIÓN PERSONALIZADA</span>')
+      .replace(/<span\b[^>]*class=["'][^"']*section-tag[^"']*["'][^>]*>\s*NUESTRO EQUIPO\s*<\/span>/gi, '<span class="section-tag">ATENCIÓN PERSONALIZADA</span>')
+      .replace(/NUESTRO EQUIPO/g, 'ATENCIÓN PERSONALIZADA')
+      .replace(/BARBEROS <span class=["']text-gold["']>CERTIFICADOS<\/span>/gi, 'BARBERO <span class="text-gold">CERTIFICADO</span>')
+      .replace(/BARBEROS CERTIFICADOS/gi, 'BARBERO CERTIFICADO')
+      .replace(/ESTILISTAS <span class=["']text-accent["']>CERTIFICADAS<\/span>/gi, 'ESTILISTA <span class="text-accent">CERTIFICADA</span>')
+      .replace(/ESTILISTAS CERTIFICADAS/gi, 'ESTILISTA CERTIFICADA')
+      .replace(/ESTILISTAS PROFESIONALES/gi, 'ESTILISTA PROFESIONAL')
+      .replace(/ESPECIALISTAS EN UÑAS/gi, 'ESPECIALISTA EN UÑAS')
+      .replace(/Nuestro equipo de master barberos se capacita/gi, 'Nuestro master barbero se capacita')
+      .replace(/(<div\b[^>]*class=["'][^"']*metric-item[^"']*["'][^>]*>\s*<strong\b[^>]*>)\s*4\s*(<\/strong>\s*<span\b[^>]*>)\s*Master Barberos\s*(<\/span>)/gi, '$11$2Master Barbero$3')
+      .replace(/(<div\b[^>]*class=["'][^"']*metric-item[^"']*["'][^>]*>\s*<strong\b[^>]*>)\s*4\s*(<\/strong>\s*<span\b[^>]*>)\s*Especialistas\s*(<\/span>)/gi, '$11$2Especialista$3')
+      .replace(/<strong>\s*4\s*<\/strong>\s*<span>\s*Master Barberos\s*<\/span>/gi, '<strong>1</strong><span>Master Barbero</span>')
+      .replace(/<strong>\s*4\s*<\/strong>\s*<span>\s*Especialistas\s*<\/span>/gi, '<strong>1</strong><span>Especialista</span>');
+
+    const singleSpecialistStyle = `
+<style id="single-specialist-layout-fix">
+  .team-grid {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    max-width: 380px !important;
+    margin: 35px auto 0 !important;
+  }
+  .team-grid .team-card,
+  .team-grid article.team-card {
+    width: 100% !important;
+    max-width: 380px !important;
+  }
+</style>
+`;
+    if (processed.includes('</head>')) {
+      processed = processed.replace('</head>', `${singleSpecialistStyle}\n</head>`);
+    } else {
+      processed += singleSpecialistStyle;
     }
   }
 
@@ -1829,10 +1868,34 @@ ${colorOverridesCss}
   .whatsapp-float, .btn-whatsapp-float, .wa-floating, .floating-wa, .wa-btn-floating {
     display: none !important;
   }
+
+  /* Header sólido y opaco en scroll para evitar transparencias y bleed-through de botones o texto */
+  .header-sticky-wrapper.scrolled-past-hero,
+  .header-sticky-wrapper.is-scrolled,
+  .site-header.scrolled,
+  header.scrolled {
+    background: #0c0c0e !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  }
 </style>
 <script id="beautyflow-interaction-script">
   (function() {
     function initInteractions() {
+      // Activar fondo sólido en header ante cualquier desplazamiento
+      window.addEventListener('scroll', function() {
+        var header = document.querySelector('.header-sticky-wrapper, .site-header, header');
+        if (header) {
+          if (window.scrollY > 20) {
+            header.classList.add('is-scrolled');
+          } else {
+            header.classList.remove('is-scrolled');
+          }
+        }
+      }, { passive: true });
+
       document.addEventListener('click', function(e) {
         var target = e.target && e.target.closest ? e.target.closest('a') : null;
         if (!target) return;

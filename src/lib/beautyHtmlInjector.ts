@@ -167,14 +167,15 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
     const activeSubheadline = subheadline || `Cortes de precisión, degradados skin fade impecables y perfilado de barba con toalla caliente diseñados por barberos maestros en ${city}.`;
     const activeBadge = heroBadge || `<i class="fa-solid fa-scissors"></i> <span>CLUB MASCULINO VIP &bull; ${city.toUpperCase()}</span>`;
 
+    const isSingleBarber = rawTeam.length === 1;
     const activeAboutTitle = aboutTitle || 'PRECISIÓN. ESTILO. CONFIANZA TOTAL.';
     const activeAboutDescription = aboutDescription || `En ${businessName} creemos que un gran corte es mucho más que un servicio: es una declaración de identidad. Combinamos la tradición del afeitado clásico con las últimas tendencias de degradados para que luzcas imponente.`;
     const activeMetric1Val = metric1Val || '8+';
     const activeMetric1Label = metric1Label || 'Años Exp.';
     const activeMetric2Val = metric2Val || '20K+';
     const activeMetric2Label = metric2Label || 'Cortes Realizados';
-    const activeMetric3Val = metric3Val || '4';
-    const activeMetric3Label = metric3Label || 'Master Barberos';
+    const activeMetric3Val = (isSingleBarber && (!metric3Val || metric3Val === '4')) ? '1' : (metric3Val || '4');
+    const activeMetric3Label = (isSingleBarber && (!metric3Label || metric3Label === 'Master Barberos' || metric3Label === 'Especialistas')) ? 'Master Barbero' : (metric3Label || 'Master Barberos');
     const activeMetric4Val = metric4Val || '4.9';
     const activeMetric4Label = metric4Label || 'Calificación';
 
@@ -208,6 +209,34 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{MAP_QUERY}}').join(activeMapQuery)
       .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
       .split('{{TEAM_GRID}}').join(teamCardsHtml);
+
+    if (isSingleBarber) {
+      html = html
+        .replace(/<span class="eyebrow-gold">NUESTRO EQUIPO<\/span>/gi, '<span class="eyebrow-gold">ATENCIÓN PERSONALIZADA</span>')
+        .replace(/BARBEROS <span class="text-gold">CERTIFICADOS<\/span>/gi, 'BARBERO <span class="text-gold">CERTIFICADO</span>')
+        .replace(/BARBEROS CERTIFICADOS/gi, 'BARBERO CERTIFICADO')
+        .replace(/Nuestro equipo de master barberos se capacita/gi, 'Nuestro master barbero se capacita');
+
+      const singleBarberCenterCss = `
+  <style id="single-barber-center-style">
+    .team-grid {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      max-width: 380px !important;
+      margin: 35px auto 0 !important;
+    }
+    .team-grid .team-card {
+      width: 100% !important;
+      max-width: 380px !important;
+    }
+  </style>`;
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${singleBarberCenterCss}\n</head>`);
+      } else {
+        html += singleBarberCenterCss;
+      }
+    }
 
     if (aboutImageUrl) {
       html = html.replace(/(<div class="salon-image-showcase">[\s\S]*?<img\s+src=")[^"]*(")/i, `$1${aboutImageUrl}$2`);
@@ -377,6 +406,34 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
       .split('{{TEAM_GRID}}').join(teamCardsHtml);
 
+    const isSingleStylist = rawTeam.length === 1;
+    if (isSingleStylist) {
+      html = html
+        .replace(/<span class="section-tag">NUESTRO EQUIPO<\/span>/gi, '<span class="section-tag">ATENCIÓN PERSONALIZADA</span>')
+        .replace(/ESTILISTAS <span class="text-accent">CERTIFICADAS<\/span>/gi, 'ESTILISTA <span class="text-accent">CERTIFICADA</span>')
+        .replace(/ESTILISTAS CERTIFICADAS/gi, 'ESTILISTA CERTIFICADA');
+
+      const singleStylistCenterCss = `
+  <style id="single-stylist-center-style">
+    .team-grid {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      max-width: 380px !important;
+      margin: 35px auto 0 !important;
+    }
+    .team-grid .team-card {
+      width: 100% !important;
+      max-width: 380px !important;
+    }
+  </style>`;
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${singleStylistCenterCss}\n</head>`);
+      } else {
+        html += singleStylistCenterCss;
+      }
+    }
+
     if (primaryColor) {
       const colorOverride = `
   <style id="custom-theme-color-preview">
@@ -529,6 +586,33 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{SCHEDULE_TEXT}}').join(scheduleText || 'Lunes a Sábado: 8:00 AM – 7:00 PM')
       .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
       .split('{{TEAM_GRID}}').join(teamCardsHtml);
+
+    const isSingleArtist = rawTeam.length === 1;
+    if (isSingleArtist) {
+      html = html
+        .replace(/NUESTRO EQUIPO/gi, 'ATENCIÓN PERSONALIZADA')
+        .replace(/ESPECIALISTAS EN UÑAS/gi, 'ESPECIALISTA EN UÑAS');
+
+      const singleNailsCenterCss = `
+  <style id="single-nails-center-style">
+    .team-grid {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      max-width: 380px !important;
+      margin: 35px auto 0 !important;
+    }
+    .team-grid .team-card {
+      width: 100% !important;
+      max-width: 380px !important;
+    }
+  </style>`;
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${singleNailsCenterCss}\n</head>`);
+      } else {
+        html += singleNailsCenterCss;
+      }
+    }
 
     if (primaryColor) {
       const colorOverride = `

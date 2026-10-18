@@ -559,8 +559,13 @@ export const AgentIntakePage: React.FC = () => {
       showToast('Ingresa el nombre comercial del negocio', 'error');
       return;
     }
-    if (!phone.trim()) {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (!cleanPhone) {
       showToast('Ingresa el WhatsApp para reservas', 'error');
+      return;
+    }
+    if (cleanPhone.length !== 10) {
+      showToast(`El número celular debe tener exactamente 10 dígitos (tienes ${cleanPhone.length})`, 'error');
       return;
     }
     setCurrentStep(2);
@@ -571,7 +576,12 @@ export const AgentIntakePage: React.FC = () => {
   const handleGenerateSiteAndProspect = async () => {
     setIsSubmitting(true);
     try {
-      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const cleanPhone = phone.replace(/\D/g, '');
+      if (cleanPhone.length !== 10) {
+        showToast(`El número de WhatsApp debe tener exactamente 10 dígitos (tienes ${cleanPhone.length})`, 'error');
+        setIsSubmitting(false);
+        return;
+      }
       const baseSlug = (slug || businessName)
         .toLowerCase()
         .normalize('NFD')
@@ -742,9 +752,10 @@ export const AgentIntakePage: React.FC = () => {
 
   const handleOpenWhatsApp = () => {
     if (!createdProspect) return;
-    const cleanPhone = createdProspect.phone_whatsapp.replace(/[^0-9]/g, '');
+    const cleanPhone = createdProspect.phone_whatsapp.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('57') ? cleanPhone : `57${cleanPhone}`;
     const text = encodeURIComponent(getActivePitchText());
-    window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
+    window.open(`https://wa.me/${phoneWithCountry}?text=${text}`, '_blank');
   };
 
   const handleResetForNewProspect = () => {
@@ -845,7 +856,8 @@ export const AgentIntakePage: React.FC = () => {
       origin: window.location.origin
     });
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
+    const phoneWithCountry = cleanPhone.startsWith('57') ? cleanPhone : `57${cleanPhone}`;
+    window.open(`https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   // --------------------------------------------------------------------------
@@ -994,8 +1006,16 @@ export const AgentIntakePage: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              if (businessName.trim() && phone.trim()) setCurrentStep(2);
-              else showToast('Completa los datos del paso 1 primero', 'error');
+              const cleanPhone = phone.replace(/\D/g, '');
+              if (!businessName.trim()) {
+                showToast('Ingresa el nombre comercial del negocio primero', 'error');
+                return;
+              }
+              if (cleanPhone.length !== 10) {
+                showToast(`El WhatsApp debe tener exactamente 10 dígitos (tienes ${cleanPhone.length})`, 'error');
+                return;
+              }
+              setCurrentStep(2);
             }}
             className={`flex items-center gap-2 transition-all cursor-pointer ${
               currentStep === 2 
@@ -1244,14 +1264,25 @@ export const AgentIntakePage: React.FC = () => {
 
             {/* SECCIÓN 5: WHATSAPP PARA CITAS */}
             <div className="bg-[#0e121b] border border-white/10 rounded-3xl p-5 sm:p-6 space-y-3 shadow-xl">
-              <div>
-                <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                  <span>5. WHATSAPP PARA RESERVAS DEL SALÓN *</span>
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  A este número llegarán las confirmaciones y notificaciones del agendador interactivo.
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                    <span>5. WHATSAPP PARA RESERVAS DEL SALÓN *</span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    A este número llegarán las confirmaciones y notificaciones del agendador interactivo.
+                  </p>
+                </div>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  phone.length === 10
+                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-bold'
+                    : phone.length > 0
+                      ? 'bg-amber-500/15 text-amber-400 border-amber-500/30 font-semibold'
+                      : 'bg-white/5 text-slate-500 border-white/10'
+                }`}>
+                  {phone.length}/10 dígitos
+                </span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1260,11 +1291,38 @@ export const AgentIntakePage: React.FC = () => {
                 </span>
                 <input
                   type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setPhone(clean);
+                  }}
                   placeholder="312 345 6789"
-                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base font-bold placeholder-slate-500 focus:outline-none focus:border-[#FF5A36] transition-all"
+                  className={`flex-1 px-4 py-3 bg-white/5 border rounded-xl text-white text-base font-bold placeholder-slate-500 focus:outline-none transition-all ${
+                    phone.length === 10
+                      ? 'border-emerald-500/70 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/50'
+                      : phone.length > 0
+                        ? 'border-amber-500/70 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50'
+                        : 'border-white/10 focus:border-[#FF5A36]'
+                  }`}
                 />
+              </div>
+
+              {/* Indicador de validación visual inmediato */}
+              <div className="flex items-center justify-between text-[11px] px-1">
+                {phone.length === 0 ? (
+                  <span className="text-slate-400">Ingresa el número celular de 10 dígitos (ej. 3123456789)</span>
+                ) : phone.length < 10 ? (
+                  <span className="text-amber-400 font-medium flex items-center gap-1">
+                    <span>⚠️ Faltan {10 - phone.length} dígitos para completar los 10 requeridos</span>
+                  </span>
+                ) : (
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <span>✓ Celular válido (10 dígitos completos)</span>
+                  </span>
+                )}
               </div>
             </div>
 
@@ -1404,11 +1462,20 @@ export const AgentIntakePage: React.FC = () => {
             <button
               type="button"
               onClick={handleProceedToStep2}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white font-black text-sm uppercase tracking-wider hover:opacity-95 active:scale-98 transition-all shadow-xl shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer"
+              className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                phone.length === 10 && businessName.trim()
+                  ? 'bg-gradient-to-r from-[#FF5A36] to-pink-500 text-white hover:opacity-95 active:scale-98 shadow-xl shadow-[#FF5A36]/30 cursor-pointer'
+                  : 'bg-white/10 text-slate-400 border border-white/10 cursor-not-allowed opacity-75'
+              }`}
             >
               <span>CONTINUAR A FOTOS & SERVICIOS</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+            {phone.length > 0 && phone.length < 10 && (
+              <p className="text-center text-[11px] text-amber-400 font-medium -mt-2">
+                ⚠️ Para continuar, completa los 10 dígitos del WhatsApp ({phone.length}/10)
+              </p>
+            )}
 
           </div>
         )}

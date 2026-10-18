@@ -5,7 +5,7 @@ import {
   Maximize2, X
 } from 'lucide-react';
 import BeautyImageGalleryModal from './BeautyImageGalleryModal';
-import { BeautyImageType, Tenant } from '../../types';
+import { BeautyImageType, Tenant, Stylist } from '../../types';
 import { injectBeautyHtml } from '../../lib/beautyHtmlInjector';
 import { BEAUTY_SPECIALTIES } from '../../lib/beautySpecialties';
 import { api, supabase, isSupabaseConfigured } from '../../lib/supabase';
@@ -79,6 +79,9 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
   const [metric3Label, setMetric3Label] = useState('Master Barberos');
   const [metric4Val, setMetric4Val] = useState('4.9');
   const [metric4Label, setMetric4Label] = useState('Calificación');
+
+  // Especialistas reales del negocio cargados desde Supabase
+  const [stylists, setStylists] = useState<Stylist[]>([]);
 
   // Modal Galería de Imágenes
   const [galleryConfig, setGalleryConfig] = useState<{
@@ -235,6 +238,19 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
             if (bData.metric4_label || mData.metric4Label) setMetric4Label(bData.metric4_label || mData.metric4Label);
           }
         }
+
+        // Cargar estilistas reales del tenant desde Supabase
+        const dbStylists = await api.getStylists(tenant.id);
+        const activeStylists = (dbStylists || []).filter(
+          s => s.attends_clients !== false && s.is_active !== false && s.show_on_web !== false
+        );
+        setStylists(activeStylists);
+
+        // Si el negocio cuenta con exactamente 1 barbero/estilista activo, adaptar métrica 3 a singular
+        if (activeStylists.length === 1) {
+          setMetric3Val(prev => (prev === '4' ? '1' : prev));
+          setMetric3Label(prev => (prev === 'Master Barberos' ? 'Master Barbero' : prev === 'Especialistas' ? 'Especialista' : prev));
+        }
       } catch (e) {
         console.warn('Notice loading prospect site for editor:', e);
       }
@@ -295,7 +311,8 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
       metric3Label,
       metric4Val,
       metric4Label,
-      services: specialty.services
+      services: specialty.services,
+      team: stylists.length > 0 ? stylists : undefined
     });
   }, [
     category,
@@ -320,7 +337,8 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
     metric3Val,
     metric3Label,
     metric4Val,
-    metric4Label
+    metric4Label,
+    stylists
   ]);
 
   const handleSelectGalleryImage = (url: string) => {
