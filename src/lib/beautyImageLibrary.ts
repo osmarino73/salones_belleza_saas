@@ -119,6 +119,11 @@ export const NAILS_STOCK_SERVICES: StockImageItem[] = [
 
 export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
   // ==========================================
+  // UÑAS, MANICURA, PEDICURA & NAIL ART (R2 CDN)
+  // ==========================================
+  ...NAILS_STOCK_SERVICES,
+
+  // ==========================================
   // HERO & FACHADAS DE LUJO
   // ==========================================
   {
@@ -432,46 +437,46 @@ export function getSuggestedImageForService(title: string = '', categoryHint?: s
   }
   // 3. Nicho Nails (Salones de Uñas, Manicura, Pedicura & Nail Spa)
   if (t.includes('parafina') || (t.includes('spa') && t.includes('mano'))) {
-    return 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg';
   }
   if (t.includes('retiro') || t.includes('remocion') || t.includes('remover') || t.includes('desmonte')) {
-    return 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg';
   }
   if (t.includes('pedicura rusa') || t.includes('pedicure ruso') || (t.includes('pies') && t.includes('rusa'))) {
-    return 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg';
   }
   if (t.includes('pedicur') || t.includes('pedicure') || t.includes('jelly') || t.includes('pies')) {
-    return 'https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg';
   }
   if (t.includes('rusa') || t.includes('dry') || t.includes('torno') || t.includes('fresas') || t.includes('cuticula')) {
-    return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('acrilic') || t.includes('esculpid') || t.includes('extension') || t.includes('coffin') || t.includes('almond') || t.includes('monomero')) {
-    return 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('soft gel') || t.includes('gel x') || t.includes('press on') || t.includes('tips')) {
-    return 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('kapping') || t.includes('rubber') || t.includes('nivelacion') || t.includes('baño de gel') || t.includes('bano de gel')) {
-    return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('polygel') || t.includes('acrylgel') || t.includes('acrigel')) {
-    return 'https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('cat eye') || t.includes('ojo de gato') || t.includes('glazed') || t.includes('cromo') || t.includes('espejo')) {
-    return 'https://images.unsplash.com/photo-1571290274554-6a2eaa771e5f?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg';
   }
   if (t.includes('baby boomer') || t.includes('boomer') || t.includes('ombre') || t.includes('degrade')) {
-    return 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('french') || t.includes('frances') || t.includes('francesa')) {
-    return 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('nail art') || t.includes('decoracion') || t.includes('foil') || t.includes('glitter') || t.includes('piedras') || t.includes('mano alzada')) {
-    return 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg';
   }
   if (t.includes('nail') || t.includes('uña') || t.includes('semipermanente') || t.includes('manicura') || t.includes('gelish') || t.includes('gel polish')) {
-    return 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80';
+    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/semipermanente-mocca.jpg';
   }
   if (t.includes('facial') || t.includes('spa') || t.includes('masaje') || t.includes('limpieza') || t.includes('piel') || t.includes('peeling')) {
     return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';

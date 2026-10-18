@@ -4597,61 +4597,73 @@ export const DashboardPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                   {services.map((srv) => (
                     <div
                       key={srv.id}
-                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all ${
-                        theme === 'dark' ? 'bg-[#141926] border-white/10 hover:border-white/20' : 'bg-white border-black/5 hover:border-black/15 shadow-sm'
+                      className={`rounded-2xl p-4 sm:p-5 border flex flex-col justify-between transition-all group ${
+                        theme === 'dark' ? 'bg-[#141926] border-white/10 hover:border-[#FF5A36]/40 shadow-lg' : 'bg-white border-black/5 hover:border-[#FF5A36]/40 shadow-sm'
                       }`}
                     >
                       <div>
-                        {/* Foto de Referencia si existe */}
-                        {srv.image_url && (
-                          <div className="w-full h-32 rounded-xl overflow-hidden mb-3 border border-white/10 relative group">
+                        {/* Contenedor de Fotografía de Alta Estética con Aspect Ratio 16:10 */}
+                        <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 border border-white/10 relative bg-black/40">
+                          {srv.image_url ? (
                             <img
                               src={srv.image_url}
                               alt={srv.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               loading="lazy"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                          </div>
-                        )}
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-white/5 to-white/0 text-slate-500">
+                              <Scissors className="w-8 h-8 opacity-40 mb-1" />
+                              <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Sin Fotografía</span>
+                            </div>
+                          )}
 
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20">
-                            {srv.category}
-                          </span>
-                          <span className="text-base font-extrabold text-[#FF5A36]">
-                            {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
-                          </span>
+                          {/* Gradiente de contraste para legibilidad de badges */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+
+                          {/* Badge Flotante de Categoría */}
+                          <div className="absolute top-2.5 left-2.5 z-10">
+                            <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-lg backdrop-blur-md bg-black/70 text-white border border-white/20 shadow-md">
+                              {srv.category}
+                            </span>
+                          </div>
+
+                          {/* Badge Flotante de Precio */}
+                          <div className="absolute top-2.5 right-2.5 z-10">
+                            <span className="text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg backdrop-blur-md bg-black/80 text-[#FF5A36] border border-[#FF5A36]/40 shadow-md">
+                              {formatCurrency(srv.price_usd ?? srv.price ?? srv.price_cop, salonCurrency)}
+                            </span>
+                          </div>
                         </div>
 
-                        <strong className="text-sm font-bold block mb-1">{srv.name}</strong>
-                        <p className="text-xs text-slate-400 mb-3 line-clamp-2 leading-relaxed">
+                        <strong className="text-sm sm:text-base font-bold block mb-1.5 leading-snug">{srv.name}</strong>
+                        <p className="text-xs text-slate-400 mb-3.5 line-clamp-2 leading-relaxed">
                           {srv.description || 'Servicio profesional con productos de alta gama y asesoría personalizada.'}
                         </p>
 
                         <div className="flex items-center gap-3 text-xs text-slate-400 pb-3 border-b border-black/5 dark:border-white/10">
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 font-semibold text-slate-300">
                             <Clock className="w-3.5 h-3.5 text-[#FF5A36]" /> {srv.duration_minutes} min
                           </span>
                           {srv.requires_patch_test && (
-                            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md">
                               Prueba de Parche Requerida
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="pt-3 flex justify-end gap-2 text-xs">
+                      {/* Actions Táctiles Adaptadas a Móvil */}
+                      <div className="pt-3.5 flex items-center justify-end gap-2 text-xs">
                         <button
                           type="button"
                           onClick={() => handleEditService(srv)}
-                          className={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 transition-all ${
-                            theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                          className={`flex-1 sm:flex-none justify-center px-4 py-2 rounded-xl border font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                            theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-white hover:bg-[#FF5A36]/10' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
                           }`}
                         >
                           <Edit3 className="w-3.5 h-3.5 text-[#FF5A36]" /> Editar
@@ -4659,7 +4671,7 @@ export const DashboardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDeleteService(srv.id)}
-                          className="px-3 py-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all cursor-pointer hover:border-red-500/40"
+                          className="px-3.5 py-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 font-bold flex items-center justify-center gap-1 transition-all cursor-pointer hover:border-red-500/40"
                           title="Eliminar este servicio"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -6576,27 +6588,38 @@ export const DashboardPage: React.FC = () => {
         );
       })()}
 
-      {/* MODAL NUEVO / EDITAR SERVICIO */}
+      {/* MODAL NUEVO / EDITAR SERVICIO (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isServiceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-xl max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <Scissors className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">
-                  {editingService ? 'Editar Servicio' : 'Agregar Nuevo Servicio'}
-                </h3>
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                    {editingService ? 'Editar Servicio' : 'Agregar Nuevo Servicio'}
+                  </h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">
+                    Optimizado para catálogo web y agendador
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowServiceGuide(!showServiceGuide)}
-                  className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1 rounded-lg border border-[#FF5A36]/30 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1.5 rounded-xl border border-[#FF5A36]/30 flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>{showServiceGuide ? 'Ocultar Guía' : '💡 Guía y Consejos'}</span>
+                  <span className="hidden xs:inline">{showServiceGuide ? 'Ocultar Guía' : 'Consejos'}</span>
                 </button>
                 <button 
                   type="button" 
@@ -6604,251 +6627,274 @@ export const DashboardPage: React.FC = () => {
                     setIsServiceModalOpen(false);
                     setShowServiceGuide(false);
                   }} 
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Panel Interactivo de la Guía Paso a Paso */}
+            {/* Panel de Guía Desplegable */}
             {showServiceGuide && (
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-[#181F33] to-[#0E1322] border border-[#FF5A36]/40 text-xs space-y-3 animate-fade-in text-slate-200">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <span className="font-extrabold text-[#FF5A36] flex items-center gap-1.5 uppercase text-[10px] tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Guía de Éxito: Cómo Configurar tu Servicio
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowServiceGuide(false)}
-                    className="text-slate-400 hover:text-white text-[10px] font-bold"
-                  >
-                    ✕ Cerrar
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px]">
-                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
-                    <strong className="text-white block">1. 🏷️ Nombre Atractivo</strong>
-                    <p className="text-slate-400 leading-snug">
-                      Usa nombres que transmitan valor (ej. <em className="text-[#FF5A36]">"Balayage Deluxe + Matiz"</em> en vez de <em className="line-through">"Tinte"</em>).
-                    </p>
+              <div className="px-5 py-3 bg-gradient-to-b from-[#181F33] to-[#0E1322] border-b border-[#FF5A36]/40 text-xs space-y-2 animate-fade-in text-slate-200 shrink-0">
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2 rounded-xl bg-black/30 border border-white/5">
+                    <strong className="text-white block font-bold">🏷️ Nombre Atractivo</strong>
+                    <span className="text-slate-400">Ej: "Balayage Deluxe + Matiz" o "Uñas Esculpidas Baby Boomer".</span>
                   </div>
-
-                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
-                    <strong className="text-white block">2. ⏱️ Duración Exacta</strong>
-                    <p className="text-slate-400 leading-snug">
-                      Coloca el tiempo real en minutos (ej. 45 o 90 min) para que el agendador no cruce turnos con otras clientas.
-                    </p>
+                  <div className="p-2 rounded-xl bg-black/30 border border-white/5">
+                    <strong className="text-white block font-bold">⏱️ Duración Precisa</strong>
+                    <span className="text-slate-400">Evita que se crucen citas entre clientas en el calendario.</span>
                   </div>
-
-                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
-                    <strong className="text-white block">3. 💵 Precio en COP</strong>
-                    <p className="text-slate-400 leading-snug">
-                      Coloca el valor base que verá la clienta. Si varía por largo o volumen, explícalo en la descripción.
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-1">
-                    <strong className="text-white block">4. 📸 Fotografía</strong>
-                    <p className="text-slate-400 leading-snug">
-                      Elige una foto del banco profesional o sube una foto real de tus trabajos para generar más confianza.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-2 rounded-xl bg-[#FF5A36]/10 border border-[#FF5A36]/20 flex items-center gap-2 text-[11px]">
-                  <Star className="w-4 h-4 text-[#FF5A36] shrink-0 fill-current" />
-                  <span><strong>Tip Pro:</strong> Marca la casilla <em>"Mostrar como Destacado"</em> para que aparezca en la portada de tu web.</span>
                 </div>
               </div>
             )}
 
-            <form onSubmit={handleSaveService} className="space-y-3.5 text-xs">
+            {/* Formulario Scrolleable */}
+            <form onSubmit={handleSaveService} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-xs custom-scrollbar">
+              
+              {/* 1. Nombre del Servicio */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Nombre del Servicio *</label>
+                <label className="block text-slate-300 mb-1.5 font-bold text-xs">
+                  Nombre del Servicio *
+                </label>
                 <input
                   type="text"
                   value={serviceForm.name}
                   onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
-                  placeholder="Ej. Balayage Signature + Matiz Olaplex"
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  placeholder="Ej. Uñas Acrílicas Esculpidas, Balayage Blondie..."
+                  className={`w-full border rounded-xl p-3 text-sm font-semibold focus:outline-none focus:border-[#FF5A36] transition-colors ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white placeholder-slate-500' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                   }`}
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="relative">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-slate-400 font-semibold">Categoría *</label>
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickCategoryOpen(!isQuickCategoryOpen)}
-                      className="text-[11px] font-bold text-[#FF5A36] hover:underline flex items-center gap-0.5 cursor-pointer"
-                    >
-                      <Plus className="w-3 h-3" />
-                      <span>{isQuickCategoryOpen ? 'Cerrar' : '+ Nueva'}</span>
-                    </button>
-                  </div>
-                  
-                  <select
-                    value={serviceForm.category}
-                    onChange={(e) => {
-                      if (e.target.value === '__NEW__') {
-                        setIsQuickCategoryOpen(true);
-                      } else {
-                        setServiceForm({ ...serviceForm, category: e.target.value });
-                      }
-                    }}
-                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
+              {/* 2. Categoría con Chips Táctiles de 1 Toque */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-slate-300 font-bold text-xs">Categoría del Servicio *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickCategoryOpen(!isQuickCategoryOpen)}
+                    className="text-[11px] font-bold text-[#FF5A36] hover:underline flex items-center gap-0.5 cursor-pointer"
                   >
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.slug || cat.id}>
-                        {cat.icon || '✨'} {cat.name}
-                      </option>
-                    ))}
-                    <option value="__NEW__">➕ + Crear Otra Categoría...</option>
-                  </select>
-
-                  {/* Panel Flotante de Creación Rápida de Categoría */}
-                  {isQuickCategoryOpen && (
-                    <div className="absolute top-full left-0 right-0 z-20 mt-1 p-3 rounded-xl border shadow-xl bg-[#0E121B] border-[#FF5A36]/40 animate-fade-in space-y-2">
-                      <div className="text-[11px] font-bold text-[#FF5A36] flex items-center justify-between">
-                        <span>Nueva Categoría Rápida</span>
-                        <button type="button" onClick={() => setIsQuickCategoryOpen(false)} className="text-slate-400 hover:text-white">
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <div className="flex gap-1.5">
-                        <input
-                          type="text"
-                          value={quickCategoryIcon}
-                          onChange={(e) => setQuickCategoryIcon(e.target.value)}
-                          placeholder="🎨"
-                          className="w-10 text-center border border-white/15 rounded-lg bg-black/40 text-sm focus:outline-none focus:border-[#FF5A36]"
-                        />
-                        <input
-                          type="text"
-                          value={quickCategoryName}
-                          onChange={(e) => setQuickCategoryName(e.target.value)}
-                          placeholder="ej. Depilación Láser, Pestañas"
-                          className="flex-1 px-2.5 py-1.5 border border-white/15 rounded-lg bg-black/40 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleCreateQuickCategory}
-                        disabled={!quickCategoryName.trim()}
-                        className="w-full bg-[#FF5A36] hover:bg-[#E54E07] disabled:opacity-50 text-white text-[11px] font-bold py-1.5 rounded-lg transition-all cursor-pointer shadow-sm"
-                      >
-                        ✓ Crear y Asignar
-                      </button>
-                    </div>
-                  )}
+                    <Plus className="w-3 h-3" />
+                    <span>{isQuickCategoryOpen ? 'Cerrar' : '+ Nueva Categoría'}</span>
+                  </button>
                 </div>
 
+                {/* Chips de selección rápida táctil para celular */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar">
+                  {categories.map((cat) => {
+                    const isSelected = serviceForm.category === (cat.slug || cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setServiceForm({ ...serviceForm, category: cat.slug || cat.id })}
+                        className={`px-3 py-1.5 rounded-xl font-bold text-xs shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF5A36] text-white shadow-md'
+                            : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        <span>{cat.icon || '✨'}</span>
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Subpanel de Creación Rápida de Categoría */}
+                {isQuickCategoryOpen && (
+                  <div className="mt-2 p-3 rounded-2xl border bg-[#0E121B] border-[#FF5A36]/40 animate-fade-in space-y-2">
+                    <div className="text-[11px] font-bold text-[#FF5A36] flex items-center justify-between">
+                      <span>Nueva Categoría Rápida</span>
+                      <button type="button" onClick={() => setIsQuickCategoryOpen(false)} className="text-slate-400 hover:text-white">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={quickCategoryIcon}
+                        onChange={(e) => setQuickCategoryIcon(e.target.value)}
+                        placeholder="💅"
+                        className="w-12 text-center border border-white/15 rounded-xl bg-black/40 text-base focus:outline-none focus:border-[#FF5A36]"
+                      />
+                      <input
+                        type="text"
+                        value={quickCategoryName}
+                        onChange={(e) => setQuickCategoryName(e.target.value)}
+                        placeholder="ej. Uñas Acrílicas, Depilación..."
+                        className="flex-1 px-3 py-2 border border-white/15 rounded-xl bg-black/40 text-xs text-white focus:outline-none focus:border-[#FF5A36]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCreateQuickCategory}
+                      disabled={!quickCategoryName.trim()}
+                      className="w-full bg-[#FF5A36] hover:bg-[#E54E07] disabled:opacity-50 text-white text-xs font-bold py-2 rounded-xl transition-all cursor-pointer shadow-sm"
+                    >
+                      ✓ Crear y Asignar
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Fila Precio y Duración con Teclados Táctiles */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* PRECIO */}
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Precio ({salonCurrency}) *</label>
+                  <label className="block text-slate-300 mb-1.5 font-bold text-xs">
+                    Precio ({salonCurrency}) *
+                  </label>
                   <div className="relative">
                     <input
                       type="number"
+                      inputMode="numeric"
                       min="0"
                       step={salonCurrency === 'COP' ? '1000' : '1'}
                       value={serviceForm.price_usd}
                       onChange={(e) => setServiceForm({ ...serviceForm, price_usd: Number(e.target.value) })}
-                      className={`w-full border rounded-xl p-2.5 pl-6 font-bold text-[#FF5A36] focus:outline-none focus:border-[#FF5A36] ${
+                      className={`w-full border rounded-xl p-3 pl-8 text-base font-black text-[#FF5A36] focus:outline-none focus:border-[#FF5A36] ${
                         theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                       }`}
                       required
                     />
-                    <span className="absolute left-2.5 top-2.5 text-xs text-slate-400 font-bold">$</span>
+                    <span className="absolute left-3 top-3 text-sm text-slate-400 font-bold">$</span>
+                  </div>
+
+                  {/* Acceso Rápido de Precios Frecuentes en COP */}
+                  {salonCurrency === 'COP' && (
+                    <div className="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar">
+                      {[25000, 35000, 45000, 60000, 80000, 120000].map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setServiceForm({ ...serviceForm, price_usd: val })}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold shrink-0 transition-colors cursor-pointer ${
+                            serviceForm.price_usd === val
+                              ? 'bg-[#FF5A36]/30 text-[#FF5A36] border border-[#FF5A36]/50'
+                              : 'bg-white/5 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          ${val / 1000}k
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* DURACIÓN */}
+                <div>
+                  <label className="block text-slate-300 mb-1.5 font-bold text-xs">
+                    Duración Estimada *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="5"
+                      step="5"
+                      value={serviceForm.duration_minutes}
+                      onChange={(e) => setServiceForm({ ...serviceForm, duration_minutes: Number(e.target.value) })}
+                      className={`w-full border rounded-xl p-3 pr-14 text-sm font-mono font-bold focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                      required
+                    />
+                    <span className="absolute right-3 top-3.5 text-xs text-slate-400 font-bold">minutos</span>
+                  </div>
+
+                  {/* Pills de Duración Táctil de 1 Toque para Celular */}
+                  <div className="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar">
+                    {[15, 30, 45, 60, 90, 120].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        onClick={() => setServiceForm({ ...serviceForm, duration_minutes: mins })}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold shrink-0 transition-colors cursor-pointer ${
+                          serviceForm.duration_minutes === mins
+                            ? 'bg-[#FF5A36] text-white'
+                            : 'bg-white/5 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Duración Estimada (Minutos) *</label>
-                <input
-                  type="number"
-                  min="5"
-                  step="5"
-                  value={serviceForm.duration_minutes}
-                  onChange={(e) => setServiceForm({ ...serviceForm, duration_minutes: Number(e.target.value) })}
-                  className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                  required
-                />
-              </div>
-
-              {/* Selector de Fotografía de Referencia (Stock CDN o Subida Propia) */}
+              {/* 4. Selector de Fotografía con Auto-Sugerencia IA */}
               <ServiceImagePicker
                 value={serviceForm.image_url}
                 category={serviceForm.category}
+                serviceName={serviceForm.name}
                 onChange={(url) => setServiceForm({ ...serviceForm, image_url: url })}
-                label="Fotografía Ilustrativa de Referencia"
+                label="Fotografía Ilustrativa del Servicio"
               />
 
+              {/* 5. Descripción */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Descripción del Servicio</label>
+                <label className="block text-slate-300 mb-1.5 font-bold text-xs">Descripción Detallada</label>
                 <textarea
                   rows={2}
                   value={serviceForm.description}
                   onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
-                  placeholder="Incluye diagnóstico capilar, lavado premium y peinado final..."
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                  placeholder="Incluye qué técnicas se emplean, materiales de primera calidad, etc."
+                  className={`w-full border rounded-xl p-3 text-xs focus:outline-none focus:border-[#FF5A36] transition-colors ${
+                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white placeholder-slate-500' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
                   }`}
                 />
               </div>
 
-              <div className="space-y-2 pt-1">
-                <div className="flex items-center gap-2">
+              {/* 6. Casillas de configuración rápida */}
+              <div className="space-y-2.5 pt-1">
+                <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
                   <input
                     type="checkbox"
                     id="srv_is_featured"
                     checked={serviceForm.is_featured}
                     onChange={(e) => setServiceForm({ ...serviceForm, is_featured: e.target.checked })}
-                    className="rounded text-amber-500 focus:ring-amber-500"
+                    className="w-4 h-4 rounded text-[#FF5A36] focus:ring-[#FF5A36] cursor-pointer"
                   />
-                  <label htmlFor="srv_is_featured" className="text-xs font-bold text-amber-400 cursor-pointer select-none flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                    <span>Mostrar como Servicio Destacado en la Portada Web</span>
-                  </label>
-                </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                    <Star className="w-4 h-4 fill-current text-amber-400 shrink-0" />
+                    <span>Mostrar como Servicio Destacado en Portada Web</span>
+                  </div>
+                </label>
 
-                <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
                   <input
                     type="checkbox"
                     id="srv_patch_test"
                     checked={serviceForm.requires_patch_test}
                     onChange={(e) => setServiceForm({ ...serviceForm, requires_patch_test: e.target.checked })}
-                    className="rounded text-[#FF5A36] focus:ring-[#FF5A36]"
+                    className="w-4 h-4 rounded text-[#FF5A36] focus:ring-[#FF5A36] cursor-pointer"
                   />
-                  <label htmlFor="srv_patch_test" className="text-slate-400 text-xs cursor-pointer select-none">
-                    Requiere prueba de parche previa por seguridad
-                  </label>
-                </div>
+                  <span className="text-slate-300 text-xs">
+                    Requiere prueba de parche previa por seguridad alérgica
+                  </span>
+                </label>
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>{editingService ? 'Actualizar Servicio' : 'Guardar Servicio'}</span>
                 </button>
               </div>

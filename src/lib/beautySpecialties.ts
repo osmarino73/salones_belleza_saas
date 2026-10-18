@@ -388,7 +388,7 @@ export const BEAUTY_SPECIALTIES: Record<string, BeautySpecialty> = {
         duracion_min: 30,
         duracion_texto: '30 min',
         categoria: 'Semipermanente',
-        imagen_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80',
+        imagen_url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg',
         etiqueta: 'DISEÑO'
       },
       {
