@@ -37,9 +37,12 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
   const result: ExtractedWebsiteData = {};
 
   try {
-    // 1. Extraer Hero Image (incluyendo canvas poster fallback de video-scroll)
+    // 1. Extraer Hero Image (incluyendo canvas poster fallback de video-scroll y barberías)
     const heroImgMatch = html.match(/<img\b[^>]*id=["']canvas-poster-fallback["'][^>]*src=["']([^"']+)["']/i)
       || html.match(/<img\b[^>]*class=["'][^"']*canvas-poster-img[^"']*["'][^>]*src=["']([^"']+)["']/i)
+      || html.match(/<picture\b[^>]*id=["']canvasPoster["'][^>]*>[\s\S]*?<img\b[^>]*src=["']([^"']+)["']/i)
+      || html.match(/<picture\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*>[\s\S]*?<img\b[^>]*src=["']([^"']+)["']/i)
+      || html.match(/<img\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*src=["']([^"']+)["']/i)
       || html.match(/(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap|hero-image)[^>]*>\s*<img\b[^>]*src=["']([^"']+)["']/i)
       || html.match(/<header\b[^>]*>\s*[\s\S]*?<img\b[^>]*src=["']([^"']+)["']/i)
       || html.match(/background(?:-image)?:\s*url\(['"]?([^'")]+)['"]?\)/i);
@@ -136,10 +139,17 @@ export function extractWebsiteDataFromHtml(html: string): ExtractedWebsiteData {
         }
       }
 
-      // Descripción Sobre Nosotros (primer párrafo <p> en la sección)
-      const aboutDescMatch = aboutBody.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i);
-      if (aboutDescMatch && aboutDescMatch[1]) {
-        result.aboutDescription = aboutDescMatch[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      // Descripción Sobre Nosotros (párrafo principal descriptivo de la sección, ignorando badges o etiquetas cortas flotantes)
+      const aboutDescMatch = aboutBody.match(/<p\b(?![^>]*class=["'][^"']*(?:badge|tag|label|location)[^"']*)[^>]*>([\s\S]*?)<\/p>/i);
+      // Si el primer <p> está dentro de un floating badge o es menor a 40 caracteres habiendo otro párrafo más extenso
+      const allAboutPs = [...aboutBody.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)];
+      const mainAboutP = allAboutPs.find(pMatch => {
+        const text = pMatch[1].replace(/<[^>]*>/g, '').trim();
+        return text.length > 50 || pMatch[0].includes('section-desc') || pMatch[0].includes('about-desc') || pMatch[0].includes('experience-desc');
+      }) || (allAboutPs.length > 0 ? allAboutPs[allAboutPs.length - 1] : null);
+
+      if (mainAboutP && mainAboutP[1]) {
+        result.aboutDescription = mainAboutP[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       }
 
       // Métricas (años, clientes, productos limpios/especialidad, calificación)
@@ -235,6 +245,9 @@ export interface InjectProspectOptions {
     photo_url?: string;
     rating?: number;
     show_on_web?: boolean;
+    attends_clients?: boolean;
+    role?: string;
+    badge?: string;
   }>;
 }
 
@@ -344,10 +357,43 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   const existingPosterRegex = new RegExp(`(src=["']|content=["'])https?:\\/\\/[^/'"\\s]+\\/frames\\/${slug}(?:\\/[^/'"\\s]+)?\\/((?:desktop|mobile)\\/poster\\.webp["'])`, 'gi');
   processed = processed.replace(existingPosterRegex, `$1${targetFramesBase}/$2`);
 
+  
+  const isBarberTemplate = processed.includes('amber-gold') || processed.includes('hero-track') || processed.includes('dark-luxury-gold') || /barber/i.test(businessName || '') || /barber/i.test(slug || '');
+  const isNails = !isBarberTemplate && (
+    processed.includes('Glowora & Nails') ||
+    processed.includes('Playfair Display') ||
+    processed.includes('Manicura Rusa') ||
+    processed.includes('nails-card') ||
+    processed.includes('Cinzel Decorative') ||
+    processed.includes('Cuidado Clínico y Alta Estética de Uñas') ||
+    /nail/i.test(businessName || '') ||
+    /nail/i.test(slug || '') ||
+    /uñ/i.test(businessName || '')
+  );
+  const isSalonFemenino = !isBarberTemplate && !isNails && (
+    processed.includes('DM Serif Display') ||
+    processed.includes('team-card-gradient') ||
+    processed.includes('Nuestra Carta Exclusiva') ||
+    processed.includes('Balayage Signature') ||
+    /salon/i.test(businessName || '') ||
+    /color/i.test(slug || '')
+  );
+
+  // Inyección de tipografía de lujo editorial y disposición Barbería para Salón Femenino
+  if (isSalonFemenino && !processed.includes('/* Salón Femenino Luxury Typography Injection */')) {
+    const salonTypeStyle = `<style id="salon-femenino-luxury-typography">/* Salón Femenino Luxury Typography Injection */${"\n  /* Disposición y Tipografía de Alta Gama idéntica a Plantilla de Barbería */\n  .section-script-eyebrow {\n    font-family: var(--font-sans) !important;\n    font-size: 0.74rem !important;\n    font-weight: 700 !important;\n    letter-spacing: 0.22em !important;\n    text-transform: uppercase !important;\n    color: var(--color-accent) !important;\n    display: inline-flex !important;\n    align-items: center !important;\n    gap: 10px !important;\n    margin-bottom: 10px !important;\n    line-height: 1.2 !important;\n  }\n  .section-script-eyebrow::before,\n  .section-script-eyebrow::after {\n    content: '' !important;\n    display: inline-block !important;\n    width: 18px !important;\n    height: 1px !important;\n    background: var(--color-accent) !important;\n    opacity: 0.55 !important;\n  }\n  .canvas-sticky-wrapper {\n    display: flex !important;\n    align-items: center !important;\n    justify-content: flex-start !important;\n    padding-top: 50px !important;\n  }\n  .hero-container-align {\n    position: relative !important;\n    z-index: 4 !important;\n    width: 100% !important;\n    max-width: 1240px !important;\n    margin: 0 auto !important;\n    padding: 0 24px !important;\n    height: auto !important;\n    display: block !important;\n  }\n  .hero-scroll-content {\n    max-width: 620px !important;\n    min-height: auto !important;\n    width: 100% !important;\n  }\n  .hero-scroll-step {\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: flex-start !important;\n    text-align: left !important;\n  }\n  .hero-script-tag {\n    font-family: var(--font-sans) !important;\n    font-size: 0.62rem !important;\n    font-weight: 600 !important;\n    letter-spacing: 0.10em !important;\n    text-transform: uppercase !important;\n    color: var(--color-accent) !important;\n    display: inline-flex !important;\n    align-items: center !important;\n    gap: 5px !important;\n    padding: 3px 10px !important;\n    background: rgba(203, 179, 156, 0.10) !important;\n    border: 1px solid var(--border-accent) !important;\n    border-radius: var(--radius-full) !important;\n    margin-bottom: 12px !important;\n    backdrop-filter: blur(8px) !important;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;\n    white-space: nowrap !important;\n    text-shadow: none !important;\n  }\n  .hero-title {\n    font-family: var(--font-display) !important;\n    font-size: clamp(2.4rem, 3.8vw, 3.5rem) !important;\n    font-weight: 800 !important;\n    letter-spacing: 1.2px !important;\n    line-height: 1.06 !important;\n    color: #ffffff !important;\n    margin-bottom: 14px !important;\n    text-transform: uppercase !important;\n    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 4px 28px rgba(0, 0, 0, 0.9) !important;\n  }\n  .hero-desc {\n    font-size: 0.98rem !important;\n    line-height: 1.6 !important;\n    color: var(--text-secondary) !important;\n    margin-bottom: 24px !important;\n    max-width: 500px !important;\n    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95) !important;\n  }\n  .hero-actions {\n    display: flex !important;\n    flex-wrap: wrap !important;\n    gap: 14px !important;\n    align-items: center !important;\n    margin-bottom: 22px !important;\n  }\n  @media (max-width: 768px) {\n    .canvas-sticky-wrapper {\n      align-items: center !important;\n      justify-content: center !important;\n      padding-top: 40px !important;\n    }\n    .hero-container-align {\n      padding: 0 16px !important;\n    }\n    .hero-scroll-content {\n      max-width: 360px !important;\n      margin: 0 auto !important;\n      text-align: center !important;\n    }\n    .hero-scroll-step {\n      align-items: center !important;\n      text-align: center !important;\n    }\n    .hero-script-tag {\n      font-size: 0.58rem !important;\n      padding: 3px 8px !important;\n      gap: 4px !important;\n      white-space: normal !important;\n    }\n    .hero-title {\n      font-size: 1.95rem !important;\n      line-height: 1.12 !important;\n      margin-bottom: 12px !important;\n    }\n    .hero-desc {\n      font-size: 0.86rem !important;\n      margin-bottom: 20px !important;\n    }\n    .hero-actions {\n      flex-direction: column !important;\n      align-items: center !important;\n      width: 100% !important;\n    }\n    .hero-actions .btn-primary {\n      width: 100% !important;\n      max-width: 275px !important;\n    }\n  }\n"}</style>`;
+    processed = processed.replace(/<\/head>/i, `${salonTypeStyle}\n</head>`);
+  }
+
+  // Inyección de tipografía de lujo editorial y disposición Barbería para Nails
+  if (isNails && !processed.includes('/* Nails Luxury Typography Injection */')) {
+    const nailsTypeStyle = `<style id="nails-luxury-typography">/* Nails Luxury Typography Injection */${"\n  /* Disposición y Tipografía de Alta Gama idéntica a Plantilla de Barbería */\n  .section-script-eyebrow {\n    font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif) !important;\n    font-size: 0.74rem !important;\n    font-weight: 700 !important;\n    letter-spacing: 0.22em !important;\n    text-transform: uppercase !important;\n    color: var(--color-accent, #d87d7d) !important;\n    display: inline-flex !important;\n    align-items: center !important;\n    gap: 10px !important;\n    margin-bottom: 10px !important;\n    line-height: 1.2 !important;\n  }\n  .section-script-eyebrow::before,\n  .section-script-eyebrow::after {\n    content: '' !important;\n    display: inline-block !important;\n    width: 18px !important;\n    height: 1px !important;\n    background: var(--color-accent, #d87d7d) !important;\n    opacity: 0.55 !important;\n  }\n  .canvas-sticky-wrapper {\n    display: flex !important;\n    align-items: center !important;\n    justify-content: flex-start !important;\n    padding-top: 50px !important;\n  }\n  .hero-container-align {\n    position: relative !important;\n    z-index: 4 !important;\n    width: 100% !important;\n    max-width: 1220px !important;\n    margin: 0 auto !important;\n    padding: 0 24px !important;\n    height: auto !important;\n    display: block !important;\n  }\n  .hero-scroll-content {\n    max-width: 620px !important;\n    min-height: auto !important;\n    width: 100% !important;\n  }\n  .hero-scroll-step {\n    display: flex !important;\n    flex-direction: column !important;\n    align-items: flex-start !important;\n    text-align: left !important;\n  }\n  .hero-scroll-step .hero-eyebrow {\n    display: none !important;\n  }\n  .hero-script-tag {\n    font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif) !important;\n    font-size: 0.62rem !important;\n    font-weight: 600 !important;\n    letter-spacing: 0.10em !important;\n    text-transform: uppercase !important;\n    color: var(--color-accent, #d87d7d) !important;\n    display: inline-flex !important;\n    align-items: center !important;\n    gap: 5px !important;\n    padding: 3px 10px !important;\n    background: rgba(216, 125, 125, 0.12) !important;\n    border: 1px solid var(--border-soft, rgba(216, 125, 125, 0.35)) !important;\n    border-radius: 9999px !important;\n    margin-bottom: 14px !important;\n    backdrop-filter: blur(8px) !important;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;\n    white-space: nowrap !important;\n    text-shadow: none !important;\n  }\n  .hero-title {\n    font-family: var(--font-display, 'Playfair Display', serif) !important;\n    font-size: clamp(2.4rem, 3.8vw, 3.5rem) !important;\n    font-weight: 800 !important;\n    letter-spacing: 1px !important;\n    line-height: 1.06 !important;\n    color: #ffffff !important;\n    margin-bottom: 14px !important;\n    text-transform: uppercase !important;\n    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 4px 28px rgba(0, 0, 0, 0.9) !important;\n  }\n  .hero-title em {\n    color: var(--color-accent, #d87d7d) !important;\n    font-style: italic !important;\n  }\n  .hero-desc {\n    font-size: 0.98rem !important;\n    line-height: 1.6 !important;\n    color: #eedbdd !important;\n    margin-bottom: 24px !important;\n    max-width: 500px !important;\n    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95) !important;\n  }\n  .hero-actions {\n    display: flex !important;\n    flex-wrap: wrap !important;\n    gap: 14px !important;\n    align-items: center !important;\n    margin-bottom: 22px !important;\n  }\n  @media (max-width: 768px) {\n    .canvas-sticky-wrapper {\n      align-items: center !important;\n      justify-content: center !important;\n      padding-top: 40px !important;\n      min-height: 680px !important;\n    }\n    .hero-container-align {\n      padding: 0 16px !important;\n    }\n    .hero-scroll-content {\n      max-width: 360px !important;\n      margin: 0 auto !important;\n      text-align: center !important;\n    }\n    .hero-scroll-step {\n      align-items: center !important;\n      text-align: center !important;\n    }\n    .hero-script-tag {\n      font-size: 0.58rem !important;\n      padding: 3px 8px !important;\n      gap: 4px !important;\n      white-space: normal !important;\n    }\n    .hero-title {\n      font-size: 1.95rem !important;\n      line-height: 1.12 !important;\n      margin-bottom: 12px !important;\n    }\n    .hero-desc {\n      font-size: 0.86rem !important;\n      margin-bottom: 20px !important;\n    }\n    .hero-actions {\n      flex-direction: column !important;\n      align-items: center !important;\n      width: 100% !important;\n    }\n    .hero-actions .btn-hero-primary {\n      width: 100% !important;\n      max-width: 275px !important;\n    }\n  }\n"}</style>`;
+    processed = processed.replace(/<\/head>/i, `${nailsTypeStyle}\n</head>`);
+  }
+
   // Inyección cromática dinámica si primaryColor fue provisto y es un HEX válido
   const rawHex = primaryColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(primaryColor.trim()) ? primaryColor.trim() : null;
   const isDefaultPinkColor = rawHex === '#d92672' || rawHex === '#c82d5a';
-  const isBarberTemplate = processed.includes('amber-gold') || processed.includes('hero-track') || processed.includes('dark-luxury-gold') || /barber/i.test(businessName || '') || /barber/i.test(slug || '');
 
   // Regla Sagrada: Si es barbería y el color provisto es el fucsia genérico de la BD, NO sobreescribir la estética dorada nativa
   const validPrimaryColor = (isBarberTemplate && isDefaultPinkColor) ? null : rawHex;
@@ -665,7 +711,76 @@ ${colorOverridesCss}
     margin-bottom: 6px !important;
   }
 
+  /* Optimización de proporción en Escritorio: Hero compacto y Sobre Nosotros a 2 columnas (50% imagen, 50% texto) */
+  @media (min-width: 769px) {
+    .hero-track,
+    .hero-scroll-section {
+      height: 85vh !important;
+      min-height: 560px !important;
+      max-height: 740px !important;
+    }
+    .hero-sticky-frame,
+    .canvas-sticky-wrapper {
+      min-height: 560px !important;
+      max-height: 740px !important;
+      height: 85vh !important;
+    }
+    .hero-container-align {
+      min-height: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: flex-end !important;
+      justify-content: flex-start !important;
+      padding-top: 0 !important;
+      padding-bottom: clamp(28px, 4.5vh, 48px) !important;
+    }
+    .experience-layout {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 48px !important;
+      align-items: center !important;
+    }
+    .salon-image-showcase {
+      width: 100% !important;
+      height: 440px !important;
+    }
+    .salon-image-showcase img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
 
+    /* Refinamiento y ligereza tipográfica editorial del Hero en Desktop */
+    .hero-script-tag,
+    .hero-tagline-script {
+      font-size: clamp(1.25rem, 1.9vw, 1.65rem) !important;
+      line-height: 1.25 !important;
+      margin-bottom: 6px !important;
+    }
+    .hero-eyebrow {
+      font-size: 0.68rem !important;
+      letter-spacing: 0.22em !important;
+      margin-bottom: 10px !important;
+    }
+    .hero-title {
+      font-size: clamp(2.1rem, 3.1vw, 2.85rem) !important;
+      font-weight: 700 !important;
+      line-height: 1.14 !important;
+      letter-spacing: -0.015em !important;
+      margin-bottom: 14px !important;
+      max-width: 600px !important;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 4px 30px rgba(0, 0, 0, 0.9) !important;
+    }
+    .hero-desc {
+      font-size: 0.88rem !important;
+      line-height: 1.55 !important;
+      max-width: 460px !important;
+      margin-bottom: 22px !important;
+      opacity: 0.88 !important;
+    }
+    .hero-scroll-content {
+      max-width: 580px !important;
+    }
+  }
 
   /* Optimización Mobile-First de Alta Fidelidad para el Hero */
   @media (max-width: 640px) {
@@ -855,10 +970,8 @@ ${colorOverridesCss}
   }
 </style>
 `;
-  // Garantizar resolución universal de rutas en iframes con srcDoc
-  if (!/<base\b/i.test(processed) && /<head\b[^>]*>/i.test(processed)) {
-    processed = processed.replace(/(<head\b[^>]*>)/i, '$1\n  <base href="/" />');
-  }
+  // Eliminar cualquier <base> previo para evitar que las anclas locales (#nosotros, #ubicacion) se desvíen
+  processed = processed.replace(/<base\b[^>]*\/?>/gi, '');
 
   if (processed.includes('</head>')) {
     processed = processed.replace('</head>', `${resetCss}</head>`);
@@ -923,6 +1036,21 @@ ${colorOverridesCss}
         /(<img\b[^>]*id=["']canvas-poster-fallback["'][^>]*src=["'])([^"']*)(["'][^>]*>)/i,
         `$1${heroImageUrl}$3`
       );
+    } else if (/(<picture\b[^>]*id=["']canvasPoster["'][^>]*>[\s\S]*?<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<picture\b[^>]*id=["']canvasPoster["'][^>]*>[\s\S]*?<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+        `$1${heroImageUrl}$3`
+      );
+    } else if (/(<picture\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*>[\s\S]*?<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<picture\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*>[\s\S]*?<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+        `$1${heroImageUrl}$3`
+      );
+    } else if (/(<img\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*src=["'])([^"']*)(["'][^>]*>)/i.test(processed)) {
+      processed = processed.replace(
+        /(<img\b[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*src=["'])([^"']*)(["'][^>]*>)/i,
+        `$1${heroImageUrl}$3`
+      );
     } else {
       processed = processed.replace(
         /(<div\b[^>]*class=["'][^"']*(?:hero-main-img-box|model-image-frame|hero-image-box|hero-bg-cover|hero-photo|hero-img-wrap)[^"']*["'][^>]*>\s*<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
@@ -954,13 +1082,18 @@ ${colorOverridesCss}
             updatedH1Inner += ` <span class="magenta-accent accent-gold">${titleAccent}</span>`;
           }
         }
-        const isBarberStyleH1 = /EL ESTILO Y LA PRECISI[OÓ]N/i.test(updatedH1Inner);
         const strippedH1 = updatedH1Inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
         const strippedSlogan = slogan ? slogan.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase() : '';
         const alreadyHasSlogan = strippedSlogan ? (strippedH1.includes(strippedSlogan) || strippedSlogan.includes(strippedH1)) : false;
 
-        if (isSloganChanged && slogan && !isBarberStyleH1 && !alreadyHasSlogan && /^([^<]+)/.test(updatedH1Inner)) {
-          updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+        if (isSloganChanged && slogan && !alreadyHasSlogan) {
+          if (/(<span\b[^>]*class=["'][^"']*(?:accent-gold|magenta-accent)[^"']*["'][^>]*>[\s\S]*?<\/span>)/i.test(updatedH1Inner)) {
+            updatedH1Inner = `${slogan} ` + updatedH1Inner.match(/(<span\b[^>]*class=["'][^"']*(?:accent-gold|magenta-accent)[^"']*["'][^>]*>[\s\S]*?<\/span>)/i)![0];
+          } else if (/^([^<]+)/.test(updatedH1Inner)) {
+            updatedH1Inner = updatedH1Inner.replace(/^([^<]+)/, `${slogan} `);
+          } else {
+            updatedH1Inner = slogan;
+          }
         }
         return `${h1Open}${updatedH1Inner}${h1Close}`;
       });
@@ -1061,7 +1194,8 @@ ${colorOverridesCss}
         let updatedBody = sectionBody;
 
         // 1. Actualizar Foto de la Sección Sobre Nosotros
-        if (aboutImageUrl) {
+        const isFadeHeroImg = aboutImageUrl && aboutImageUrl.includes('1792081956862_Barber_executing_skin_fade');
+        if (aboutImageUrl && aboutImageUrl !== baseline.aboutImageUrl && !isFadeHeroImg) {
           updatedBody = updatedBody.replace(
             /(<img\b[^>]*src=["'])([^"']*)(["'][^>]*>)/i,
             `$1${aboutImageUrl}$3`
@@ -1108,11 +1242,23 @@ ${colorOverridesCss}
           }
         }
 
-        // 5. Actualizar Párrafo Descriptivo (solo si cambió)
+        // 5. Actualizar Párrafo Descriptivo (solo si cambió respecto al baseline)
         if (aboutDescription && aboutDescription !== baseline.aboutDescription) {
-          const pRegex = /(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i;
-          if (pRegex.test(updatedBody)) {
-            updatedBody = updatedBody.replace(pRegex, `$1${aboutDescription}$3`);
+          // Buscar específicamente el párrafo descriptivo de la sección, evitando pisar el badge flotante
+          if (/(<p\b[^>]*class=["'][^"']*(?:section-desc|about-desc|experience-desc)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i.test(updatedBody)) {
+            updatedBody = updatedBody.replace(
+              /(<p\b[^>]*class=["'][^"']*(?:section-desc|about-desc|experience-desc)[^"']*["'][^>]*>)([\s\S]*?)(<\/p>)/i,
+              `$1${aboutDescription}$3`
+            );
+          } else {
+            // Reemplazar el párrafo descriptivo principal (el que NO está dentro de un experience-floating-badge)
+            const allPs = [...updatedBody.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)];
+            const targetP = allPs.find(p => !p[0].includes('experience-floating-badge') && (p[1].replace(/<[^>]*>/g, '').trim().length > 40 || p[0].includes('section-desc'))) || allPs[allPs.length - 1];
+            if (targetP) {
+              const exactTarget = targetP[0];
+              const newP = exactTarget.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, `$1${aboutDescription}$3`);
+              updatedBody = updatedBody.replace(exactTarget, newP);
+            }
           }
         }
 
@@ -1332,47 +1478,134 @@ ${colorOverridesCss}
   }
 
   // 2.5 Inyección y Control de Visibilidad de la Sección de Equipo / Especialistas
-  const teamSectionRegex = /(<section\b[^>]*?(?:id=["'](?:nosotros|equipo)["']|class=["'][^"']*(?:team-section|stylists-section|nosotros-section)[^"']*)[^>]*>)([\s\S]*?)(<\/section>)/i;
-  
-  if (!showTeamSection) {
-    // Si la administradora decidió ocultar la sección de Nosotros
-    processed = processed.replace(teamSectionRegex, '');
-    // Ocultar también el enlace "Nosotros" en el menú de navegación si existe
-    processed = processed.replace(/<li\b[^>]*>\s*<a\b[^>]*href=["']#(?:nosotros|equipo)["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, '');
-  } else if (liveStylists && liveStylists.length > 0) {
-    // Filtrar colaboradoras marcadas para mostrar en la web (show_on_web !== false) y limitar a un máximo de 4
-    const webStylists = liveStylists.filter(s => s.show_on_web !== false).slice(0, 4);
+  const renderTemplateTeamCards = (teamToRender: any[]): string => {
+    return teamToRender.map((sty: any) => {
+      const avatarUrl = sty.photo_url || sty.foto_url || sty.avatar || (
+        isSalonFemenino
+          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80'
+          : isNails
+            ? 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80'
+            : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80'
+      );
+      const stylistBookingLink = `${bookingUrl}?stylistId=${sty.id || ''}`;
+      const name = sty.name || sty.nombre || 'Especialista';
+      const firstName = name.split(' ')[0] || name;
+      const ratingNum = Number(sty.rating || sty.calificacion || 5);
+      const ratingStars = '⭐'.repeat(Math.min(5, Math.max(1, Math.round(ratingNum))));
+      const sRole = sty.specialty || sty.cargo || sty.rol || (isSalonFemenino ? 'Estilista Profesional' : isNails ? 'Especialista en Uñas' : 'Master Barber');
+      const sBadge = sty.badge || (sty.role === 'admin' ? 'Master' : 'Pro');
 
-    if (webStylists.length > 0) {
-      const teamGridRegex = /(<div\b[^>]*class=["'][^"']*(?:team-grid|stylists-grid|team-container|grid-team)[^"']*["'][^>]*>)([\s\S]*?)(<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/section>)/i;
-
-      if (teamGridRegex.test(processed)) {
-        const liveTeamCardsHtml = webStylists.map((sty) => {
-          const avatarUrl = sty.photo_url || 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=500&q=80';
-          const stylistBookingLink = `${bookingUrl}?stylistId=${sty.id}`;
-          const ratingStars = '⭐'.repeat(Math.round(sty.rating || 5));
-
-          return `
-          <!-- Card de Especialista Dinámica -->
-          <div class="team-card">
-            <div class="team-photo-box" style="position: relative; width: 110px; height: 110px; margin: 0 auto 16px;">
-              <img src="${avatarUrl}" alt="${sty.name}" class="team-avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+      if (isSalonFemenino) {
+        return `
+          <!-- Profesional Card -->
+          <article class="team-card">
+            <div class="team-card-img">
+              <img src="${avatarUrl}" alt="${name}" loading="lazy">
             </div>
-            <div class="team-info">
-              <h3 class="team-name" style="font-size: 18px; font-weight: 800; margin-bottom: 4px;">${sty.name}</h3>
-              <span class="team-role" style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 8px;">${sty.specialty || 'Especialista en Belleza'}</span>
-              <div class="team-rating" style="font-size: 11px; margin-bottom: 12px;">${ratingStars} (${(sty.rating || 5).toFixed(1)})</div>
-              <a href="${stylistBookingLink}" class="btn-team-book" style="display: inline-block; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 999px; text-decoration: none;">
-                Agendar Cita
+            <div class="team-card-gradient"></div>
+            <div class="team-card-content">
+              <div class="team-card-accent-line"></div>
+              <h3 class="team-name">${name}</h3>
+              <p class="team-role">${sRole}</p>
+              <div class="team-rating">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                <span style="color: var(--text-secondary); margin-left: 4px;">(${ratingNum.toFixed(1)})</span>
+              </div>
+              <a href="${stylistBookingLink}" class="btn-card-book-minimal">
+                Agendar con ${firstName} <i class="fa-solid fa-arrow-right"></i>
               </a>
             </div>
-          </div>`;
-        }).join('\n');
+          </article>`;
+      }
 
-        processed = processed.replace(
-          teamGridRegex,
-          `$1\n${liveTeamCardsHtml}\n</div>\n</div>\n</section>`
-        );
+      if (isNails) {
+        return `
+            <div class="team-card">
+              <img src="${avatarUrl}" alt="${name}" class="team-card-img" loading="lazy">
+              <div class="team-card-overlay"></div>
+              <div class="team-card-content">
+                <div class="team-card-accent-line"></div>
+                <h3 class="team-name">${name}</h3>
+                <span class="team-role">${sRole}</span>
+                <div class="team-rating">
+                  ★★★★★ <span>${ratingNum.toFixed(1)}</span>
+                </div>
+                <div class="team-card-footer">
+                  <a href="${stylistBookingLink}" class="btn-card-book-minimal">
+                    AGENDAR CON ${firstName.toUpperCase()} <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>`;
+      }
+
+      // Default: Barbería
+      return `
+          <!-- Barbero Card -->
+          <div class="team-card">
+            <div class="team-photo-box">
+              <img src="${avatarUrl}" alt="${name}" class="team-avatar" loading="lazy" />
+              <span class="team-badge">${sBadge}</span>
+            </div>
+            <div class="team-info">
+              <h4 class="team-name">${name}</h4>
+              <span class="team-role">${sRole}</span>
+              <div class="team-rating">${ratingStars} (${ratingNum.toFixed(1)})</div>
+              <a href="${stylistBookingLink}" class="btn-team-book">Agendar Cita</a>
+            </div>
+          </div>`;
+    }).join('\n');
+  };
+
+  if (processed.includes('{{TEAM_GRID}}')) {
+    if (!showTeamSection) {
+      processed = processed.replace(
+        /<div\b[^>]*class=["'][^"']*section-header-center[^"']*["'][^>]*>[\s\S]*?BARBEROS[\s\S]*?<\/div>\s*<div\b[^>]*class=["'][^"']*team-grid[^"']*["'][^>]*>\s*{{TEAM_GRID}}\s*<\/div>/gi,
+        ''
+      );
+      processed = processed.split('{{TEAM_GRID}}').join('');
+    } else {
+      const webStylists = (liveStylists || []).filter(s => s.show_on_web !== false && s.attends_clients !== false).slice(0, 8);
+      const teamToRender = webStylists.length > 0 ? webStylists : (isBarberTemplate ? [
+        { name: "Cristian 'Crismar'", specialty: "Master Barber & Fundador", photo_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80", rating: 5.0, role: 'admin' },
+        { name: "Andrés 'Andy Fade'", specialty: "Especialista en Fades & Diseños", photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80", rating: 4.9, role: 'colaborador' },
+        { name: "Mateo 'Teo'", specialty: "Especialista en Barbas Clásicas", photo_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80", rating: 4.9, role: 'colaborador' },
+        { name: "Samuel Córdoba", specialty: "Barbero Estilista Moderno", photo_url: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=500&q=80", rating: 4.8, role: 'colaborador' }
+      ] : []);
+
+      if (teamToRender.length > 0) {
+        const liveTeamCardsHtml = renderTemplateTeamCards(teamToRender);
+        processed = processed.split('{{TEAM_GRID}}').join(liveTeamCardsHtml);
+      } else {
+        processed = processed.split('{{TEAM_GRID}}').join('');
+      }
+    }
+  } else if (!showTeamSection) {
+    // Si la administradora decidió ocultar el equipo, ocultar solo el contenedor del equipo, preservando la historia de Nosotros
+    processed = processed.replace(/<div\b[^>]*\bid=["']equipo["'][^>]*>[\s\S]*?<\/div>/gi, '');
+    processed = processed.replace(/<section\b[^>]*\bid=["']equipo["'][^>]*>[\s\S]*?<\/section>/gi, '');
+  } else if (liveStylists && liveStylists.length > 0) {
+    const webStylists = liveStylists.filter(s => s.show_on_web !== false && s.attends_clients !== false).slice(0, 8);
+
+    if (webStylists.length > 0) {
+      const liveTeamCardsHtml = renderTemplateTeamCards(webStylists);
+
+      // Reemplazo estrictamente acotado dentro de la sección actual (NUNCA cruzar </section> para no tragar la sección de mapa/ubicación)
+      const teamGridRegex = /<div\b[^>]*class=["'][^"']*team-grid[^"']*["'][^>]*>/i;
+      const teamMatch = processed.match(teamGridRegex);
+      if (teamMatch && teamMatch.index !== undefined) {
+        const startIdx = teamMatch.index + teamMatch[0].length;
+        const nextSectionEnd = processed.indexOf('</section>', startIdx);
+        if (nextSectionEnd !== -1) {
+          const sectionSlice = processed.slice(startIdx, nextSectionEnd);
+          const lastDivIdx = sectionSlice.lastIndexOf('</div>');
+          if (lastDivIdx !== -1) {
+            processed = processed.slice(0, startIdx) +
+              '\n' + liveTeamCardsHtml + '\n        ' +
+              sectionSlice.slice(lastDivIdx) +
+              processed.slice(nextSectionEnd);
+          }
+        }
       }
     }
   }
@@ -1606,12 +1839,30 @@ ${colorOverridesCss}
         var href = target.getAttribute('href');
         if (!href) return;
 
-        // 1. Desplazamiento suave garantizado a la sección de servicios
-        if (href === '#servicios' || href === '#services' || href.startsWith('#serv') || href.startsWith('#menu') || href.startsWith('#carta')) {
+        // 1. Desplazamiento suave universal para todas las anclas internas (#inicio, #nosotros, #ubicacion, #servicios, etc.)
+        if (href.startsWith('#')) {
           e.preventDefault();
-          var srvSec = document.getElementById('servicios') || document.getElementById('services') || document.querySelector('.services-section, .servicios-section, .services-grid, [class*="service"]');
-          if (srvSec) {
-            srvSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var hashId = href.slice(1);
+          if (!hashId || hashId === 'inicio' || hashId === 'top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          var targetElem = document.getElementById(hashId);
+          if (!targetElem) {
+            if (hashId.indexOf('nosotros') !== -1 || hashId.indexOf('about') !== -1) {
+              targetElem = document.querySelector('.about-section, .nosotros-section, [id*="nosotros"], [id*="about"]');
+            } else if (hashId.indexOf('ubicacion') !== -1 || hashId.indexOf('location') !== -1 || hashId.indexOf('contacto') !== -1) {
+              targetElem = document.querySelector('.location-section, .ubicacion-section, [id*="ubicacion"], [id*="location"], [id*="contacto"]');
+            } else if (hashId.indexOf('serv') !== -1 || hashId.indexOf('menu') !== -1 || hashId.indexOf('carta') !== -1) {
+              targetElem = document.querySelector('.services-section, .servicios-section, [id*="servicios"], [id*="services"]');
+            } else {
+              try {
+                targetElem = document.querySelector(href);
+              } catch (_) {}
+            }
+          }
+          if (targetElem) {
+            targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
           return;
         }

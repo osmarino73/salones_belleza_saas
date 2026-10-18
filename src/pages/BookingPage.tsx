@@ -419,7 +419,11 @@ export const BookingPage: React.FC = () => {
               api.getAppointments(tid)
             ]);
             if (srvList && srvList.length > 0) loadedServices = srvList;
-            if (styList && styList.length > 0) loadedStylists = styList;
+            if (styList && styList.length > 0) {
+              // Filtrar especialistas que efectivamente atienden citas y están habilitados para la reserva
+              const bookableStylists = styList.filter(s => s.attends_clients !== false && s.show_on_web !== false);
+              loadedStylists = bookableStylists.length > 0 ? bookableStylists : styList.filter(s => s.attends_clients !== false);
+            }
             if (aptList && aptList.length > 0) setExistingAppointments(aptList);
           } catch (err) {}
 

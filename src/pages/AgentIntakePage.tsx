@@ -2115,6 +2115,20 @@ export const AgentIntakePage: React.FC = () => {
                     </p>
                   </div>
 
+                  {/* Plan Seleccionado & 14 Días de Prueba Gratuita */}
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">🚀</span>
+                      <div>
+                        <div className="font-extrabold text-amber-300 text-xs">Plan Inicio ($29.000 COP/mes)</div>
+                        <div className="text-[10px] text-slate-300">Web oficial + agendador 24/7 para hasta 3 colaboradores</div>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-amber-500 text-black font-black text-[11px] shadow-sm shrink-0">
+                      14 Días Gratis
+                    </span>
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleQuickActivate}
@@ -2442,25 +2456,18 @@ export const AgentIntakePage: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Días Gratis Opciones */}
-                          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                            <span>Días de prueba bonificados:</span>
-                            <div className="flex items-center gap-1.5">
-                              {[7, 14, 30].map((d) => (
-                                <button
-                                  key={d}
-                                  type="button"
-                                  onClick={() => setModalTrialDays(d)}
-                                  className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                    modalTrialDays === d
-                                      ? 'bg-amber-500 text-black shadow-sm'
-                                      : 'bg-white/5 text-slate-400 hover:text-white'
-                                  }`}
-                                >
-                                  {d} Días
-                                </button>
-                              ))}
+                          {/* Plan Seleccionado & 14 Días de Prueba Gratuita */}
+                          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xl">🚀</span>
+                              <div>
+                                <div className="font-extrabold text-amber-300 text-xs">Plan Inicio ($29.000 COP/mes)</div>
+                                <div className="text-[10px] text-slate-300">Web oficial + agendador 24/7 para hasta 3 colaboradores</div>
+                              </div>
                             </div>
+                            <span className="px-2.5 py-1 rounded-full bg-amber-500 text-black font-black text-[11px] shadow-sm shrink-0">
+                              14 Días Gratis
+                            </span>
                           </div>
 
                           {/* Botón Confirmar Activación */}
@@ -2478,7 +2485,7 @@ export const AgentIntakePage: React.FC = () => {
                             ) : (
                               <>
                                 <Zap className="w-4 h-4 fill-black" />
-                                <span>Confirmar Activación ({modalTrialDays} Días Gratis)</span>
+                                <span>Confirmar Activación (Plan Inicio • 14 Días Gratis)</span>
                               </>
                             )}
                           </button>

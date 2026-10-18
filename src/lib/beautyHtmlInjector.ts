@@ -1,7 +1,7 @@
 import { BeautySpecialtyService } from './beautySpecialties';
-import { PLANTILLA_BARBERIA_HTML, PLANTILLA_BARBERIA_SERVICES } from './templates/plantillaBarberia';
-import { PLANTILLA_SALON_FEMENINO_HTML, PLANTILLA_SALON_FEMENINO_SERVICES } from './templates/plantillaSalonFemenino';
-import { PLANTILLA_NAILS_HTML, PLANTILLA_NAILS_SERVICES } from './templates/plantillaNails';
+import { PLANTILLA_BARBERIA_HTML, PLANTILLA_BARBERIA_SERVICES, PLANTILLA_BARBERIA_TEAM } from './templates/plantillaBarberia';
+import { PLANTILLA_SALON_FEMENINO_HTML, PLANTILLA_SALON_FEMENINO_SERVICES, PLANTILLA_SALON_FEMENINO_TEAM } from './templates/plantillaSalonFemenino';
+import { PLANTILLA_NAILS_HTML, PLANTILLA_NAILS_SERVICES, PLANTILLA_NAILS_TEAM } from './templates/plantillaNails';
 import { CRIS_BARBERSHOP_SITE_DATA } from './crisBarbershopSiteData';
 import { FANTASTIC_MONTERIA_SITE_DATA } from './fantasticMonteriaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
@@ -38,6 +38,7 @@ export interface InjectBeautyHtmlParams {
   metric4Val?: string;
   metric4Label?: string;
   services?: BeautySpecialtyService[];
+  team?: any[];
   gpsCoordinates?: string;
 }
 
@@ -70,6 +71,7 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
     metric4Val,
     metric4Label,
     services = [],
+    team = [],
     gpsCoordinates
   } = params;
 
@@ -131,6 +133,32 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
           </article>`;
     }).join('\n');
 
+    // Barberos / Especialistas a renderizar
+    const rawTeam = (team && team.length > 0) ? team : PLANTILLA_BARBERIA_TEAM;
+    const teamCardsHtml = rawTeam.map((member: any) => {
+      const memberName = member.name || member.nombre || 'Master Barbero';
+      const memberRole = member.specialty || member.cargo || member.rol || 'Master Barber';
+      const memberPhoto = member.photo_url || member.foto_url || member.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80';
+      const memberRating = member.rating || member.calificacion || 5.0;
+      const memberBadge = member.badge || (member.role === 'admin' ? 'Master' : 'Pro');
+      const bookingUrl = `/reservar/${slug}`;
+
+      return `
+          <!-- Barbero Card -->
+          <div class="team-card">
+            <div class="team-photo-box">
+              <img src="${memberPhoto}" alt="${memberName}" class="team-avatar" loading="lazy" />
+              <span class="team-badge">${memberBadge}</span>
+            </div>
+            <div class="team-info">
+              <h4 class="team-name">${memberName}</h4>
+              <span class="team-role">${memberRole}</span>
+              <div class="team-rating">⭐⭐⭐⭐⭐ (${Number(memberRating).toFixed(1)})</div>
+              <a href="${bookingUrl}" class="btn-team-book">Agendar Cita</a>
+            </div>
+          </div>`;
+    }).join('\n');
+
     const activeDesktopHero = heroImage || 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp';
     const activeMobileHero = heroMobileImage || 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792081956862_Barber_executing_skin_fade_haircut_20261015113222.webp';
     const activeAboutImage = aboutImageUrl || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1000&q=80';
@@ -178,7 +206,8 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{METRIC_4_LABEL}}').join(activeMetric4Label)
       .split('{{SCHEDULE_TEXT}}').join(scheduleText || 'Lunes a Sábado: 8:30 AM – 8:30 PM')
       .split('{{MAP_QUERY}}').join(activeMapQuery)
-      .split('{{SERVICES_GRID}}').join(servicesCardsHtml);
+      .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
+      .split('{{TEAM_GRID}}').join(teamCardsHtml);
 
     if (aboutImageUrl) {
       html = html.replace(/(<div class="salon-image-showcase">[\s\S]*?<img\s+src=")[^"]*(")/i, `$1${aboutImageUrl}$2`);
@@ -285,6 +314,37 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
     const activeMetric4Val = metric4Val || '5.0 ★';
     const activeMetric4Label = metric4Label || 'Calificación Excelente';
 
+    // Especialistas / Profesionales Salón Femenino a renderizar
+    const rawTeam = (team && team.length > 0) ? team : PLANTILLA_SALON_FEMENINO_TEAM;
+    const teamCardsHtml = rawTeam.map((member: any) => {
+      const memberName = member.name || member.nombre || 'Master Stylist';
+      const memberRole = member.specialty || member.cargo || member.rol || 'Estilista Profesional';
+      const memberPhoto = member.photo_url || member.foto_url || member.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80';
+      const memberRating = member.rating || member.calificacion || 5.0;
+      const bookingUrl = `/reservar/${slug}?specialist=${encodeURIComponent(memberName)}`;
+
+      return `
+          <!-- Profesional Card -->
+          <article class="team-card">
+            <div class="team-card-img">
+              <img src="${memberPhoto}" alt="${memberName}" loading="lazy">
+            </div>
+            <div class="team-card-gradient"></div>
+            <div class="team-card-content">
+              <div class="team-card-accent-line"></div>
+              <h3 class="team-name">${memberName}</h3>
+              <p class="team-role">${memberRole}</p>
+              <div class="team-rating">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                <span style="color: var(--text-secondary); margin-left: 4px;">(${Number(memberRating).toFixed(1)})</span>
+              </div>
+              <a href="${bookingUrl}" class="btn-card-book-minimal">
+                Agendar con ${memberName.split(' ')[0]} <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          </article>`;
+    }).join('\n');
+
     html = html
       .split('{{BUSINESS_NAME}}').join(businessName)
       .split('{{BUSINESS_NAME_URI}}').join(encodeURIComponent(businessName))
@@ -314,7 +374,8 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{METRIC_4_LABEL}}').join(activeMetric4Label)
       .split('{{SCHEDULE_TEXT}}').join(scheduleText || 'Lunes a Sábado: 8:00 AM – 7:00 PM')
       .split('{{MAP_QUERY}}').join(activeMapQuery)
-      .split('{{SERVICES_GRID}}').join(servicesCardsHtml);
+      .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
+      .split('{{TEAM_GRID}}').join(teamCardsHtml);
 
     if (primaryColor) {
       const colorOverride = `
@@ -407,6 +468,36 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
     const activeMetric4Val = metric4Val || '5.0 ★';
     const activeMetric4Label = metric4Label || 'Calificación';
 
+    
+    // Especialistas / Artistas Nails a renderizar
+    const rawTeam = (team && team.length > 0) ? team : PLANTILLA_NAILS_TEAM;
+    const teamCardsHtml = rawTeam.map((member: any) => {
+      const memberName = member.name || member.nombre || 'Master Nail Artist';
+      const memberRole = member.specialty || member.cargo || member.rol || 'Especialista en Uñas';
+      const memberPhoto = member.photo_url || member.foto_url || member.avatar || 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80';
+      const memberRating = member.rating || member.calificacion || 5.0;
+      const bookingUrl = `/reservar/${slug}?specialist=${encodeURIComponent(memberName)}`;
+
+      return `
+            <div class="team-card">
+              <img src="${memberPhoto}" alt="${memberName}" class="team-card-img" loading="lazy">
+              <div class="team-card-overlay"></div>
+              <div class="team-card-content">
+                <div class="team-card-accent-line"></div>
+                <h3 class="team-name">${memberName}</h3>
+                <span class="team-role">${memberRole}</span>
+                <div class="team-rating">
+                  ★★★★★ <span>${Number(memberRating).toFixed(1)}</span>
+                </div>
+                <div class="team-card-footer">
+                  <a href="${bookingUrl}" class="btn-card-book-minimal">
+                    AGENDAR CON ${memberName.split(' ')[0].toUpperCase()} <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>`;
+    }).join('\n');
+
     html = html
       .split('{{BUSINESS_NAME}}').join(businessName)
       .split('{{BUSINESS_NAME_URI}}').join(encodeURIComponent(businessName))
@@ -436,7 +527,8 @@ export function injectBeautyHtml(params: InjectBeautyHtmlParams): string {
       .split('{{METRIC_4_VAL}}').join(activeMetric4Val)
       .split('{{METRIC_4_LABEL}}').join(activeMetric4Label)
       .split('{{SCHEDULE_TEXT}}').join(scheduleText || 'Lunes a Sábado: 8:00 AM – 7:00 PM')
-      .split('{{SERVICES_GRID}}').join(servicesCardsHtml);
+      .split('{{SERVICES_GRID}}').join(servicesCardsHtml)
+      .split('{{TEAM_GRID}}').join(teamCardsHtml);
 
     if (primaryColor) {
       const colorOverride = `

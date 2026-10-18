@@ -53,16 +53,26 @@ export const PublicProspectSitePage: React.FC = () => {
 
             if (needsSync) {
               const defaultHero = isBarberSalon 
-                ? 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80'
+                ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp'
                 : (isNailsSalon 
                   ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792148861583_Woman_posing_for_beauty_campaign_20261016060037.webp'
                   : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792079931885_Stylist_blow-drying_client_hair_2K_20261015104423.webp');
 
               const defaultAboutImg = isBarberSalon
-                ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp'
+                ? 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1000&q=80'
                 : (isNailsSalon 
                   ? 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80'
                   : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80');
+
+              const isContaminatedAboutImg = tenantData.about_image_url && (
+                tenantData.about_image_url.includes('1792081956862_Barber_executing_skin_fade') ||
+                tenantData.about_image_url === bData.hero_image_mobile
+              );
+
+              const cleanTenantAboutImg = isContaminatedAboutImg ? null : tenantData.about_image_url;
+
+              const isContaminatedHeroImg = isBarberSalon && tenantData.hero_image_url && tenantData.hero_image_url.includes('photo-1503951914875-452162b0f3f1');
+              const cleanTenantHeroImg = isContaminatedHeroImg ? null : tenantData.hero_image_url;
 
               const defaultSlogan = isBarberSalon
                 ? 'Donde el ritual de la barba y el buen gusto se encuentran'
@@ -90,10 +100,15 @@ export const PublicProspectSitePage: React.FC = () => {
 
               const defaultLogoIcon = isBarberSalon ? '💈' : (isNailsSalon ? '💅' : '✨');
 
+              let resolvedHeroUrl = cleanTenantHeroImg || bData.banner_url || bData.hero_image_desktop || defaultHero;
+              if (isBarberSalon && resolvedHeroUrl && resolvedHeroUrl.includes('photo-1503951914875-452162b0f3f1')) {
+                resolvedHeroUrl = defaultHero;
+              }
+
               const syncPayload: any = {
                 id: tenantData.id,
-                hero_image_url: tenantData.hero_image_url || bData.banner_url || bData.hero_image_desktop || defaultHero,
-                about_image_url: tenantData.about_image_url || bData.about_image_url || bData.hero_image_mobile || defaultAboutImg,
+                hero_image_url: resolvedHeroUrl,
+                about_image_url: cleanTenantAboutImg || bData.about_image_url || defaultAboutImg,
                 slogan: tenantData.slogan || bData.slogan || bData.copywriting?.slogan || bData.headline || defaultSlogan,
                 subtitle: tenantData.subtitle || bData.subheadline || bData.copywriting?.subheadline || (bData.about?.p1 ? bData.about.p1 : undefined),
                 title_accent: (tenantData.title_accent && tenantData.title_accent !== 'Centro de Estética' && tenantData.title_accent !== 'Barbería Tradicional & Urbana' && tenantData.title_accent !== bData.headline) ? tenantData.title_accent : (bData.title_accent || null),
@@ -102,7 +117,7 @@ export const PublicProspectSitePage: React.FC = () => {
                 about_title_accent: (tenantData.about_title_accent && tenantData.about_title_accent !== 'PASIÓN POR TU BELLEZA.') ? tenantData.about_title_accent : (bData.about_title_accent || defaultAboutAccent),
                 about_badge_text: (tenantData.about_badge_text && tenantData.about_badge_text !== 'VIP EXPERIENCIA SALÓN') ? tenantData.about_badge_text : (bData.about_badge || defaultAboutBadge),
                 about_description: tenantData.about_description || (bData.about?.p1 ? `${bData.about.p1} ${bData.about.p2 || ''}`.trim() : (bData.about_description || undefined)),
-                primary_color: isBarberSalon ? '#e5a854' : (tenantData.primary_color || bData.primary_color || defaultPrimaryColor),
+                primary_color: tenantData.primary_color || bData.primary_color || defaultPrimaryColor,
                 logo_icon: tenantData.logo_icon || bData.logo_icon || defaultLogoIcon
               };
 
@@ -164,8 +179,8 @@ export const PublicProspectSitePage: React.FC = () => {
       || site.business_name?.toLowerCase().includes('barber')
       || site.slug?.toLowerCase().includes('barber');
 
-    // Filtrar textos de muestra o fallbacks antiguos para no sobreescribir la plantilla base
-    const rawSlogan = bData.copywriting?.headline || bData.headline || tenant?.slogan || bData.slogan;
+    // Priorizar datos oficiales del tenant activo sobre bData estático
+    const rawSlogan = tenant?.slogan || bData.copywriting?.headline || bData.headline || bData.slogan;
     const cleanSlogan = rawSlogan && rawSlogan !== 'Sandra Color´s' && rawSlogan !== site.business_name ? rawSlogan : undefined;
 
     const rawTitleAccent = tenant?.title_accent || bData.title_accent;
@@ -179,26 +194,26 @@ export const PublicProspectSitePage: React.FC = () => {
       ? rawEyebrow 
       : (isBarber ? '💈 Cortes de Precisión & Ritual de Barba' : undefined);
 
-    const rawAboutBadge = isBarber ? undefined : (tenant?.about_badge_text || bData.about_badge_text);
+    const rawAboutBadge = isBarber ? (tenant?.about_badge_text || bData.about_badge_text) : (tenant?.about_badge_text || bData.about_badge_text);
     const cleanAboutBadge = rawAboutBadge && rawAboutBadge !== 'VIP EXPERIENCIA SALÓN' && rawAboutBadge !== 'VIP EXPERIENCIA CLUB' ? rawAboutBadge : undefined;
 
     const rawAboutAccent = tenant?.about_title_accent || bData.about_title_accent;
     const cleanAboutAccent = rawAboutAccent && rawAboutAccent !== 'PASIÓN POR TU BELLEZA.' ? rawAboutAccent : undefined;
 
-    const rawAboutTitle = bData.about_title || bData.copywriting?.about_title || tenant?.about_title;
+    const rawAboutTitle = tenant?.about_title || bData.about_title || bData.copywriting?.about_title;
     const cleanAboutTitle = rawAboutTitle && rawAboutTitle !== 'CUIDADO. DEFINICIÓN.' ? rawAboutTitle : undefined;
 
-    const rawAboutDesc = bData.about_description || bData.copywriting?.about_description || tenant?.about_description;
+    const rawAboutDesc = tenant?.about_description || bData.about_description || bData.copywriting?.about_description;
     const cleanAboutDesc = rawAboutDesc && !rawAboutDesc.includes('Transformamos el cuidado') && !rawAboutDesc.startsWith('Especialistas certificadas') ? rawAboutDesc : undefined;
 
     const mData = bData.metrics || {};
-    const cleanYearsExp = mData.metric1Val || bData.metric1_val || (tenant?.about_years_exp && tenant.about_years_exp !== '+8' ? tenant.about_years_exp : undefined);
-    const cleanClientsCount = mData.metric2Val || bData.metric2_val || (tenant?.about_clients_count && tenant.about_clients_count !== '+3.5K' ? tenant.about_clients_count : undefined);
-    const cleanStat3Text = mData.metric3Val || bData.metric3_val || tenant?.about_stat3_text;
-    const cleanRatingText = mData.metric4Val || bData.metric4_val || tenant?.about_rating_text;
+    const cleanYearsExp = (tenant?.about_years_exp && tenant.about_years_exp !== '+8') ? tenant.about_years_exp : (mData.metric1Val || bData.metric1_val || undefined);
+    const cleanClientsCount = (tenant?.about_clients_count && tenant.about_clients_count !== '+3.5K') ? tenant.about_clients_count : (mData.metric2Val || bData.metric2_val || undefined);
+    const cleanStat3Text = tenant?.about_stat3_text || mData.metric3Val || bData.metric3_val;
+    const cleanRatingText = tenant?.about_rating_text || mData.metric4Val || bData.metric4_val;
 
-    // Regla Sagrada de Estética: Si es barbería y el color primario es el fucsia por defecto de PostgreSQL (#d92672 / #c82d5a), ignorarlo para que brille el dorado nativo
-    const candidateColor = (site as any).primary_color || bData.primary_color || tenant?.primary_color || undefined;
+    // Regla Sagrada de Estética: Respetar siempre el color personalizado del tenant
+    const candidateColor = tenant?.primary_color || (site as any).primary_color || bData.primary_color || undefined;
     const isDefaultFuchsia = candidateColor === '#d92672' || candidateColor === '#c82d5a';
     const cleanPrimaryColor = (isBarber && isDefaultFuchsia) ? undefined : candidateColor;
 
@@ -230,7 +245,9 @@ export const PublicProspectSitePage: React.FC = () => {
         ? Object.entries(bData.horario_atencion).filter(([_, v]) => typeof v === 'string').map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(' | ')
         : undefined,
       subtitle: tenant?.subtitle || bData.copywriting?.subheadline || bData.subtitle || undefined,
-      aboutImageUrl: tenant?.about_image_url || bData.about_image_url || undefined,
+      aboutImageUrl: (tenant?.about_image_url && !tenant.about_image_url.includes('1792081956862_Barber_executing_skin_fade') && tenant.about_image_url !== bData.hero_image_mobile) 
+        ? tenant.about_image_url 
+        : (bData.about_image_url || undefined),
       aboutBadgeText: cleanAboutBadge,
       aboutEyebrow: tenant?.about_eyebrow || bData.about_eyebrow || undefined,
       aboutTitle: cleanAboutTitle,

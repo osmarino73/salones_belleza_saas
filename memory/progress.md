@@ -1,3 +1,20 @@
+- [x] **Corrección de Duplicación de Párrafo Sobre Nosotros en Badge Flotante ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+  - Resuelto bug donde el párrafo descriptivo se inyectaba dentro del badge flotante sobre la foto (`experience-floating-badge`) además de la columna derecha.
+  - Blindada la extracción del baseline y el reemplazo en `prospectHtmlInjector.ts` para respetar los badges y apuntar exclusivamente a `<p class="section-desc">`.
+
+- [x] **Desacoplamiento Dueño/Admin vs Especialistas y Sembrado Automático de Colaborador Demo ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`BookingPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/BookingPage.tsx), Supabase `stylists`)**:
+  - `ownerStylist` ahora se crea estrictamente con `attends_clients: false` y `show_on_web: false` por defecto.
+  - Al activar salones sin especialistas en su prospección, se siembra automáticamente un colaborador demo temático adaptado al nicho (ej. *Mateo 'Teo' - Master Barber* para barberías, *Valentina* para nails, *Carolina* para spa, *Camila* para salones).
+  - Blindado `prospectHtmlInjector.ts` y `BookingPage.tsx` filtrando especialistas que atienden citas y están habilitados para la web.
+  - Actualizado el salón Barberia Santosino en Supabase con su nuevo barbero operativo.
+  - Verificado compilación con `npx tsc --noEmit` (0 errores).
+
+- [x] **Corrección de Imagen de Ambiente y Fallback de Sobre Nosotros ([`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), Supabase `tenants`)**:
+  - Eliminado el fallback accidental a `hero_image_mobile` para la sección de historia/ambiente.
+  - Asignada la fotografía de ambiente de alta fidelidad (`photo-1585747860715-2ba37e788b70`) para barberías.
+  - Blindado `prospectHtmlInjector.ts` para proteger la imagen del salón contra pisados involuntarios.
+  - Sincronizados y auditados los registros de tenants en Supabase.
+
 - [x] **Forzado Estricto de `title_accent: null` y Eliminación de Sufijos Artificiales ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), Supabase `tenants`)**:
   - Eliminados los fallbacks a textos inventados en `activateProspectAsTenant` y `PublicProspectSitePage.tsx`.
   - Migrada la base de datos de Supabase fijando `title_accent = null` en todos los tenants.

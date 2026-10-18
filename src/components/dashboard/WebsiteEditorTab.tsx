@@ -105,6 +105,15 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
       if (tenant.hero_image_url) setHeroImage(tenant.hero_image_url);
       if ((tenant as any).hero_mobile_image_url) setHeroMobileImage((tenant as any).hero_mobile_image_url);
       if ((tenant as any).about_image_url) setAboutImage((tenant as any).about_image_url);
+      if (tenant.slogan) setHeadline(tenant.slogan);
+      if (tenant.subtitle) setSubheadline(tenant.subtitle);
+      if (tenant.hero_eyebrow) setHeroBadge(tenant.hero_eyebrow);
+      if (tenant.about_title) setAboutTitle(tenant.about_title);
+      if (tenant.about_description) setAboutDescription(tenant.about_description);
+      if (tenant.about_years_exp) setMetric1Val(tenant.about_years_exp);
+      if (tenant.about_clients_count) setMetric2Val(tenant.about_clients_count);
+      if (tenant.about_rating_text) setMetric4Val(tenant.about_rating_text);
+      if (tenant.logo_url) setLogoUrl(tenant.logo_url);
 
       // Buscar si tiene un prospect_site sincronizado
       try {
@@ -160,48 +169,58 @@ export const WebsiteEditorTab: React.FC<WebsiteEditorTabProps> = ({ tenant, onSa
             }
 
             // 4. Logo
-            if (bData.logo_url) setLogoUrl(bData.logo_url);
+            if (!tenant.logo_url && bData.logo_url) setLogoUrl(bData.logo_url);
 
-            // 5. Headline real de la landing
-            const extractedHeadline = site.raw_html?.match(/<h1[^>]*class=["'][^"']*hero-title[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i)?.[1];
-            if (bData.copywriting?.headline) {
-              setHeadline(bData.copywriting.headline);
-            } else if (extractedHeadline) {
-              setHeadline(extractedHeadline.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+            // 5. Headline real de la landing (prioridad absoluta a tenant.slogan)
+            if (!tenant.slogan) {
+              const extractedHeadline = site.raw_html?.match(/<h1[^>]*class=["'][^"']*hero-title[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i)?.[1];
+              if (bData.copywriting?.headline || bData.headline || bData.slogan) {
+                setHeadline(bData.copywriting?.headline || bData.headline || bData.slogan);
+              } else if (extractedHeadline) {
+                setHeadline(extractedHeadline.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+              }
             }
 
-            // 6. Subheadline real de la landing
-            const extractedSubheadline = site.raw_html?.match(/<p[^>]*class=["'][^"']*hero-desc[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)?.[1];
-            if (bData.copywriting?.subheadline) {
-              setSubheadline(bData.copywriting.subheadline);
-            } else if (extractedSubheadline) {
-              setSubheadline(extractedSubheadline.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+            // 6. Subheadline real de la landing (prioridad absoluta a tenant.subtitle)
+            if (!tenant.subtitle) {
+              const extractedSubheadline = site.raw_html?.match(/<p[^>]*class=["'][^"']*hero-desc[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)?.[1];
+              if (bData.copywriting?.subheadline || bData.subheadline || bData.subtitle) {
+                setSubheadline(bData.copywriting?.subheadline || bData.subheadline || bData.subtitle);
+              } else if (extractedSubheadline) {
+                setSubheadline(extractedSubheadline.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+              }
             }
 
-            // 7. Hero Badge / Eyebrow real (soporta .hero-script-tag, .eyebrow-pill, etc.)
-            const extractedBadge = site.raw_html?.match(/<(?:span|div|p)[^>]*class=["'][^"']*(?:eyebrow-pill|hero-script-tag|hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|p)>/i)?.[1];
-            if (bData.copywriting?.badge || bData.hero_badge || bData.hero_eyebrow) {
-              setHeroBadge(bData.copywriting?.badge || bData.hero_badge || bData.hero_eyebrow);
-            } else if (extractedBadge) {
-              setHeroBadge(extractedBadge.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+            // 7. Hero Badge / Eyebrow real (prioridad absoluta a tenant.hero_eyebrow)
+            if (!tenant.hero_eyebrow) {
+              const extractedBadge = site.raw_html?.match(/<(?:span|div|p)[^>]*class=["'][^"']*(?:eyebrow-pill|hero-script-tag|hero-script-eyebrow|hero-eyebrow|badge-hero|hero-badge|script-eyebrow)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div|p)>/i)?.[1];
+              if (bData.copywriting?.badge || bData.hero_badge || bData.hero_eyebrow) {
+                setHeroBadge(bData.copywriting?.badge || bData.hero_badge || bData.hero_eyebrow);
+              } else if (extractedBadge) {
+                setHeroBadge(extractedBadge.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+              }
             }
 
-            // 8. Título y Descripción de Sobre Nosotros
-            const extractedAboutTitle = site.raw_html?.match(/<section[^>]*id=["']nosotros["'][\s\S]*?<h3>([\s\S]*?)<\/h3>/i)?.[1]
-              || site.raw_html?.match(/class=["'][^"']*experience-text-content[^"']*["'][\s\S]*?<h3>([\s\S]*?)<\/h3>/i)?.[1];
-            if (bData.about_title || bData.copywriting?.about_title) {
-              setAboutTitle(bData.about_title || bData.copywriting?.about_title);
-            } else if (extractedAboutTitle && !extractedAboutTitle.includes('{{')) {
-              setAboutTitle(extractedAboutTitle.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+            // 8. Título y Descripción de Sobre Nosotros (prioridad absoluta a tenant)
+            if (!tenant.about_title) {
+              const extractedAboutTitle = site.raw_html?.match(/<section[^>]*id=["']nosotros["'][\s\S]*?<h3>([\s\S]*?)<\/h3>/i)?.[1]
+                || site.raw_html?.match(/class=["'][^"']*experience-text-content[^"']*["'][\s\S]*?<h3>([\s\S]*?)<\/h3>/i)?.[1];
+              if (bData.about_title || bData.copywriting?.about_title) {
+                setAboutTitle(bData.about_title || bData.copywriting?.about_title);
+              } else if (extractedAboutTitle && !extractedAboutTitle.includes('{{')) {
+                setAboutTitle(extractedAboutTitle.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+              }
             }
 
-            const extractedAboutDesc = site.raw_html?.match(/class=["'][^"']*experience-text-content[^"']*["'][\s\S]*?<p>([\s\S]*?)<\/p>/i)?.[1];
-            if (bData.about_description || bData.copywriting?.about_description) {
-              setAboutDescription(bData.about_description || bData.copywriting?.about_description);
-            } else if (extractedAboutDesc && !extractedAboutDesc.includes('{{')) {
-              setAboutDescription(extractedAboutDesc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
-            } else if (tenant.name) {
-              setAboutDescription(`En ${tenant.name} creemos que un gran corte es mucho más que un servicio: es una declaración de identidad. Combinamos la tradición del afeitado clásico con las últimas tendencias de degradados para que luzcas imponente.`);
+            if (!tenant.about_description) {
+              const extractedAboutDesc = site.raw_html?.match(/class=["'][^"']*experience-text-content[^"']*["'][\s\S]*?<p>([\s\S]*?)<\/p>/i)?.[1];
+              if (bData.about_description || bData.copywriting?.about_description) {
+                setAboutDescription(bData.about_description || bData.copywriting?.about_description);
+              } else if (extractedAboutDesc && !extractedAboutDesc.includes('{{')) {
+                setAboutDescription(extractedAboutDesc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+              } else if (tenant.name) {
+                setAboutDescription(`En ${tenant.name} creemos que un gran corte es mucho más que un servicio: es una declaración de identidad. Combinamos la tradición del afeitado clásico con las últimas tendencias de degradados para que luzcas imponente.`);
+              }
             }
 
             // 9. Métricas de Autoridad

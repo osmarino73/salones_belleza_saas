@@ -12,6 +12,37 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-115. **Corrección de Duplicación de Párrafo Sobre Nosotros en Badge Flotante ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
+    - **Problema Reportado**: En plantillas de salón femenino (ej. Susan Color), el párrafo completo de la historia/descripción se duplicaba: aparecía correctamente en la columna de texto derecha y también dentro del badge flotante dorado (`experience-floating-badge`) superpuesto a la foto izquierda.
+    - **Causa Raíz Diagnosticada**:
+      1. En la plantilla de salón femenino, el badge flotante sobre la foto tiene un subtítulo en `<p>Apartadó &bull; Cuidado Exclusivo</p>`.
+      2. Al extraer el baseline en `extractWebsiteDataFromHtml`, la regex ejecutaba `aboutBody.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)`, capturando erróneamente el `<p>` del badge en lugar del párrafo descriptivo principal.
+      3. Luego, al inyectar `aboutDescription`, la condición `if (aboutDescription && aboutDescription !== baseline.aboutDescription)` evaluaba `true`, y `updatedBody.replace(/(<p\b[^>]*>)([\s\S]*?)(<\/p>)/i, ...)` reemplazaba el primer `<p>` que encontraba en la sección (el del badge flotante), pisándolo con todo el texto largo.
+    - **Solución Implementada**:
+      1. Extracción de baseline inteligente: se descartan párrafos dentro de badges o etiquetas cortas y se prioriza el `<p>` principal o con clase `section-desc` / `about-desc`.
+      2. Reemplazo preciso: se apunta explícitamente a `<p class="section-desc">` (o párrafos fuera de `experience-floating-badge`), protegiendo al 100% el badge de la foto.
+      3. Verificado con script de extracción y validado tipado limpio con `npx tsc --noEmit`.
+
+-114. **Desacoplamiento Dueño/Admin vs Especialistas y Sembrado Automático de Colaborador Demo ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), [`BookingPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/BookingPage.tsx), Supabase `stylists`)**:
+    - **Problema de Dominio**: Frecuentemente quien realiza el trámite de activación es el dueño o administrador del negocio y no una persona que preste servicios. Al activar un salón, el sistema creaba un registro de estilista con el nombre del negocio + `(Dueña / Admin)` y lo mostraba públicamente en la web y en la agenda de reservas.
+    - **Solución Arquitectónica Implementada**:
+      1. **Desacoplamiento Estricto**: El perfil `ownerStylist` se crea con `attends_clients: false` y `show_on_web: false` por defecto, garantizando que el dueño/admin solo tenga acceso a gestión interna y nunca aparezca en el catálogo público ni reciba citas a su nombre.
+      2. **Colaborador Demo Temático**: Si el negocio no ingresó especialistas en el formulario de prospección (`rawTeam.length === 0`), se siembra automáticamente 1 colaborador demo funcional adaptado al nicho del negocio (Barbería: *Mateo 'Teo' Rentería - Master Barber*, Nails: *Valentina Duque - Nail Artist*, Spa: *Carolina Mendoza - Cosmiatra & Terapeuta*, Salón: *Camila Gómez - Estilista Master*), con foto profesional, rating y servicios asociados.
+      3. **Mapeo y Filtros Robustos**: En `mapStylistFromDB`, se agregó `show_on_web` y la regla `attends_clients: !(is_owner || role === 'admin')` para registros antiguos. En `prospectHtmlInjector.ts` y `BookingPage.tsx`, se exige `attends_clients !== false && show_on_web !== false`.
+      4. **Base de Datos Supabase Actualizada**: Se actualizó el registro de Barberia Santosino, manteniendo al Admin invisible y sembrando al Master Barber *Mateo 'Teo' Rentería* para agendamiento real y catálogo en vivo.
+      5. **Validación**: `npx tsc --noEmit` superado con 0 errores de tipado.
+
+-113. **Corrección de Imagen de Ambiente y Fallback de Sobre Nosotros ([`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), [`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts), Supabase `tenants`)**:
+    - **Problema Reportado**: Al activar un negocio (Barberia Santosino), la sección "Sobre Nosotros" se dañó visualmente mostrando una foto mocha y recortada en el recuadro de ambiente del salón.
+    - **Causa Raíz Diagnosticada**:
+      1. En `activateProspectAsTenant` de `supabase.ts` y en `PublicProspectSitePage.tsx`, el campo `about_image_url` tenía configurado como fallback prioritario `bData.hero_image_mobile`, forzando la foto vertical (9:16) del corte fade del Hero dentro del contenedor horizontal de 420px de la sección de historia/ambiente.
+      2. En `prospectHtmlInjector.ts`, la rutina de inyección de `aboutImageUrl` reemplazaba incondicionalmente la imagen sin verificar si coincidía con el baseline ni si era una imagen vertical del Hero.
+    - **Solución Implementada**:
+      1. Se eliminó `bData.hero_image_mobile` de los fallbacks de `about_image_url` en `PublicProspectSitePage.tsx` y `supabase.ts`.
+      2. Se configuró la imagen oficial de ambiente de salón (`photo-1585747860715-2ba37e788b70`) como predeterminada de alta fidelidad para barberías.
+      3. Se protegió `prospectHtmlInjector.ts` para que no reemplace la imagen si es idéntica a la plantilla base o si contiene el corte fade del hero.
+      4. Se auditó y corrigió la tabla `tenants` en Supabase para Barberia Santosino y Barber Oscar, restaurando la fotografía nítida del salón.
+
 -112. **Forzado Estricto de `title_accent: null` y Eliminación de Sufijos Artificiales ([`supabase.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/supabase.ts), [`PublicProspectSitePage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/PublicProspectSitePage.tsx), Supabase `tenants`)**:
     - **Requerimiento**: Cumplir con la convención arquitectónica acordada: la columna `title_accent` debe ser estrictamente `null` por defecto, evitando cualquier sufijo artificial concatenado (como *"Barbería Tradicional & Urbana"* o *"Colorimetría & Estética Integral"*).
     - **Implementación**:

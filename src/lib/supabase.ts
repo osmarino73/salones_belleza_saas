@@ -798,7 +798,8 @@ export const api = {
       phone_whatsapp: d.phone || d.phone_whatsapp || '',
       role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
       is_owner: d.is_owner || d.role === 'admin' || false,
-      attends_clients: d.attends_clients !== false,
+      attends_clients: d.attends_clients !== undefined ? d.attends_clients : !(d.is_owner || d.role === 'admin'),
+      show_on_web: d.show_on_web !== undefined ? d.show_on_web : !(d.is_owner || d.role === 'admin'),
       specialty: d.specialty || 'Master Stylist',
       photo_url: d.photo_url || '',
       rating: Number(d.rating || 5.0),
@@ -906,7 +907,8 @@ export const api = {
       phone_whatsapp: d.phone || d.phone_whatsapp || '',
       role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
       is_owner: d.is_owner || d.role === 'admin' || false,
-      attends_clients: d.attends_clients !== false,
+      attends_clients: d.attends_clients !== undefined ? d.attends_clients : !(d.is_owner || d.role === 'admin'),
+      show_on_web: d.show_on_web !== undefined ? d.show_on_web : !(d.is_owner || d.role === 'admin'),
       specialty: d.specialty || 'Master Stylist',
       photo_url: d.photo_url || '',
       rating: Number(d.rating || 5.0),
@@ -931,7 +933,9 @@ export const api = {
           const mapped = mapStylistFromDB(data);
           const current = await this.getStylists(cleanTenantId);
           const updated = [mapped, ...current.filter(s => s.id !== mapped.id)];
-          localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+          }
           return mapped;
         }
       } catch (e) {
@@ -942,7 +946,9 @@ export const api = {
     const localMapped = mapStylistFromDB(payload);
     const current = await this.getStylists(cleanTenantId);
     const updated = [localMapped, ...current.filter(s => s.id !== localMapped.id)];
-    localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.STYLISTS, JSON.stringify(updated));
+    }
     return localMapped;
   },
 
@@ -992,7 +998,8 @@ export const api = {
       phone_whatsapp: d.phone || d.phone_whatsapp || '',
       role: d.role || (d.is_owner ? 'admin' : 'colaborador'),
       is_owner: d.is_owner || d.role === 'admin' || false,
-      attends_clients: d.attends_clients !== false,
+      attends_clients: d.attends_clients !== undefined ? d.attends_clients : !(d.is_owner || d.role === 'admin'),
+      show_on_web: d.show_on_web !== undefined ? d.show_on_web : !(d.is_owner || d.role === 'admin'),
       specialty: d.specialty || 'Master Stylist',
       photo_url: d.photo_url || '',
       rating: Number(d.rating || 5.0),
@@ -1179,7 +1186,9 @@ export const api = {
           // Actualizar caché local sincronizada
           const current = await this.getServices(tid);
           const updated = [savedResult, ...current.filter(s => s.id !== savedResult.id && s.name !== savedResult.name)];
-          localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+          }
           return savedResult;
         } else if (error) {
           console.error('Error crítico insertando servicio en Supabase:', error.message, error.details);
@@ -1200,7 +1209,9 @@ export const api = {
     } else {
       updated = [serviceWithTenant, ...current];
     }
-    localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+    }
     return serviceWithTenant;
   },
 
@@ -1239,7 +1250,9 @@ export const api = {
     }
     const current = await this.getServices(service.tenant_id);
     const updated = current.map(s => s.id === service.id ? normalized : s);
-    localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+    }
     return normalized;
   },
 
@@ -1250,14 +1263,16 @@ export const api = {
         await supabase.from('services').delete().eq('id', id);
       } catch (e) {}
     }
-    const saved = localStorage.getItem(STORAGE_KEYS.SERVICES);
-    if (saved) {
-      try {
-        const all: Service[] = JSON.parse(saved);
-        // Borrar por ID y limpiar registros huérfanos con el mismo ID
-        const updated = all.filter(s => s.id !== id);
-        localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
-      } catch (e) {}
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEYS.SERVICES);
+      if (saved) {
+        try {
+          const all: Service[] = JSON.parse(saved);
+          // Borrar por ID y limpiar registros huérfanos con el mismo ID
+          const updated = all.filter(s => s.id !== id);
+          localStorage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(updated));
+        } catch (e) {}
+      }
     }
   },
 
@@ -1855,7 +1870,9 @@ export const api = {
             }
           });
           if (!error && data.user) {
-            localStorage.setItem('bf_auth_user', JSON.stringify(data.user));
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('bf_auth_user', JSON.stringify(data.user));
+            }
             return { user: data.user, session: data.session, error: null };
           }
           if (error) {
@@ -1871,7 +1888,9 @@ export const api = {
         user_metadata: userData || { name: 'Owner' },
         created_at: new Date().toISOString()
       };
-      localStorage.setItem('bf_auth_user', JSON.stringify(localUser));
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('bf_auth_user', JSON.stringify(localUser));
+      }
       return { user: localUser, session: { access_token: 'mock-token' }, error: null };
     },
 
@@ -1974,6 +1993,7 @@ export const api = {
     },
 
     getUser() {
+      if (typeof localStorage === 'undefined') return null;
       const saved = localStorage.getItem('bf_auth_user');
       return saved ? JSON.parse(saved) : null;
     }
@@ -2943,7 +2963,8 @@ export const api = {
   },
 
   async activateProspectAsTenant(params: {
-    prospectId: string;
+    prospectId?: string;
+    prospectSlug?: string;
     prospect?: ProspectSite;
     ownerEmail: string;
     tempPassword?: string;
@@ -2951,21 +2972,25 @@ export const api = {
     phoneWhatsapp?: string;
     currency?: 'COP' | 'USD' | 'MXN' | 'EUR';
     trialDays?: number;
+    planTier?: string;
+    subscriptionPriceCop?: number;
+    maxStylists?: number;
   }): Promise<{ success: boolean; tenant: Tenant; tempPassword: string; error?: string }> {
     let prospect = params.prospect;
-    if (!prospect && supabase && isSupabaseConfigured && params.prospectId) {
+    const targetKey = params.prospectId || params.prospectSlug;
+    if (!prospect && supabase && isSupabaseConfigured && targetKey) {
       try {
         const { data } = await supabase
           .from('prospect_sites')
           .select('*')
-          .or(`id.eq.${params.prospectId},slug.eq.${params.prospectId}`)
+          .or(`id.eq.${targetKey},slug.eq.${targetKey}`)
           .maybeSingle();
         if (data) prospect = data as ProspectSite;
       } catch (e) {}
     }
-    if (!prospect) {
+    if (!prospect && targetKey) {
       const prospectSites = await this.getProspectSites();
-      prospect = prospectSites.find(p => p.id === params.prospectId || p.slug === params.prospectId);
+      prospect = prospectSites.find(p => p.id === targetKey || p.slug === targetKey);
     }
 
     const bName = params.businessName || prospect?.business_name || 'Salón & Spa';
@@ -3042,23 +3067,43 @@ export const api = {
     const aboutClientsCount = bData.metric2_val || bData.metrics?.metric2Val || '+3.5K';
     const aboutRatingText = bData.metric4_val || bData.metrics?.metric4Val || '5.0';
 
-    const heroImageUrl = bData.banner_url || bData.hero_image_desktop || bData.hero_image || (prospect as any)?.hero_image_desktop 
+    // Extraer imágenes directas del raw_html si existen en <picture id="canvasPoster">
+    let rawHtmlDesktopImg: string | null = null;
+    let rawHtmlMobileImg: string | null = null;
+    if (prospect?.raw_html) {
+      const picMatch = prospect.raw_html.match(/<picture[^>]*id=["']canvasPoster["'][^>]*>([\s\S]*?)<\/picture>/i)
+        || prospect.raw_html.match(/<picture[^>]*class=["'][^"']*canvas-poster[^"']*["'][^>]*>([\s\S]*?)<\/picture>/i);
+      if (picMatch && picMatch[1]) {
+        const sourceMatch = picMatch[1].match(/<source[^>]*srcset=["']([^"']+)["']/i);
+        const imgMatch = picMatch[1].match(/<img[^>]*src=["']([^"']+)["']/i);
+        if (sourceMatch && sourceMatch[1]) rawHtmlMobileImg = sourceMatch[1];
+        if (imgMatch && imgMatch[1]) rawHtmlDesktopImg = imgMatch[1];
+      }
+    }
+
+    // Resolver heroImageUrl descartando la URL vieja genérica de Unsplash en barberías
+    let rawHeroCandidate = rawHtmlDesktopImg || bData.banner_url || bData.hero_image_desktop || bData.hero_image || (prospect as any)?.hero_image_desktop;
+    if (isBarber && rawHeroCandidate && rawHeroCandidate.includes('photo-1503951914875-452162b0f3f1')) {
+      rawHeroCandidate = rawHtmlDesktopImg || null;
+    }
+
+    const heroImageUrl = rawHeroCandidate 
       || (isBarber 
-        ? 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=80' 
+        ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp' 
         : (isNails 
           ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792148861583_Woman_posing_for_beauty_campaign_20261016060037.webp'
           : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792079931885_Stylist_blow-drying_client_hair_2K_20261015104423.webp'));
 
-    const heroMobileImageUrl = bData.banner_vertical_url || bData.hero_image_mobile || (prospect as any)?.hero_image_mobile 
+    const heroMobileImageUrl = rawHtmlMobileImg || bData.banner_vertical_url || bData.hero_image_mobile || (prospect as any)?.hero_image_mobile 
       || (isBarber 
         ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792081956862_Barber_executing_skin_fade_haircut_20261015113222.webp'
         : (isNails 
           ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792160934258_Complete_image_leaving_lower_third_20261016092835.webp'
           : 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792083289211_Stylist_cutting_client_hair_20261015115430.webp'));
 
-    const aboutImageUrl = bData.about_image_url || bData.hero_image_mobile || bData.hero_image_desktop || (prospect as any)?.about_image_url 
+    const aboutImageUrl = bData.about_image_url || (prospect as any)?.about_image_url 
       || (isBarber 
-        ? 'https://ascskenpfcnyejaamjlb.supabase.co/storage/v1/object/public/stock-images/1792080374316_Barber_shaping_beard_with_razor_20261015110551.webp'
+        ? 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1000&q=80'
         : (isNails 
           ? 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1000&q=80'
           : 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80'));
@@ -3076,11 +3121,11 @@ export const api = {
       city: prospect?.city || bData.city || 'Apartadó',
       country: prospect?.country || 'Colombia',
       is_active: true,
-      plan: 'inicio' as any,
-      plan_tier: 'inicio',
+      plan: (params.planTier || 'inicio') as any,
+      plan_tier: ((params.planTier as any) || 'inicio') as any,
       subscription_status: 'trial',
-      subscription_price_cop: 29000,
-      max_stylists: 3,
+      subscription_price_cop: params.subscriptionPriceCop ?? 29000,
+      max_stylists: params.maxStylists ?? 3,
       has_pos_access: false,
       has_ai_whatsapp: false,
       has_omnichannel: false,
@@ -3140,10 +3185,11 @@ export const api = {
           phone: newTenant.phone,
           whatsapp_number: newTenant.phone,
           currency: newTenant.currency || 'COP',
-          plan_tier: 'inicio',
+          plan: params.planTier || 'inicio',
+          plan_tier: params.planTier || 'inicio',
           subscription_status: 'trial',
-          subscription_price_cop: 29000,
-          max_stylists: 3,
+          subscription_price_cop: params.subscriptionPriceCop ?? 29000,
+          max_stylists: params.maxStylists ?? 3,
           has_pos_access: false,
           has_ai_whatsapp: false,
           has_omnichannel: false,
@@ -3265,6 +3311,7 @@ export const api = {
     }
 
     // 3. Crear Dueña / Admin Stylist Profile (Perfil administrativo con email para asociar tenant)
+    // El dueño/admin NO presta servicio por defecto y NO aparece en la web ni en agendamiento
     const ownerStylist: Stylist = {
       id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'sty-owner-' + Date.now(),
       tenant_id: newTenant.id,
@@ -3275,7 +3322,8 @@ export const api = {
       photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
       role: 'admin',
       is_owner: true,
-      attends_clients: false, // Por defecto 'Solo gestión administrativa, no se agendan citas a su nombre' (OFF)
+      attends_clients: false, // Solo gestión administrativa, no se agendan citas a su nombre
+      show_on_web: false,     // No se publica en el catálogo de especialistas web
       rating: 5.0,
       reviews_count: 0,
       commission_service_pct: 100,
@@ -3328,6 +3376,54 @@ export const api = {
 
         await this.createStylist(stylistEntity, tempPassword);
       }
+    } else {
+      // 3.2 Si el negocio no ingresó especialistas durante la prospección, sembrar 1 colaborador demo funcional
+      // según el nicho específico para que el agendador online quede 100% operativo y estético de inmediato.
+      let demoName = 'Camila Gómez';
+      let demoSpecialty = 'Estilista & Colorista Master';
+      let demoPhoto = 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80';
+      let demoCategories = ['corte', 'color', 'keratina'];
+
+      if (isBarber) {
+        demoName = "Mateo 'Teo' Rentería";
+        demoSpecialty = 'Master Barber & Estilista Masculino';
+        demoPhoto = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80';
+        demoCategories = ['barberia', 'corte'];
+      } else if (isNails) {
+        demoName = 'Valentina Duque';
+        demoSpecialty = 'Nail Artist & Estructuras';
+        demoPhoto = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+        demoCategories = ['nails', 'spa'];
+      } else if (cat.includes('spa') || cat.includes('relax') || cat.includes('facial') || bName.toLowerCase().includes('spa')) {
+        demoName = 'Carolina Mendoza';
+        demoSpecialty = 'Cosmiatra & Terapeuta Facial';
+        demoPhoto = 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80';
+        demoCategories = ['spa'];
+      }
+
+      const demoStylist: Stylist = {
+        id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `sty-${newTenant.id.slice(0, 6)}-demo1`,
+        tenant_id: newTenant.id,
+        name: demoName,
+        email: `colaborador@${cleanSlug}.com`,
+        phone: wa,
+        specialty: demoSpecialty,
+        photo_url: demoPhoto,
+        role: 'colaborador',
+        is_owner: false,
+        attends_clients: true,
+        show_on_web: true,
+        rating: 5.0,
+        reviews_count: 18,
+        commission_service_pct: 50,
+        commission_retail_pct: 10,
+        working_days: [1, 2, 3, 4, 5, 6],
+        service_categories: demoCategories,
+        service_ids: [],
+        is_active: true
+      };
+
+      await this.createStylist(demoStylist, tempPassword);
     }
 
     // 4. Precargar las categorías base oficiales para el salón
@@ -3418,18 +3514,40 @@ export const api = {
       }
     }
 
-    // 5. Actualizar prospect_sites como 'reclamado' y asociar owner_email
+    // 5. Actualizar prospect_sites como 'reclamado', sincronizando tokens definitivos de negocio y branding
     if (prospect) {
+      const updatedBusinessData = {
+        ...bData,
+        nombre: bName,
+        name: bName,
+        slogan: tenantSlogan,
+        headline: tenantSlogan,
+        subtitle: tenantSubtitle,
+        subheadline: tenantSubtitle,
+        hero_badge: heroEyebrow,
+        hero_eyebrow: heroEyebrow,
+        banner_url: heroImageUrl || bData.banner_url,
+        hero_image_desktop: heroImageUrl || bData.hero_image_desktop,
+        hero_image_mobile: heroMobileImageUrl || bData.hero_image_mobile,
+        about_image_url: aboutImageUrl || bData.about_image_url,
+        about_title: aboutTitle || bData.about_title,
+        about_description: aboutDesc || bData.about_description,
+        about_badge: aboutBadge || bData.about_badge,
+        primary_color: calculatedPrimaryColor || bData.primary_color
+      };
+
       await this.updateProspectSite(prospect.id, {
         status: 'reclamado',
         claimed_tenant_id: newTenant.id,
-        owner_email: params.ownerEmail.toLowerCase().trim()
+        owner_email: params.ownerEmail.toLowerCase().trim(),
+        primary_color: calculatedPrimaryColor,
+        business_data: updatedBusinessData
       });
     }
 
     // 6. Guardar en localStorage solo si el usuario autenticado es el nuevo dueño (no sobreescribir sesión de Superadmin)
     const activeAuth = this.auth.getUser();
-    if (activeAuth && activeAuth.email?.toLowerCase().trim() === params.ownerEmail.toLowerCase().trim()) {
+    if (typeof localStorage !== 'undefined' && activeAuth && activeAuth.email?.toLowerCase().trim() === params.ownerEmail.toLowerCase().trim()) {
       localStorage.setItem('bf_tenant_active', JSON.stringify(newTenant));
       localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(defaultCategoriesToInsert));
     }
