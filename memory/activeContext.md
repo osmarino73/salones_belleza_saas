@@ -12,6 +12,18 @@
 3. **Vertical Dental / Salud (`DentalFlow AI`)**:
    - Posible clonación y adaptación del SaaS hacia clínicas dentales, nutricionistas y consultorios médicos.
 
+-116. **Rediseño Integral Mobile-First del Portal de Colaboradores / Estilistas ([`StylistPortalPage.tsx`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/pages/StylistPortalPage.tsx))**:
+    - **Requerimiento**: Mejorar sustancialmente el portal de colaboradores con enfoque 100% Mobile-First para uso cómodo con una sola mano en el salón de belleza/barbería.
+    - **Optimizaciones Implementadas en las 4 Vistas**:
+      1. **Header & Perfil Ultra Compacto**: Reducción de altura vertical en móviles con avatar ágil, estrella de calificación y selector táctil de estado en salón (`Disponible`, `En Sillón`, `Descanso`) con feedback háptico visual.
+      2. **KPIs en Carrusel Horizontal con Snap**: En pantallas móviles las 3 tarjetas de métricas (Billetera de hoy, Acumulado del mes y Próximo cliente) ahora se deslizan suavemente con snap horizontal (`min-w-[85vw] snap-center`) sin consumir altura vertical antes de la agenda.
+      3. **Agenda & Turnos (Tab 1)**: Tarjetas con hora destacada en tamaño legible, botón de WhatsApp directo con mensaje personalizado de bienvenida, visualización de comisión estimada en vivo y botones de estado de 44px mínimo en Thumb-Zone (`✂️ Iniciar Atención` -> `✓ Terminado / A Caja`).
+      4. **CRM & Fórmulas Técnicas (Tab 2)**: Buscador responsivo con botón de limpieza, visualización de mezclas químicas en bloque mono con alto contraste, y botón ancho "+ Agregar Fórmula de Tinte".
+      5. **Billetera & Liquidación (Tab 3)**: Desglose estilo Fintech móvil con totalizadores de hoy vs pendientes en caja y comisiones netas ganadas en tipografía mono verde.
+      6. **Disponibilidad & Bloqueo (Tab 4)**: Selector de días de la semana cómodo para pantallas táctiles, botones de motivos rápidos (`🌴 Vacaciones`, `🩺 Cita Médica`, etc.) y lista de fechas bloqueadas protegidas por Flowy IA.
+      7. **Mobile Bottom Sheets**: Modales de registro de fórmula técnica y cambio de contraseña transformados en Bottom Sheets nativos para móviles con drag handle táctil.
+      8. **Validación**: 0 errores de tipado con `npx tsc --noEmit` y desplegado en `main` (commit `2d4a0eb`).
+
 -115. **Corrección de Duplicación de Párrafo Sobre Nosotros en Badge Flotante ([`prospectHtmlInjector.ts`](file:///c:/Users/comer/kowy.app/salones_belleza_saas/src/lib/prospectHtmlInjector.ts))**:
     - **Problema Reportado**: En plantillas de salón femenino (ej. Susan Color), el párrafo completo de la historia/descripción se duplicaba: aparecía correctamente en la columna de texto derecha y también dentro del badge flotante dorado (`experience-floating-badge`) superpuesto a la foto izquierda.
     - **Causa Raíz Diagnosticada**:
