@@ -118,7 +118,7 @@ function localFramesUploadPlugin() {
             let r2Key = process.env.R2_ACCESS_KEY_ID || '7883d5ec59ed83172ade90478cc1409b';
             let r2Sec = process.env.R2_SECRET_ACCESS_KEY || '0c89f4bcbefbde8699b99caf71c1df25875bb44b56a802bbce5150ab6a38c724';
             let r2Bkt = process.env.R2_BUCKET_NAME || 'kowy-frames';
-            let r2Cdn = (process.env.VITE_R2_CDN_URL || 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev').replace(/\/+$/, '');
+            let r2Cdn = (process.env.VITE_R2_CDN_URL || 'https://cdn.kowy.app').replace(/\/+$/, '');
 
             const s3 = new S3Client({
               region: 'auto',

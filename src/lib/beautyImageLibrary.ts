@@ -21,98 +21,98 @@ export const NAILS_STOCK_SERVICES: StockImageItem[] = [
     id: 'nails-semipermanente',
     category: 'nails',
     title: 'Manicura Semipermanente & Gel Polish Brillo Espejo',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/semipermanente-mocca.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/semipermanente-mocca.jpg',
     tags: ['semipermanente', 'gelish', 'esmalte', 'manicura', 'nude', 'brillo', 'gel polish']
   },
   {
     id: 'nails-rusa-dry',
     category: 'nails',
     title: 'Manicura Rusa / Dry Manicure con Torno y Fresas Diamantadas',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['rusa', 'dry manicure', 'torno', 'cuticula', 'limpieza profunda', 'fresas', 'perfeccion']
   },
   {
     id: 'nails-acrilicas-esculpidas',
     category: 'nails',
     title: 'Uñas Acrílicas Esculpidas & Extensiones Coffin / Almond',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['acrilicas', 'esculpidas', 'extensiones', 'coffin', 'almond', 'tips', 'monomero', 'acrilico']
   },
   {
     id: 'nails-soft-gel',
     category: 'nails',
     title: 'Soft Gel / Gel-X / Press On Nails de Cobertura Completa',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['soft gel', 'gel x', 'press on', 'extension gel', 'tips completos', 'ligero']
   },
   {
     id: 'nails-kapping-rubber',
     category: 'nails',
     title: 'Kapping Gel & Nivelación con Rubber Base (Fuerza Natural)',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['kapping', 'rubber base', 'nivelacion', 'bano de gel', 'refuerzo', 'antiquiebre']
   },
   {
     id: 'nails-polygel',
     category: 'nails',
     title: 'Polygel / Acrylgel Híbrido Esculpido & Curado UV',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg',
     tags: ['polygel', 'acrylgel', 'acrigel', 'hibrido', 'esculpido', 'flexibilidad']
   },
   {
     id: 'nails-nail-art-luxury',
     category: 'nails',
     title: 'Nail Art Editorial Minimalista & Hojilla de Oro Foil',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/nail-art-luxury-designs.jpg',
     tags: ['nail art', 'decoracion', 'foil', 'glitter', 'diseno', 'piedras', 'lineas', 'lujo']
   },
   {
     id: 'nails-french-modern',
     category: 'nails',
     title: 'Francesa Moderna / Micro French Estilizado & Minimal',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['francesa', 'french', 'micro french', 'blanco', 'elegante', 'sonrisa']
   },
   {
     id: 'nails-baby-boomer',
     category: 'nails',
     title: 'Baby Boomer & Degradé Ombré Francés Blanco Nube',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg',
     tags: ['baby boomer', 'ombre', 'degrade', 'difuminado', 'leche', 'rosa', 'blanco']
   },
   {
     id: 'nails-cat-eye',
     category: 'nails',
     title: 'Efecto Ojo de Gato (Cat Eye) Magnético & Glazed Donut Cromo',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/nail-art-luxury-designs.jpg',
     tags: ['cat eye', 'ojo de gato', 'glazed donut', 'cromo', 'efecto espejo', 'iman', 'brillo saten']
   },
   {
     id: 'nails-pedicura-spa',
     category: 'nails',
     title: 'Pedicura Spa Profunda & Jelly Spa con Ritual Hidratante',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/pedicura-spa-relax.jpg',
     tags: ['pedicura', 'pedicure', 'spa pies', 'jelly spa', 'hidromasaje', 'exfoliacion', 'pies']
   },
   {
     id: 'nails-pedicura-rusa',
     category: 'nails',
     title: 'Pedicura Rusa & Esmaltado Semipermanente en Pies',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/pedicura-spa-relax.jpg',
     tags: ['pedicura rusa', 'esmaltado pies', 'pies pulidos', 'cuticula pies', 'pies perfectos']
   },
   {
     id: 'nails-retiro-sistema',
     category: 'nails',
     title: 'Retiro Seguro de Acrílico / Gel & Tratamiento Fortalecedor',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/retiro-bano-calcio.jpg',
     tags: ['retiro', 'remocion', 'retiro acrilico', 'retiro gel', 'nutricion', 'fortalecedor', 'salud ungueal']
   },
   {
     id: 'nails-spa-parafina',
     category: 'nails',
     title: 'Spa de Manos con Mascarilla Térmica & Baño de Parafina',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/retiro-bano-calcio.jpg',
     tags: ['parafina', 'spa manos', 'mascarilla termal', 'hidratacion manos', 'suavidad', 'terapia termica']
   }
 ];
@@ -165,7 +165,7 @@ export const BEAUTY_STOCK_LIBRARY: StockImageItem[] = [
     id: 'about-nails-station',
     category: 'hero_nails',
     title: 'Estación de Manicura Profesional & Instrumental de Salón',
-    url: 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/about-nuva-nails-manicurista.jpg',
+    url: 'https://cdn.kowy.app/stock/nails/about-nuva-nails-manicurista.jpg',
     tags: ['nails', 'uñas', 'sobre nosotros', 'manicurista', 'estacion', 'lampara uv', 'spa']
   },
 
@@ -437,46 +437,46 @@ export function getSuggestedImageForService(title: string = '', categoryHint?: s
   }
   // 3. Nicho Nails (Salones de Uñas, Manicura, Pedicura & Nail Spa)
   if (t.includes('parafina') || (t.includes('spa') && t.includes('mano'))) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg';
+    return 'https://cdn.kowy.app/stock/nails/retiro-bano-calcio.jpg';
   }
   if (t.includes('retiro') || t.includes('remocion') || t.includes('remover') || t.includes('desmonte')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/retiro-bano-calcio.jpg';
+    return 'https://cdn.kowy.app/stock/nails/retiro-bano-calcio.jpg';
   }
   if (t.includes('pedicura rusa') || t.includes('pedicure ruso') || (t.includes('pies') && t.includes('rusa'))) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg';
+    return 'https://cdn.kowy.app/stock/nails/pedicura-spa-relax.jpg';
   }
   if (t.includes('pedicur') || t.includes('pedicure') || t.includes('jelly') || t.includes('pies')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/pedicura-spa-relax.jpg';
+    return 'https://cdn.kowy.app/stock/nails/pedicura-spa-relax.jpg';
   }
   if (t.includes('rusa') || t.includes('dry') || t.includes('torno') || t.includes('fresas') || t.includes('cuticula')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
+    return 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('acrilic') || t.includes('esculpid') || t.includes('extension') || t.includes('coffin') || t.includes('almond') || t.includes('monomero')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
+    return 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('soft gel') || t.includes('gel x') || t.includes('press on') || t.includes('tips')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
+    return 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('kapping') || t.includes('rubber') || t.includes('nivelacion') || t.includes('baño de gel') || t.includes('bano de gel')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
+    return 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('polygel') || t.includes('acrylgel') || t.includes('acrigel')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/kapping-gel-nivelador.jpg';
+    return 'https://cdn.kowy.app/stock/nails/kapping-gel-nivelador.jpg';
   }
   if (t.includes('cat eye') || t.includes('ojo de gato') || t.includes('glazed') || t.includes('cromo') || t.includes('espejo')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg';
+    return 'https://cdn.kowy.app/stock/nails/nail-art-luxury-designs.jpg';
   }
   if (t.includes('baby boomer') || t.includes('boomer') || t.includes('ombre') || t.includes('degrade')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
+    return 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('french') || t.includes('frances') || t.includes('francesa')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/extensiones-acrilicas-esculpidas.jpg';
+    return 'https://cdn.kowy.app/stock/nails/extensiones-acrilicas-esculpidas.jpg';
   }
   if (t.includes('nail art') || t.includes('decoracion') || t.includes('foil') || t.includes('glitter') || t.includes('piedras') || t.includes('mano alzada')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/nail-art-luxury-designs.jpg';
+    return 'https://cdn.kowy.app/stock/nails/nail-art-luxury-designs.jpg';
   }
   if (t.includes('nail') || t.includes('uña') || t.includes('semipermanente') || t.includes('manicura') || t.includes('gelish') || t.includes('gel polish')) {
-    return 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev/stock/nails/semipermanente-mocca.jpg';
+    return 'https://cdn.kowy.app/stock/nails/semipermanente-mocca.jpg';
   }
   if (t.includes('facial') || t.includes('spa') || t.includes('masaje') || t.includes('limpieza') || t.includes('piel') || t.includes('peeling')) {
     return 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80';

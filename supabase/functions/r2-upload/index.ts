@@ -5,7 +5,7 @@ const R2_ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") || "18113006866e0a5d3dfc002d
 const R2_ACCESS_KEY_ID = Deno.env.get("R2_ACCESS_KEY_ID") || "7883d5ec59ed83172ade90478cc1409b";
 const R2_SECRET_ACCESS_KEY = Deno.env.get("R2_SECRET_ACCESS_KEY") || "0c89f4bcbefbde8699b99caf71c1df25875bb44b56a802bbce5150ab6a38c724";
 const R2_BUCKET_NAME = Deno.env.get("R2_BUCKET_NAME") || "kowy-frames";
-const R2_PUBLIC_URL = (Deno.env.get("R2_PUBLIC_URL") || Deno.env.get("VITE_R2_CDN_URL") || "https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev").replace(/\/+$/, "");
+const R2_PUBLIC_URL = (Deno.env.get("R2_PUBLIC_URL") || Deno.env.get("VITE_R2_CDN_URL") || "https://cdn.kowy.app").replace(/\/+$/, "");
 
 const s3 = new S3Client({
   region: "auto",

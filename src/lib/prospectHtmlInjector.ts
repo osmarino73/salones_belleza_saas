@@ -329,7 +329,7 @@ export function injectProspectLinks(html: string, options: InjectProspectOptions
   const globalProcess = typeof globalThis !== 'undefined' ? (globalThis as any).process : undefined;
   const envR2 = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_R2_CDN_URL)
     || (globalProcess?.env?.VITE_R2_CDN_URL)
-    || 'https://pub-22e6e94a97b84b068f4217675926ef7f.r2.dev';
+    || 'https://cdn.kowy.app';
   const r2CdnUrl = String(envR2).replace(/\/+$/, '');
   const rawFramesBase = (framesBaseUrl && (framesBaseUrl.startsWith('http://') || framesBaseUrl.startsWith('https://')))
     ? framesBaseUrl
