@@ -3331,8 +3331,111 @@ export const DashboardPage: React.FC = () => {
                       </p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                    <>
+                      {/* VISTA MÓVIL (TARJETAS TÁCTILES COMPACTAS) - md:hidden */}
+                      <div className="md:hidden space-y-3 p-3.5">
+                        {dayAppointments.map((apt) => {
+                          const currentStatus = statusConfig[apt.status] || statusConfig.pendiente;
+                          const displayClientName = (() => {
+                            if (apt.client_name && !/^\d{7,15}$/.test(apt.client_name.trim())) {
+                              return apt.client_name;
+                            }
+                            const matchClient = clients.find(c => 
+                              apt.client_phone && c.phone_whatsapp && c.phone_whatsapp.includes(apt.client_phone.replace(/\D/g, '').slice(-7))
+                            );
+                            return matchClient?.full_name || apt.client_name || 'Clienta Directa';
+                          })();
+
+                          return (
+                            <div
+                              key={`mob-${apt.id}`}
+                              className={`p-4 rounded-2xl border shadow-sm transition-all space-y-3 ${
+                                theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-slate-50 border-slate-200'
+                              }`}
+                            >
+                              {/* Cabecera: Hora, Duración & Precio */}
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-base font-black text-[#FF5A36]">
+                                    {apt.time}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-semibold">
+                                    ({apt.duration_minutes || 60}m)
+                                  </span>
+                                </div>
+                                <span className="font-mono text-sm font-black text-emerald-600 dark:text-emerald-400">
+                                  {formatCurrency(apt.price_usd ?? apt.price_cop, salonCurrency)}
+                                </span>
+                              </div>
+
+                              {/* Clienta, Servicio & Especialista */}
+                              <div>
+                                <strong className={`block text-sm font-extrabold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                  {displayClientName}
+                                </strong>
+                                <span className="text-xs text-slate-300 font-medium block">
+                                  {apt.service_name} • <span className="text-[#FF5A36] font-semibold">{apt.stylist_name}</span>
+                                </span>
+                                {apt.client_phone && (
+                                  <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
+                                    📞 {apt.client_phone}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Selector de Estado en Móvil */}
+                              <div>
+                                <select
+                                  value={apt.status}
+                                  onChange={(e) => handleUpdateAppointmentStatus(apt.id, e.target.value as any)}
+                                  className={`w-full text-xs font-bold px-3 py-2 rounded-xl border focus:outline-none cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                                >
+                                  <option value="pendiente">⏳ Pendiente</option>
+                                  <option value="confirmada_wa">✓ Confirmada WA</option>
+                                  <option value="en_atencion">⚡ En Silla</option>
+                                  <option value="cobrada">💳 Cobrada</option>
+                                  <option value="completada">✨ Completada</option>
+                                  <option value="no_show">✕ No Show</option>
+                                </select>
+                              </div>
+
+                              {/* Botones de Acción Móviles (1 Toque) */}
+                              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex items-center gap-2">
+                                {apt.client_phone && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendWhatsAppNotification(apt, 'confirm')}
+                                    className="flex-1 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5" />
+                                    <span>WhatsApp</span>
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleChargeAppointmentInPos(apt)}
+                                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform cursor-pointer"
+                                >
+                                  <CreditCard className="w-3.5 h-3.5" />
+                                  <span>Cobrar</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteAppointment(apt.id)}
+                                  className="p-2.5 rounded-xl border border-rose-500/20 text-rose-400 hover:bg-rose-500/10 active:scale-95 transition-transform cursor-pointer"
+                                  title="Eliminar cita"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* VISTA ESCRITORIO (TABLA CLÁSICA) - hidden md:block */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left text-xs">
                         <thead className={`uppercase text-[10px] tracking-wider border-b ${
                           theme === 'dark' 
                             ? 'bg-white/5 text-slate-400 border-white/10' 
@@ -3457,7 +3560,8 @@ export const DashboardPage: React.FC = () => {
                         </tbody>
                       </table>
                     </div>
-                  )}
+                  </>
+                )}
                 </div>
               )}
 
@@ -3600,6 +3704,19 @@ export const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="pt-4 border-t border-black/5 dark:border-white/10 mt-4 flex gap-1.5">
+                        {client.phone_whatsapp && (
+                          <a
+                            href={`https://wa.me/${client.phone_whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                              `¡Hola ${client.full_name}! Te saludamos de ${salonName} ✨ ¿En qué podemos consentirte hoy?`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-colors flex items-center justify-center cursor-pointer"
+                            title="Contactar por WhatsApp"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </a>
+                        )}
                         <button
                           type="button"
                           onClick={() => setSelectedClientForFormula(client)}
