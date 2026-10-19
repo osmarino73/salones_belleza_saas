@@ -9091,6 +9091,10 @@ export const DashboardPage: React.FC = () => {
         featureName={upgradeModalState.featureName}
         featureDescription={upgradeModalState.featureDescription}
         salonName={salonName}
+        onNavigateToTeam={() => {
+          setUpgradeModalState(prev => ({ ...prev, isOpen: false }));
+          setActiveTab('catalog_team');
+        }}
       />
 
       {/* =========================================================================

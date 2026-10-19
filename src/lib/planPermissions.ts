@@ -178,3 +178,12 @@ export function getUpgradeWhatsAppUrl(requiredPlan: SubscriptionPlan, salonName?
   );
   return `https://wa.me/${phone}?text=${msg}`;
 }
+
+export function getExtraCollaboratorWhatsAppUrl(salonName?: string): string {
+  const phone = '573226334341';
+  const msg = encodeURIComponent(
+    `Hola Kowy! 👋 Mi salón es "${salonName || 'mi negocio'}". Estamos en el Plan Inicio y queremos sumar 1 colaborador adicional por +$10.000 COP/mes. ¿Cómo podemos activarlo?`
+  );
+  return `https://wa.me/${phone}?text=${msg}`;
+}
+
