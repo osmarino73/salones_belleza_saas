@@ -27,6 +27,7 @@ export interface SubscriptionPaymentMeta {
   rejection_reason?: string;
   plan_tier_requested?: PlanTier;
   max_stylists_requested?: number;
+  payment_scope?: 'full_renewal' | 'extra_slots_only';
 }
 
 export interface SubscriptionPayment {
@@ -43,6 +44,7 @@ export interface SubscriptionPayment {
   reviewed_at?: string;
   created_at: string;
   tenant_name?: string;
+  payment_scope?: 'full_renewal' | 'extra_slots_only';
   tenant_phone?: string;
   tenant_email?: string;
   max_stylists_requested?: number;

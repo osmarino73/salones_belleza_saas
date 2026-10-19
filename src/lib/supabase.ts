@@ -3001,6 +3001,7 @@ export const api = {
     notes?: string;
     plan_tier_requested?: PlanTier;
     max_stylists_requested?: number;
+    payment_scope?: 'full_renewal' | 'extra_slots_only';
   }): Promise<{ success: boolean; error?: string }> {
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Supabase no está configurado.' };
@@ -3051,7 +3052,8 @@ export const api = {
         submitted_at: new Date().toISOString(),
         status: 'pending',
         plan_tier_requested: targetPlan,
-        max_stylists_requested: receiptData.max_stylists_requested
+        max_stylists_requested: receiptData.max_stylists_requested,
+        payment_scope: receiptData.payment_scope || 'full_renewal'
       };
 
       const updatedBH = {
@@ -3212,16 +3214,22 @@ export const api = {
       const currentMeta = existingBH.subscription_meta || {};
       const targetPlan = currentMeta.plan_tier_requested || currentTenant.plan_tier || 'inicio';
 
-      // Regla Acumulativa: si trial_ends_at está en el futuro, sumamos 30 días a esa fecha; si no, desde hoy
-      let baseDate = new Date();
-      if (currentTenant.trial_ends_at) {
-        const currentEnd = new Date(currentTenant.trial_ends_at);
-        if (!isNaN(currentEnd.getTime()) && currentEnd.getTime() > baseDate.getTime()) {
-          baseDate = currentEnd;
-        }
-      }
+      // Si el pago fue SOLAMENTE para cupos extras a mitad de mes (Opción A):
+      // No alteramos la fecha de corte actual, solo activamos los cupos y actualizamos la tarifa futura
+      const isExtraSlotsOnly = currentMeta.payment_scope === 'extra_slots_only';
+      let newEndsAt = currentTenant.trial_ends_at;
 
-      const newEndsAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      if (!isExtraSlotsOnly) {
+        // Regla Acumulativa: si trial_ends_at está en el futuro, sumamos 30 días a esa fecha; si no, desde hoy
+        let baseDate = new Date();
+        if (currentTenant.trial_ends_at) {
+          const currentEnd = new Date(currentTenant.trial_ends_at);
+          if (!isNaN(currentEnd.getTime()) && currentEnd.getTime() > baseDate.getTime()) {
+            baseDate = currentEnd;
+          }
+        }
+        newEndsAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      }
 
       const updatedMeta: SubscriptionPaymentMeta = {
         ...currentMeta,
@@ -3237,16 +3245,24 @@ export const api = {
       const updatePayload: any = {
         plan_tier: targetPlan,
         subscription_status: 'active',
-        trial_ends_at: newEndsAt,
         business_hours: updatedBH,
         updated_at: new Date().toISOString()
       };
 
-      // Si el comprobante especificó cupos extras o tarifa calculada, sincronizar automáticamente
+      if (newEndsAt) {
+        updatePayload.trial_ends_at = newEndsAt;
+      }
+
+      // Sincronizar cupos de colaboradores
       if (typeof currentMeta.max_stylists_requested === 'number' && currentMeta.max_stylists_requested >= 3) {
         updatePayload.max_stylists = currentMeta.max_stylists_requested;
       }
-      if (typeof currentMeta.amount_cop === 'number' && currentMeta.amount_cop > 0) {
+
+      // Si fue solo cupos extra, la próxima mensualidad normal se calcula con los cupos totales
+      if (isExtraSlotsOnly && typeof currentMeta.max_stylists_requested === 'number') {
+        const totalExtras = Math.max(0, currentMeta.max_stylists_requested - 3);
+        updatePayload.subscription_price_cop = 29000 + totalExtras * 10000;
+      } else if (typeof currentMeta.amount_cop === 'number' && currentMeta.amount_cop > 0) {
         updatePayload.subscription_price_cop = currentMeta.amount_cop;
       }
 

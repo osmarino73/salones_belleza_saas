@@ -537,6 +537,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
   // Selector Interactivo de Plan y Colaboradores para Activación / Renovación
   const [selectedPlanTier, setSelectedPlanTier] = useState<PlanTier>('inicio');
   const [selectedPlanMaxStylists, setSelectedPlanMaxStylists] = useState<number>(3);
+  const [paymentScope, setPaymentScope] = useState<'extra_slots_only' | 'full_renewal'>('extra_slots_only');
 
   // Sincronizar automáticamente con el tenant activo
   useEffect(() => {
@@ -589,25 +590,43 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
     try {
       const targetPlan = selectedPlanTier;
       const targetMaxStylists = targetPlan === 'inicio' ? selectedPlanMaxStylists : (targetPlan === 'crecimiento' ? 999 : 3);
-      const extraSlots = targetPlan === 'inicio' && targetMaxStylists > 3 
+      const currentTenantMax = activeTenantObj?.max_stylists ?? 3;
+      const isExistingActivePlan = activeTenantObj?.subscription_status === 'active' || (activeTenantObj?.plan_tier === 'inicio');
+      const isUpgradingCuposMidCycle = isExistingActivePlan && targetPlan === 'inicio' && targetMaxStylists > currentTenantMax;
+      
+      const extraSlotsTotal = targetPlan === 'inicio' && targetMaxStylists > 3 
         ? (targetMaxStylists - 3) 
         : 0;
-      const amount = targetPlan === 'inicio' 
-        ? (29000 + extraSlots * 10000) 
-        : (targetPlan === 'crecimiento' ? 120000 : 0);
+      const addedSlotsNow = isUpgradingCuposMidCycle ? (targetMaxStylists - currentTenantMax) : extraSlotsTotal;
+
+      let amount = 0;
+      if (targetPlan === 'inicio') {
+        if (isUpgradingCuposMidCycle && paymentScope === 'extra_slots_only') {
+          amount = addedSlotsNow * 10000;
+        } else {
+          amount = 29000 + extraSlotsTotal * 10000;
+        }
+      } else if (targetPlan === 'crecimiento') {
+        amount = 120000;
+      }
+
+      const effectiveScope: 'full_renewal' | 'extra_slots_only' = isUpgradingCuposMidCycle ? paymentScope : 'full_renewal';
 
       const res = await api.submitSubscriptionReceipt(tid, {
         receipt_url: paymentReceiptUrl,
         payment_method: paymentMethod,
         amount_cop: amount,
         reference_number: paymentReferenceNumber,
-        notes: paymentNotes ? `${paymentNotes} (${targetMaxStylists} colaboradores solicitados)` : `${targetMaxStylists} colaboradores solicitados`,
+        notes: paymentNotes 
+          ? `${paymentNotes} (${targetMaxStylists} colaboradores • ${effectiveScope === 'extra_slots_only' ? 'Solo cupo extra' : 'Renovación completa'})` 
+          : `${targetMaxStylists} colaboradores (${effectiveScope === 'extra_slots_only' ? 'Solo cupo extra' : 'Renovación completa'})`,
         plan_tier_requested: targetPlan,
-        max_stylists_requested: targetMaxStylists
+        max_stylists_requested: targetMaxStylists,
+        payment_scope: effectiveScope
       });
 
       if (res.success) {
-        alert(`🎉 ¡Comprobante enviado exitosamente! Solicitaste ${targetPlan.toUpperCase()} con ${targetMaxStylists} colaboradores (${formatCurrency(amount, salonCurrency)}/mes). Tu cuenta quedó "En Verificación" mientras el equipo valida el pago.`);
+        alert(`🎉 ¡Comprobante enviado exitosamente! ${effectiveScope === 'extra_slots_only' ? `Sumaste ${addedSlotsNow} cupo(s) extra (${formatCurrency(amount, salonCurrency)})` : `Solicitaste ${targetPlan.toUpperCase()} con ${targetMaxStylists} colaboradores (${formatCurrency(amount, salonCurrency)})`}. Tu cuenta quedó "En Verificación" mientras el equipo valida el pago.`);
         setIsPaymentReceiptModalOpen(false);
         if (activeTenantObj) {
           const updatedMeta: SubscriptionPaymentMeta = {
@@ -619,7 +638,8 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
             submitted_at: new Date().toISOString(),
             status: 'pending',
             plan_tier_requested: targetPlan,
-            max_stylists_requested: targetMaxStylists
+            max_stylists_requested: targetMaxStylists,
+            payment_scope: effectiveScope
           };
           const updatedTenant = {
             ...activeTenantObj,
@@ -9061,9 +9081,17 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
       {isPaymentReceiptModalOpen && (() => {
         const targetTier = selectedPlanTier;
         const targetMax = targetTier === 'inicio' ? selectedPlanMaxStylists : (targetTier === 'crecimiento' ? 999 : 3);
-        const targetExtras = targetTier === 'inicio' && targetMax > 3 ? (targetMax - 3) : 0;
+        const currentTenantMax = activeTenantObj?.max_stylists ?? 3;
+        const isExistingActivePlan = activeTenantObj?.subscription_status === 'active' || (activeTenantObj?.plan_tier === 'inicio');
+        const isUpgradingCuposMidCycle = isExistingActivePlan && targetTier === 'inicio' && targetMax > currentTenantMax;
+
+        const extraSlotsTotal = targetTier === 'inicio' && targetMax > 3 ? (targetMax - 3) : 0;
+        const addedSlotsNow = isUpgradingCuposMidCycle ? (targetMax - currentTenantMax) : extraSlotsTotal;
+
         const dynamicPrice = targetTier === 'inicio'
-          ? (29000 + targetExtras * 10000)
+          ? (isUpgradingCuposMidCycle && paymentScope === 'extra_slots_only'
+              ? (addedSlotsNow * 10000)
+              : (29000 + extraSlotsTotal * 10000))
           : (targetTier === 'crecimiento' ? 120000 : (activeTenantObj?.subscription_price_cop || 29000));
 
         return (
@@ -9118,7 +9146,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       <span className="text-slate-300">
                         {targetTier === 'inicio' ? (
                           <>
-                            <strong>{targetMax} colaboradoras</strong> ({3} base + {targetExtras} extras)
+                            <strong>{targetMax} colaboradoras</strong> ({3} base + {extraSlotsTotal} extras)
                           </>
                         ) : (
                           <strong>Colaboradoras Ilimitadas</strong>
@@ -9147,6 +9175,63 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                     )}
                   </div>
                 </div>
+
+                {/* Selector Modalidad: Opción A (Solo Cupo Extra) vs Renovación Completa */}
+                {isUpgradingCuposMidCycle && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-teal-950/30 border border-emerald-500/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-emerald-400 flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Modalidad de Pago para Nuevos Cupos</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400">
+                        Cupos actuales: {currentTenantMax}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentScope('extra_slots_only')}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          paymentScope === 'extra_slots_only'
+                            ? 'border-emerald-500 bg-emerald-500/20 text-white shadow-md shadow-emerald-500/10'
+                            : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <strong className="text-xs text-emerald-300 block">⚡ Solo Cupo Extra Ahora</strong>
+                          <span className="text-[10px] font-black text-white bg-emerald-500/30 px-2 py-0.5 rounded-full">
+                            {formatCurrency(addedSlotsNow * 10000, salonCurrency)}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-300 block mt-1.5 leading-snug">
+                          Habilita +{addedSlotsNow} cupo(s) hoy sin alterar tu fecha de corte. Tu próxima cuota será de {formatCurrency(29000 + extraSlotsTotal * 10000, salonCurrency)}.
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPaymentScope('full_renewal')}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          paymentScope === 'full_renewal'
+                            ? 'border-blue-500 bg-blue-500/20 text-white shadow-md shadow-blue-500/10'
+                            : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <strong className="text-xs text-blue-300 block">📅 Renovar Plan (+30 Días)</strong>
+                          <span className="text-[10px] font-black text-white bg-blue-500/30 px-2 py-0.5 rounded-full">
+                            {formatCurrency(29000 + extraSlotsTotal * 10000, salonCurrency)}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-300 block mt-1.5 leading-snug">
+                          Extiende 30 días adicionales acumulables con todos tus {targetMax} cupos activos.
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Paso 1: Cuentas para Transferir */}
                 <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
@@ -9572,7 +9657,11 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
         }}
         onOpenSubscriptionModal={() => {
           setSelectedPlanTier('inicio');
-          setIsPlanModalOpen(true);
+          const nextMax = Math.max(4, (activeTenantObj?.max_stylists || 3) + 1);
+          setSelectedPlanMaxStylists(nextMax);
+          setPaymentScope('extra_slots_only');
+          setUpgradeModalState(prev => ({ ...prev, isOpen: false }));
+          setIsPaymentReceiptModalOpen(true);
         }}
       />
 
