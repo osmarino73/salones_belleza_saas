@@ -26,6 +26,7 @@ export interface SubscriptionPaymentMeta {
   reviewed_at?: string;
   rejection_reason?: string;
   plan_tier_requested?: PlanTier;
+  max_stylists_requested?: number;
 }
 
 export interface SubscriptionPayment {
@@ -44,6 +45,7 @@ export interface SubscriptionPayment {
   tenant_name?: string;
   tenant_phone?: string;
   tenant_email?: string;
+  max_stylists_requested?: number;
 }
 
 export interface Tenant {

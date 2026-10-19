@@ -473,6 +473,22 @@ export const DashboardPage: React.FC = () => {
   const [isCompressingReceipt, setIsCompressingReceipt] = useState(false);
   const [copiedAccountKey, setCopiedAccountKey] = useState<string | null>(null);
 
+  // Selector Interactivo de Plan y Colaboradores para Activación / Renovación
+  const [selectedPlanTier, setSelectedPlanTier] = useState<PlanTier>('inicio');
+  const [selectedPlanMaxStylists, setSelectedPlanMaxStylists] = useState<number>(3);
+
+  // Sincronizar automáticamente con el tenant activo
+  useEffect(() => {
+    if (activeTenantObj) {
+      if (activeTenantObj.plan_tier) {
+        setSelectedPlanTier(activeTenantObj.plan_tier as PlanTier);
+      }
+      if (typeof activeTenantObj.max_stylists === 'number' && activeTenantObj.max_stylists >= 3) {
+        setSelectedPlanMaxStylists(activeTenantObj.max_stylists);
+      }
+    }
+  }, [activeTenantObj?.id, activeTenantObj?.plan_tier, activeTenantObj?.max_stylists]);
+
   const handleCopyAccount = (key: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedAccountKey(key);
@@ -510,23 +526,27 @@ export const DashboardPage: React.FC = () => {
     const tid = activeTenantObj?.id || getActiveTenantId();
     setIsSubmittingReceipt(true);
     try {
-      const currentPlan = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
-      const extraSlots = currentPlan === 'inicio' && (activeTenantObj?.max_stylists ?? 3) > 3 
-        ? ((activeTenantObj?.max_stylists ?? 3) - 3) 
+      const targetPlan = selectedPlanTier;
+      const targetMaxStylists = targetPlan === 'inicio' ? selectedPlanMaxStylists : (targetPlan === 'crecimiento' ? 999 : 3);
+      const extraSlots = targetPlan === 'inicio' && targetMaxStylists > 3 
+        ? (targetMaxStylists - 3) 
         : 0;
-      const amount = activeTenantObj?.subscription_price_cop 
-        || (currentPlan === 'inicio' ? (29000 + extraSlots * 10000) : 120000);
+      const amount = targetPlan === 'inicio' 
+        ? (29000 + extraSlots * 10000) 
+        : (targetPlan === 'crecimiento' ? 120000 : 0);
+
       const res = await api.submitSubscriptionReceipt(tid, {
         receipt_url: paymentReceiptUrl,
         payment_method: paymentMethod,
         amount_cop: amount,
         reference_number: paymentReferenceNumber,
-        notes: paymentNotes,
-        plan_tier_requested: currentPlan
+        notes: paymentNotes ? `${paymentNotes} (${targetMaxStylists} colaboradores solicitados)` : `${targetMaxStylists} colaboradores solicitados`,
+        plan_tier_requested: targetPlan,
+        max_stylists_requested: targetMaxStylists
       });
 
       if (res.success) {
-        alert('🎉 ¡Comprobante enviado exitosamente! Tu cuenta quedó en estado "En Verificación". Tu salón y agendador siguen 100% activos mientras validamos.');
+        alert(`🎉 ¡Comprobante enviado exitosamente! Solicitaste ${targetPlan.toUpperCase()} con ${targetMaxStylists} colaboradores (${formatCurrency(amount, salonCurrency)}/mes). Tu cuenta quedó "En Verificación" mientras el equipo valida el pago.`);
         setIsPaymentReceiptModalOpen(false);
         if (activeTenantObj) {
           const updatedMeta: SubscriptionPaymentMeta = {
@@ -537,7 +557,8 @@ export const DashboardPage: React.FC = () => {
             notes: paymentNotes,
             submitted_at: new Date().toISOString(),
             status: 'pending',
-            plan_tier_requested: currentPlan
+            plan_tier_requested: targetPlan,
+            max_stylists_requested: targetMaxStylists
           };
           const updatedTenant = {
             ...activeTenantObj,
@@ -4826,16 +4847,37 @@ export const DashboardPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="text-base font-bold">Equipo de Estilistas & Especialistas</h3>
-                    <p className="text-xs text-slate-400">Control de porcentaje de comisiones por servicio y venta de productos.</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold">Equipo de Estilistas & Especialistas</h3>
+                      <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                        {stylists.length} de {activeTenantObj?.plan_tier === 'crecimiento' ? '∞' : (activeTenantObj?.max_stylists ?? 3)} cupos
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">Control de porcentaje de comisiones por servicio y venta de productos.</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleOpenNewStylist}
-                    className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0"
-                  >
-                    <Plus className="w-4 h-4" /> Agregar Profesional
-                  </button>
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    {activeTenantObj?.plan_tier !== 'crecimiento' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPlanTier('inicio');
+                          setIsPlanModalOpen(true);
+                        }}
+                        className="px-3.5 py-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-500/10"
+                        title="Ampliar cupo de colaboradores (+ $10.000 COP/mes)"
+                      >
+                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>⚡ Ampliar Cupos (+ $10k)</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleOpenNewStylist}
+                      className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Agregar Profesional
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -8468,33 +8510,146 @@ export const DashboardPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Botón Destacado: Pagar / Renovar por Nequi o Bancolombia */}
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[#FF5A36]/10 to-teal-500/10 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-extrabold text-white">¿Deseas activar o sumar 30 días a tu Plan?</span>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md font-bold">
-                      +30 Días Acumulables
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-snug">
-                    Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong> y sube tu comprobante. Los 30 días se sumarán a los días que tengas disponibles.
-                    {extraSlots > 0 && (
-                      <span className="block text-emerald-400 font-bold mt-1 text-[11px]">
-                        ✨ Incluye Plan Inicio ($29.000) + {extraSlots} colaborador(es) extra (+{formatCurrency(extraSlots * 10000, salonCurrency)}).
+              {/* SELECTOR INTERACTIVO DE PLAN & COLABORADORES EXTRA */}
+              {(() => {
+                const targetTier = selectedPlanTier;
+                const targetMax = targetTier === 'inicio' ? selectedPlanMaxStylists : (targetTier === 'crecimiento' ? 999 : 3);
+                const targetExtras = targetTier === 'inicio' && targetMax > 3 ? (targetMax - 3) : 0;
+                const dynamicPrice = targetTier === 'inicio' 
+                  ? (29000 + targetExtras * 10000) 
+                  : (targetTier === 'crecimiento' ? 120000 : 0);
+
+                return (
+                  <div className="p-5 rounded-2xl bg-[#0E121B] border-2 border-emerald-500/40 space-y-4 shadow-xl">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-3">
+                      <div>
+                        <span className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Configura tu Plan y Colaboradores para Activar o Renovar</span>
+                        </span>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                          Elige cuántos colaboradores atenderán citas en tu salón y calcula tu tarifa mensual en tiempo real.
+                        </p>
+                      </div>
+                      <span className="text-xs font-black text-white bg-emerald-500/20 border border-emerald-500/30 px-3.5 py-1 rounded-full font-mono shrink-0">
+                        Total: {formatCurrency(dynamicPrice, salonCurrency)} / mes
                       </span>
-                    )}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsPaymentReceiptModalOpen(true)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Pagar o Renovar ({formatCurrency(planPrice, salonCurrency)})</span>
-                </button>
-              </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Selector de Plan Tier */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Plan SaaS a Contratar</span>
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPlanTier('inicio');
+                              if (selectedPlanMaxStylists > 10) setSelectedPlanMaxStylists(3);
+                            }}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              selectedPlanTier === 'inicio'
+                                ? 'border-blue-500 bg-blue-500/20 text-white font-black shadow-md shadow-blue-500/20'
+                                : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <strong className="block text-xs text-blue-300">🚀 Plan Inicio</strong>
+                            <span className="text-[10px] text-slate-300 block mt-0.5">$29.000 COP / mes</span>
+                            <span className="text-[9px] text-blue-400 font-bold block mt-1">3 base + extras</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPlanTier('crecimiento');
+                              setSelectedPlanMaxStylists(999);
+                            }}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              selectedPlanTier === 'crecimiento'
+                                ? 'border-amber-500 bg-amber-500/20 text-white font-black shadow-md shadow-amber-500/20'
+                                : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <strong className="block text-xs text-amber-300">📈 Crecimiento</strong>
+                            <span className="text-[10px] text-slate-300 block mt-0.5">$120.000 COP / mes</span>
+                            <span className="text-[9px] text-amber-400 font-bold block mt-1">Ilimitadas + POS</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Selector de Cupo de Colaboradores (si es Plan Inicio) */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Cupo de Colaboradores</span>
+                          </span>
+                          {selectedPlanTier === 'inicio' && (
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                              {selectedPlanMaxStylists > 3 
+                                ? `+${selectedPlanMaxStylists - 3} extra(s) (+${formatCurrency((selectedPlanMaxStylists - 3) * 10000, salonCurrency)})` 
+                                : '3 base incluidos'}
+                            </span>
+                          )}
+                        </label>
+
+                        {selectedPlanTier === 'inicio' ? (
+                          <select
+                            value={selectedPlanMaxStylists}
+                            onChange={(e) => setSelectedPlanMaxStylists(Number(e.target.value))}
+                            className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-400 text-xs font-bold cursor-pointer"
+                          >
+                            <option value={3}>3 Colaboradores (Base incluida • $29.000 COP/mes)</option>
+                            <option value={4}>4 Colaboradores (+1 extra • $39.000 COP/mes)</option>
+                            <option value={5}>5 Colaboradores (+2 extras • $49.000 COP/mes)</option>
+                            <option value={6}>6 Colaboradores (+3 extras • $59.000 COP/mes)</option>
+                            <option value={7}>7 Colaboradores (+4 extras • $69.000 COP/mes)</option>
+                            <option value={8}>8 Colaboradores (+5 extras • $79.000 COP/mes)</option>
+                            <option value={9}>9 Colaboradores (+6 extras • $89.000 COP/mes)</option>
+                            <option value={10}>10 Colaboradores (+7 extras • $99.000 COP/mes)</option>
+                          </select>
+                        ) : (
+                          <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-emerald-400 text-xs font-bold flex items-center justify-between">
+                            <span>Colaboradoras 100% Ilimitadas</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Sin límite en Plan Crecimiento</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Botón Destacado: Pagar / Renovar por Nequi o Bancolombia */}
+                    <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm sm:text-base font-extrabold text-white">¿Deseas activar o sumar 30 días a tu Plan?</span>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md font-bold">
+                            +30 Días Acumulables
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-0.5 leading-snug">
+                          Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong>.
+                          {targetTier === 'inicio' && targetExtras > 0 && (
+                            <span className="block text-emerald-400 font-bold mt-0.5 text-[11px]">
+                              ✨ Incluye Plan Inicio ($29.000) + {targetExtras} colaborador(es) extra (+{formatCurrency(targetExtras * 10000, salonCurrency)}). Total: {formatCurrency(dynamicPrice, salonCurrency)}.
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsPaymentReceiptModalOpen(true)}
+                        className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Pagar o Renovar ({formatCurrency(dynamicPrice, salonCurrency)})</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Escalera Oficial Completa de Planes SaaS (6 Planes con Destacado Dinámico) */}
               <div className="space-y-3">
@@ -8648,8 +8803,12 @@ export const DashboardPage: React.FC = () => {
 
       {/* MODAL / DRAWER MOBILE-FIRST: SUBIR COMPROBANTE NEQUI / BANCOLOMBIA */}
       {isPaymentReceiptModalOpen && (() => {
-        const currentTier = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
-        const planPrice = activeTenantObj?.subscription_price_cop || (currentTier === 'inicio' ? 29000 : 120000);
+        const targetTier = selectedPlanTier;
+        const targetMax = targetTier === 'inicio' ? selectedPlanMaxStylists : (targetTier === 'crecimiento' ? 999 : 3);
+        const targetExtras = targetTier === 'inicio' && targetMax > 3 ? (targetMax - 3) : 0;
+        const dynamicPrice = targetTier === 'inicio'
+          ? (29000 + targetExtras * 10000)
+          : (targetTier === 'crecimiento' ? 120000 : (activeTenantObj?.subscription_price_cop || 29000));
 
         return (
           <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
@@ -8685,6 +8844,54 @@ export const DashboardPage: React.FC = () => {
               {/* Cuerpo del Formulario con Scroll */}
               <form onSubmit={handleSubmitReceipt} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-xs custom-scrollbar">
                 
+                {/* Resumen del Plan & Cupos Seleccionados */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/50 via-slate-900 to-emerald-950/30 border border-blue-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                      <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Configuración del Plan a Activar</span>
+                    </span>
+                    <span className="text-xs font-black text-white px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40">
+                      {targetTier === 'inicio' ? '🚀 Plan Inicio' : '📈 Plan Crecimiento'}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-white/5">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Users className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-300">
+                        {targetTier === 'inicio' ? (
+                          <>
+                            <strong>{targetMax} colaboradoras</strong> ({3} base + {targetExtras} extras)
+                          </>
+                        ) : (
+                          <strong>Colaboradoras Ilimitadas</strong>
+                        )}
+                      </span>
+                    </div>
+
+                    {targetTier === 'inicio' && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400 font-semibold">Ajustar cupos:</span>
+                        <select
+                          value={selectedPlanMaxStylists}
+                          onChange={(e) => setSelectedPlanMaxStylists(Number(e.target.value))}
+                          className="bg-black/60 border border-emerald-500/40 rounded-lg px-2 py-1 text-[11px] font-bold text-emerald-400 focus:outline-none cursor-pointer"
+                        >
+                          <option value={3}>3 cupos ($29.000)</option>
+                          <option value={4}>4 cupos ($39.000)</option>
+                          <option value={5}>5 cupos ($49.000)</option>
+                          <option value={6}>6 cupos ($59.000)</option>
+                          <option value={7}>7 cupos ($69.000)</option>
+                          <option value={8}>8 cupos ($79.000)</option>
+                          <option value={9}>9 cupos ($89.000)</option>
+                          <option value={10}>10 cupos ($99.000)</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Paso 1: Cuentas para Transferir */}
                 <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2">
@@ -8692,7 +8899,7 @@ export const DashboardPage: React.FC = () => {
                       <span>1. Datos de Transferencia</span>
                     </span>
                     <span className="text-sm font-black text-emerald-400">
-                      Valor: {formatCurrency(planPrice, salonCurrency)}
+                      Valor a Pagar: {formatCurrency(dynamicPrice, salonCurrency)}
                     </span>
                   </div>
 
@@ -9106,6 +9313,10 @@ export const DashboardPage: React.FC = () => {
         onNavigateToTeam={() => {
           setUpgradeModalState(prev => ({ ...prev, isOpen: false }));
           setActiveTab('catalog_team');
+        }}
+        onOpenSubscriptionModal={() => {
+          setSelectedPlanTier('inicio');
+          setIsPlanModalOpen(true);
         }}
       />
 

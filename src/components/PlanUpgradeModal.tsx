@@ -11,6 +11,7 @@ interface PlanUpgradeModalProps {
   featureDescription?: string;
   salonName?: string;
   onNavigateToTeam?: () => void;
+  onOpenSubscriptionModal?: () => void;
 }
 
 export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
@@ -21,7 +22,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   featureName,
   featureDescription,
   salonName,
-  onNavigateToTeam
+  onNavigateToTeam,
+  onOpenSubscriptionModal
 }) => {
   if (!isOpen) return null;
 
@@ -86,16 +88,32 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   Conservas tu Plan Inicio ($29.000) y solo sumas el cupo extra para tu nuevo colaborador. Pagas únicamente <strong>$39.000 COP/mes</strong> en total.
                 </p>
 
-                <a
-                  href={extraCollaboratorUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4 fill-current" />
-                  <span>Pedir 1 Cupo Extra por WhatsApp (+$10k/mes)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <div className="space-y-2">
+                  {onOpenSubscriptionModal && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenSubscriptionModal();
+                      }}
+                      className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                      <Users className="w-4 h-4" />
+                      <span>⚡ Configurar Cupos y Pagar en Kowy</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  <a
+                    href={extraCollaboratorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/10 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
+                    <span>O solicitar por WhatsApp con un Asesor</span>
+                  </a>
+                </div>
               </div>
 
               {/* OPCIÓN 2: PLAN CRECIMIENTO ILIMITADO */}

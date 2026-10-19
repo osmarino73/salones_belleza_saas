@@ -2971,6 +2971,7 @@ export const api = {
     reference_number?: string;
     notes?: string;
     plan_tier_requested?: PlanTier;
+    max_stylists_requested?: number;
   }): Promise<{ success: boolean; error?: string }> {
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Supabase no está configurado.' };
@@ -3020,7 +3021,8 @@ export const api = {
         notes: receiptData.notes || '',
         submitted_at: new Date().toISOString(),
         status: 'pending',
-        plan_tier_requested: targetPlan
+        plan_tier_requested: targetPlan,
+        max_stylists_requested: receiptData.max_stylists_requested
       };
 
       const updatedBH = {
@@ -3203,15 +3205,25 @@ export const api = {
         subscription_meta: updatedMeta
       };
 
+      const updatePayload: any = {
+        plan_tier: targetPlan,
+        subscription_status: 'active',
+        trial_ends_at: newEndsAt,
+        business_hours: updatedBH,
+        updated_at: new Date().toISOString()
+      };
+
+      // Si el comprobante especificó cupos extras o tarifa calculada, sincronizar automáticamente
+      if (typeof currentMeta.max_stylists_requested === 'number' && currentMeta.max_stylists_requested >= 3) {
+        updatePayload.max_stylists = currentMeta.max_stylists_requested;
+      }
+      if (typeof currentMeta.amount_cop === 'number' && currentMeta.amount_cop > 0) {
+        updatePayload.subscription_price_cop = currentMeta.amount_cop;
+      }
+
       const { error: updateErr } = await supabase
         .from('tenants')
-        .update({
-          plan_tier: targetPlan,
-          subscription_status: 'active',
-          trial_ends_at: newEndsAt,
-          business_hours: updatedBH,
-          updated_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', tenantId);
 
       if (updateErr) return { success: false, error: updateErr.message };
