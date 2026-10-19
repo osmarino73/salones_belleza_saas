@@ -75,7 +75,8 @@ import {
   Download,
   Share2,
   Printer,
-  Copy
+  Copy,
+  MoreHorizontal
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
 import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant, SubscriptionPaymentMeta, PlanTier } from '../types';
@@ -184,6 +185,10 @@ export const DashboardPage: React.FC = () => {
   const [isQuickCategoryOpen, setIsQuickCategoryOpen] = useState(false);
   const [quickCategoryName, setQuickCategoryName] = useState('');
   const [quickCategoryIcon, setQuickCategoryIcon] = useState('✨');
+
+  // Estados Mobile-First: Bottom Navigation Bar, Quick Actions & More Tools Drawer
+  const [isMobileQuickActionsOpen, setIsMobileQuickActionsOpen] = useState(false);
+  const [isMobileMoreMenuOpen, setIsMobileMoreMenuOpen] = useState(false);
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [showServiceGuide, setShowServiceGuide] = useState(false);
@@ -1722,8 +1727,8 @@ export const DashboardPage: React.FC = () => {
             <span className="hidden md:inline">Kowy <span className="text-[#FF5A36]">.app</span></span>
           </Link>
 
-          {/* Segmented Pill Navigation Strip */}
-          <nav className={`p-1 rounded-full border flex items-center gap-1 overflow-x-auto no-scrollbar shrink-0 max-w-full ${
+          {/* Segmented Pill Navigation Strip (Visible en Desktop) */}
+          <nav className={`hidden md:flex p-1 rounded-full border items-center gap-1 overflow-x-auto no-scrollbar shrink-0 max-w-full ${
             theme === 'dark' ? 'bg-[#0E121B] border-white/10' : 'bg-[#F5F6FA] border-black/5'
           }`}>
             {[
@@ -2010,7 +2015,7 @@ export const DashboardPage: React.FC = () => {
       </header>
 
       {/* Main Fluid Canvas Container */}
-      <main className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-6">
+      <main className="max-w-[1600px] mx-auto p-3.5 sm:p-8 space-y-5 sm:space-y-6 pb-28 md:pb-8">
 
         {/* =========================================================================
             VIEW 1: OVERVIEW (FINEXY 3-COLUMN OPERATIONS BOARD)
@@ -8840,6 +8845,305 @@ export const DashboardPage: React.FC = () => {
         featureDescription={upgradeModalState.featureDescription}
         salonName={salonName}
       />
+
+      {/* =========================================================================
+          MOBILE-FIRST BOTTOM NAVIGATION BAR (FIXED EN CELULARES)
+          ========================================================================= */}
+      
+      {/* 1. Backdrop y Action Sheet al tocar el botón Central + */}
+      {isMobileQuickActionsOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setIsMobileQuickActionsOpen(false)}
+          />
+          <div className={`relative z-10 p-5 rounded-t-3xl border-t space-y-3 animate-slide-up shadow-2xl ${
+            theme === 'dark' ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'
+          }`}>
+            <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[#FF5A36]/15 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <strong className="text-sm font-extrabold">Acciones Rápidas</strong>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsMobileQuickActionsOpen(false)}
+                className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileQuickActionsOpen(false);
+                  setIsNewAppointmentOpen(true);
+                }}
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FF5A36] to-[#FF7A59] text-white font-bold text-xs flex items-center justify-between shadow-lg shadow-[#FF5A36]/25 transition-transform active:scale-98"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-sm font-extrabold leading-tight">Nueva Cita</span>
+                    <span className="text-[11px] opacity-80">Agendar cliente en sillón</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 opacity-80" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileQuickActionsOpen(false);
+                  handleNavigateTab('pos');
+                }}
+                className={`p-3.5 rounded-2xl border font-bold text-xs flex items-center justify-between transition-transform active:scale-98 ${
+                  theme === 'dark' ? 'bg-[#1E2433] border-white/10 hover:border-white/20 text-white' : 'bg-[#F9FAFC] border-black/10 text-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                    <DollarSign className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-sm font-extrabold leading-tight">Cobrar en Caja POS</span>
+                    <span className="text-[11px] text-slate-400">Registrar venta o liquidar</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileQuickActionsOpen(false);
+                  handleOpenNewService();
+                }}
+                className={`p-3.5 rounded-2xl border font-bold text-xs flex items-center justify-between transition-transform active:scale-98 ${
+                  theme === 'dark' ? 'bg-[#1E2433] border-white/10 hover:border-white/20 text-white' : 'bg-[#F9FAFC] border-black/10 text-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                    <Scissors className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-sm font-extrabold leading-tight">Nuevo Servicio</span>
+                    <span className="text-[11px] text-slate-400">Añadir al catálogo con foto</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Drawer Inferior Táctil "Más Herramientas" */}
+      {isMobileMoreMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setIsMobileMoreMenuOpen(false)}
+          />
+          <div className={`relative z-10 p-5 rounded-t-3xl border-t space-y-4 animate-slide-up shadow-2xl max-h-[80vh] overflow-y-auto ${
+            theme === 'dark' ? 'bg-[#141926] border-white/10 text-white' : 'bg-white border-black/10 text-slate-900'
+          }`}>
+            <div className="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/10">
+              <div>
+                <strong className="text-sm font-extrabold block">Más Herramientas del Salón</strong>
+                <span className="text-[11px] text-slate-400">Gestión avanzada, marketing e inteligencia</span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsMobileMoreMenuOpen(false)}
+                className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  handleNavigateTab('whatsapp');
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-98 ${
+                  activeTab === 'whatsapp' ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#FF5A36]' : 'bg-white/5 border-white/10 text-slate-300'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mb-2">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">WhatsApp & Bot</strong>
+                <span className="text-[10px] text-slate-400 block">Chats y asistente IA</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  setActiveTab('catalog_team');
+                  setCatalogSubTab('services');
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-98 ${
+                  activeTab === 'catalog_team' ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#FF5A36]' : 'bg-white/5 border-white/10 text-slate-300'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/15 text-[#FF5A36] flex items-center justify-center mb-2">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">Catálogo & Equipo</strong>
+                <span className="text-[10px] text-slate-400 block">Servicios y estilistas</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  handleNavigateTab('crm');
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-98 ${
+                  activeTab === 'crm' ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#FF5A36]' : 'bg-white/5 border-white/10 text-slate-300'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center mb-2">
+                  <Users className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">CRM Clientas</strong>
+                <span className="text-[10px] text-slate-400 block">Fichas técnicas y color</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  handleNavigateTab('website');
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-98 ${
+                  activeTab === 'website' ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#FF5A36]' : 'bg-white/5 border-white/10 text-slate-300'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center mb-2">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">Página Web</strong>
+                <span className="text-[10px] text-slate-400 block">Personalizar portada</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  handleNavigateTab('loyalty');
+                }}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-98 ${
+                  activeTab === 'loyalty' ? 'bg-[#FF5A36]/15 border-[#FF5A36] text-[#FF5A36]' : 'bg-white/5 border-white/10 text-slate-300'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-xl bg-pink-500/15 text-pink-400 flex items-center justify-center mb-2">
+                  <Heart className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">Fidelización</strong>
+                <span className="text-[10px] text-slate-400 block">Reactivar clientas</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMoreMenuOpen(false);
+                  setIsQrModalOpen(true);
+                }}
+                className="p-3 rounded-2xl border bg-white/5 border-white/10 text-slate-300 text-left transition-all active:scale-98 hover:border-emerald-500/40"
+              >
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mb-2">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <strong className="text-xs font-bold block leading-snug">Código QR</strong>
+                <span className="text-[10px] text-slate-400 block">Para mostrador</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Barra de Navegación Inferior Fija (Bottom Navigation Bar) */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 border-t px-2 flex items-center justify-around transition-colors backdrop-blur-xl ${
+        theme === 'dark' ? 'bg-[#0E121B]/95 border-white/10' : 'bg-white/95 border-black/10 shadow-2xl'
+      }`}>
+        {/* Tab 1: Inicio */}
+        <button
+          type="button"
+          onClick={() => handleNavigateTab('overview')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+            activeTab === 'overview' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Layers className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight">Inicio</span>
+        </button>
+
+        {/* Tab 2: Agenda */}
+        <button
+          type="button"
+          onClick={() => handleNavigateTab('agenda')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 relative transition-all cursor-pointer ${
+            activeTab === 'agenda' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className="relative">
+            <Calendar className="w-5 h-5 mb-0.5" />
+            {appointments.filter(a => a.status === 'pendiente').length > 0 && (
+              <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-[#FF5A36] ring-2 ring-[#0E121B]" />
+            )}
+          </div>
+          <span className="text-[10px] leading-tight">Agenda</span>
+        </button>
+
+        {/* Tab 3: Botón Central Flotante + */}
+        <div className="flex items-center justify-center flex-1 -mt-5">
+          <button
+            type="button"
+            onClick={() => setIsMobileQuickActionsOpen(!isMobileQuickActionsOpen)}
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF5A36] to-[#FF7A59] text-white flex items-center justify-center shadow-lg shadow-[#FF5A36]/40 ring-4 ring-[#090B10] active:scale-90 transition-transform cursor-pointer"
+            title="Crear Rápido"
+          >
+            <Plus className={`w-6 h-6 transition-transform duration-300 ${isMobileQuickActionsOpen ? 'rotate-45' : ''}`} />
+          </button>
+        </div>
+
+        {/* Tab 4: Caja POS */}
+        <button
+          type="button"
+          onClick={() => handleNavigateTab('pos')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+            activeTab === 'pos' ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <DollarSign className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight">Caja</span>
+        </button>
+
+        {/* Tab 5: Más Opciones */}
+        <button
+          type="button"
+          onClick={() => setIsMobileMoreMenuOpen(!isMobileMoreMenuOpen)}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+            isMobileMoreMenuOpen ? 'text-[#FF5A36] font-extrabold' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <MoreHorizontal className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight">Más</span>
+        </button>
+      </nav>
 
     </div>
   );
