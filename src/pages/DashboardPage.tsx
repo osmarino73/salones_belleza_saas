@@ -189,6 +189,17 @@ export const DashboardPage: React.FC = () => {
   // Estados Mobile-First: Bottom Navigation Bar, Quick Actions & More Tools Drawer
   const [isMobileQuickActionsOpen, setIsMobileQuickActionsOpen] = useState(false);
   const [isMobileMoreMenuOpen, setIsMobileMoreMenuOpen] = useState(false);
+  const [copiedLinkFeedback, setCopiedLinkFeedback] = useState(false);
+
+  const handleCopyBookingLink = () => {
+    const activeSlug = activeTenantObj?.slug || 'salon';
+    const url = `${window.location.origin}/reservar/${activeSlug}`;
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(url);
+    }
+    setCopiedLinkFeedback(true);
+    setTimeout(() => setCopiedLinkFeedback(false), 2200);
+  };
 
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [showServiceGuide, setShowServiceGuide] = useState(false);
@@ -2185,8 +2196,199 @@ export const DashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* Top Operations 3-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* =========================================================================
+                HERO TÁCTICO MOBILE-FIRST ("LO QUE IMPORTA HOY") - SOLO CELULARES md:hidden
+                ========================================================================= */}
+            {(() => {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const todayAppts = appointments.filter(a => a.date === todayStr);
+              const todayRevenue = todayAppts
+                .filter(a => a.status === 'cobrada' || a.status === 'completada' || a.status === 'en_atencion')
+                .reduce((acc, curr) => acc + (Number(curr.price_usd || curr.price_cop || (curr as any).total_price) || 0), 0);
+              
+              const inChairAppts = todayAppts.filter(a => a.status === 'en_atencion');
+              const pendingAppts = todayAppts.filter(a => a.status === 'pendiente');
+              const confirmedAppts = todayAppts.filter(a => a.status === 'confirmada_wa');
+              const completedAppts = todayAppts.filter(a => a.status === 'cobrada' || a.status === 'completada');
+
+              const nextAppt = todayAppts.find(a => a.status === 'pendiente' || a.status === 'confirmada_wa' || a.status === 'en_atencion');
+
+              return (
+                <div className="md:hidden space-y-4">
+                  {/* Tarjeta Principal: Facturación & Pulso del Día */}
+                  <div className={`p-5 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
+                    theme === 'dark'
+                      ? 'bg-gradient-to-br from-[#181F33] via-[#141926] to-[#0E1322] border-white/10 text-white'
+                      : 'bg-gradient-to-br from-white via-slate-50 to-orange-50/30 border-black/10 text-slate-900'
+                  }`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                          FACTURACIÓN DE HOY
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        {completedAppts.length} cobradas
+                      </span>
+                    </div>
+
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className="text-3xl font-black tracking-tight text-[#FF5A36]">
+                        {formatCurrency(todayRevenue, salonCurrency)}
+                      </span>
+                    </div>
+
+                    {/* Chips de Ocupación en Sillones */}
+                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-black/5 dark:border-white/10 text-center">
+                      <div className="p-2 rounded-xl bg-black/20 dark:bg-black/30">
+                        <span className="text-[10px] text-slate-400 block font-medium">En Sillón</span>
+                        <strong className="text-sm font-extrabold text-amber-400">{inChairAppts.length}</strong>
+                      </div>
+                      <div className="p-2 rounded-xl bg-black/20 dark:bg-black/30">
+                        <span className="text-[10px] text-slate-400 block font-medium">Confirmadas</span>
+                        <strong className="text-sm font-extrabold text-emerald-400">{confirmedAppts.length}</strong>
+                      </div>
+                      <div className="p-2 rounded-xl bg-black/20 dark:bg-black/30">
+                        <span className="text-[10px] text-slate-400 block font-medium">Por Confirmar</span>
+                        <strong className="text-sm font-extrabold text-slate-300">{pendingAppts.length}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Atajos Gigantes Táctiles para una Sola Mano */}
+                  <div className="grid grid-cols-3 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsNewAppointmentOpen(true)}
+                      className="p-3 rounded-2xl bg-gradient-to-tr from-[#FF5A36] to-[#FF7A59] text-white font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-[#FF5A36]/30 active:scale-95 transition-transform cursor-pointer"
+                    >
+                      <Calendar className="w-5 h-5" />
+                      <span className="text-[11px] leading-none">+ Cita</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleNavigateTab('pos')}
+                      className={`p-3 rounded-2xl border font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer shadow-sm ${
+                        theme === 'dark' ? 'bg-[#141926] border-white/10 text-white hover:border-white/20' : 'bg-white border-black/10 text-slate-900'
+                      }`}
+                    >
+                      <DollarSign className="w-5 h-5 text-emerald-500" />
+                      <span className="text-[11px] leading-none">Cobrar POS</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyBookingLink}
+                      className={`p-3 rounded-2xl border font-extrabold text-xs flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer shadow-sm ${
+                        copiedLinkFeedback
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                          : theme === 'dark' ? 'bg-[#141926] border-white/10 text-white hover:border-white/20' : 'bg-white border-black/10 text-slate-900'
+                      }`}
+                    >
+                      {copiedLinkFeedback ? <Check className="w-5 h-5 text-emerald-400" /> : <Share2 className="w-5 h-5 text-purple-400" />}
+                      <span className="text-[11px] leading-none">{copiedLinkFeedback ? '¡Copiado!' : 'Link WA'}</span>
+                    </button>
+                  </div>
+
+                  {/* Tarjeta de Próxima Cita Inmediata */}
+                  {nextAppt ? (
+                    <div className={`p-4 rounded-2xl border transition-all ${
+                      theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/30' : 'bg-white border-black/10 shadow-sm'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#FF5A36]">
+                            ⚡ PRÓXIMA CLIENTA
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                            {nextAppt.time}
+                          </span>
+                        </div>
+                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                          nextAppt.status === 'en_atencion'
+                            ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                            : nextAppt.status === 'confirmada_wa'
+                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                        }`}>
+                          {nextAppt.status === 'en_atencion' ? 'En Sillón' : nextAppt.status === 'confirmada_wa' ? 'Confirmada' : 'Pendiente'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="min-w-0">
+                          <strong className="text-sm font-extrabold block truncate text-white">
+                            {nextAppt.client_name}
+                          </strong>
+                          <span className="text-xs text-slate-400 block truncate">
+                            {nextAppt.service_name} • {nextAppt.stylist_name}
+                          </span>
+                        </div>
+                        <span className="text-sm font-black text-[#FF5A36] shrink-0">
+                          {formatCurrency(nextAppt.price_usd || nextAppt.price_cop || (nextAppt as any).total_price || 0, salonCurrency)}
+                        </span>
+                      </div>
+
+                      {/* Botones de Acción de 1 Toque */}
+                      <div className="flex items-center gap-2 pt-2 border-t border-black/5 dark:border-white/10">
+                        {nextAppt.client_phone && (
+                          <a
+                            href={`https://wa.me/${nextAppt.client_phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                              `¡Hola ${nextAppt.client_name}! Te saludamos de ${salonName} ✨ Te recordamos tu cita de hoy a las ${nextAppt.time} para ${nextAppt.service_name} con ${nextAppt.stylist_name}. ¿Nos confirmas tu asistencia? ¡Te esperamos!`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+
+                        {nextAppt.status !== 'en_atencion' ? (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const updated = { ...nextAppt, status: 'en_atencion' as const };
+                              setAppointments(appointments.map(a => a.id === nextAppt.id ? updated : a));
+                              await api.updateAppointmentStatus(nextAppt.id, 'en_atencion');
+                            }}
+                            className="flex-1 py-2 rounded-xl bg-[#FF5A36]/15 border border-[#FF5A36]/30 text-[#FF5A36] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer"
+                          >
+                            <Zap className="w-3.5 h-3.5" />
+                            <span>Pasar a Sillón</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleNavigateTab('pos');
+                            }}
+                            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-transform cursor-pointer shadow-sm"
+                          >
+                            <DollarSign className="w-3.5 h-3.5" />
+                            <span>Cobrar en Caja</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`p-4 rounded-2xl border text-center space-y-2 ${
+                      theme === 'dark' ? 'bg-[#141926] border-white/10' : 'bg-white border-black/10'
+                    }`}>
+                      <span className="text-xl">🌴</span>
+                      <strong className="text-xs font-bold block text-slate-300">No tienes más citas pendientes para hoy</strong>
+                      <span className="text-[11px] text-slate-500 block">Aprovecha para compartir tu link de reservas o crear promociones.</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Top Operations 3-Column Grid (Desktop & Tablet) */}
+            <div className="hidden md:grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Card 1: Balance & Stylists Wallet */}
               <div className={`lg:col-span-4 rounded-2xl p-6 border flex flex-col justify-between ${
