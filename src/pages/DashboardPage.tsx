@@ -4987,110 +4987,108 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             featureDescription: `Tu Plan Inicio incluye 3 cupos base por $29.000 COP/mes. Actualmente tienes ${activeTenantObj?.max_stylists ?? 3} cupos configurados. Puedes sumar colaboradores adicionales por solo $10.000 COP/mes cada uno o pasar a Plan Crecimiento para cupos ilimitados.`
                           });
                         }}
-                        className="px-3.5 py-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-500/10 active:scale-95"
+                        className="px-3.5 py-2 rounded-xl border border-white/[0.12] bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                         title="Ampliar cupo de colaboradores (+ $10.000 COP/mes)"
                       >
-                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <Users className="w-3.5 h-3.5 text-slate-400" />
                         <span>⚡ Ampliar Cupos (+ $10k)</span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={handleOpenNewStylist}
-                      className="bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-[#FF5A36]/30 transition-all shrink-0 cursor-pointer"
+                      className="bg-white hover:bg-slate-200 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer active:scale-95"
                     >
                       <Plus className="w-4 h-4" /> Agregar Profesional
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {stylists.map((sty) => (
                     <div
                       key={sty.id}
                       onClick={() => handleOpenStylistDetails(sty)}
-                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all cursor-pointer group ${
+                      className={`rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 cursor-pointer group ${
                         theme === 'dark'
-                          ? 'bg-[#141926] border-white/10 hover:border-[#FF5A36]/60 hover:shadow-xl hover:shadow-[#FF5A36]/10'
-                          : 'bg-white border-black/5 hover:border-[#FF5A36]/60 hover:shadow-md'
+                          ? 'bg-[#121622]/90 border-white/[0.08] hover:border-white/20 hover:shadow-2xl hover:shadow-black/50'
+                          : 'bg-white border-black/5 hover:border-black/15 hover:shadow-md'
                       }`}
                     >
                       <div>
-                        <div className="flex items-start justify-between pb-3 border-b border-black/5 dark:border-white/10 mb-4 gap-2">
+                        <div className="flex items-start justify-between pb-3.5 border-b border-black/5 dark:border-white/[0.06] mb-3.5 gap-2">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             <img
                               src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                               alt={sty.name}
-                              className="w-14 h-14 min-w-[56px] min-h-[56px] max-w-[56px] max-h-[56px] rounded-full object-cover border-2 border-[#FF5A36] group-hover:scale-105 transition-transform shrink-0 aspect-square"
+                              className="w-12 h-12 min-w-[48px] min-h-[48px] max-w-[48px] max-h-[48px] rounded-full object-cover ring-1 ring-white/10 group-hover:ring-white/25 transition-all shrink-0 aspect-square"
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <strong className="text-sm font-bold block truncate group-hover:text-[#FF5A36] transition-colors">{sty.name}</strong>
-                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 group-hover:text-[#FF5A36] transition-all shrink-0" />
+                                <strong className="text-sm font-semibold block truncate text-white group-hover:text-slate-100 transition-colors">
+                                  {sty.name}
+                                </strong>
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
                               </div>
                               <span className="text-xs text-slate-400 block truncate">{sty.specialty}</span>
-                              {sty.email && <span className="text-[11px] text-[#FF5A36] block truncate font-mono">{sty.email}</span>}
-                              {sty.phone && <span className="text-[10px] text-slate-500 block truncate">WhatsApp: {sty.phone}</span>}
-                              <div className="flex items-center gap-1 text-[11px] text-amber-400 font-bold mt-0.5">
-                                <Star className="w-3 h-3 fill-amber-400 shrink-0" />
-                                <span>{sty.rating || '5.0'}</span>
-                                <span className="text-slate-400 font-normal">({sty.reviews_count || 0} reseñas)</span>
+                              {sty.email && <span className="text-[11px] text-slate-400 block truncate font-mono mt-0.5">{sty.email}</span>}
+                              {sty.phone && <span className="text-[10px] text-slate-400 block truncate">WhatsApp: {sty.phone}</span>}
+                              <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                                <Star className="w-3 h-3 fill-amber-400/80 text-amber-400/80 shrink-0" />
+                                <span className="font-medium text-slate-300">{sty.rating || '5.0'}</span>
+                                <span className="text-slate-400 text-[10px]">({sty.reviews_count || 0})</span>
                               </div>
                             </div>
                           </div>
+                          
                           <div className="flex flex-col items-end gap-1.5 shrink-0">
                             {sty.is_owner || sty.role === 'admin' ? (
-                              <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-1 whitespace-nowrap">
-                                👑 Dueña / Admin
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-300 border border-amber-400/20 whitespace-nowrap">
+                                Dueña
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 whitespace-nowrap">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08] whitespace-nowrap">
                                 Colaborador
                               </span>
                             )}
-                            {sty.attends_clients === false ? (
-                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
-                                💼 Solo Gestión
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 whitespace-nowrap">
-                                ✂️ Atiende Citas
-                              </span>
-                            )}
+                            <span className="text-[10px] text-slate-400 whitespace-nowrap flex items-center gap-1">
+                              <span className={`w-1.5 h-1.5 rounded-full ${sty.attends_clients === false ? 'bg-slate-500' : 'bg-emerald-400'}`} />
+                              <span>{sty.attends_clients === false ? 'Solo Gestión' : 'Atiende Citas'}</span>
+                            </span>
                           </div>
                         </div>
 
                         {/* Commission stats */}
                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                           <div className={`p-2.5 rounded-xl border ${
-                            theme === 'dark' ? 'bg-[#1A2133] border-white/5' : 'bg-[#F9FAFC] border-black/5'
+                            theme === 'dark' ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-slate-50 border-black/5'
                           }`}>
-                            <span className="text-[10px] text-slate-400 block">Comisión Servicios</span>
-                            <strong className="text-sm font-bold text-[#FF5A36]">{sty.commission_service_pct ?? 45}%</strong>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Servicios</span>
+                            <strong className="text-sm font-semibold text-white">{sty.commission_service_pct ?? 45}%</strong>
                           </div>
                           <div className={`p-2.5 rounded-xl border ${
-                            theme === 'dark' ? 'bg-[#1A2133] border-white/5' : 'bg-[#F9FAFC] border-black/5'
+                            theme === 'dark' ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-slate-50 border-black/5'
                           }`}>
-                            <span className="text-[10px] text-slate-400 block">Comisión Retail</span>
-                            <strong className="text-sm font-bold text-emerald-500">{sty.commission_retail_pct ?? 10}%</strong>
+                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Retail</span>
+                            <strong className="text-sm font-semibold text-white">{sty.commission_retail_pct ?? 10}%</strong>
                           </div>
                         </div>
 
                         {/* Service Categories Chips */}
-                        <div className="flex flex-wrap gap-1 mb-3">
+                        <div className="flex flex-wrap gap-1.5 mb-3">
                           {(sty.service_categories && sty.service_categories.length > 0 ? sty.service_categories : ['color', 'corte']).map(cat => {
                             const catLabels: Record<string, string> = {
-                              color: '🎨 Color',
-                              corte: '✂️ Corte',
-                              keratina: '💆‍♀️ Keratina',
-                              nails: '💅 Nails',
-                              barberia: '💈 Barber',
-                              spa: '🧖‍♀️ Spa'
+                              color: 'Color',
+                              corte: 'Corte',
+                              keratina: 'Keratina',
+                              nails: 'Nails',
+                              barberia: 'Barbería',
+                              spa: 'Spa'
                             };
                             return (
                               <span
                                 key={cat}
-                                className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#FF5A36]/10 text-[#FF5A36] border border-[#FF5A36]/20"
+                                className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08]"
                               >
                                 {catLabels[cat] || cat}
                               </span>
@@ -5099,33 +5097,34 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                         </div>
 
                         {/* Availability Pill Summary */}
-                        <div className="flex items-center justify-between text-[11px] px-3 py-2 rounded-xl bg-white/5 border border-white/5 mb-3">
-                          <div className="flex items-center gap-1.5 text-slate-300 font-semibold">
-                            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                        <div className="flex items-center justify-between text-[11px] px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] mb-2.5 text-slate-300">
+                          <div className="flex items-center gap-1.5 text-slate-400">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
                             <span>{(sty.working_days || [1,2,3,4,5,6]).length} días/sem</span>
                           </div>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            (sty.blocked_dates && sty.blocked_dates.length > 0)
-                              ? 'bg-amber-400/10 text-amber-400 border border-amber-400/20'
-                              : 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20'
-                          }`}>
-                            {(sty.blocked_dates && sty.blocked_dates.length > 0)
-                              ? `🌴 ${sty.blocked_dates.length} día(s) bloqueado(s)`
-                              : '✅ 100% Disponible'}
-                          </span>
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              (sty.blocked_dates && sty.blocked_dates.length > 0) ? 'bg-amber-400' : 'bg-emerald-400'
+                            }`} />
+                            <span>
+                              {(sty.blocked_dates && sty.blocked_dates.length > 0)
+                                ? `${sty.blocked_dates.length} día(s) ausente`
+                                : 'Disponible'}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Quick detail hint */}
-                        <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-400 group-hover:text-[#FF5A36] transition-colors py-1">
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Ver Expediente 360° (Citas & Comisiones)</span>
+                        <div className="flex items-center justify-center gap-1 text-[11px] font-medium text-slate-400 group-hover:text-slate-200 transition-colors py-1">
+                          <Eye className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Ver Expediente 360°</span>
                         </div>
                       </div>
 
                       {/* Actions */}
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-between items-center gap-2 text-xs"
+                        className="pt-3 border-t border-black/5 dark:border-white/[0.06] flex justify-between items-center gap-2 text-xs"
                       >
                         <button
                           type="button"
@@ -5133,11 +5132,11 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             e.stopPropagation();
                             handleOpenStylistAvailability(sty);
                           }}
-                          className="px-3 py-1.5 rounded-lg border border-blue-500/20 text-blue-400 hover:bg-blue-500/10 font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl border border-white/[0.08] hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all cursor-pointer"
                           title="Gestionar días no disponibles y vacaciones"
                         >
-                          <CalendarOff className="w-3.5 h-3.5" />
-                          <span>Disponibilidad</span>
+                          <CalendarOff className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Horario</span>
                         </button>
 
                         <div className="flex items-center gap-1.5">
@@ -5154,11 +5153,11 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                                 });
                                 setIsCredentialsModalOpen(true);
                               }}
-                              className="px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/15 font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl border border-white/[0.08] hover:border-emerald-500/40 bg-white/[0.03] hover:bg-emerald-500/10 text-slate-300 hover:text-emerald-300 font-medium flex items-center gap-1 transition-all cursor-pointer"
                               title="Compartir credenciales y link de acceso por WhatsApp"
                             >
-                              <MessageCircle className="w-3.5 h-3.5 fill-emerald-500/20" />
-                              <span className="hidden sm:inline text-[11px]">Accesos</span>
+                              <MessageCircle className="w-3.5 h-3.5 text-slate-400 hover:text-emerald-300" />
+                              <span className="text-[11px]">Accesos</span>
                             </button>
                           )}
                           <button
@@ -5167,11 +5166,14 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               e.stopPropagation();
                               handleEditStylist(sty);
                             }}
-                            className={`px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                              theme === 'dark' ? 'bg-[#1E222B] border-white/10 hover:border-[#FF5A36] text-slate-300' : 'bg-[#F0F2F7] border-black/5 hover:border-[#FF5A36] text-slate-800'
+                            className={`px-2.5 py-1.5 rounded-xl border font-medium flex items-center gap-1 transition-all cursor-pointer ${
+                              theme === 'dark' 
+                                ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/20 text-slate-300 hover:text-white' 
+                                : 'bg-slate-100 border-black/5 text-slate-800'
                             }`}
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-[#FF5A36]" /> Editar
+                            <Edit3 className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Editar</span>
                           </button>
                           <button
                             type="button"
@@ -5179,7 +5181,8 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               e.stopPropagation();
                               handleDeleteStylist(sty.id);
                             }}
-                            className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 font-medium flex items-center justify-center transition-all cursor-pointer"
+                            title="Eliminar profesional"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
