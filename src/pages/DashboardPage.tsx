@@ -62,6 +62,8 @@ import {
   Ban,
   CalendarOff,
   Eye,
+  EyeOff,
+  Key,
   Mail,
   Award,
   Percent,
@@ -166,6 +168,65 @@ export const DashboardPage: React.FC = () => {
     service_categories: ['color', 'corte'],
     service_ids: []
   });
+
+  const [createdCollaboratorCredentials, setCreatedCollaboratorCredentials] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    password?: string;
+    specialty?: string;
+  } | null>(null);
+  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
+  const [showStylistPassword, setShowStylistPassword] = useState(false);
+  const [copiedCredentials, setCopiedCredentials] = useState(false);
+
+  const handleGenerateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+    let res = '';
+    for (let i = 0; i < 10; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setStylistForm(prev => ({ ...prev, password: res }));
+    setShowStylistPassword(true);
+  };
+
+  const handleSendCredentialsWhatsApp = (cred: { name: string; email: string; phone: string; password?: string }) => {
+    const cleanPhone = (cred.phone || '').replace(/\D/g, '');
+    const fullPhone = cleanPhone.startsWith('57') ? cleanPhone : `57${cleanPhone}`;
+    const accessUrl = `${window.location.origin}/colaborador`;
+    const msg = `¡Hola ${cred.name}! 👋 Bienvenida al equipo de *${salonName || 'nuestro salón'}* en Kowy.
+
+Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de citas, clientas y comisiones desde tu celular:
+
+🔗 *Link de Acceso:* ${accessUrl}
+📧 *Tu Usuario:* ${cred.email}
+🔑 *Contraseña:* ${cred.password || '(Conservas tu contraseña actual)'}
+
+📱 *Tip:* Abre este enlace en Safari o Chrome y selecciona *"Agregar a la pantalla de inicio"* para tenerlo como una App en tu celular.
+
+¡Muchos éxitos! ✨`;
+
+    window.open(`https://wa.me/${fullPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  const handleCopyCredentialsText = (cred: { name: string; email: string; phone: string; password?: string }) => {
+    const accessUrl = `${window.location.origin}/colaborador`;
+    const msg = `¡Hola ${cred.name}! 👋 Bienvenida al equipo de *${salonName || 'nuestro salón'}* en Kowy.
+
+Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de citas, clientas y comisiones desde tu celular:
+
+🔗 Link de Acceso: ${accessUrl}
+📧 Tu Usuario: ${cred.email}
+🔑 Contraseña: ${cred.password || '(Conservas tu contraseña actual)'}
+
+📱 Tip: Abre este enlace en Safari o Chrome y selecciona "Agregar a la pantalla de inicio" para tenerlo como una App en tu celular.`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(msg);
+      setCopiedCredentials(true);
+      setTimeout(() => setCopiedCredentials(false), 2500);
+    }
+  };
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ServiceCategory | null>(null);
@@ -1035,6 +1096,18 @@ export const DashboardPage: React.FC = () => {
       };
       await api.updateStylist(updated, stylistForm.password || undefined);
       setStylists(stylists.map(s => s.id === updated.id ? updated : s));
+      setIsStylistModalOpen(false);
+
+      if (stylistForm.password && updated.email) {
+        setCreatedCollaboratorCredentials({
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone || updated.phone_whatsapp || '',
+          password: stylistForm.password,
+          specialty: updated.specialty
+        });
+        setIsCredentialsModalOpen(true);
+      }
     } else {
       const newSty: Stylist = {
         id: '',
@@ -1057,10 +1130,20 @@ export const DashboardPage: React.FC = () => {
         service_ids: stylistForm.service_ids,
         is_active: true
       };
-      const saved = await api.createStylist(newSty, stylistForm.password || 'BeautyFlow2026*');
+      const savedPass = stylistForm.password || 'BeautyFlow2026*';
+      const saved = await api.createStylist(newSty, savedPass);
       setStylists([saved, ...stylists]);
+      setIsStylistModalOpen(false);
+
+      setCreatedCollaboratorCredentials({
+        name: saved.name,
+        email: saved.email || stylistForm.email,
+        phone: saved.phone || stylistForm.phone,
+        password: savedPass,
+        specialty: saved.specialty
+      });
+      setIsCredentialsModalOpen(true);
     }
-    setIsStylistModalOpen(false);
   };
 
   const handleDeleteStylist = async (id: string) => {
@@ -5034,6 +5117,26 @@ export const DashboardPage: React.FC = () => {
                         </button>
 
                         <div className="flex items-center gap-1.5">
+                          {sty.email && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCreatedCollaboratorCredentials({
+                                  name: sty.name,
+                                  email: sty.email || '',
+                                  phone: sty.phone || sty.phone_whatsapp || '',
+                                  specialty: sty.specialty
+                                });
+                                setIsCredentialsModalOpen(true);
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/15 font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                              title="Compartir credenciales y link de acceso por WhatsApp"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5 fill-emerald-500/20" />
+                              <span className="hidden sm:inline text-[11px]">Accesos</span>
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={(e) => {
@@ -6167,19 +6270,39 @@ export const DashboardPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">
-                    {editingStylist ? 'Nueva Clave (Opcional)' : 'Contraseña Provisoria *'}
-                  </label>
-                  <input
-                    type="text"
-                    value={stylistForm.password}
-                    onChange={(e) => setStylistForm({ ...stylistForm, password: e.target.value })}
-                    placeholder={editingStylist ? 'Dejar en blanco para conservar' : 'Ej. Glamour2026*'}
-                    className={`w-full border rounded-xl p-2.5 font-mono focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                    required={!editingStylist}
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-400 font-semibold">
+                      {editingStylist ? 'Nueva Clave (Opcional)' : 'Contraseña de Acceso *'}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateRandomPassword}
+                      className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Generar contraseña segura aleatoria"
+                    >
+                      <Key className="w-3 h-3" />
+                      <span>Generar</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showStylistPassword ? 'text' : 'password'}
+                      value={stylistForm.password}
+                      onChange={(e) => setStylistForm({ ...stylistForm, password: e.target.value })}
+                      placeholder={editingStylist ? 'Dejar en blanco para conservar' : 'Ej. Glamour2026*'}
+                      className={`w-full border rounded-xl p-2.5 pr-10 font-mono focus:outline-none focus:border-[#FF5A36] ${
+                        theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
+                      }`}
+                      required={!editingStylist}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowStylistPassword(!showStylistPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {showStylistPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -6203,7 +6326,14 @@ export const DashboardPage: React.FC = () => {
                     className="w-full bg-transparent px-3 py-2.5 font-mono focus:outline-none text-xs font-semibold"
                   />
                 </div>
-                <span className="text-[10px] text-slate-500 mt-0.5 block">Escribe los 10 dígitos de su celular</span>
+                
+                {/* Banner de envío por WhatsApp */}
+                <div className="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 text-[11px] text-emerald-300">
+                  <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0 fill-emerald-500/20" />
+                  <span>
+                    <strong>Envío fácil:</strong> Al guardar, podrás compartir sus credenciales y el link móvil directamente por WhatsApp.
+                  </span>
+                </div>
               </div>
 
               <div>
@@ -6314,11 +6444,114 @@ export const DashboardPage: React.FC = () => {
                   className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{editingStylist ? 'Actualizar Profesional' : 'Guardar Profesional'}</span>
+                  <span>{editingStylist ? 'Guardar Cambios' : 'Guardar y Compartir Accesos'}</span>
                 </button>
               </div>
             </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: COMPARTIR CREDENCIALES POR WHATSAPP (MÓVIL PRIMERO) */}
+      {isCredentialsModalOpen && createdCollaboratorCredentials && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center p-3 sm:p-4 animate-fade-in">
+          <div className="w-full sm:max-w-md bg-[#121829] border border-emerald-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl text-white space-y-4">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold shadow-inner">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white leading-tight">
+                    ¡Colaborador Listo!
+                  </h3>
+                  <span className="text-xs text-emerald-400 font-semibold">
+                    Credenciales generadas con éxito
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCredentialsModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tarjeta de Resumen Visual de Credenciales */}
+            <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-slate-400 font-medium">Profesional:</span>
+                <strong className="text-white font-bold">{createdCollaboratorCredentials.name}</strong>
+              </div>
+
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-slate-400 font-medium">Link de Ingreso:</span>
+                <span className="text-blue-400 font-mono font-bold">{window.location.origin}/colaborador</span>
+              </div>
+
+              <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                <span className="text-slate-400 font-medium">Usuario / Email:</span>
+                <span className="text-emerald-400 font-mono font-bold truncate max-w-[200px]">
+                  {createdCollaboratorCredentials.email}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-medium">Contraseña:</span>
+                <span className="text-amber-300 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  {createdCollaboratorCredentials.password || '(Contraseña establecida)'}
+                </span>
+              </div>
+            </div>
+
+            {/* Aviso de WhatsApp */}
+            <p className="text-xs text-slate-300 leading-snug">
+              Envía ahora las credenciales directamente al WhatsApp de tu colaboradora para que pueda acceder a su panel y ver sus citas desde su teléfono.
+            </p>
+
+            {/* Botones de Acción */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleSendCredentialsWhatsApp(createdCollaboratorCredentials)}
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#25D366]/20 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span>Enviar Credenciales por WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCopyCredentialsText(createdCollaboratorCredentials)}
+                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/10 transition-colors cursor-pointer"
+              >
+                {copiedCredentials ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400 font-bold">¡Texto de acceso copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar Credenciales al Portapapeles</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsCredentialsModalOpen(false)}
+                className="w-full py-2 text-center text-xs text-slate-400 hover:text-white font-semibold transition-colors cursor-pointer mt-1"
+              >
+                Continuar en el Dashboard
+              </button>
+            </div>
+
           </div>
         </div>
       )}

@@ -861,17 +861,31 @@ export const api = {
     const cleanId = isValidUUID(stylist.id) ? stylist.id : generateUUID();
     const cleanTenantId = isValidUUID(tid) ? tid : getActiveTenantId();
 
-    // 1. Crear usuario en Supabase Auth (auth.users)
-    if (stylist.email && password) {
+    // 1. Crear usuario en Supabase Auth de forma AISLADA (cliente efímero sin sesión persistida)
+    // Esto garantiza que el administrador NO sea deslogueado ni se sobreescriba su sesión local.
+    if (stylist.email && password && isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
       try {
-        const authRes = await this.auth.signUp(stylist.email, password, {
-          name: stylist.name,
-          role: stylist.role || 'colaborador',
-          tenant_id: cleanTenantId
+        const ephemeralClient = createClient(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
         });
-        console.log(`Supabase Auth account registered for collaborator (${stylist.email}):`, authRes);
+        const authRes = await ephemeralClient.auth.signUp({
+          email: stylist.email,
+          password: password,
+          options: {
+            data: {
+              name: stylist.name,
+              role: stylist.role || 'colaborador',
+              tenant_id: cleanTenantId
+            }
+          }
+        });
+        console.log(`[Auth Aislado] Colaborador registrado en Supabase Auth sin tocar sesión de admin (${stylist.email}):`, authRes);
       } catch (authErr) {
-        console.warn('Auth registration notice for collaborator:', authErr);
+        console.warn('[Auth Aislado] Aviso al registrar auth del colaborador:', authErr);
       }
     }
 
@@ -955,15 +969,30 @@ export const api = {
   async updateStylist(stylist: Stylist, password?: string): Promise<Stylist> {
     const tid = stylist.tenant_id || getActiveTenantId();
 
-    // Si se especificó una nueva contraseña, registrar/actualizar en Supabase Auth
-    if (stylist.email && password) {
+    // Si se especificó una nueva contraseña, registrar/actualizar en Supabase Auth de forma AISLADA
+    if (stylist.email && password && isSupabaseConfigured && supabaseUrl && supabaseAnonKey) {
       try {
-        await this.auth.signUp(stylist.email, password, {
-          name: stylist.name,
-          role: stylist.role || 'colaborador',
-          tenant_id: tid
+        const ephemeralClient = createClient(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
         });
-      } catch (authErr) {}
+        await ephemeralClient.auth.signUp({
+          email: stylist.email,
+          password: password,
+          options: {
+            data: {
+              name: stylist.name,
+              role: stylist.role || 'colaborador',
+              tenant_id: tid
+            }
+          }
+        });
+      } catch (authErr) {
+        console.warn('[Auth Aislado] Aviso al actualizar auth del colaborador:', authErr);
+      }
     }
 
     const payload = {
