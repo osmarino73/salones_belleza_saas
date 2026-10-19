@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { api, initialServices, initialStylists, getActiveTenantId } from '../lib/supabase';
 import { checkMonthlyBookingLimit } from '../lib/planPermissions';
+import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
 import { Service, Stylist, Client } from '../types';
 
 interface DayScheduleResult {
@@ -926,14 +927,21 @@ export const BookingPage: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-start gap-3 min-w-0 flex-1">
-                        {srv.image_url && (
-                          <img
-                            src={srv.image_url}
-                            alt={srv.name}
-                            className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0 shadow-sm"
-                            loading="lazy"
-                          />
-                        )}
+                        {(() => {
+                          const displayImg = srv.image_url || getSuggestedImageForService(srv.name, srv.category);
+                          return displayImg ? (
+                            <img
+                              src={displayImg}
+                              alt={srv.name}
+                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-white/10 shrink-0 shadow-sm"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                              <Scissors className="w-6 h-6 text-slate-500" />
+                            </div>
+                          );
+                        })()}
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="text-sm sm:text-base font-bold text-white leading-snug break-words">

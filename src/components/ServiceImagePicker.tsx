@@ -9,7 +9,7 @@ import {
   Camera,
   RefreshCw
 } from 'lucide-react';
-import { StockImageItem, getManagedStockLibrary, getSuggestedImageForService } from '../lib/beautyImageLibrary';
+import { StockImageItem, getManagedStockLibrary, getSuggestedImageForService, uploadStockImageBlob } from '../lib/beautyImageLibrary';
 import { compressImage } from '../utils/imageCompressor';
 
 interface ServiceImagePickerProps {
@@ -86,6 +86,17 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
     setIsCompressing(true);
     try {
       const res = await compressImage(file, { maxWidth: 900, maxHeight: 900, quality: 0.85 });
+      try {
+        const fetchRes = await fetch(res.dataUrl);
+        const blob = await fetchRes.blob();
+        const uploadRes = await uploadStockImageBlob(blob, `servicio_${serviceName || category || 'custom'}_${Date.now()}`);
+        if (uploadRes.url) {
+          onChange(uploadRes.url);
+          return;
+        }
+      } catch (uploadErr) {
+        console.warn('Fallback a dataUrl para imagen de servicio:', uploadErr);
+      }
       onChange(res.dataUrl);
     } catch (err) {
       console.error('Error compressing uploaded service image:', err);
@@ -103,10 +114,11 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
     setUrlInput('');
   };
 
+  const suggestedUrl = getSuggestedImageForService(serviceName || 'servicio', category);
+
   const handleAutoSuggest = () => {
-    const suggested = getSuggestedImageForService(serviceName || 'servicio', category);
-    if (suggested) {
-      onChange(suggested);
+    if (suggestedUrl) {
+      onChange(suggestedUrl);
     }
   };
 
@@ -119,7 +131,7 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
         </label>
         
         {/* Sugerencia Rápida con IA / Algoritmo */}
-        {serviceName && !value && (
+        {suggestedUrl && !value && (
           <button
             type="button"
             onClick={handleAutoSuggest}
@@ -141,6 +153,35 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
           </button>
         )}
       </div>
+
+      {/* Sugerencia Rápida de 1 Toque con IA / Algoritmo */}
+      {suggestedUrl && !value && (
+        <div className="p-2.5 rounded-2xl bg-gradient-to-r from-[#FF5A36]/15 via-[#FF5A36]/5 to-transparent border border-[#FF5A36]/30 flex items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src={suggestedUrl}
+              alt="Foto sugerida"
+              className="w-12 h-12 rounded-xl object-cover border border-white/20 shrink-0 shadow-sm"
+            />
+            <div className="min-w-0">
+              <span className="text-[11px] font-black text-[#FF5A36] flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Foto Recomendada para tu Servicio
+              </span>
+              <span className="text-[10px] text-slate-400 block truncate">
+                Alta resolución, optimizada para catálogo y agendador
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(suggestedUrl)}
+            className="px-3 py-1.5 rounded-xl bg-[#FF5A36] hover:bg-[#E54E07] text-white text-xs font-bold shrink-0 shadow-md shadow-[#FF5A36]/20 transition-all cursor-pointer flex items-center gap-1"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Usar Esta</span>
+          </button>
+        </div>
+      )}
 
       {/* Preview Card cuando hay imagen asignada */}
       {value ? (

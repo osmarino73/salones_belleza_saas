@@ -1129,7 +1129,7 @@ export const DashboardPage: React.FC = () => {
       name: '',
       category: categories[0]?.slug || 'color',
       duration_minutes: 45,
-      price_usd: 30,
+      price_usd: salonCurrency === 'COP' ? 35000 : 25,
       image_url: '',
       requires_patch_test: false,
       description: '',
@@ -4705,22 +4705,25 @@ export const DashboardPage: React.FC = () => {
                       <div>
                         {/* Contenedor de Fotografía de Alta Estética con Aspect Ratio 16:10 */}
                         <div className="w-full aspect-[16/10] rounded-xl overflow-hidden mb-3.5 border border-white/10 relative bg-black/40">
-                          {srv.image_url ? (
-                            <img
-                              src={srv.image_url}
-                              alt={srv.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-white/5 to-white/0 text-slate-500">
-                              <Scissors className="w-8 h-8 opacity-40 mb-1" />
-                              <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Sin Fotografía</span>
-                            </div>
-                          )}
+                          {(() => {
+                            const displayImg = srv.image_url || getSuggestedImageForService(srv.name, srv.category);
+                            return displayImg ? (
+                              <img
+                                src={displayImg}
+                                alt={srv.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-white/5 to-white/0 text-slate-500">
+                                <Scissors className="w-8 h-8 opacity-40 mb-1" />
+                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-60">Sin Fotografía</span>
+                              </div>
+                            );
+                          })()}
 
                           {/* Gradiente de contraste para legibilidad de badges */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
                           {/* Badge Flotante de Categoría */}
                           <div className="absolute top-2.5 left-2.5 z-10">
