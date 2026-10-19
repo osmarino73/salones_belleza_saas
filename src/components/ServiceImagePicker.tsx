@@ -10,6 +10,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { StockImageItem, getManagedStockLibrary, getSuggestedImageForService, uploadStockImageBlob } from '../lib/beautyImageLibrary';
+import { uploadImageToR2 } from '../services/r2Storage';
 import { compressImage } from '../utils/imageCompressor';
 
 interface ServiceImagePickerProps {
@@ -89,7 +90,7 @@ export const ServiceImagePicker: React.FC<ServiceImagePickerProps> = ({
       try {
         const fetchRes = await fetch(res.dataUrl);
         const blob = await fetchRes.blob();
-        const uploadRes = await uploadStockImageBlob(blob, `servicio_${serviceName || category || 'custom'}_${Date.now()}`);
+        const uploadRes = await uploadImageToR2(blob, `servicio_${serviceName || category || 'custom'}_${Date.now()}`, 'services');
         if (uploadRes.url) {
           onChange(uploadRes.url);
           return;
