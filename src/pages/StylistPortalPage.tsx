@@ -556,7 +556,7 @@ export const StylistPortalPage: React.FC = () => {
           </div>
         )}
 
-        {/* HERO PROFILE 360° GLASS CARD */}
+        {/* HERO PROFILE 360° GLASS CARD (Mobile-First Touch Optimized) */}
         <div className={`p-4 sm:p-6 rounded-3xl border relative overflow-hidden backdrop-blur-xl transition-all ${
           theme === 'dark' 
             ? 'bg-gradient-to-r from-[#141926]/90 via-[#101420]/80 to-[#141926]/90 border-white/10 shadow-2xl shadow-black/40' 
@@ -565,39 +565,39 @@ export const StylistPortalPage: React.FC = () => {
           {/* Subtle top accent gradient line */}
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF5A36] to-transparent opacity-80" />
 
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 sm:gap-4">
             
-            {/* Avatar & Profile Info */}
-            <div className="flex items-center gap-3.5 sm:gap-4 w-full md:w-auto">
+            {/* Avatar & Profile Info (Mobile Compact) */}
+            <div className="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
               <div className="relative shrink-0">
                 <img
                   src={currentStylist.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                   alt={currentStylist.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#FF5A36]/80 shadow-xl shadow-[#FF5A36]/25"
+                  className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#FF5A36]/80 shadow-xl shadow-[#FF5A36]/25"
                 />
-                <span className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0B0F19] ${
+                <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-[#0B0F19] ${
                   stylistStatus === 'disponible' ? 'bg-emerald-500 animate-pulse' :
                   stylistStatus === 'en_atencion' ? 'bg-amber-500' : 'bg-slate-500'
                 }`} />
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-lg sm:text-2xl font-black tracking-tight truncate text-white">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <h1 className="text-base sm:text-2xl font-black tracking-tight truncate text-white">
                     {currentStylist.name}
                   </h1>
-                  <span className="flex items-center gap-1 text-[11px] font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shadow-sm">
+                  <span className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-[11px] font-black text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shadow-sm">
                     <Star className="w-3 h-3 fill-amber-400" />
                     <span>{currentStylist.rating || '5.0'}</span>
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-400 mt-0.5 truncate font-medium">
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate font-medium">
                   {currentStylist.specialty}
                 </p>
 
                 {/* Commission Badges & Password Quick Modal */}
-                <div className="flex items-center gap-2 mt-2 text-[10px] sm:text-[11px] flex-wrap">
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] flex-wrap">
                   <span className="bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/20 font-black px-2 py-0.5 rounded-lg">
                     {serviceCommissionPct}% Servicios
                   </span>
@@ -608,7 +608,7 @@ export const StylistPortalPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsChangePasswordModalOpen(true)}
-                    className={`p-1 px-2.5 rounded-lg border text-[10px] sm:text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                    className={`p-1 px-2 rounded-lg border text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95 ${
                       theme === 'dark' 
                         ? 'bg-white/5 border-white/10 hover:border-[#FF5A36] text-slate-300' 
                         : 'bg-slate-100 border-black/5 hover:border-[#FF5A36] text-slate-700'
@@ -622,14 +622,21 @@ export const StylistPortalPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Live Stylist Status Switcher Segmented Controller */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full md:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-white/5">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Estado en Salón:</span>
+            {/* Live Stylist Status Switcher Segmented Controller (Mobile-First Touch Bar) */}
+            <div className="w-full md:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-white/5">
+              <div className="flex items-center justify-between sm:justify-start gap-2 mb-1.5 sm:mb-1">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <Activity className="w-3 h-3 text-[#FF5A36]" />
+                  <span>Estado en Salón</span>
+                </span>
+                <span className="sm:hidden text-[10px] text-slate-400 font-medium">1-toque</span>
+              </div>
+              
               <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 border border-white/10 rounded-2xl w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setStylistStatus('disponible')}
-                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`text-[11px] font-black px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                     stylistStatus === 'disponible'
                       ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 font-black'
                       : 'text-slate-400 hover:text-white'
@@ -642,26 +649,26 @@ export const StylistPortalPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStylistStatus('en_atencion')}
-                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`text-[11px] font-black px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                     stylistStatus === 'en_atencion'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 font-black'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Scissors className="w-3 h-3" />
+                  <Scissors className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>En Sillón</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setStylistStatus('descanso')}
-                  className={`text-[11px] font-black px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`text-[11px] font-black px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                     stylistStatus === 'descanso'
                       ? 'bg-slate-700 text-white shadow-md'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3.5 h-3.5" />
                   <span>Descanso</span>
                 </button>
               </div>
@@ -670,112 +677,119 @@ export const StylistPortalPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 3 LIVE GLASS METRIC CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
-          
-          {/* Card 1: Mi Comisión Cobrada Hoy */}
-          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
-            theme === 'dark' ? 'bg-[#141926]/90 border-emerald-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
-          }`}>
-            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
-              <span className="flex items-center gap-1.5">
-                <Wallet className="w-4 h-4 text-emerald-400" />
-                <span>Mi Billetera de Hoy</span>
-              </span>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
-                {serviceCommissionPct}% comisión
-              </span>
-            </div>
-
-            <div className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight my-1">
-              {formatCurrency(earnedCommissionsToday, salonCurrency)}
-            </div>
-
-            <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1 flex-wrap pt-2 border-t border-white/5">
-              <span className="flex items-center gap-1 font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{billedAppointmentsToday.length} turno(s) cobrado(s)</span>
-              </span>
-              {waitingPayAppointmentsToday.length > 0 && (
-                <span className="text-purple-300 font-bold bg-purple-500/15 px-2 py-0.5 rounded-full border border-purple-500/20 text-[10px]">
-                  💳 +{formatCurrency(waitingPayCommissionsToday, salonCurrency)} en caja
+        {/* 3 LIVE GLASS METRIC CARDS (Mobile Horizontal Snap Carousel + Desktop Grid) */}
+        <div>
+          <div className="flex sm:grid overflow-x-auto snap-x snap-mandatory gap-3 sm:gap-4 no-scrollbar sm:grid-cols-3 pb-1">
+            
+            {/* Card 1: Mi Comisión Cobrada Hoy */}
+            <div className={`min-w-[85vw] sm:min-w-0 snap-center shrink-0 sm:shrink p-4 sm:p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all ${
+              theme === 'dark' ? 'bg-[#141926]/90 border-emerald-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
+            }`}>
+              <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span>Mi Billetera de Hoy</span>
                 </span>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2: Acumulado Quincena / Mes */}
-          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
-            theme === 'dark' ? 'bg-[#141926]/90 border-[#FF5A36]/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
-          }`}>
-            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
-              <span className="flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-[#FF5A36]" />
-                <span>Acumulado del Mes</span>
-              </span>
-              <span className="text-[10px] bg-[#FF5A36]/10 text-[#FF5A36] px-2 py-0.5 rounded-full border border-[#FF5A36]/20">
-                Liquidación quincenal
-              </span>
-            </div>
-
-            <div className="text-2xl sm:text-3xl font-black text-[#FF5A36] tracking-tight my-1">
-              {formatCurrency(earnedMonthCommissions, salonCurrency)}
-            </div>
-
-            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
-              <span>{completedAppointmentsMonth.length} citas cobradas en el salón</span>
-              <span className="text-emerald-400 font-bold">100% transparente</span>
-            </div>
-          </div>
-
-          {/* Card 3: Próximo Turno Inteligente */}
-          <div className={`p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.01] ${
-            theme === 'dark' ? 'bg-[#141926]/90 border-blue-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
-          }`}>
-            <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-blue-400" />
-                <span>Próximo Cliente</span>
-              </span>
-              {upcomingAppointment && (
-                <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold">
-                  {upcomingAppointment.time}
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">
+                  {serviceCommissionPct}% comisión
                 </span>
-              )}
+              </div>
+
+              <div className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight my-1">
+                {formatCurrency(earnedCommissionsToday, salonCurrency)}
+              </div>
+
+              <div className="text-[11px] text-slate-400 flex items-center justify-between gap-1 flex-wrap pt-2 border-t border-white/5">
+                <span className="flex items-center gap-1 font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{billedAppointmentsToday.length} turno(s) cobrado(s)</span>
+                </span>
+                {waitingPayAppointmentsToday.length > 0 && (
+                  <span className="text-purple-300 font-bold bg-purple-500/15 px-2 py-0.5 rounded-full border border-purple-500/20 text-[10px]">
+                    💳 +{formatCurrency(waitingPayCommissionsToday, salonCurrency)} en caja
+                  </span>
+                )}
+              </div>
             </div>
 
-            {upcomingAppointment ? (
-              <div>
-                <div className="text-base sm:text-lg font-black truncate text-white">
-                  {upcomingAppointment.client_name}
-                </div>
-                <div className="text-xs text-[#FF5A36] font-extrabold truncate mt-0.5">
-                  {upcomingAppointment.service_name}
-                </div>
+            {/* Card 2: Acumulado Quincena / Mes */}
+            <div className={`min-w-[85vw] sm:min-w-0 snap-center shrink-0 sm:shrink p-4 sm:p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all ${
+              theme === 'dark' ? 'bg-[#141926]/90 border-[#FF5A36]/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
+            }`}>
+              <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-[#FF5A36]" />
+                  <span>Acumulado del Mes</span>
+                </span>
+                <span className="text-[10px] bg-[#FF5A36]/10 text-[#FF5A36] px-2 py-0.5 rounded-full border border-[#FF5A36]/20">
+                  Liquidación quincenal
+                </span>
               </div>
-            ) : (
-              <div className="text-slate-400 text-sm font-bold my-1">
-                Agenda libre por ahora
-              </div>
-            )}
 
-            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
-              {upcomingAppointment?.client_phone ? (
-                <a
-                  href={`https://wa.me/${upcomingAppointment.client_phone.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-emerald-400 hover:underline flex items-center gap-1 font-bold"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  <span>Escribir por WhatsApp</span>
-                </a>
+              <div className="text-2xl sm:text-3xl font-black text-[#FF5A36] tracking-tight my-1">
+                {formatCurrency(earnedMonthCommissions, salonCurrency)}
+              </div>
+
+              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
+                <span>{completedAppointmentsMonth.length} citas cobradas</span>
+                <span className="text-emerald-400 font-bold">100% transparente</span>
+              </div>
+            </div>
+
+            {/* Card 3: Próximo Turno Inteligente */}
+            <div className={`min-w-[85vw] sm:min-w-0 snap-center shrink-0 sm:shrink p-4 sm:p-5 rounded-3xl border flex flex-col justify-between relative overflow-hidden backdrop-blur-xl transition-all ${
+              theme === 'dark' ? 'bg-[#141926]/90 border-blue-500/20 shadow-xl shadow-black/30' : 'bg-white border-black/5 shadow-sm'
+            }`}>
+              <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-blue-400" />
+                  <span>Próximo Cliente</span>
+                </span>
+                {upcomingAppointment && (
+                  <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20 font-bold">
+                    {upcomingAppointment.time}
+                  </span>
+                )}
+              </div>
+
+              {upcomingAppointment ? (
+                <div>
+                  <div className="text-base sm:text-lg font-black truncate text-white">
+                    {upcomingAppointment.client_name}
+                  </div>
+                  <div className="text-xs text-[#FF5A36] font-extrabold truncate mt-0.5">
+                    {upcomingAppointment.service_name}
+                  </div>
+                </div>
               ) : (
-                <span>Esperando nuevos turnos</span>
+                <div className="text-slate-400 text-sm font-bold my-1">
+                  Agenda libre por ahora
+                </div>
               )}
+
+              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-white/5">
+                {upcomingAppointment?.client_phone ? (
+                  <a
+                    href={`https://wa.me/${upcomingAppointment.client_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${upcomingAppointment.client_name}! Te saluda ${currentStylist.name} de ${salonName}. Ya casi es tu turno de ${upcomingAppointment.service_name} 💖`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-emerald-400 hover:underline flex items-center gap-1 font-bold"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Escribir por WhatsApp</span>
+                  </a>
+                ) : (
+                  <span>Esperando nuevos turnos</span>
+                )}
+              </div>
             </div>
+
           </div>
 
+          {/* Mobile Swipe Indicator Dots */}
+          <div className="sm:hidden flex items-center justify-center gap-1.5 pt-2">
+            <span className="text-[10px] text-slate-400 font-medium">← Desliza para ver más métricas →</span>
+          </div>
         </div>
 
         {/* NAVIGATION SEGMENTED TABS (Desktop Bar) */}
@@ -836,13 +850,13 @@ export const StylistPortalPage: React.FC = () => {
         </div>
 
         {/* ========================================================================= */}
-        {/* TAB 1: MI AGENDA INTERACTIVA (TIMELINE) */}
+        {/* TAB 1: MI AGENDA INTERACTIVA (TIMELINE MOBILE-FIRST) */}
         {/* ========================================================================= */}
         {activeTab === 'agenda' && (
-          <div className="space-y-4 animate-fade-in">
+          <div className="space-y-3.5 sm:space-y-4 animate-fade-in">
             
-            {/* Day Filter Chips */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            {/* Day Filter Chips (Thumb-Friendly) */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-2">
               <div>
                 <h2 className="text-base font-black text-white flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[#FF5A36]" />
@@ -851,20 +865,20 @@ export const StylistPortalPage: React.FC = () => {
                 <p className="text-xs text-slate-400">Actualiza el estado de cada servicio con un toque desde tu celular.</p>
               </div>
 
-              <div className="flex gap-1.5 p-1 bg-black/40 border border-white/10 rounded-2xl text-xs font-black">
+              <div className="flex gap-1 p-1 bg-black/40 border border-white/10 rounded-2xl text-xs font-black w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setAgendaFilter('today')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-2 rounded-xl transition-all cursor-pointer active:scale-95 ${
                     agendaFilter === 'today' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  📅 Hoy
+                  📅 Hoy ({myAppointments.filter(a => a.date === todayStr).length})
                 </button>
                 <button
                   type="button"
                   onClick={() => setAgendaFilter('tomorrow')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-2 rounded-xl transition-all cursor-pointer active:scale-95 ${
                     agendaFilter === 'tomorrow' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -873,7 +887,7 @@ export const StylistPortalPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setAgendaFilter('all')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-2 rounded-xl transition-all cursor-pointer active:scale-95 ${
                     agendaFilter === 'all' ? 'bg-[#FF5A36] text-white shadow-md shadow-[#FF5A36]/30' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -883,13 +897,13 @@ export const StylistPortalPage: React.FC = () => {
             </div>
 
             {displayedAppointments.length === 0 ? (
-              <div className={`p-12 rounded-3xl border text-center space-y-3 backdrop-blur-xl ${
+              <div className={`p-10 sm:p-12 rounded-3xl border text-center space-y-3 backdrop-blur-xl ${
                 theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
               }`}>
                 <Calendar className="w-12 h-12 text-slate-600 mx-auto" />
                 <h3 className="text-base font-black text-white">No tienes citas programadas para este filtro</h3>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Las reservas de la web y de WhatsApp aparecerán aquí en tiempo real con alertas y recordatorios.
+                  Las reservas de la web y de WhatsApp aparecerán aquí en tiempo real con alertas automáticas.
                 </p>
               </div>
             ) : (
@@ -899,6 +913,7 @@ export const StylistPortalPage: React.FC = () => {
                   const isOngoing = apt.status === 'en_atencion';
                   const isWaitingPay = apt.status === 'completada';
                   const isDone = apt.status === 'cobrada';
+                  const estCommission = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
 
                   return (
                     <div
@@ -916,8 +931,8 @@ export const StylistPortalPage: React.FC = () => {
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         
                         {/* Time & Client info */}
-                        <div className="flex items-start gap-3.5 min-w-0">
-                          <div className={`p-3 rounded-2xl text-center min-w-[76px] shrink-0 border ${
+                        <div className="flex items-start gap-3 sm:gap-3.5 min-w-0 w-full sm:w-auto">
+                          <div className={`p-2.5 sm:p-3 rounded-2xl text-center min-w-[70px] sm:min-w-[76px] shrink-0 border ${
                             isOngoing 
                               ? 'bg-amber-500 border-amber-400 text-slate-950 font-black shadow-md' 
                               : isWaitingPay 
@@ -926,11 +941,11 @@ export const StylistPortalPage: React.FC = () => {
                               ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400 font-bold'
                               : 'bg-white/5 border-white/10 text-white'
                           }`}>
-                            <span className="text-xs font-mono font-black block">{apt.time}</span>
+                            <span className="text-sm font-mono font-black block">{apt.time}</span>
                             <span className="text-[10px] opacity-80 block mt-0.5">{apt.duration_minutes} min</span>
                           </div>
 
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <strong className="text-sm sm:text-base font-black block text-white truncate">{apt.client_name}</strong>
                               <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
@@ -942,23 +957,31 @@ export const StylistPortalPage: React.FC = () => {
                                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                   : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                               }`}>
-                                {isOngoing ? '● En Sillón' : isWaitingPay ? '💳 En Caja (Esperando Pago)' : isDone ? '✓ Cobrada & Liquidada' : '⏳ Confirmada'}
+                                {isOngoing ? '● En Sillón' : isWaitingPay ? '💳 En Caja' : isDone ? '✓ Cobrada' : '⏳ Agendada'}
                               </span>
                             </div>
 
-                            <span className="text-xs text-[#FF5A36] font-extrabold block mt-0.5">
-                              {apt.service_name} • {formatCurrency(apt.price_usd, salonCurrency)}
-                            </span>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-xs text-[#FF5A36] font-extrabold truncate">
+                                {apt.service_name}
+                              </span>
+                              <span className="text-xs text-slate-400 font-semibold font-mono">
+                                • {formatCurrency(apt.price_usd, salonCurrency)}
+                              </span>
+                              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded font-mono">
+                                (+{formatCurrency(estCommission, salonCurrency)})
+                              </span>
+                            </div>
 
-                            <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1.5 flex-wrap">
+                            <div className="flex items-center gap-2.5 text-[11px] text-slate-400 mt-2 flex-wrap">
                               {apt.client_phone && (
                                 <a
-                                  href={`https://wa.me/${apt.client_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${apt.client_name}! Te saluda ${currentStylist.name} de ${salonName}. Ya tengo tu espacio listo 💖`)}`}
+                                  href={`https://wa.me/${apt.client_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${apt.client_name}! Te saluda ${currentStylist.name} de ${salonName}. Ya tengo tu estación lista 💖`)}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20"
+                                  className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 active:scale-95 transition-transform"
                                 >
-                                  <MessageCircle className="w-3 h-3" />
+                                  <MessageCircle className="w-3.5 h-3.5" />
                                   <span>WhatsApp</span>
                                 </a>
                               )}
@@ -967,8 +990,8 @@ export const StylistPortalPage: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Action Buttons for the Stylist (Thumb-Zone Optimized) */}
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end pt-2.5 sm:pt-0 border-t sm:border-t-0 border-white/5">
+                        {/* Action Buttons for the Stylist (Mobile Thumb-Zone) */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-white/5">
                           {clientObj && (
                             <button
                               type="button"
@@ -976,7 +999,7 @@ export const StylistPortalPage: React.FC = () => {
                                 setSelectedClientForFormula(clientObj);
                                 setIsFormulaModalOpen(true);
                               }}
-                              className="text-xs font-bold px-3 py-2.5 rounded-xl border border-white/10 hover:border-[#FF5A36] bg-white/5 text-slate-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px] active:scale-95"
+                              className="text-xs font-bold px-3 py-2.5 rounded-xl border border-white/10 hover:border-[#FF5A36] bg-white/5 text-slate-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px] active:scale-95"
                               title="Ver o registrar fórmula técnica"
                             >
                               <FileText className="w-3.5 h-3.5 text-[#FF5A36]" />
@@ -988,25 +1011,25 @@ export const StylistPortalPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
-                              className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px]"
+                              className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
                               title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
                             >
                               <CheckCircle2 className="w-4 h-4" />
                               <span>✓ Terminado / A Caja</span>
                             </button>
                           ) : isWaitingPay ? (
-                            <span className="text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2.5 rounded-xl border border-purple-500/25 flex items-center justify-center gap-1.5 min-h-[42px]">
+                            <span className="flex-1 sm:flex-initial text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2.5 rounded-xl border border-purple-500/25 flex items-center justify-center gap-1.5 min-h-[44px]">
                               💳 Esperando Cobro en Recepción
                             </span>
                           ) : isDone ? (
-                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-2.5 rounded-xl border border-emerald-500/25 flex items-center justify-center gap-1.5 min-h-[42px]">
-                              ✓ Liquidada en Caja
+                            <span className="flex-1 sm:flex-initial text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-2.5 rounded-xl border border-emerald-500/25 flex items-center justify-center gap-1.5 min-h-[44px]">
+                              ✓ Liquidada (+{formatCurrency(estCommission, salonCurrency)})
                             </span>
                           ) : (
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'en_atencion')}
-                              className="flex-1 sm:flex-initial bg-gradient-to-r from-amber-500 to-orange-500 active:scale-95 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[42px]"
+                              className="flex-1 sm:flex-initial bg-gradient-to-r from-amber-500 to-orange-500 active:scale-95 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
                             >
                               <Scissors className="w-4 h-4 stroke-[2.5]" />
                               <span>Iniciar Atención</span>
@@ -1024,10 +1047,10 @@ export const StylistPortalPage: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: FÓRMULAS & CLIENTAS (CRM 360°) */}
+        {/* TAB 2: FÓRMULAS & CLIENTAS (CRM 360° MOBILE-FIRST) */}
         {/* ========================================================================= */}
         {activeTab === 'crm' && (
-          <div className="space-y-4 animate-fade-in">
+          <div className="space-y-3.5 sm:space-y-4 animate-fade-in">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
                 <h2 className="text-base font-black text-white flex items-center gap-2">
@@ -1037,27 +1060,36 @@ export const StylistPortalPage: React.FC = () => {
                 <p className="text-xs text-slate-400">Consulta fórmulas exactas de tinte aplicadas en visitas anteriores.</p>
               </div>
 
-              {/* Search input */}
-              <div className="relative w-full sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+              {/* Search input (Full Width on Mobile) */}
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   value={crmSearchQuery}
                   onChange={(e) => setCrmSearchQuery(e.target.value)}
-                  placeholder="Buscar clienta..."
-                  className="w-full bg-[#0E121B] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36]"
+                  placeholder="Buscar por nombre o teléfono..."
+                  className="w-full bg-[#0E121B] border border-white/10 rounded-2xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FF5A36] transition-colors"
                 />
+                {crmSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCrmSearchQuery('')}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-white p-0.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
             {filteredCrmClients.length === 0 ? (
-              <div className="p-12 rounded-3xl border border-white/10 bg-[#141926]/90 text-center space-y-2 text-slate-400">
+              <div className="p-10 sm:p-12 rounded-3xl border border-white/10 bg-[#141926]/90 text-center space-y-2 text-slate-400">
                 <FileText className="w-10 h-10 mx-auto text-slate-600" />
                 <strong className="text-white block">No se encontraron clientas</strong>
-                <p className="text-xs">Intenta con otro término de búsqueda.</p>
+                <p className="text-xs">Intenta con otro término de búsqueda o agrega una nueva fórmula.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
                 {filteredCrmClients.map((client) => {
                   const clientFormulas = (client.formulas || []).filter(
                     f => f.stylist_id === currentStylist.id || f.stylist_name === currentStylist.name
@@ -1066,62 +1098,96 @@ export const StylistPortalPage: React.FC = () => {
                   return (
                     <div
                       key={client.id}
-                      className={`p-5 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all ${
+                      className={`p-4 sm:p-5 rounded-3xl border flex flex-col justify-between backdrop-blur-xl transition-all ${
                         theme === 'dark' ? 'bg-[#141926]/90 border-white/10 hover:border-white/20' : 'bg-white border-black/5 shadow-sm'
                       }`}
                     >
                       <div>
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <strong className="text-sm font-black block text-white">{client.full_name}</strong>
-                            <span className="text-xs text-slate-400 font-mono">{client.phone_whatsapp}</span>
+                        {/* Client Header Info */}
+                        <div className="flex justify-between items-start gap-2 mb-3">
+                          <div className="min-w-0">
+                            <strong className="text-sm sm:text-base font-black block text-white truncate">{client.full_name}</strong>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              <span className="text-xs text-slate-400 font-mono">{client.phone_whatsapp}</span>
+                              {client.phone_whatsapp && (
+                                <a
+                                  href={`https://wa.me/${client.phone_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${client.full_name}! Te saluda ${currentStylist.name} de ${salonName} 💖`)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20 active:scale-95 transition-transform"
+                                >
+                                  <MessageCircle className="w-3 h-3" />
+                                  <span>WhatsApp</span>
+                                </a>
+                              )}
+                            </div>
                           </div>
-                          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/20 uppercase">
+                          <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-[#FF5A36]/15 text-[#FF5A36] border border-[#FF5A36]/20 uppercase shrink-0">
                             {client.status || 'frecuente'}
                           </span>
                         </div>
 
-                        {/* Formulas List */}
+                        {/* Formulas List (Mobile Tactile View) */}
                         {clientFormulas.length > 0 ? (
                           <div className="space-y-2 mb-3">
                             {clientFormulas.map((form) => (
                               <div
                                 key={form.id}
-                                className="p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/80 text-xs space-y-1.5"
+                                className="p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/90 text-xs space-y-2 shadow-inner"
                               >
-                                <div className="flex justify-between text-[10px] text-[#FF5A36] font-black uppercase">
-                                  <span>Fórmula Registrada</span>
-                                  <span>{form.created_at}</span>
+                                <div className="flex justify-between items-center text-[10px] text-[#FF5A36] font-black uppercase">
+                                  <span className="flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3" />
+                                    <span>Fórmula Registrada</span>
+                                  </span>
+                                  <span className="text-slate-400 font-mono">{form.created_at}</span>
                                 </div>
-                                <p className="font-mono text-[11px] text-white font-bold">{form.formula_text}</p>
-                                <div className="text-[10px] text-slate-400 flex gap-3 pt-1 border-t border-white/5">
-                                  <span>Oxidante: <strong className="text-white">{form.developer_volume}</strong></span>
-                                  <span>Tiempo: <strong className="text-white">{form.exposure_minutes} min</strong></span>
-                                  <span>Plex: <strong className="text-emerald-400">{form.plex_used ? 'Sí' : 'No'}</strong></span>
+                                <p className="font-mono text-xs text-amber-300 font-bold bg-black/40 p-2.5 rounded-xl border border-white/5 break-words">
+                                  {form.formula_text}
+                                </p>
+                                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] text-slate-300 pt-1">
+                                  <div className="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                                    <span className="block text-slate-500 text-[9px]">Oxidante</span>
+                                    <strong className="text-white font-bold">{form.developer_volume}</strong>
+                                  </div>
+                                  <div className="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                                    <span className="block text-slate-500 text-[9px]">Tiempo</span>
+                                    <strong className="text-white font-bold">{form.exposure_minutes} min</strong>
+                                  </div>
+                                  <div className="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                                    <span className="block text-slate-500 text-[9px]">Plex</span>
+                                    <strong className={form.plex_used ? 'text-emerald-400 font-bold' : 'text-slate-400'}>
+                                      {form.plex_used ? '✓ Sí' : 'No'}
+                                    </strong>
+                                  </div>
                                 </div>
                                 {form.diagnostic_notes && (
-                                  <p className="text-[10px] text-slate-400 italic">"{form.diagnostic_notes}"</p>
+                                  <p className="text-[11px] text-slate-400 italic bg-white/[0.02] p-2 rounded-lg">
+                                    "{form.diagnostic_notes}"
+                                  </p>
                                 )}
                               </div>
                             ))}
                           </div>
                         ) : (
                           <div className="text-xs text-slate-400 italic p-4 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-2xl mb-3">
-                            Sin fórmulas registradas por ti aún.
+                            Sin fórmulas registradas por ti aún para esta clienta.
                           </div>
                         )}
                       </div>
 
-                      <div className="pt-3 border-t border-white/5 flex justify-end">
+                      {/* Add Formula Action Button (Thumb Friendly) */}
+                      <div className="pt-3 border-t border-white/5">
                         <button
                           type="button"
                           onClick={() => {
                             setSelectedClientForFormula(client);
                             setIsFormulaModalOpen(true);
                           }}
-                          className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white text-xs font-black px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-[#FF5A36]/25 cursor-pointer transition-all hover:scale-105"
+                          className="w-full sm:w-auto bg-gradient-to-r from-[#FF5A36] to-pink-500 active:scale-95 hover:opacity-95 text-white text-xs font-black px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-[#FF5A36]/25 cursor-pointer transition-all"
                         >
-                          <Plus className="w-3.5 h-3.5" /> Agregar Fórmula de Tinte
+                          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>Agregar Fórmula de Tinte</span>
                         </button>
                       </div>
                     </div>
@@ -1133,14 +1199,16 @@ export const StylistPortalPage: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: MI BILLETERA & LIQUIDACIÓN */}
+        {/* TAB 3: MI BILLETERA & LIQUIDACIÓN (FINTECH MOBILE-FIRST) */}
         {/* ========================================================================= */}
         {activeTab === 'wallet' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+          <div className="space-y-3.5 sm:space-y-4 animate-fade-in">
+            
+            {/* Header & Balance Card */}
+            <div className={`p-4 sm:p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
               theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
             }`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-white/5 pb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
                 <div>
                   <h2 className="text-base font-black text-white flex items-center gap-2">
                     <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -1148,63 +1216,103 @@ export const StylistPortalPage: React.FC = () => {
                   </h2>
                   <p className="text-xs text-slate-400">Cada servicio completado se liquida en base a tu porcentaje acordado ({serviceCommissionPct}%).</p>
                 </div>
-                <span className="text-xs font-black px-3.5 py-1.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-mono shadow-md">
-                  Acumulado Total: {formatCurrency(earnedMonthCommissions, salonCurrency)}
-                </span>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                  <span className="text-xs font-black px-3.5 py-2 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-mono shadow-md">
+                    Total Mes: {formatCurrency(earnedMonthCommissions, salonCurrency)}
+                  </span>
+                </div>
               </div>
 
-              <div className="divide-y divide-white/5 text-xs">
-                {myAppointments.map((apt) => {
-                  const comAmount = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
-                  const isDone = apt.status === 'cobrada';
-                  const isWaitingPay = apt.status === 'completada';
-                  const isOngoing = apt.status === 'en_atencion';
+              {/* Mobile Quick Stats Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+                <div className="p-3 rounded-2xl bg-[#0E121B]/90 border border-white/5">
+                  <span className="text-[10px] text-slate-400 font-bold block">Cobrado Hoy</span>
+                  <strong className="text-sm sm:text-base font-black text-emerald-400 font-mono block mt-0.5">
+                    {formatCurrency(earnedCommissionsToday, salonCurrency)}
+                  </strong>
+                </div>
 
-                  return (
-                    <div key={apt.id} className="py-3.5 flex justify-between items-center gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <strong className="block text-sm font-black text-white">{apt.service_name}</strong>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            isDone ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
-                            isWaitingPay ? 'bg-purple-500/15 text-purple-300 border border-purple-500/20' :
-                            isOngoing ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
-                            'bg-blue-500/10 text-slate-400'
-                          }`}>
-                            {isDone ? '✓ Cobrada en Caja' : isWaitingPay ? '💳 En Caja (Por Cobrar)' : isOngoing ? '● En Sillón' : 'Agendada'}
+                <div className="p-3 rounded-2xl bg-[#0E121B]/90 border border-white/5">
+                  <span className="text-[10px] text-slate-400 font-bold block">En Caja (Por Cobrar)</span>
+                  <strong className="text-sm sm:text-base font-black text-purple-300 font-mono block mt-0.5">
+                    {formatCurrency(waitingPayCommissionsToday, salonCurrency)}
+                  </strong>
+                </div>
+
+                <div className="col-span-2 sm:col-span-1 p-3 rounded-2xl bg-[#0E121B]/90 border border-white/5">
+                  <span className="text-[10px] text-slate-400 font-bold block">Tasa de Comisión</span>
+                  <strong className="text-sm sm:text-base font-black text-[#FF5A36] font-mono block mt-0.5">
+                    {serviceCommissionPct}% Servicios • {retailCommissionPct}% Retail
+                  </strong>
+                </div>
+              </div>
+
+              {/* Breakdown List */}
+              <div className="divide-y divide-white/5 text-xs pt-2">
+                {myAppointments.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400 space-y-1">
+                    <Wallet className="w-8 h-8 mx-auto text-slate-600 mb-2" />
+                    <strong className="text-white block">Sin turnos registrados todavía</strong>
+                    <p className="text-xs">Los servicios atendidos aparecerán aquí con su liquidación en tiempo real.</p>
+                  </div>
+                ) : (
+                  myAppointments.map((apt) => {
+                    const comAmount = Math.round(((apt.price_usd || 0) * serviceCommissionPct) / 100);
+                    const isDone = apt.status === 'cobrada';
+                    const isWaitingPay = apt.status === 'completada';
+                    const isOngoing = apt.status === 'en_atencion';
+
+                    return (
+                      <div key={apt.id} className="py-3.5 flex justify-between items-start sm:items-center gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <strong className="block text-sm font-black text-white truncate">{apt.service_name}</strong>
+                            <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-full ${
+                              isDone ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' :
+                              isWaitingPay ? 'bg-purple-500/15 text-purple-300 border border-purple-500/20' :
+                              isOngoing ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
+                              'bg-blue-500/10 text-slate-400'
+                            }`}>
+                              {isDone ? '✓ Cobrada' : isWaitingPay ? '💳 En Caja' : isOngoing ? '● En Sillón' : 'Agendada'}
+                            </span>
+                          </div>
+                          <span className="text-slate-400 text-[11px] block mt-1 truncate">
+                            {apt.client_name} • {apt.date} {apt.time}
                           </span>
                         </div>
-                        <span className="text-slate-400 text-[11px] block mt-0.5">{apt.client_name} • {apt.date} {apt.time}</span>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className="text-[11px] text-slate-400 block">Total: {formatCurrency(apt.price_usd, salonCurrency)}</span>
-                        {isDone ? (
-                          <strong className="text-sm text-emerald-400 font-black block font-mono">
-                            +{formatCurrency(comAmount, salonCurrency)} ({serviceCommissionPct}%)
-                          </strong>
-                        ) : isWaitingPay ? (
-                          <strong className="text-xs text-purple-300 font-bold block">
-                            {formatCurrency(comAmount, salonCurrency)} (Por Liquidar)
-                          </strong>
-                        ) : (
-                          <span className="text-xs text-slate-400 font-medium block">
-                            {formatCurrency(comAmount, salonCurrency)} (Estimada)
+
+                        <div className="text-right shrink-0">
+                          <span className="text-[10px] sm:text-[11px] text-slate-400 block font-mono">
+                            Total: {formatCurrency(apt.price_usd, salonCurrency)}
                           </span>
-                        )}
+                          {isDone ? (
+                            <strong className="text-xs sm:text-sm text-emerald-400 font-black block font-mono mt-0.5">
+                              +{formatCurrency(comAmount, salonCurrency)}
+                            </strong>
+                          ) : isWaitingPay ? (
+                            <strong className="text-[11px] sm:text-xs text-purple-300 font-bold block font-mono mt-0.5">
+                              +{formatCurrency(comAmount, salonCurrency)} (Pendiente)
+                            </strong>
+                          ) : (
+                            <span className="text-[11px] sm:text-xs text-slate-400 font-medium block font-mono mt-0.5">
+                              ~{formatCurrency(comAmount, salonCurrency)} (Estimada)
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: MI DISPONIBILIDAD & BLOQUEO DE DÍAS */}
+        {/* TAB 4: MI DISPONIBILIDAD & BLOQUEO DE DÍAS (MOBILE-FIRST) */}
         {/* ========================================================================= */}
         {activeTab === 'availability' && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-4 sm:space-y-6 animate-fade-in">
             
             {/* Feedback notification message */}
             {availabilitySuccessMsg && (
@@ -1218,7 +1326,7 @@ export const StylistPortalPage: React.FC = () => {
             )}
 
             {/* SECTION 1: JORNADA Y DÍAS HABITUALES DE TRABAJO */}
-            <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+            <div className={`p-4 sm:p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
               theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
             }`}>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3 border-white/5">
@@ -1236,8 +1344,8 @@ export const StylistPortalPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Day Selector Pills */}
-              <div className="grid grid-cols-7 gap-2 text-center">
+              {/* Day Selector Pills (Mobile Thumb-Zone) */}
+              <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
                 {[
                   { index: 1, label: 'Lun', full: 'Lunes' },
                   { index: 2, label: 'Mar', full: 'Martes' },
@@ -1253,14 +1361,14 @@ export const StylistPortalPage: React.FC = () => {
                       key={d.index}
                       type="button"
                       onClick={() => handleToggleWorkingDay(d.index)}
-                      className={`p-3 rounded-2xl border flex flex-col items-center justify-center transition-all cursor-pointer ${
+                      className={`p-2 sm:p-3 rounded-2xl border flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 ${
                         isWorking
-                          ? 'bg-gradient-to-br from-[#FF5A36] to-pink-500 border-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/25 scale-105 font-black'
+                          ? 'bg-gradient-to-br from-[#FF5A36] to-pink-500 border-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/25 font-black scale-[1.02]'
                           : 'bg-[#0E121B] border-white/5 text-slate-500 hover:border-white/20'
                       }`}
                     >
                       <span className="text-xs sm:text-sm font-black">{d.label}</span>
-                      <span className={`text-[9px] mt-1 font-bold ${isWorking ? 'text-white/90' : 'text-slate-500'}`}>
+                      <span className={`text-[8px] sm:text-[9px] mt-0.5 sm:mt-1 font-bold ${isWorking ? 'text-white/90' : 'text-slate-500'}`}>
                         {isWorking ? 'Activo' : 'Libre'}
                       </span>
                     </button>
@@ -1270,11 +1378,11 @@ export const StylistPortalPage: React.FC = () => {
             </div>
 
             {/* SECTION 2: FORMULARIO DE BLOQUEO DE FECHAS / VACACIONES */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
               
               {/* Formulario Izquierda (5 cols) */}
               <div className="lg:col-span-5 space-y-4">
-                <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+                <div className={`p-4 sm:p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
                   theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
                   <div className="border-b pb-3 border-white/5">
@@ -1287,7 +1395,7 @@ export const StylistPortalPage: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Preset Quick Buttons */}
+                  {/* Preset Quick Buttons (Mobile Horizontal Scroll / Wrap) */}
                   <div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">
                       Motivos Rápidos
@@ -1296,7 +1404,7 @@ export const StylistPortalPage: React.FC = () => {
                       {[
                         { label: '🌴 Vacaciones', reason: 'Vacaciones' },
                         { label: '🩺 Cita Médica', reason: 'Cita Médica' },
-                        { label: '💆‍♀️ Día Libre', reason: 'Día Libre / Descanso' },
+                        { label: '💆‍♀️ Descanso', reason: 'Día Libre / Descanso' },
                         { label: '📚 Masterclass', reason: 'Capacitación' },
                         { label: '✨ Personal', reason: 'Asunto Personal' }
                       ].map((item, idx) => (
@@ -1304,7 +1412,7 @@ export const StylistPortalPage: React.FC = () => {
                           key={idx}
                           type="button"
                           onClick={() => setNewBlockReason(item.reason)}
-                          className={`text-xs font-black px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
+                          className={`text-xs font-black px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer active:scale-95 ${
                             newBlockReason === item.reason
                               ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-md shadow-[#FF5A36]/25'
                               : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
@@ -1319,7 +1427,7 @@ export const StylistPortalPage: React.FC = () => {
                   <form onSubmit={handleAddBlockedSlot} className="space-y-3.5 text-xs">
                     
                     {/* Date range */}
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-slate-400 mb-1 font-semibold">Desde la Fecha *</label>
                         <input
@@ -1372,7 +1480,7 @@ export const StylistPortalPage: React.FC = () => {
                         type="checkbox"
                         checked={newBlockFullDay}
                         onChange={(e) => setNewBlockFullDay(e.target.checked)}
-                        className="w-4 h-4 text-[#FF5A36] rounded"
+                        className="w-4 h-4 text-[#FF5A36] rounded cursor-pointer"
                       />
                     </div>
 
@@ -1396,7 +1504,7 @@ export const StylistPortalPage: React.FC = () => {
 
                     <button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-red-600 to-[#FF5A36] hover:opacity-95 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-red-600 to-[#FF5A36] active:scale-95 hover:opacity-95 text-white font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all cursor-pointer min-h-[46px]"
                     >
                       <Ban className="w-4 h-4" />
                       <span>Guardar Bloqueo de Días</span>
@@ -1407,7 +1515,7 @@ export const StylistPortalPage: React.FC = () => {
 
               {/* Lista Derecha de Bloqueos Activos (7 cols) */}
               <div className="lg:col-span-7 space-y-4">
-                <div className={`p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
+                <div className={`p-4 sm:p-6 rounded-3xl border space-y-4 backdrop-blur-xl ${
                   theme === 'dark' ? 'bg-[#141926]/90 border-white/10' : 'bg-white border-black/5 shadow-sm'
                 }`}>
                   <div className="flex justify-between items-center border-b pb-3 border-white/5">
@@ -1423,7 +1531,7 @@ export const StylistPortalPage: React.FC = () => {
                   </div>
 
                   {blockedSlots.length === 0 ? (
-                    <div className="p-10 rounded-2xl text-center space-y-2 border border-dashed border-white/10 text-slate-400">
+                    <div className="p-8 sm:p-10 rounded-2xl text-center space-y-2 border border-dashed border-white/10 text-slate-400">
                       <Calendar className="w-10 h-10 mx-auto text-emerald-500/40" />
                       <strong className="text-sm block text-white">Sin días bloqueados actualmente</strong>
                       <p className="text-xs max-w-sm mx-auto">
@@ -1444,19 +1552,19 @@ export const StylistPortalPage: React.FC = () => {
                         return (
                           <div
                             key={slot.id}
-                            className="p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/80 flex items-center justify-between gap-3 transition-all hover:border-white/15"
+                            className="p-3 sm:p-3.5 rounded-2xl border border-white/5 bg-[#0E121B]/80 flex items-center justify-between gap-3 transition-all hover:border-white/15"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
                               <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-black text-sm shrink-0">
                                 {dateObj.getDate()}
                               </div>
 
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <strong className="text-xs capitalize font-black text-white">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <strong className="text-xs capitalize font-black text-white truncate">
                                     {formattedDate}
                                   </strong>
-                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20">
+                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/20 shrink-0">
                                     {slot.reason || 'Día No Disponible'}
                                   </span>
                                 </div>
@@ -1471,7 +1579,7 @@ export const StylistPortalPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleRemoveBlockedSlot(slot.id, slot.date)}
-                              className="p-2 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all cursor-pointer shrink-0"
+                              className="p-2.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 active:scale-95 transition-all cursor-pointer shrink-0"
                               title="Desbloquear este día"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1483,7 +1591,7 @@ export const StylistPortalPage: React.FC = () => {
                   )}
 
                   {/* Flowy Banner */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-slate-300">
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 flex items-center gap-3 text-xs text-slate-300">
                     <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                       <Sparkles className="w-4 h-4" />
                     </div>
@@ -1505,19 +1613,23 @@ export const StylistPortalPage: React.FC = () => {
 
       </main>
 
-      {/* MODAL REGISTRO DE FÓRMULA DE COLORIMETRÍA */}
+      {/* MODAL REGISTRO DE FÓRMULA DE COLORIMETRÍA (MOBILE BOTTOM SHEET + DESKTOP MODAL) */}
       {isFormulaModalOpen && selectedClientForFormula && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="border border-[#FF5A36]/40 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in bg-[#141926] text-white">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div className="border-t sm:border border-[#FF5A36]/40 rounded-t-3xl sm:rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4 bg-[#141926] text-white">
+            
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 sm:hidden" />
+
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div>
                 <span className="text-[10px] text-[#FF5A36] font-black uppercase tracking-wider">FÓRMULA TÉCNICA EN SILLÓN</span>
-                <h3 className="text-base font-black">{selectedClientForFormula.full_name}</h3>
+                <h3 className="text-base font-black truncate">{selectedClientForFormula.full_name}</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsFormulaModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1579,7 +1691,7 @@ export const StylistPortalPage: React.FC = () => {
                   id="plex_checkbox"
                   checked={isPlexUsed}
                   onChange={(e) => setIsPlexUsed(e.target.checked)}
-                  className="rounded text-[#FF5A36] focus:ring-[#FF5A36]"
+                  className="rounded text-[#FF5A36] focus:ring-[#FF5A36] cursor-pointer"
                 />
                 <label htmlFor="plex_checkbox" className="text-slate-300 text-xs cursor-pointer select-none">
                   Protector Plex #1 añadido a la mezcla
@@ -1590,13 +1702,13 @@ export const StylistPortalPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFormulaModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-400 hover:text-white"
+                  className="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
+                  className="bg-gradient-to-r from-[#FF5A36] to-pink-500 active:scale-95 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   <span>Guardar Fórmula</span>
@@ -1607,10 +1719,14 @@ export const StylistPortalPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL CAMBIAR CONTRASEÑA DEL COLABORADOR */}
+      {/* MODAL CAMBIAR CONTRASEÑA DEL COLABORADOR (MOBILE BOTTOM SHEET + DESKTOP MODAL) */}
       {isChangePasswordModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="border border-[#FF5A36]/40 rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in bg-[#141926] text-white">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div className="border-t sm:border border-[#FF5A36]/40 rounded-t-3xl sm:rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4 bg-[#141926] text-white">
+            
+            {/* Mobile Drag Handle */}
+            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 sm:hidden" />
+
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-[#FF5A36]" />
@@ -1619,7 +1735,7 @@ export const StylistPortalPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsChangePasswordModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1678,13 +1794,13 @@ export const StylistPortalPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsChangePasswordModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-slate-400 hover:text-white"
+                    className="px-4 py-2.5 rounded-xl text-slate-400 hover:text-white"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="bg-gradient-to-r from-[#FF5A36] to-pink-500 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
+                    className="bg-gradient-to-r from-[#FF5A36] to-pink-500 active:scale-95 hover:opacity-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Actualizar Clave</span>
@@ -1701,7 +1817,7 @@ export const StylistPortalPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('agenda')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer relative ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer active:scale-90 relative ${
             activeTab === 'agenda' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -1719,7 +1835,7 @@ export const StylistPortalPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('crm')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer active:scale-90 ${
             activeTab === 'crm' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -1730,7 +1846,7 @@ export const StylistPortalPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('wallet')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer active:scale-90 ${
             activeTab === 'wallet' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -1741,7 +1857,7 @@ export const StylistPortalPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('availability')}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer relative ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-black py-1.5 px-3 rounded-2xl transition-all cursor-pointer active:scale-90 relative ${
             activeTab === 'availability' ? 'text-[#FF5A36] bg-[#FF5A36]/15 shadow-sm' : 'text-slate-400 hover:text-white'
           }`}
         >
