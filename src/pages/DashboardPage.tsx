@@ -4987,17 +4987,17 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             featureDescription: `Tu Plan Inicio incluye 3 cupos base por $29.000 COP/mes. Actualmente tienes ${activeTenantObj?.max_stylists ?? 3} cupos configurados. Puedes sumar colaboradores adicionales por solo $10.000 COP/mes cada uno o pasar a Plan Crecimiento para cupos ilimitados.`
                           });
                         }}
-                        className="px-3.5 py-2 rounded-xl border border-white/[0.12] bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                        className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-white/[0.12] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-800 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-sm"
                         title="Ampliar cupo de colaboradores (+ $10.000 COP/mes)"
                       >
-                        <Users className="w-3.5 h-3.5 text-slate-400" />
+                        <Users className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                         <span>⚡ Ampliar Cupos (+ $10k)</span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={handleOpenNewStylist}
-                      className="bg-white hover:bg-slate-200 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer active:scale-95"
+                      className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-950 text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition-all shrink-0 cursor-pointer active:scale-95"
                     >
                       <Plus className="w-4 h-4" /> Agregar Profesional
                     </button>
@@ -5011,48 +5011,48 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       onClick={() => handleOpenStylistDetails(sty)}
                       className={`rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 cursor-pointer group ${
                         theme === 'dark'
-                          ? 'bg-[#121622]/90 border-white/[0.08] hover:border-white/20 hover:shadow-2xl hover:shadow-black/50'
-                          : 'bg-white border-black/5 hover:border-black/15 hover:shadow-md'
+                          ? 'bg-[#121622] border-white/10 hover:border-white/25 hover:shadow-2xl shadow-black/40'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-lg shadow-sm'
                       }`}
                     >
                       <div>
-                        <div className="flex items-start justify-between pb-3.5 border-b border-black/5 dark:border-white/[0.06] mb-3.5 gap-2">
+                        <div className="flex items-start justify-between pb-3.5 border-b border-slate-200 dark:border-white/[0.06] mb-3.5 gap-2">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             <img
                               src={sty.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'}
                               alt={sty.name}
-                              className="w-12 h-12 min-w-[48px] min-h-[48px] max-w-[48px] max-h-[48px] rounded-full object-cover ring-1 ring-white/10 group-hover:ring-white/25 transition-all shrink-0 aspect-square"
+                              className="w-12 h-12 min-w-[48px] min-h-[48px] max-w-[48px] max-h-[48px] rounded-full object-cover ring-1 ring-slate-200 dark:ring-white/10 shrink-0 aspect-square"
                             />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <strong className="text-sm font-semibold block truncate text-white group-hover:text-slate-100 transition-colors">
+                                <strong className="text-sm font-bold block truncate text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-slate-100 transition-colors">
                                   {sty.name}
                                 </strong>
-                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
+                                <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
                               </div>
-                              <span className="text-xs text-slate-400 block truncate">{sty.specialty}</span>
-                              {sty.email && <span className="text-[11px] text-slate-400 block truncate font-mono mt-0.5">{sty.email}</span>}
-                              {sty.phone && <span className="text-[10px] text-slate-400 block truncate">WhatsApp: {sty.phone}</span>}
-                              <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                                <Star className="w-3 h-3 fill-amber-400/80 text-amber-400/80 shrink-0" />
-                                <span className="font-medium text-slate-300">{sty.rating || '5.0'}</span>
-                                <span className="text-slate-400 text-[10px]">({sty.reviews_count || 0})</span>
+                              <span className="text-xs text-slate-600 dark:text-slate-400 block truncate font-medium">{sty.specialty}</span>
+                              {sty.email && <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate font-mono mt-0.5">{sty.email}</span>}
+                              {sty.phone && <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">WhatsApp: {sty.phone}</span>}
+                              <div className="flex items-center gap-1 text-[11px] text-slate-700 dark:text-slate-300 mt-0.5 font-medium">
+                                <Star className="w-3 h-3 fill-amber-400 text-amber-500 shrink-0" />
+                                <span className="font-bold">{sty.rating || '5.0'}</span>
+                                <span className="text-slate-500 dark:text-slate-400 text-[10px]">({sty.reviews_count || 0})</span>
                               </div>
                             </div>
                           </div>
                           
                           <div className="flex flex-col items-end gap-1.5 shrink-0">
                             {sty.is_owner || sty.role === 'admin' ? (
-                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-300 border border-amber-400/20 whitespace-nowrap">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
                                 Dueña
                               </span>
                             ) : (
-                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08] whitespace-nowrap">
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 whitespace-nowrap">
                                 Colaborador
                               </span>
                             )}
-                            <span className="text-[10px] text-slate-400 whitespace-nowrap flex items-center gap-1">
-                              <span className={`w-1.5 h-1.5 rounded-full ${sty.attends_clients === false ? 'bg-slate-500' : 'bg-emerald-400'}`} />
+                            <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap flex items-center gap-1">
+                              <span className={`w-1.5 h-1.5 rounded-full ${sty.attends_clients === false ? 'bg-slate-400' : 'bg-emerald-500'}`} />
                               <span>{sty.attends_clients === false ? 'Solo Gestión' : 'Atiende Citas'}</span>
                             </span>
                           </div>
@@ -5060,17 +5060,13 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
 
                         {/* Commission stats */}
                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                          <div className={`p-2.5 rounded-xl border ${
-                            theme === 'dark' ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-slate-50 border-black/5'
-                          }`}>
-                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Servicios</span>
-                            <strong className="text-sm font-semibold text-white">{sty.commission_service_pct ?? 45}%</strong>
+                          <div className="p-2.5 rounded-xl border bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.06]">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-bold">Servicios</span>
+                            <strong className="text-base font-extrabold text-slate-900 dark:text-white">{sty.commission_service_pct ?? 45}%</strong>
                           </div>
-                          <div className={`p-2.5 rounded-xl border ${
-                            theme === 'dark' ? 'bg-white/[0.02] border-white/[0.06]' : 'bg-slate-50 border-black/5'
-                          }`}>
-                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-medium">Retail</span>
-                            <strong className="text-sm font-semibold text-white">{sty.commission_retail_pct ?? 10}%</strong>
+                          <div className="p-2.5 rounded-xl border bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.06]">
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-bold">Retail</span>
+                            <strong className="text-base font-extrabold text-slate-900 dark:text-white">{sty.commission_retail_pct ?? 10}%</strong>
                           </div>
                         </div>
 
@@ -5088,7 +5084,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             return (
                               <span
                                 key={cat}
-                                className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08]"
+                                className="text-[10px] font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10"
                               >
                                 {catLabels[cat] || cat}
                               </span>
@@ -5097,26 +5093,26 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                         </div>
 
                         {/* Availability Pill Summary */}
-                        <div className="flex items-center justify-between text-[11px] px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] mb-2.5 text-slate-300">
-                          <div className="flex items-center gap-1.5 text-slate-400">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center justify-between text-[11px] px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.05] mb-2.5 text-slate-700 dark:text-slate-300">
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                             <span>{(sty.working_days || [1,2,3,4,5,6]).length} días/sem</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-300">
                             <span className={`w-1.5 h-1.5 rounded-full ${
-                              (sty.blocked_dates && sty.blocked_dates.length > 0) ? 'bg-amber-400' : 'bg-emerald-400'
+                              (sty.blocked_dates && sty.blocked_dates.length > 0) ? 'bg-amber-500' : 'bg-emerald-500'
                             }`} />
                             <span>
                               {(sty.blocked_dates && sty.blocked_dates.length > 0)
                                 ? `${sty.blocked_dates.length} día(s) ausente`
-                                : 'Disponible'}
+                                : '100% Disponible'}
                             </span>
                           </div>
                         </div>
 
                         {/* Quick detail hint */}
-                        <div className="flex items-center justify-center gap-1 text-[11px] font-medium text-slate-400 group-hover:text-slate-200 transition-colors py-1">
-                          <Eye className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors py-1">
+                          <Eye className="w-3.5 h-3.5" />
                           <span>Ver Expediente 360°</span>
                         </div>
                       </div>
@@ -5124,7 +5120,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       {/* Actions */}
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="pt-3 border-t border-black/5 dark:border-white/[0.06] flex justify-between items-center gap-2 text-xs"
+                        className="pt-3 border-t border-slate-200 dark:border-white/[0.08] flex justify-between items-center gap-2 text-xs"
                       >
                         <button
                           type="button"
@@ -5132,10 +5128,10 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             e.stopPropagation();
                             handleOpenStylistAvailability(sty);
                           }}
-                          className="px-2.5 py-1.5 rounded-xl border border-white/[0.08] hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 hover:text-white font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                           title="Gestionar días no disponibles y vacaciones"
                         >
-                          <CalendarOff className="w-3.5 h-3.5 text-slate-400" />
+                          <CalendarOff className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                           <span>Horario</span>
                         </button>
 
@@ -5153,10 +5149,10 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                                 });
                                 setIsCredentialsModalOpen(true);
                               }}
-                              className="px-2.5 py-1.5 rounded-xl border border-white/[0.08] hover:border-emerald-500/40 bg-white/[0.03] hover:bg-emerald-500/10 text-slate-300 hover:text-emerald-300 font-medium flex items-center gap-1 transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:border-emerald-500/40 bg-slate-100 hover:bg-emerald-50 dark:bg-white/[0.04] dark:hover:bg-emerald-500/10 text-slate-700 hover:text-emerald-700 dark:text-slate-200 dark:hover:text-emerald-300 font-semibold flex items-center gap-1 transition-all cursor-pointer"
                               title="Compartir credenciales y link de acceso por WhatsApp"
                             >
-                              <MessageCircle className="w-3.5 h-3.5 text-slate-400 hover:text-emerald-300" />
+                              <MessageCircle className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                               <span className="text-[11px]">Accesos</span>
                             </button>
                           )}
@@ -5166,13 +5162,9 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               e.stopPropagation();
                               handleEditStylist(sty);
                             }}
-                            className={`px-2.5 py-1.5 rounded-xl border font-medium flex items-center gap-1 transition-all cursor-pointer ${
-                              theme === 'dark' 
-                                ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/20 text-slate-300 hover:text-white' 
-                                : 'bg-slate-100 border-black/5 text-slate-800'
-                            }`}
+                            className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-200 font-semibold flex items-center gap-1 transition-all cursor-pointer"
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-slate-400" />
+                            <Edit3 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                             <span>Editar</span>
                           </button>
                           <button
@@ -5181,7 +5173,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               e.stopPropagation();
                               handleDeleteStylist(sty.id);
                             }}
-                            className="p-1.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 font-medium flex items-center justify-center transition-all cursor-pointer"
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/20 font-medium flex items-center justify-center transition-all cursor-pointer"
                             title="Eliminar profesional"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
