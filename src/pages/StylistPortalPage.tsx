@@ -547,7 +547,7 @@ export const StylistPortalPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleUpdateAppointmentStatus(inProgressAppointmentsToday[0].id, 'completada')}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-lg shadow-purple-600/30 shrink-0 flex items-center gap-1.5 cursor-pointer transition-transform"
+              className="bg-[#FF5A36] hover:bg-[#E54E07] active:scale-95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-lg shadow-[#FF5A36]/25 shrink-0 flex items-center gap-1.5 cursor-pointer transition-all"
               title="Finalizar atención y enviar el turno a recepción/caja POS"
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -1011,14 +1011,14 @@ export const StylistPortalPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleUpdateAppointmentStatus(apt.id, 'completada')}
-                              className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-600 to-indigo-600 active:scale-95 text-white text-xs font-black px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
+                              className="flex-1 sm:flex-initial bg-[#FF5A36] hover:bg-[#E54E07] active:scale-95 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-[#FF5A36]/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[44px]"
                               title="Marcar servicio técnico terminado y enviar al cliente a recepción/caja"
                             >
                               <CheckCircle2 className="w-4 h-4" />
                               <span>✓ Terminado / A Caja</span>
                             </button>
                           ) : isWaitingPay ? (
-                            <span className="flex-1 sm:flex-initial text-[11px] font-bold text-purple-300 bg-purple-500/15 px-3 py-2.5 rounded-xl border border-purple-500/25 flex items-center justify-center gap-1.5 min-h-[44px]">
+                            <span className="flex-1 sm:flex-initial text-[11px] font-bold text-amber-300 bg-amber-500/15 px-3 py-2.5 rounded-xl border border-amber-500/25 flex items-center justify-center gap-1.5 min-h-[44px]">
                               💳 Esperando Cobro en Recepción
                             </span>
                           ) : isDone ? (

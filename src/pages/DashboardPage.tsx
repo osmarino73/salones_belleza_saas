@@ -2202,10 +2202,14 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                 <button
                   type="button"
                   onClick={() => setIsQrModalOpen(true)}
-                  className="text-xs font-black px-3.5 py-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
+                  className={`text-xs font-bold px-3.5 py-2 rounded-full border flex items-center gap-1.5 transition-all cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-[#141926] border-white/10 text-white hover:border-[#FF5A36]'
+                      : 'bg-white border-black/5 text-slate-800 hover:border-[#FF5A36] shadow-sm'
+                  }`}
                 >
-                  <QrCode className="w-3.5 h-3.5" />
-                  <span>📲 Mi Código QR de Reservas</span>
+                  <QrCode className="w-3.5 h-3.5 text-[#FF5A36]" />
+                  <span>Mi Código QR de Reservas</span>
                 </button>
 
                 <Link
