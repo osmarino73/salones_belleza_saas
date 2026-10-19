@@ -3168,7 +3168,7 @@ export const api = {
   /**
    * Superadmin aprueba el comprobante de pago: suma 30 días acumulativos y activa el plan
    */
-  async approveSubscriptionReceipt(tenantId: string, paymentId?: string): Promise<{ success: boolean; newEndsAt?: string; error?: string }> {
+  async approveSubscriptionReceipt(tenantId: string, paymentId?: string): Promise<{ success: boolean; newEndsAt?: string; isExtraSlotsOnly?: boolean; error?: string }> {
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Supabase no está configurado.' };
     }
@@ -3273,7 +3273,7 @@ export const api = {
 
       if (updateErr) return { success: false, error: updateErr.message };
 
-      return { success: true, newEndsAt };
+      return { success: true, newEndsAt, isExtraSlotsOnly };
     } catch (err: any) {
       return { success: false, error: err?.message || 'Error de red' };
     }

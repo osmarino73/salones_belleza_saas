@@ -1124,8 +1124,13 @@ export const SuperadminDashboardPage: React.FC = () => {
     const tenantId = isPayment ? paymentOrTenant.tenant_id : paymentOrTenant.id;
     const paymentId = isPayment ? paymentOrTenant.id : undefined;
     const tenantName = isPayment ? (paymentOrTenant.tenant_name || 'este salón') : paymentOrTenant.name;
+    const isExtraSlots = isPayment && (paymentOrTenant.payment_scope === 'extra_slots_only' || paymentOrTenant.notes?.includes('Solo cupo extra') || paymentOrTenant.amount_cop < 29000);
 
-    if (!window.confirm(`¿Confirmas la aprobación del pago para ${tenantName}?\n\nSe sumarán 30 días adicionales acumulativos a su suscripción y su plan quedará activo.`)) {
+    const confirmMsg = isExtraSlots
+      ? `¿Confirmas la aprobación del cupo extra para ${tenantName}?\n\nSe activará el nuevo cupo de colaborador conservando su fecha de corte actual.`
+      : `¿Confirmas la aprobación del pago para ${tenantName}?\n\nSe sumarán 30 días adicionales acumulativos a su suscripción y su plan quedará activo.`;
+
+    if (!window.confirm(confirmMsg)) {
       return;
     }
     const loadingKey = paymentId || tenantId;
@@ -1133,8 +1138,12 @@ export const SuperadminDashboardPage: React.FC = () => {
     const res = await api.approveSubscriptionReceipt(tenantId, paymentId);
     setReceiptActionLoading(null);
     if (res.success) {
-      const formattedDate = res.newEndsAt ? new Date(res.newEndsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-      alert(`✅ Pago aprobado con éxito para ${tenantName}.\n📅 Nueva fecha de vigencia: ${formattedDate} (+30 días acumulados).`);
+      if (res.isExtraSlotsOnly) {
+        alert(`✅ Cupo extra aprobado con éxito para ${tenantName}.\n👥 Se activaron los nuevos cupos de colaborador sin alterar su fecha de vencimiento.`);
+      } else {
+        const formattedDate = res.newEndsAt ? new Date(res.newEndsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        alert(`✅ Pago aprobado con éxito para ${tenantName}.\n📅 Nueva fecha de vigencia: ${formattedDate} (+30 días acumulados).`);
+      }
       await loadData();
     } else {
       alert(`❌ Error al aprobar pago: ${res.error || 'Error desconocido'}`);
@@ -2876,17 +2885,24 @@ export const SuperadminDashboardPage: React.FC = () => {
                     const daysLeft = tenant?.trial_ends_at 
                       ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
                       : 0;
+                    const isExtraSlots = p.payment_scope === 'extra_slots_only' || p.notes?.includes('Solo cupo extra') || p.amount_cop < 29000;
+                    const requestedCupos = p.max_stylists_requested || (p.notes?.match(/(\d+)\s*colaborador/i)?.[1] ? Number(p.notes.match(/(\d+)\s*colaborador/i)![1]) : 4);
 
                     return (
                       <div key={p.id} className="bg-[#0A0D14] border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-inner">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-black text-white">{p.tenant_name || tenant?.name || 'Salón'}</span>
                                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
                                   {p.payment_method?.toUpperCase() || 'TRANSFERENCIA'}
                                 </span>
+                                {isExtraSlots && (
+                                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
+                                    ⚡ CUPO EXTRA
+                                  </span>
+                                )}
                               </div>
                               <span className="text-xs text-slate-400 block mt-0.5">
                                 {p.tenant_phone || tenant?.phone || 'Sin teléfono'} • {p.tenant_email || tenant?.owner_email || 'Sin email'}
@@ -2915,10 +2931,16 @@ export const SuperadminDashboardPage: React.FC = () => {
                               </span>
                             </div>
                             <div className="flex items-center justify-between text-slate-400">
-                              <span>Días actuales vigentes:</span>
-                              <span className="text-amber-300 font-bold">
-                                {daysLeft} días (acumulará a {daysLeft + 30} días)
-                              </span>
+                              <span>Vigencia de suscripción:</span>
+                              {isExtraSlots ? (
+                                <span className="text-emerald-400 font-bold">
+                                  {daysLeft} días (Conserva fecha • Activa {requestedCupos} cupos)
+                                </span>
+                              ) : (
+                                <span className="text-amber-300 font-bold">
+                                  {daysLeft} días (acumulará a {daysLeft + 30} días)
+                                </span>
+                              )}
                             </div>
                             {p.notes && (
                               <div className="text-slate-400 pt-1 border-t border-white/5">
@@ -2961,7 +2983,13 @@ export const SuperadminDashboardPage: React.FC = () => {
                             className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer"
                           >
                             <CheckCircle2 className="w-4 h-4" />
-                            <span>{receiptActionLoading === p.id ? 'Aprobando...' : 'Aprobar (+30 Días)'}</span>
+                            <span>
+                              {receiptActionLoading === p.id
+                                ? 'Aprobando...'
+                                : isExtraSlots
+                                ? `⚡ Aprobar Cupo Extra (Activar ${requestedCupos} Cupos)`
+                                : 'Aprobar (+30 Días)'}
+                            </span>
                           </button>
                           <button
                             type="button"
