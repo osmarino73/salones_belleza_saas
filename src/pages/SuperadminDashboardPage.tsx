@@ -3083,6 +3083,29 @@ export const SuperadminDashboardPage: React.FC = () => {
                           </select>
                         </div>
 
+                        {/* Cupos de Colaboradores (Add-on $10k/mes) */}
+                        <div className="flex items-center gap-1.5 bg-[#0A0D14] border border-white/15 rounded-xl px-2.5 py-1">
+                          <Users className="w-3.5 h-3.5 text-amber-400" />
+                          <span className="text-[10px] text-slate-400 font-bold">Cupos:</span>
+                          <span className="text-white font-extrabold text-[11px]">
+                            {t.max_stylists ?? (currentPlan === 'crecimiento' ? 999 : 3)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const current = t.max_stylists ?? 3;
+                              const next = current + 1;
+                              await api.updateTenantMaxStylists(t.id, next);
+                              alert(`✨ Cupo aumentado a ${next} colaboradores para ${t.name}.`);
+                              await loadData();
+                            }}
+                            className="ml-1 px-1.5 py-0.5 rounded-md bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black font-black text-[10px] transition-all cursor-pointer"
+                            title="Sumar +1 cupo de colaborador (Add-on $10k/mes)"
+                          >
+                            +1
+                          </button>
+                        </div>
+
                         {/* Extender 30 Días */}
                         <button
                           type="button"

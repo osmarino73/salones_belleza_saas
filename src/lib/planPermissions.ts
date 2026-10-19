@@ -152,22 +152,26 @@ export function checkMonthlyBookingLimit(
   };
 }
 
-export function canAddMoreStylists(currentCount: number, plan?: string): { allowed: boolean; max: number; message?: string } {
+export function canAddMoreStylists(currentCount: number, plan?: string, tenantMaxStylists?: number): { allowed: boolean; max: number; message?: string } {
   const config = getPlanConfig(plan);
-  if (currentCount >= config.max_stylists) {
+  const effectiveMax = typeof tenantMaxStylists === 'number' && tenantMaxStylists > config.max_stylists
+    ? tenantMaxStylists
+    : config.max_stylists;
+
+  if (currentCount >= effectiveMax) {
     const isFree = config.id === 'free';
     const isInicio = config.id === 'inicio';
     return {
       allowed: false,
-      max: config.max_stylists,
+      max: effectiveMax,
       message: isFree
-        ? `Has alcanzado el límite de ${config.max_stylists} profesional de tu ${config.name}. Pasa al Plan Inicio ($29.000 COP/mes) para habilitar hasta 3 colaboradores o al Plan Crecimiento para ilimitados.`
+        ? `Has alcanzado el límite de ${effectiveMax} profesional de tu ${config.name}. Pasa al Plan Inicio ($29.000 COP/mes) para habilitar hasta 3 colaboradores o al Plan Crecimiento para ilimitados.`
         : isInicio
-        ? `Has alcanzado el límite base de ${config.max_stylists} colaboradores de tu ${config.name}. Puedes agregar colaboradores extra por solo $10.000 COP/mes cada uno o pasarte al Plan Crecimiento para tener acceso ilimitado.`
-        : `Has alcanzado el límite de ${config.max_stylists} profesional(es) de tu ${config.name}. Pásate al Plan Crecimiento para tener colaboradoras ilimitadas.`
+        ? `Has alcanzado el límite de ${effectiveMax} colaboradores de tu ${config.name}. Puedes agregar colaboradores extra por solo $10.000 COP/mes cada uno o pasarte al Plan Crecimiento para tener acceso ilimitado.`
+        : `Has alcanzado el límite de ${effectiveMax} profesional(es) de tu ${config.name}. Pásate al Plan Crecimiento para tener colaboradoras ilimitadas.`
     };
   }
-  return { allowed: true, max: config.max_stylists };
+  return { allowed: true, max: effectiveMax };
 }
 
 export function getUpgradeWhatsAppUrl(requiredPlan: SubscriptionPlan, salonName?: string, featureName?: string): string {

@@ -2922,6 +2922,37 @@ export const api = {
     return true;
   },
 
+  async updateTenantMaxStylists(tenantId: string, newMaxStylists: number): Promise<boolean> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('tenants')
+          .update({ max_stylists: newMaxStylists })
+          .eq('id', tenantId);
+        if (error) {
+          console.warn('Error updating tenant max_stylists:', error);
+          return false;
+        }
+      } catch (err) {
+        console.warn('Exception updating tenant max_stylists:', err);
+        return false;
+      }
+    }
+
+    // Actualizar copia local en localStorage si es el tenant activo
+    const activeTenantRaw = localStorage.getItem('bf_tenant_active');
+    if (activeTenantRaw) {
+      try {
+        const parsed = JSON.parse(activeTenantRaw);
+        if (parsed.id === tenantId) {
+          localStorage.setItem('bf_tenant_active', JSON.stringify({ ...parsed, max_stylists: newMaxStylists }));
+        }
+      } catch (e) {}
+    }
+
+    return true;
+  },
+
   /**
    * Envía un comprobante de pago de suscripción (Nequi / Bancolombia) para revisión del superadmin
    */

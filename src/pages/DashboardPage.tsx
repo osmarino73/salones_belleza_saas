@@ -917,7 +917,7 @@ export const DashboardPage: React.FC = () => {
 
   // STYLIST CRUD HANDLERS
   const handleOpenNewStylist = () => {
-    const check = canAddMoreStylists(stylists.length, activeTenantObj?.plan_tier);
+    const check = canAddMoreStylists(stylists.length, activeTenantObj?.plan_tier, activeTenantObj?.max_stylists);
     if (!check.allowed) {
       const isFree = (activeTenantObj?.plan_tier || 'free') === 'free';
       setUpgradeModalState({
