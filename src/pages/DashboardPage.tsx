@@ -4980,10 +4980,14 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       <button
                         type="button"
                         onClick={() => {
-                          setSelectedPlanTier('inicio');
-                          setIsPlanModalOpen(true);
+                          setUpgradeModalState({
+                            isOpen: true,
+                            requiredPlan: 'inicio',
+                            featureName: 'Sumar Colaboradores Extra a tu Salón',
+                            featureDescription: `Tu Plan Inicio incluye 3 cupos base por $29.000 COP/mes. Actualmente tienes ${activeTenantObj?.max_stylists ?? 3} cupos configurados. Puedes sumar colaboradores adicionales por solo $10.000 COP/mes cada uno o pasar a Plan Crecimiento para cupos ilimitados.`
+                          });
                         }}
-                        className="px-3.5 py-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-500/10"
+                        className="px-3.5 py-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-500/10 active:scale-95"
                         title="Ampliar cupo de colaboradores (+ $10.000 COP/mes)"
                       >
                         <Users className="w-3.5 h-3.5 text-emerald-400" />
@@ -8900,28 +8904,75 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                     <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm sm:text-base font-extrabold text-white">¿Deseas activar o sumar 30 días a tu Plan?</span>
+                          <span className="text-sm sm:text-base font-extrabold text-white">
+                            {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3)
+                              ? '¿Cómo deseas pagar tus nuevos cupos?'
+                              : '¿Deseas activar o sumar 30 días a tu Plan?'}
+                          </span>
                           <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md font-bold">
-                            +30 Días Acumulables
+                            {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3)
+                              ? '⚡ Add-on Flexible'
+                              : '+30 Días Acumulables'}
                           </span>
                         </div>
                         <p className="text-xs text-slate-300 mt-0.5 leading-snug">
-                          Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong>.
-                          {targetTier === 'inicio' && targetExtras > 0 && (
-                            <span className="block text-emerald-400 font-bold mt-0.5 text-[11px]">
-                              ✨ Incluye Plan Inicio ($29.000) + {targetExtras} colaborador(es) extra (+{formatCurrency(targetExtras * 10000, salonCurrency)}). Total: {formatCurrency(dynamicPrice, salonCurrency)}.
+                          {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3) ? (
+                            <span>
+                              Puedes pagar únicamente el cupo extra (+{formatCurrency((targetMax - (activeTenantObj?.max_stylists ?? 3)) * 10000, salonCurrency)}) conservando tus {daysRemaining} días de vigencia, o renovar 30 días completos.
                             </span>
+                          ) : (
+                            <>
+                              Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong>.
+                              {targetTier === 'inicio' && targetExtras > 0 && (
+                                <span className="block text-emerald-400 font-bold mt-0.5 text-[11px]">
+                                  ✨ Incluye Plan Inicio ($29.000) + {targetExtras} colaborador(es) extra (+{formatCurrency(targetExtras * 10000, salonCurrency)}). Total: {formatCurrency(dynamicPrice, salonCurrency)}.
+                                </span>
+                              )}
+                            </>
                           )}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsPaymentReceiptModalOpen(true)}
-                        className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
-                      >
-                        <Upload className="w-4 h-4" />
-                        <span>Pagar o Renovar ({formatCurrency(dynamicPrice, salonCurrency)})</span>
-                      </button>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto shrink-0">
+                        {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3) ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPaymentScope('extra_slots_only');
+                                setIsPaymentReceiptModalOpen(true);
+                              }}
+                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/25 cursor-pointer transition-all active:scale-[0.98]"
+                            >
+                              <Zap className="w-3.5 h-3.5" />
+                              <span>⚡ Solo Cupo Extra (+{formatCurrency((targetMax - (activeTenantObj?.max_stylists ?? 3)) * 10000, salonCurrency)})</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPaymentScope('full_renewal');
+                                setIsPaymentReceiptModalOpen(true);
+                              }}
+                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                              <span>Renovar 30 Días ({formatCurrency(dynamicPrice, salonCurrency)})</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPaymentScope('full_renewal');
+                              setIsPaymentReceiptModalOpen(true);
+                            }}
+                            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
+                          >
+                            <Upload className="w-4 h-4" />
+                            <span>Pagar o Renovar ({formatCurrency(dynamicPrice, salonCurrency)})</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
