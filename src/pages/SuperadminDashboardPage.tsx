@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/supabase';
-import { ProspectSite, Tenant, PlanTier } from '../types';
+import { ProspectSite, Tenant, PlanTier, SubscriptionPayment } from '../types';
 import {
   BEAUTY_STOCK_LIBRARY,
   StockImageItem,
@@ -95,6 +95,7 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'generator' | 'prospects' | 'tenants'>('generator');
   const [prospectSites, setProspectSites] = useState<ProspectSite[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [subscriptionPayments, setSubscriptionPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
@@ -501,12 +502,14 @@ export const SuperadminDashboardPage: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [sites, allTenants] = await Promise.all([
+    const [sites, allTenants, allPayments] = await Promise.all([
       api.getProspectSites(),
-      api.getAllTenants()
+      api.getAllTenants(),
+      api.getSubscriptionPayments()
     ]);
     setProspectSites(sites);
     setTenants(allTenants);
+    setSubscriptionPayments(allPayments);
     setLoading(false);
   };
 
@@ -1114,30 +1117,42 @@ export const SuperadminDashboardPage: React.FC = () => {
     }
   };
 
-  const handleApproveReceipt = async (tenant: Tenant) => {
-    if (!window.confirm(`¿Confirmas la aprobación del pago para ${tenant.name}?\n\nSe sumarán 30 días adicionales acumulativos a su suscripción y su plan quedará activo.`)) {
+  const handleApproveReceipt = async (paymentOrTenant: SubscriptionPayment | Tenant) => {
+    const isPayment = 'amount_cop' in paymentOrTenant;
+    const tenantId = isPayment ? paymentOrTenant.tenant_id : paymentOrTenant.id;
+    const paymentId = isPayment ? paymentOrTenant.id : undefined;
+    const tenantName = isPayment ? (paymentOrTenant.tenant_name || 'este salón') : paymentOrTenant.name;
+
+    if (!window.confirm(`¿Confirmas la aprobación del pago para ${tenantName}?\n\nSe sumarán 30 días adicionales acumulativos a su suscripción y su plan quedará activo.`)) {
       return;
     }
-    setReceiptActionLoading(tenant.id);
-    const res = await api.approveSubscriptionReceipt(tenant.id);
+    const loadingKey = paymentId || tenantId;
+    setReceiptActionLoading(loadingKey);
+    const res = await api.approveSubscriptionReceipt(tenantId, paymentId);
     setReceiptActionLoading(null);
     if (res.success) {
       const formattedDate = res.newEndsAt ? new Date(res.newEndsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-      alert(`✅ Pago aprobado con éxito para ${tenant.name}.\n📅 Nueva fecha de vigencia: ${formattedDate} (+30 días acumulados).`);
+      alert(`✅ Pago aprobado con éxito para ${tenantName}.\n📅 Nueva fecha de vigencia: ${formattedDate} (+30 días acumulados).`);
       await loadData();
     } else {
       alert(`❌ Error al aprobar pago: ${res.error || 'Error desconocido'}`);
     }
   };
 
-  const handleRejectReceipt = async (tenant: Tenant) => {
-    const reason = window.prompt(`Ingresa el motivo del rechazo del comprobante para ${tenant.name}:`, 'Comprobante ilegible o monto incorrecto');
+  const handleRejectReceipt = async (paymentOrTenant: SubscriptionPayment | Tenant) => {
+    const isPayment = 'amount_cop' in paymentOrTenant;
+    const tenantId = isPayment ? paymentOrTenant.tenant_id : paymentOrTenant.id;
+    const paymentId = isPayment ? paymentOrTenant.id : undefined;
+    const tenantName = isPayment ? (paymentOrTenant.tenant_name || 'este salón') : paymentOrTenant.name;
+
+    const reason = window.prompt(`Ingresa el motivo del rechazo del comprobante para ${tenantName}:`, 'Comprobante ilegible o monto incorrecto');
     if (!reason) return;
-    setReceiptActionLoading(tenant.id);
-    const res = await api.rejectSubscriptionReceipt(tenant.id, reason);
+    const loadingKey = paymentId || tenantId;
+    setReceiptActionLoading(loadingKey);
+    const res = await api.rejectSubscriptionReceipt(tenantId, reason, paymentId);
     setReceiptActionLoading(null);
     if (res.success) {
-      alert(`Comprobante rechazado para ${tenant.name}.`);
+      alert(`Comprobante rechazado para ${tenantName}.`);
       await loadData();
     } else {
       alert(`❌ Error al rechazar comprobante: ${res.error || 'Error desconocido'}`);
@@ -1692,9 +1707,9 @@ export const SuperadminDashboardPage: React.FC = () => {
           >
             <Building2 className="w-4 h-4" />
             <span>🏢 Salones Activos SaaS ({tenants.length})</span>
-            {tenants.filter(t => t.subscription_meta?.status === 'pending').length > 0 && (
+            {subscriptionPayments.filter(p => p.status === 'pending').length > 0 && (
               <span className="bg-amber-400 text-black px-1.5 py-0.5 rounded-full text-[10px] font-black animate-pulse flex items-center gap-1 shadow-md shadow-amber-400/30">
-                💸 {tenants.filter(t => t.subscription_meta?.status === 'pending').length}
+                💸 {subscriptionPayments.filter(p => p.status === 'pending').length}
               </span>
             )}
           </button>
@@ -2807,13 +2822,15 @@ export const SuperadminDashboardPage: React.FC = () => {
             TAB 3: GESTIÓN GLOBAL DE SALONES (MULTI-TENANT SAAS)
             =================================================================== */}
         {activeTab === 'tenants' && (() => {
-          const pendingReceipts = tenants.filter(t => t.subscription_meta?.status === 'pending');
+          const pendingPayments = subscriptionPayments.filter(p => p.status === 'pending');
+          const approvedPayments = subscriptionPayments.filter(p => p.status === 'approved');
+          const totalCollectedCOP = approvedPayments.reduce((acc, p) => acc + p.amount_cop, 0);
 
           return (
           <div className="space-y-6">
 
             {/* Comprobantes de Pago Pendientes (Nequi / Bancolombia) */}
-            {pendingReceipts.length > 0 && (
+            {pendingPayments.length > 0 && (
               <div className="bg-gradient-to-r from-amber-500/10 via-[#121624] to-emerald-500/10 border-2 border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between flex-wrap gap-3 border-b border-white/10 pb-4">
                   <div className="flex items-center gap-3">
@@ -2824,7 +2841,7 @@ export const SuperadminDashboardPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-black text-white">Comprobantes de Pago Pendientes</h3>
                         <span className="bg-amber-400 text-black px-2 py-0.5 rounded-full text-xs font-black animate-pulse">
-                          {pendingReceipts.length} por verificar
+                          {pendingPayments.length} por verificar
                         </span>
                       </div>
                       <p className="text-xs text-slate-400">Verifica los comprobantes de Nequi / Bancolombia para renovar +30 días acumulativos automáticamente.</p>
@@ -2841,33 +2858,33 @@ export const SuperadminDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {pendingReceipts.map((t) => {
-                    const meta = t.subscription_meta;
-                    const daysLeft = t.trial_ends_at 
-                      ? Math.max(0, Math.ceil((new Date(t.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                  {pendingPayments.map((p) => {
+                    const tenant = tenants.find(t => t.id === p.tenant_id);
+                    const daysLeft = tenant?.trial_ends_at 
+                      ? Math.max(0, Math.ceil((new Date(tenant.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
                       : 0;
 
                     return (
-                      <div key={t.id} className="bg-[#0A0D14] border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-inner">
+                      <div key={p.id} className="bg-[#0A0D14] border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-inner">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-black text-white">{t.name}</span>
+                                <span className="text-sm font-black text-white">{p.tenant_name || tenant?.name || 'Salón'}</span>
                                 <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
-                                  {meta?.payment_method?.toUpperCase() || 'TRANSFERENCIA'}
+                                  {p.payment_method?.toUpperCase() || 'TRANSFERENCIA'}
                                 </span>
                               </div>
                               <span className="text-xs text-slate-400 block mt-0.5">
-                                {t.phone} • {t.owner_email || 'Sin email'}
+                                {p.tenant_phone || tenant?.phone || 'Sin teléfono'} • {p.tenant_email || tenant?.owner_email || 'Sin email'}
                               </span>
                             </div>
                             <div className="text-right">
                               <span className="text-base font-black text-emerald-400 block">
-                                ${(meta?.amount_cop || 29000).toLocaleString('es-CO')} COP
+                                ${(p.amount_cop || 29000).toLocaleString('es-CO')} COP
                               </span>
                               <span className="text-[10px] text-slate-400">
-                                Plan: {meta?.plan_tier_requested?.toUpperCase() || 'INICIO'}
+                                Plan: {p.plan_tier?.toUpperCase() || 'INICIO'}
                               </span>
                             </div>
                           </div>
@@ -2876,12 +2893,12 @@ export const SuperadminDashboardPage: React.FC = () => {
                           <div className="bg-[#121624] rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
                             <div className="flex items-center justify-between text-slate-400">
                               <span>Referencia / Aprobación:</span>
-                              <strong className="text-white font-mono">{meta?.reference_number || 'No especificada'}</strong>
+                              <strong className="text-white font-mono">{p.reference_number || 'No especificada'}</strong>
                             </div>
                             <div className="flex items-center justify-between text-slate-400">
                               <span>Enviado:</span>
                               <span className="text-slate-300">
-                                {meta?.submitted_at ? new Date(meta.submitted_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : 'Reciente'}
+                                {p.created_at ? new Date(p.created_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : 'Reciente'}
                               </span>
                             </div>
                             <div className="flex items-center justify-between text-slate-400">
@@ -2890,28 +2907,28 @@ export const SuperadminDashboardPage: React.FC = () => {
                                 {daysLeft} días (acumulará a {daysLeft + 30} días)
                               </span>
                             </div>
-                            {meta?.notes && (
+                            {p.notes && (
                               <div className="text-slate-400 pt-1 border-t border-white/5">
-                                <span className="text-[11px] italic">"{meta.notes}"</span>
+                                <span className="text-[11px] italic">"{p.notes}"</span>
                               </div>
                             )}
                           </div>
 
                           {/* Vista Previa del Comprobante */}
-                          {meta?.receipt_url && (
+                          {p.receipt_url && (
                             <div className="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10">
                               <img
-                                src={meta.receipt_url}
+                                src={p.receipt_url}
                                 alt="Comprobante de pago"
                                 className="w-16 h-16 object-cover rounded-lg border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => setPreviewReceiptUrl(meta.receipt_url)}
+                                onClick={() => setPreviewReceiptUrl(p.receipt_url)}
                               />
                               <div className="flex-1 min-w-0">
                                 <span className="text-xs font-bold text-white block">Imagen del Comprobante</span>
                                 <span className="text-[10px] text-slate-400 block truncate">Haz clic para agrandar</span>
                                 <button
                                   type="button"
-                                  onClick={() => setPreviewReceiptUrl(meta.receipt_url)}
+                                  onClick={() => setPreviewReceiptUrl(p.receipt_url)}
                                   className="mt-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer"
                                 >
                                   <Eye className="w-3.5 h-3.5" />
@@ -2926,17 +2943,17 @@ export const SuperadminDashboardPage: React.FC = () => {
                         <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                           <button
                             type="button"
-                            disabled={receiptActionLoading === t.id}
-                            onClick={() => handleApproveReceipt(t)}
+                            disabled={receiptActionLoading === p.id}
+                            onClick={() => handleApproveReceipt(p)}
                             className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer"
                           >
                             <CheckCircle2 className="w-4 h-4" />
-                            <span>{receiptActionLoading === t.id ? 'Aprobando...' : 'Aprobar (+30 Días)'}</span>
+                            <span>{receiptActionLoading === p.id ? 'Aprobando...' : 'Aprobar (+30 Días)'}</span>
                           </button>
                           <button
                             type="button"
-                            disabled={receiptActionLoading === t.id}
-                            onClick={() => handleRejectReceipt(t)}
+                            disabled={receiptActionLoading === p.id}
+                            onClick={() => handleRejectReceipt(p)}
                             className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -2967,11 +2984,13 @@ export const SuperadminDashboardPage: React.FC = () => {
               </div>
 
               <div className="bg-[#121624] border border-white/10 rounded-2xl p-5 space-y-1">
-                <span className="text-slate-400 text-xs font-semibold">Facturación Estimada MRR</span>
+                <span className="text-slate-400 text-xs font-semibold">Recaudo por Transferencias</span>
                 <div className="text-3xl font-black text-emerald-400">
-                  $ {(tenants.length * 120000).toLocaleString('es-CO')} COP
+                  $ {totalCollectedCOP.toLocaleString('es-CO')} COP
                 </div>
-                <span className="text-[10px] text-slate-400">Ingreso recurrente mensual</span>
+                <span className="text-[10px] text-emerald-300 font-bold">
+                  ● {approvedPayments.length} pagos auditados (Nequi/Bancolombia)
+                </span>
               </div>
 
               <div className="bg-[#121624] border border-white/10 rounded-2xl p-5 space-y-1">
@@ -3109,6 +3128,63 @@ export const SuperadminDashboardPage: React.FC = () => {
                 })}
               </div>
             </div>
+
+            {/* Historial Contable de Transferencias Auditadas */}
+            {approvedPayments.length > 0 && (
+              <div className="bg-[#121624] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📜</span>
+                    <div>
+                      <h3 className="text-base font-black text-white">Historial Contable de Transferencias</h3>
+                      <p className="text-xs text-slate-400">Registro inmutable de pagos aprobados por Nequi y Bancolombia.</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl">
+                    Total: ${totalCollectedCOP.toLocaleString('es-CO')} COP
+                  </span>
+                </div>
+
+                <div className="divide-y divide-white/5 text-xs">
+                  {approvedPayments.map((p) => (
+                    <div key={p.id} className="py-3 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs font-black">
+                          ✓
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <strong className="text-white text-xs">{p.tenant_name || 'Salón'}</strong>
+                            <span className="text-[10px] font-bold text-slate-400 font-mono bg-white/5 px-2 py-0.5 rounded">
+                              Ref: {p.reference_number || 'S/R'}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-400 block mt-0.5">
+                            {p.payment_method.toUpperCase()} • {new Date(p.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-black text-emerald-400">
+                          +${p.amount_cop.toLocaleString('es-CO')} COP
+                        </span>
+                        {p.receipt_url && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewReceiptUrl(p.receipt_url)}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-cyan-400 hover:text-cyan-300 transition-all cursor-pointer"
+                            title="Ver comprobante archivado"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
         ); })()}

@@ -28,6 +28,24 @@ export interface SubscriptionPaymentMeta {
   plan_tier_requested?: PlanTier;
 }
 
+export interface SubscriptionPayment {
+  id: string;
+  tenant_id: string;
+  plan_tier: PlanTier;
+  amount_cop: number;
+  payment_method: 'nequi' | 'bancolombia' | 'daviplata' | 'transferencia';
+  reference_number?: string;
+  receipt_url: string;
+  notes?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  reviewed_at?: string;
+  created_at: string;
+  tenant_name?: string;
+  tenant_phone?: string;
+  tenant_email?: string;
+}
+
 export interface Tenant {
   id: string;
   name: string;

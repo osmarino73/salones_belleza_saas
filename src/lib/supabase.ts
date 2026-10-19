@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier, SubscriptionPaymentMeta } from '../types';
+import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier, SubscriptionPaymentMeta, SubscriptionPayment } from '../types';
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
 import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
@@ -2948,6 +2948,27 @@ export const api = {
         return { success: false, error: fetchErr?.message || 'Salón no encontrado' };
       }
 
+      const targetPlan = receiptData.plan_tier_requested || currentTenant.plan_tier || 'inicio';
+
+      // 1. Intento de guardado en la tabla dedicada subscription_payments
+      try {
+        await supabase
+          .from('subscription_payments')
+          .insert({
+            tenant_id: tenantId,
+            plan_tier: targetPlan,
+            amount_cop: receiptData.amount_cop,
+            payment_method: receiptData.payment_method,
+            reference_number: receiptData.reference_number || '',
+            receipt_url: receiptData.receipt_url,
+            notes: receiptData.notes || '',
+            status: 'pending'
+          });
+      } catch (insertTableErr) {
+        console.warn('Tabla subscription_payments aún no existe o falló inserción, usando fallback en tenants:', insertTableErr);
+      }
+
+      // 2. Guardado en tenants.business_hours.subscription_meta (compatibilidad y fallback resiliente)
       const existingBH = (typeof currentTenant.business_hours === 'object' && currentTenant.business_hours !== null)
         ? currentTenant.business_hours
         : { summary: 'Lun a Sab 08:00 AM - 08:00 PM' };
@@ -2960,7 +2981,7 @@ export const api = {
         notes: receiptData.notes || '',
         submitted_at: new Date().toISOString(),
         status: 'pending',
-        plan_tier_requested: receiptData.plan_tier_requested || currentTenant.plan_tier || 'inicio'
+        plan_tier_requested: targetPlan
       };
 
       const updatedBH = {
@@ -2971,6 +2992,7 @@ export const api = {
       const { error: updateErr } = await supabase
         .from('tenants')
         .update({
+          subscription_status: 'pending_verification',
           business_hours: updatedBH,
           updated_at: new Date().toISOString()
         })
@@ -2988,6 +3010,7 @@ export const api = {
           if (parsed.id === tenantId) {
             localStorage.setItem('bf_tenant_active', JSON.stringify({
               ...parsed,
+              subscription_status: 'pending_verification',
               business_hours: updatedBH,
               subscription_meta
             }));
@@ -3002,9 +3025,78 @@ export const api = {
   },
 
   /**
+   * Obtiene la lista de pagos / transferencias de suscripción (histórico contable y pendientes)
+   */
+  async getSubscriptionPayments(tenantId?: string): Promise<SubscriptionPayment[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        let query = supabase
+          .from('subscription_payments')
+          .select('*, tenants(name, phone, owner_email)')
+          .order('created_at', { ascending: false });
+
+        if (tenantId) {
+          query = query.eq('tenant_id', tenantId);
+        }
+
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            tenant_id: d.tenant_id,
+            plan_tier: d.plan_tier as PlanTier,
+            amount_cop: Number(d.amount_cop || 0),
+            payment_method: d.payment_method,
+            reference_number: d.reference_number || '',
+            receipt_url: d.receipt_url,
+            notes: d.notes || '',
+            status: d.status,
+            rejection_reason: d.rejection_reason,
+            reviewed_at: d.reviewed_at,
+            created_at: d.created_at,
+            tenant_name: d.tenants?.name,
+            tenant_phone: d.tenants?.phone,
+            tenant_email: d.tenants?.owner_email
+          }));
+        }
+      } catch (_) {}
+    }
+
+    // Fallback: Si no hay tabla o está vacía, extraemos desde los tenants con subscription_meta
+    const tenants = await this.getAllTenants();
+    const filteredTenants = tenantId ? tenants.filter(t => t.id === tenantId) : tenants;
+    const fallbackPayments: SubscriptionPayment[] = [];
+
+    for (const t of filteredTenants) {
+      const meta = t.subscription_meta || (t.business_hours as any)?.subscription_meta;
+      if (meta && meta.receipt_url) {
+        fallbackPayments.push({
+          id: `meta-${t.id}`,
+          tenant_id: t.id,
+          plan_tier: meta.plan_tier_requested || t.plan_tier || 'inicio',
+          amount_cop: meta.amount_cop || 29000,
+          payment_method: meta.payment_method || 'nequi',
+          reference_number: meta.reference_number || '',
+          receipt_url: meta.receipt_url,
+          notes: meta.notes || '',
+          status: meta.status || 'pending',
+          rejection_reason: meta.rejection_reason,
+          reviewed_at: meta.reviewed_at,
+          created_at: meta.submitted_at || new Date().toISOString(),
+          tenant_name: t.name,
+          tenant_phone: t.phone,
+          tenant_email: t.owner_email
+        });
+      }
+    }
+
+    return fallbackPayments;
+  },
+
+  /**
    * Superadmin aprueba el comprobante de pago: suma 30 días acumulativos y activa el plan
    */
-  async approveSubscriptionReceipt(tenantId: string): Promise<{ success: boolean; newEndsAt?: string; error?: string }> {
+  async approveSubscriptionReceipt(tenantId: string, paymentId?: string): Promise<{ success: boolean; newEndsAt?: string; error?: string }> {
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Supabase no está configurado.' };
     }
@@ -3020,6 +3112,29 @@ export const api = {
         return { success: false, error: fetchErr?.message || 'Salón no encontrado' };
       }
 
+      // 1. Actualizar en tabla subscription_payments si existe
+      try {
+        if (paymentId && !paymentId.startsWith('meta-')) {
+          await supabase
+            .from('subscription_payments')
+            .update({
+              status: 'approved',
+              reviewed_at: new Date().toISOString()
+            })
+            .eq('id', paymentId);
+        } else {
+          await supabase
+            .from('subscription_payments')
+            .update({
+              status: 'approved',
+              reviewed_at: new Date().toISOString()
+            })
+            .eq('tenant_id', tenantId)
+            .eq('status', 'pending');
+        }
+      } catch (_) {}
+
+      // 2. Extraer plan objetivo y calcular días acumulativos
       const existingBH = (typeof currentTenant.business_hours === 'object' && currentTenant.business_hours !== null)
         ? currentTenant.business_hours
         : {};
@@ -3027,7 +3142,7 @@ export const api = {
       const currentMeta = existingBH.subscription_meta || {};
       const targetPlan = currentMeta.plan_tier_requested || currentTenant.plan_tier || 'inicio';
 
-      // Cálculo Acumulativo: si trial_ends_at es futuro, sumamos 30 días a esa fecha; si no, desde hoy
+      // Regla Acumulativa: si trial_ends_at está en el futuro, sumamos 30 días a esa fecha; si no, desde hoy
       let baseDate = new Date();
       if (currentTenant.trial_ends_at) {
         const currentEnd = new Date(currentTenant.trial_ends_at);
@@ -3071,12 +3186,37 @@ export const api = {
   /**
    * Superadmin rechaza el comprobante de pago con motivo
    */
-  async rejectSubscriptionReceipt(tenantId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+  async rejectSubscriptionReceipt(tenantId: string, reason: string, paymentId?: string): Promise<{ success: boolean; error?: string }> {
     if (!supabase || !isSupabaseConfigured) {
       return { success: false, error: 'Supabase no está configurado.' };
     }
 
     try {
+      // 1. Actualizar en tabla subscription_payments si existe
+      try {
+        if (paymentId && !paymentId.startsWith('meta-')) {
+          await supabase
+            .from('subscription_payments')
+            .update({
+              status: 'rejected',
+              rejection_reason: reason,
+              reviewed_at: new Date().toISOString()
+            })
+            .eq('id', paymentId);
+        } else {
+          await supabase
+            .from('subscription_payments')
+            .update({
+              status: 'rejected',
+              rejection_reason: reason,
+              reviewed_at: new Date().toISOString()
+            })
+            .eq('tenant_id', tenantId)
+            .eq('status', 'pending');
+        }
+      } catch (_) {}
+
+      // 2. Actualizar en tenants.business_hours
       const { data: currentTenant, error: fetchErr } = await supabase
         .from('tenants')
         .select('*')
@@ -3105,6 +3245,7 @@ export const api = {
       await supabase
         .from('tenants')
         .update({
+          subscription_status: 'past_due',
           business_hours: updatedBH,
           updated_at: new Date().toISOString()
         })
