@@ -159,7 +159,7 @@ export const DashboardPage: React.FC = () => {
     photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     role: 'colaborador',
     is_owner: false,
-    attends_clients: false,
+    attends_clients: true,
     show_on_web: true,
     commission_service_pct: 45,
     commission_retail_pct: 10,
@@ -939,7 +939,7 @@ export const DashboardPage: React.FC = () => {
       photo_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
       role: 'colaborador',
       is_owner: false,
-      attends_clients: false, // Por defecto 'Solo gestión administrativa' en off
+      attends_clients: true, // Visible en el portal público de reservas por defecto
       show_on_web: true,
       commission_service_pct: 45,
       commission_retail_pct: 10,
