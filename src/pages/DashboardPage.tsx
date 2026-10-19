@@ -8154,7 +8154,7 @@ export const DashboardPage: React.FC = () => {
                     </span>
                   ) : isTrial ? (
                     <span className="inline-flex items-center gap-1.5 text-xs font-black text-cyan-400 bg-cyan-500/20 border border-cyan-500/40 px-3 py-1 rounded-full shadow-sm">
-                      ● Prueba Gratuita (8 Días) Activa
+                      ● Prueba Gratuita (14 Días) Activa
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 text-xs font-black text-rose-400 bg-rose-500/20 border border-rose-500/40 px-3 py-1 rounded-full shadow-sm">
