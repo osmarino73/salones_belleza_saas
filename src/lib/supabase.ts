@@ -2922,12 +2922,20 @@ export const api = {
     return true;
   },
 
-  async updateTenantMaxStylists(tenantId: string, newMaxStylists: number): Promise<boolean> {
+  async updateTenantMaxStylists(tenantId: string, newMaxStylists: number, newPriceCop?: number): Promise<boolean> {
+    const updatePayload: any = { max_stylists: newMaxStylists };
+    if (typeof newPriceCop === 'number') {
+      updatePayload.subscription_price_cop = newPriceCop;
+    } else if (newMaxStylists > 3) {
+      // Si supera el cupo base de 3 en Plan Inicio, suma $10.000 COP por cupo adicional
+      updatePayload.subscription_price_cop = 29000 + (newMaxStylists - 3) * 10000;
+    }
+
     if (supabase && isSupabaseConfigured) {
       try {
         const { error } = await supabase
           .from('tenants')
-          .update({ max_stylists: newMaxStylists })
+          .update(updatePayload)
           .eq('id', tenantId);
         if (error) {
           console.warn('Error updating tenant max_stylists:', error);
@@ -2945,7 +2953,7 @@ export const api = {
       try {
         const parsed = JSON.parse(activeTenantRaw);
         if (parsed.id === tenantId) {
-          localStorage.setItem('bf_tenant_active', JSON.stringify({ ...parsed, max_stylists: newMaxStylists }));
+          localStorage.setItem('bf_tenant_active', JSON.stringify({ ...parsed, ...updatePayload }));
         }
       } catch (e) {}
     }

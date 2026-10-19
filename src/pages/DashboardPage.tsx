@@ -511,7 +511,11 @@ export const DashboardPage: React.FC = () => {
     setIsSubmittingReceipt(true);
     try {
       const currentPlan = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
-      const amount = currentPlan === 'inicio' ? 29000 : (activeTenantObj?.subscription_price_cop || 120000);
+      const extraSlots = currentPlan === 'inicio' && (activeTenantObj?.max_stylists ?? 3) > 3 
+        ? ((activeTenantObj?.max_stylists ?? 3) - 3) 
+        : 0;
+      const amount = activeTenantObj?.subscription_price_cop 
+        || (currentPlan === 'inicio' ? (29000 + extraSlots * 10000) : 120000);
       const res = await api.submitSubscriptionReceipt(tid, {
         receipt_url: paymentReceiptUrl,
         payment_method: paymentMethod,
@@ -8352,7 +8356,10 @@ export const DashboardPage: React.FC = () => {
       {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS (100% DINÁMICO & FLUJO NEQUI/BANCOLOMBIA) */}
       {isPlanModalOpen && (() => {
         const currentTier = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
-        const planPrice = activeTenantObj?.subscription_price_cop || (currentTier === 'inicio' ? 29000 : 120000);
+        const extraSlots = currentTier === 'inicio' && (activeTenantObj?.max_stylists ?? 3) > 3 
+          ? ((activeTenantObj?.max_stylists ?? 3) - 3) 
+          : 0;
+        const planPrice = activeTenantObj?.subscription_price_cop || (currentTier === 'inicio' ? (29000 + extraSlots * 10000) : 120000);
         const trialEndsAt = activeTenantObj?.trial_ends_at ? new Date(activeTenantObj.trial_ends_at) : null;
         const now = new Date();
         const daysRemaining = trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
@@ -8472,6 +8479,11 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-snug">
                     Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong> y sube tu comprobante. Los 30 días se sumarán a los días que tengas disponibles.
+                    {extraSlots > 0 && (
+                      <span className="block text-emerald-400 font-bold mt-1 text-[11px]">
+                        ✨ Incluye Plan Inicio ($29.000) + {extraSlots} colaborador(es) extra (+{formatCurrency(extraSlots * 10000, salonCurrency)}).
+                      </span>
+                    )}
                   </p>
                 </div>
                 <button
