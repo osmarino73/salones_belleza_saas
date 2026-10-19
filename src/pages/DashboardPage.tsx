@@ -942,7 +942,8 @@ export const DashboardPage: React.FC = () => {
 
   // STYLIST CRUD HANDLERS
   const handleOpenNewStylist = () => {
-    const check = canAddMoreStylists(stylists.length, activeTenantObj?.plan_tier, activeTenantObj?.max_stylists);
+    const bookableStylists = stylists.filter(s => !( (s.is_owner || s.role === 'admin') && s.attends_clients === false ));
+    const check = canAddMoreStylists(bookableStylists.length, activeTenantObj?.plan_tier, activeTenantObj?.max_stylists);
     if (!check.allowed) {
       const isFree = (activeTenantObj?.plan_tier || 'free') === 'free';
       setUpgradeModalState({
@@ -998,6 +999,22 @@ export const DashboardPage: React.FC = () => {
   const handleSaveStylist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stylistForm.name.trim()) return;
+
+    // Si la dueña no atendía citas y ahora activa la agenda, validar que tenga cupo disponible
+    if (editingStylist && editingStylist.attends_clients === false && stylistForm.attends_clients) {
+      const bookableStylists = stylists.filter(s => !( (s.is_owner || s.role === 'admin') && s.attends_clients === false ));
+      const check = canAddMoreStylists(bookableStylists.length, activeTenantObj?.plan_tier, activeTenantObj?.max_stylists);
+      if (!check.allowed) {
+        const isFree = (activeTenantObj?.plan_tier || 'free') === 'free';
+        setUpgradeModalState({
+          isOpen: true,
+          requiredPlan: isFree ? 'inicio' : 'crecimiento',
+          featureName: 'Activar Agenda de Citas para la Dueña/Admin',
+          featureDescription: check.message
+        });
+        return;
+      }
+    }
     
     if (editingStylist) {
       const updated: Stylist = {
@@ -4850,7 +4867,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h3 className="text-base font-bold">Equipo de Estilistas & Especialistas</h3>
                       <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
-                        {stylists.length} de {activeTenantObj?.plan_tier === 'crecimiento' ? '∞' : (activeTenantObj?.max_stylists ?? 3)} cupos
+                        {stylists.filter(s => !( (s.is_owner || s.role === 'admin') && s.attends_clients === false )).length} de {activeTenantObj?.plan_tier === 'crecimiento' ? '∞' : (activeTenantObj?.max_stylists ?? 3)} cupos
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">Control de porcentaje de comisiones por servicio y venta de productos.</p>
@@ -6079,7 +6096,13 @@ export const DashboardPage: React.FC = () => {
                   <div>
                     <strong className="text-white text-xs block">¿Atiende citas con clientas?</strong>
                     <span className="text-[10px] text-slate-400">
-                      {stylistForm.attends_clients ? 'Visible en el portal público de reservas y selección de citas.' : 'Solo gestión administrativa, no se agendan citas a su nombre.'}
+                      {stylistForm.role === 'admin' || stylistForm.is_owner
+                        ? (stylistForm.attends_clients
+                            ? 'Visible en la web para reservar citas (ocupa 1 cupo de colaborador).'
+                            : 'Solo gestión administrativa y caja (¡No consume cupo de colaborador!).')
+                        : (stylistForm.attends_clients
+                            ? 'Visible en el portal público de reservas y selección de citas.'
+                            : 'Solo gestión interna, no se agendan citas a su nombre.')}
                     </span>
                   </div>
                   <button
