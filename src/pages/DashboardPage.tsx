@@ -101,6 +101,14 @@ import { WebsiteEditorTab } from '../components/dashboard/WebsiteEditorTab';
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
   const [activeTab, setActiveTab] = useState<'overview' | 'agenda' | 'crm' | 'pos' | 'whatsapp' | 'ai_settings' | 'catalog_team' | 'templates' | 'loyalty' | 'website'>('overview');
   const [posInitialClient, setPosInitialClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
