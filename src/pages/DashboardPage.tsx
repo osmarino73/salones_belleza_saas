@@ -5456,20 +5456,36 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL NUEVA CITA MANUAL */}
+      {/* MODAL NUEVA CITA MANUAL (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isNewAppointmentOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-md max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <h3 className="text-base font-bold">Agendar Nueva Cita Manual</h3>
-              <button type="button" onClick={() => setIsNewAppointmentOpen(false)} className="text-slate-400">
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">Agendar Nueva Cita</h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Reserva rápida en sillón</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsNewAppointmentOpen(false)} 
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateAppointment} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateAppointment} className="p-5 overflow-y-auto space-y-3.5 text-xs flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nombre de la Clienta *</label>
                 <input
@@ -5581,19 +5597,21 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsNewAppointmentOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  Agendar y Notificar WA
+                  <Calendar className="w-4 h-4" />
+                  <span>Agendar y Notificar WA</span>
                 </button>
               </div>
             </form>
@@ -5601,169 +5619,39 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL CONFIGURACIÓN DEL NEGOCIO */}
-      {isBusinessSettingsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
-          }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold">Configuración del Salón / Negocio</h3>
-                  <span className="text-[11px] text-slate-400">Datos comerciales y horarios de atención</span>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setIsBusinessSettingsModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                const activeTenantRaw = localStorage.getItem('bf_tenant_active');
-                if (activeTenantRaw) {
-                  const activeTenant = JSON.parse(activeTenantRaw);
-                  const updated: Tenant = {
-                    ...activeTenant,
-                    name: salonName,
-                    phone: salonPhone,
-                    address: salonAddress,
-                    currency: salonCurrency,
-                    business_hours: {
-                      ...activeTenant.business_hours,
-                      summary: salonHours
-                    }
-                  };
-                  setActiveTenantObj(updated);
-                  localStorage.setItem('bf_tenant_active', JSON.stringify(updated));
-                  await api.updateTenant(updated);
-                }
-              } catch (err) {
-                console.warn('Error saving business settings:', err);
-              }
-              setIsBusinessSettingsModalOpen(false);
-              alert('✨ ¡Datos de tu negocio y teléfono de WhatsApp actualizados con éxito!');
-            }} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Nombre Comercial del Salón *</label>
-                <input
-                  type="text"
-                  value={salonName}
-                  onChange={(e) => setSalonName(e.target.value)}
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Teléfono / WhatsApp *</label>
-                  <input
-                    type="tel"
-                    value={salonPhone}
-                    onChange={(e) => setSalonPhone(e.target.value)}
-                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Moneda Principal</label>
-                  <select
-                    value={salonCurrency}
-                    onChange={(e) => setSalonCurrency(e.target.value as any)}
-                    className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                      theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                    }`}
-                  >
-                    <option value="COP">Peso Colombiano ($ COP)</option>
-                    <option value="USD">Dólar Estadounidense ($ USD)</option>
-                    <option value="MXN">Peso Mexicano ($ MXN)</option>
-                    <option value="EUR">Euro (€ EUR)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Dirección & Sede</label>
-                <input
-                  type="text"
-                  value={salonAddress}
-                  onChange={(e) => setSalonAddress(e.target.value)}
-                  placeholder="Ej. Calle 10 # 43E-22, El Poblado"
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Horario de Atención General</label>
-                <input
-                  type="text"
-                  value={salonHours}
-                  onChange={(e) => setSalonHours(e.target.value)}
-                  className={`w-full border rounded-xl p-2.5 focus:outline-none focus:border-[#FF5A36] ${
-                    theme === 'dark' ? 'bg-[#0E121B] border-white/10 text-white' : 'bg-[#F0F2F7] border-black/5 text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsBusinessSettingsModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white text-xs"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2 rounded-full shadow-md text-xs flex items-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5" /> Guardar Datos del Salón
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL NUEVA / EDITAR CLIENTA */}
+      {/* MODAL NUEVA / EDITAR CLIENTA (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isClientModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-md max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">
-                  {editingClient ? 'Editar Datos de Clienta' : 'Registrar Nueva Clienta'}
-                </h3>
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                    {editingClient ? 'Editar Datos de Clienta' : 'Registrar Nueva Clienta'}
+                  </h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Historial y fidelización</span>
+                </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsClientModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveClient} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveClient} className="p-5 overflow-y-auto space-y-3.5 text-xs flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nombre Completo *</label>
                 <input
@@ -5870,19 +5758,20 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsClientModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>{editingClient ? 'Actualizar Clienta' : 'Guardar Clienta'}</span>
                 </button>
               </div>
@@ -5891,18 +5780,27 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL NUEVO / EDITAR ESTILISTA */}
+      {/* MODAL NUEVO / EDITAR ESTILISTA (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isStylistModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">
-                  {editingStylist ? 'Editar Profesional' : 'Agregar Nuevo Profesional'}
-                </h3>
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                    {editingStylist ? 'Editar Profesional' : 'Nuevo Profesional'}
+                  </h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Equipo y comisiones</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -5911,7 +5809,7 @@ export const DashboardPage: React.FC = () => {
                   className="text-[11px] font-bold text-[#FF5A36] bg-[#FF5A36]/10 hover:bg-[#FF5A36]/20 px-2.5 py-1 rounded-lg border border-[#FF5A36]/30 flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>{showStylistGuide ? 'Ocultar Guía' : '💡 Guía y Consejos'}</span>
+                  <span className="hidden xs:inline">{showStylistGuide ? 'Ocultar' : 'Guía'}</span>
                 </button>
                 <button 
                   type="button" 
@@ -5919,12 +5817,15 @@ export const DashboardPage: React.FC = () => {
                     setIsStylistModalOpen(false);
                     setShowStylistGuide(false);
                   }} 
-                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
+
+            {/* Body Deslizable */}
+            <div className="p-5 overflow-y-auto space-y-3.5 text-xs flex-1">
 
             {/* Panel Interactivo de la Guía Paso a Paso */}
             {showStylistGuide && (
@@ -6213,23 +6114,25 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsStylistModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>{editingStylist ? 'Actualizar Profesional' : 'Guardar Profesional'}</span>
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
@@ -7213,29 +7116,38 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL NUEVA / EDITAR CATEGORÍA */}
+      {/* MODAL NUEVA / EDITAR CATEGORÍA (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-md max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">
-                  {editingCategory ? 'Editar Categoría' : 'Nueva Categoría de Servicios'}
-                </h3>
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                    {editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
+                  </h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Organización de catálogo</span>
+                </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsCategoryModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveCategory} className="p-5 overflow-y-auto space-y-3.5 text-xs flex-1">
               <div className="grid grid-cols-4 gap-2">
                 <div className="col-span-1">
                   <label className="block text-slate-400 mb-1 font-semibold text-center">Icono / Emoji</label>
@@ -7295,19 +7207,20 @@ export const DashboardPage: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsCategoryModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5 cursor-pointer"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>{editingCategory ? 'Actualizar Categoría' : 'Crear Categoría'}</span>
                 </button>
               </div>
@@ -7316,29 +7229,38 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL NUEVO / EDITAR PRODUCTO */}
+      {/* MODAL NUEVO / EDITAR PRODUCTO (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isProductModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-[#FF5A36]/40 text-white' : 'bg-white border-[#FF5A36]/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-[#FF5A36]/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-[#FF5A36]" />
-                <h3 className="text-base font-bold">
-                  {editingProduct ? 'Editar Producto Retail' : 'Agregar Nuevo Producto'}
-                </h3>
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                    {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+                  </h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Inventario retail y POS</span>
+                </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsProductModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveProduct} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveProduct} className="p-5 overflow-y-auto space-y-3.5 text-xs flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nombre del Producto *</label>
                 <input
@@ -7461,19 +7383,20 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsProductModalOpen(false)}
-                  className="px-4 py-2 rounded-full text-slate-400 hover:text-white"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold px-5 py-2 rounded-full shadow-md shadow-[#FF5A36]/30 flex items-center gap-1.5"
+                  className="flex-1 h-12 bg-gradient-to-r from-[#FF5A36] to-orange-500 hover:from-[#E54E07] hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>{editingProduct ? 'Actualizar Producto' : 'Guardar Producto'}</span>
                 </button>
               </div>
@@ -8142,26 +8065,30 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL CONFIGURACIÓN GENERAL DEL NEGOCIO & HORARIOS */}
+      {/* MODAL CONFIGURACIÓN GENERAL DEL NEGOCIO & HORARIOS (MOBILE-FIRST DRAWER & DESKTOP DIALOG) */}
       {isBusinessSettingsModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className={`border rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-2xl space-y-5 animate-fade-in ${
-            theme === 'dark' ? 'bg-[#141926] border-emerald-500/40 text-white' : 'bg-white border-emerald-500/40 text-slate-900'
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+          <div className={`w-full sm:max-w-xl max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-emerald-500/40 shadow-2xl overflow-hidden transition-all ${
+            theme === 'dark' ? 'bg-[#141926] text-white' : 'bg-white text-slate-900'
           }`}>
-            <div className="flex justify-between items-center border-b pb-3.5 border-black/5 dark:border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
-                  <Building2 className="w-5 h-5" />
+            {/* Drag Handle táctil para móviles */}
+            <div className="w-12 h-1.5 rounded-full bg-slate-500/30 dark:bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+            {/* Header Sticky */}
+            <div className="px-5 py-3.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+                  <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black">Configuración del Salón & Horarios</h3>
-                  <span className="text-[11px] text-slate-400">Datos públicos para clientas y agendamiento</span>
+                  <h3 className="text-sm sm:text-base font-extrabold leading-none">Configuración del Salón & Horarios</h3>
+                  <span className="text-[11px] text-slate-400 mt-0.5 block">Datos públicos y portal de reservas</span>
                 </div>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsBusinessSettingsModalOpen(false)} 
-                className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -8185,7 +8112,7 @@ export const DashboardPage: React.FC = () => {
                 setActiveTenantObj(res);
               }
               setIsBusinessSettingsModalOpen(false);
-            }} className="space-y-4 text-xs">
+            }} className="p-5 overflow-y-auto space-y-4 text-xs flex-1">
               <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-start gap-2.5">
                 <Sparkles className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>Estos datos actualizan automáticamente tu página web pública y los mensajes de confirmación por WhatsApp.</span>
@@ -8283,19 +8210,20 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-black/5 dark:border-white/10 flex justify-end gap-2">
+              {/* Botones de acción pegajosos abajo */}
+              <div className="sticky bottom-0 z-30 pt-3 pb-1 bg-inherit border-t border-black/5 dark:border-white/10 flex items-center gap-2.5 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsBusinessSettingsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-full text-slate-400 hover:text-white font-bold"
+                  className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-2.5 rounded-full shadow-md shadow-emerald-500/30 flex items-center gap-1.5 cursor-pointer transition-all hover:scale-[1.01]"
+                  className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>Guardar Horarios y Datos</span>
                 </button>
               </div>
