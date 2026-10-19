@@ -8807,18 +8807,18 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                   : (targetTier === 'crecimiento' ? 120000 : 0);
 
                 return (
-                  <div className="p-5 rounded-2xl bg-[#0E121B] border-2 border-emerald-500/40 space-y-4 shadow-xl">
+                  <div className="p-5 rounded-2xl bg-[#141926] border border-white/10 space-y-4 shadow-xl">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-white/10 pb-3">
                       <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#FF5A36]" />
                           <span>Configura tu Plan y Colaboradores para Activar o Renovar</span>
                         </span>
-                        <p className="text-xs text-slate-300 mt-0.5">
+                        <p className="text-xs text-slate-400 mt-0.5">
                           Elige cuántos colaboradores atenderán citas en tu salón y calcula tu tarifa mensual en tiempo real.
                         </p>
                       </div>
-                      <span className="text-xs font-black text-white bg-emerald-500/20 border border-emerald-500/30 px-3.5 py-1 rounded-full font-mono shrink-0">
+                      <span className="text-xs font-bold text-white bg-white/10 border border-white/15 px-3.5 py-1 rounded-full font-mono shrink-0">
                         Total: {formatCurrency(dynamicPrice, salonCurrency)} / mes
                       </span>
                     </div>
@@ -8827,7 +8827,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       {/* Selector de Plan Tier */}
                       <div>
                         <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                          <Crown className="w-3.5 h-3.5 text-amber-400" />
+                          <Crown className="w-3.5 h-3.5 text-[#FF5A36]" />
                           <span>Plan SaaS a Contratar</span>
                         </label>
                         <div className="grid grid-cols-2 gap-2">
@@ -8839,13 +8839,13 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             }}
                             className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                               selectedPlanTier === 'inicio'
-                                ? 'border-blue-500 bg-blue-500/20 text-white font-black shadow-md shadow-blue-500/20'
+                                ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-white font-bold shadow-sm'
                                 : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
                             }`}
                           >
-                            <strong className="block text-xs text-blue-300">🚀 Plan Inicio</strong>
+                            <strong className="block text-xs text-white">🚀 Plan Inicio</strong>
                             <span className="text-[10px] text-slate-300 block mt-0.5">$29.000 COP / mes</span>
-                            <span className="text-[9px] text-blue-400 font-bold block mt-1">3 base + extras</span>
+                            <span className="text-[9px] text-[#FF5A36] font-bold block mt-1">3 base + extras</span>
                           </button>
 
                           <button
@@ -8856,13 +8856,13 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             }}
                             className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                               selectedPlanTier === 'crecimiento'
-                                ? 'border-amber-500 bg-amber-500/20 text-white font-black shadow-md shadow-amber-500/20'
+                                ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-white font-bold shadow-sm'
                                 : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
                             }`}
                           >
-                            <strong className="block text-xs text-amber-300">📈 Crecimiento</strong>
+                            <strong className="block text-xs text-white">📈 Crecimiento</strong>
                             <span className="text-[10px] text-slate-300 block mt-0.5">$120.000 COP / mes</span>
-                            <span className="text-[9px] text-amber-400 font-bold block mt-1">Ilimitadas + POS</span>
+                            <span className="text-[9px] text-[#FF5A36] font-bold block mt-1">Ilimitadas + POS</span>
                           </button>
                         </div>
                       </div>
@@ -8871,11 +8871,11 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       <div>
                         <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
                           <span className="flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-emerald-400" />
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
                             <span>Cupo de Colaboradores</span>
                           </span>
                           {selectedPlanTier === 'inicio' && (
-                            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                            <span className="text-[10px] font-mono text-slate-300 font-semibold">
                               {selectedPlanMaxStylists > 3 
                                 ? `+${selectedPlanMaxStylists - 3} extra(s) (+${formatCurrency((selectedPlanMaxStylists - 3) * 10000, salonCurrency)})` 
                                 : '3 base incluidos'}
@@ -8887,7 +8887,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                           <select
                             value={selectedPlanMaxStylists}
                             onChange={(e) => setSelectedPlanMaxStylists(Number(e.target.value))}
-                            className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-400 text-xs font-bold cursor-pointer"
+                            className="w-full bg-[#0E121B] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-[#FF5A36] text-xs font-bold cursor-pointer"
                           >
                             <option value={3}>3 Colaboradores (Base incluida • $29.000 COP/mes)</option>
                             <option value={4}>4 Colaboradores (+1 extra • $39.000 COP/mes)</option>
@@ -8899,7 +8899,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             <option value={10}>10 Colaboradores (+7 extras • $99.000 COP/mes)</option>
                           </select>
                         ) : (
-                          <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-emerald-400 text-xs font-bold flex items-center justify-between">
+                          <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-xs font-bold flex items-center justify-between">
                             <span>Colaboradoras 100% Ilimitadas</span>
                             <span className="text-[10px] text-slate-400 font-normal">Sin límite en Plan Crecimiento</span>
                           </div>
@@ -8916,13 +8916,13 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               ? '¿Cómo deseas pagar tus nuevos cupos?'
                               : '¿Deseas activar o sumar 30 días a tu Plan?'}
                           </span>
-                          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md font-bold">
+                          <span className="text-[10px] bg-white/10 text-slate-300 border border-white/15 px-2 py-0.5 rounded-md font-bold">
                             {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3)
-                              ? '⚡ Add-on Flexible'
+                              ? 'Add-on Flexible'
                               : '+30 Días Acumulables'}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-300 mt-0.5 leading-snug">
+                        <p className="text-xs text-slate-400 mt-0.5 leading-snug">
                           {targetTier === 'inicio' && targetMax > (activeTenantObj?.max_stylists ?? 3) ? (
                             <span>
                               Puedes pagar únicamente el cupo extra (+{formatCurrency((targetMax - (activeTenantObj?.max_stylists ?? 3)) * 10000, salonCurrency)}) conservando tus {daysRemaining} días de vigencia, o renovar 30 días completos.
@@ -8931,8 +8931,8 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                             <>
                               Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong>.
                               {targetTier === 'inicio' && targetExtras > 0 && (
-                                <span className="block text-emerald-400 font-bold mt-0.5 text-[11px]">
-                                  ✨ Incluye Plan Inicio ($29.000) + {targetExtras} colaborador(es) extra (+{formatCurrency(targetExtras * 10000, salonCurrency)}). Total: {formatCurrency(dynamicPrice, salonCurrency)}.
+                                <span className="block text-slate-300 font-semibold mt-0.5 text-[11px]">
+                                  Incluye Plan Inicio ($29.000) + {targetExtras} colaborador(es) extra (+{formatCurrency(targetExtras * 10000, salonCurrency)}). Total: {formatCurrency(dynamicPrice, salonCurrency)}.
                                 </span>
                               )}
                             </>
@@ -8949,10 +8949,10 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                                 setPaymentScope('extra_slots_only');
                                 setIsPaymentReceiptModalOpen(true);
                               }}
-                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/25 cursor-pointer transition-all active:scale-[0.98]"
+                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#FF5A36]/25 cursor-pointer transition-all active:scale-[0.98]"
                             >
                               <Zap className="w-3.5 h-3.5" />
-                              <span>⚡ Solo Cupo Extra (+{formatCurrency((targetMax - (activeTenantObj?.max_stylists ?? 3)) * 10000, salonCurrency)})</span>
+                              <span>Solo Cupo Extra (+{formatCurrency((targetMax - (activeTenantObj?.max_stylists ?? 3)) * 10000, salonCurrency)})</span>
                             </button>
                             <button
                               type="button"
@@ -8960,7 +8960,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                                 setPaymentScope('full_renewal');
                                 setIsPaymentReceiptModalOpen(true);
                               }}
-                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
+                              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]"
                             >
                               <Calendar className="w-3.5 h-3.5" />
                               <span>Renovar 30 Días ({formatCurrency(dynamicPrice, salonCurrency)})</span>
@@ -8973,7 +8973,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                               setPaymentScope('full_renewal');
                               setIsPaymentReceiptModalOpen(true);
                             }}
-                            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
+                            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#FF5A36] hover:bg-[#E54E07] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#FF5A36]/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
                           >
                             <Upload className="w-4 h-4" />
                             <span>Pagar o Renovar ({formatCurrency(dynamicPrice, salonCurrency)})</span>
