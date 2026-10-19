@@ -9160,16 +9160,16 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
               <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
               {/* Header */}
-              <div className="px-5 py-3.5 border-b border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 text-slate-300 flex items-center justify-center font-bold">
-                    <Upload className="w-4 h-4" />
+              <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF5A36] to-[#FF7A59] text-white flex items-center justify-center font-bold shadow-lg shadow-[#FF5A36]/30">
+                    <Upload className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold leading-none text-white">
+                    <h3 className="text-base font-extrabold leading-tight text-white flex items-center gap-2">
                       Pagar Suscripción Kowy
                     </h3>
-                    <span className="text-[11px] text-slate-400 font-medium mt-0.5 block">
+                    <span className="text-xs text-[#FF7A59] font-medium mt-0.5 block">
                       Transferencia Nequi o Bancolombia
                     </span>
                   </div>
@@ -9187,27 +9187,27 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
               <form onSubmit={handleSubmitReceipt} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-xs custom-scrollbar">
                 
                 {/* Resumen del Plan & Cupos Seleccionados */}
-                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FF5A36]/10 via-white/[0.03] to-transparent border border-[#FF5A36]/25 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                      <Crown className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <Crown className="w-3.5 h-3.5 text-[#FF5A36]" />
                       <span>Configuración del Plan</span>
                     </span>
-                    <span className="text-xs font-bold text-white px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                    <span className="text-xs font-bold text-white px-3 py-0.5 rounded-full bg-[#FF5A36]/20 border border-[#FF5A36]/40 text-[#FF7A59]">
                       {targetTier === 'inicio' ? 'Plan Inicio' : 'Plan Crecimiento'}
                     </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-white/5">
                     <div className="flex items-center gap-2 text-xs">
-                      <Users className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="text-slate-300">
+                      <Users className="w-4 h-4 text-[#FF5A36] shrink-0" />
+                      <span className="text-slate-200">
                         {targetTier === 'inicio' ? (
                           <>
-                            <strong>{targetMax} colaboradoras</strong> ({3} base + {extraSlotsTotal} extras)
+                            <strong className="text-white font-bold">{targetMax} colaboradoras</strong> ({3} base + {extraSlotsTotal} extras)
                           </>
                         ) : (
-                          <strong>Colaboradoras Ilimitadas</strong>
+                          <strong className="text-white font-bold">Colaboradoras Ilimitadas</strong>
                         )}
                       </span>
                     </div>
@@ -9218,7 +9218,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                         <select
                           value={selectedPlanMaxStylists}
                           onChange={(e) => setSelectedPlanMaxStylists(Number(e.target.value))}
-                          className="bg-[#0E121B] border border-white/15 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-white focus:outline-none focus:border-white/30 cursor-pointer"
+                          className="bg-[#0E121B] border border-[#FF5A36]/40 rounded-xl px-3 py-1.5 text-[11px] font-bold text-white focus:outline-none focus:border-[#FF5A36] cursor-pointer shadow-inner"
                         >
                           <option value={3}>3 cupos ($29.000)</option>
                           <option value={4}>4 cupos ($39.000)</option>
@@ -9236,34 +9236,40 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
 
                 {/* Selector Modalidad: Opción A (Solo Cupo Extra) vs Renovación Completa */}
                 {isUpgradingCuposMidCycle && (
-                  <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-2">
+                  <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <Zap className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-amber-400" />
                         <span>Modalidad de Pago para Nuevos Cupos</span>
                       </span>
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-400 font-medium">
                         Cupos actuales: {currentTenantMax}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                       <button
                         type="button"
                         onClick={() => setPaymentScope('extra_slots_only')}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                           paymentScope === 'extra_slots_only'
-                            ? 'border-white/40 bg-white/10 text-white shadow-sm'
+                            ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-white shadow-lg shadow-[#FF5A36]/15'
                             : 'border-white/10 bg-white/[0.02] text-slate-400 hover:text-white hover:bg-white/[0.05]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <strong className="text-xs text-white block">Solo Cupo Extra Ahora</strong>
-                          <span className="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full border border-white/15">
+                          <strong className="text-xs text-white block flex items-center gap-1">
+                            <span className="text-[#FF5A36]">⚡</span> Solo Cupo Extra Ahora
+                          </strong>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                            paymentScope === 'extra_slots_only'
+                              ? 'bg-[#FF5A36] text-white border-transparent'
+                              : 'bg-white/10 text-white border-white/15'
+                          }`}>
                             {formatCurrency(addedSlotsNow * 10000, salonCurrency)}
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-400 block mt-1.5 leading-snug">
+                        <span className="text-[10px] text-slate-300 block mt-1.5 leading-snug">
                           Habilita +{addedSlotsNow} cupo(s) hoy sin alterar tu fecha de corte. Tu próxima cuota mensual será de {formatCurrency(29000 + extraSlotsTotal * 10000, salonCurrency)}.
                         </span>
                       </button>
@@ -9271,19 +9277,25 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       <button
                         type="button"
                         onClick={() => setPaymentScope('full_renewal')}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                           paymentScope === 'full_renewal'
-                            ? 'border-white/40 bg-white/10 text-white shadow-sm'
+                            ? 'border-[#FF5A36] bg-[#FF5A36]/15 text-white shadow-lg shadow-[#FF5A36]/15'
                             : 'border-white/10 bg-white/[0.02] text-slate-400 hover:text-white hover:bg-white/[0.05]'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <strong className="text-xs text-white block">Renovar Plan (+30 Días)</strong>
-                          <span className="text-[10px] font-bold text-white bg-white/10 px-2 py-0.5 rounded-full border border-white/15">
+                          <strong className="text-xs text-white block flex items-center gap-1">
+                            <span className="text-cyan-400">📅</span> Renovar Plan (+30 Días)
+                          </strong>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                            paymentScope === 'full_renewal'
+                              ? 'bg-[#FF5A36] text-white border-transparent'
+                              : 'bg-white/10 text-white border-white/15'
+                          }`}>
                             {formatCurrency(29000 + extraSlotsTotal * 10000, salonCurrency)}
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-400 block mt-1.5 leading-snug">
+                        <span className="text-[10px] text-slate-300 block mt-1.5 leading-snug">
                           Extiende 30 días adicionales acumulables con todos tus {targetMax} cupos activos.
                         </span>
                       </button>
@@ -9297,24 +9309,24 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                     <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                       1. Datos de Transferencia
                     </span>
-                    <span className="text-sm font-extrabold text-white">
+                    <span className="text-sm font-black text-[#FF5A36]">
                       Valor a Pagar: {formatCurrency(dynamicPrice, salonCurrency)}
                     </span>
                   </div>
 
                   {/* Selector Método */}
-                  <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+                  <div className="grid grid-cols-2 gap-2.5 text-xs font-bold">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('nequi')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                         paymentMethod === 'nequi'
-                          ? 'border-white/40 bg-white/10 text-white'
+                          ? 'border-[#DE005B] bg-[#DE005B]/15 text-white shadow-sm'
                           : 'border-white/10 bg-white/[0.02] text-slate-400 hover:text-white hover:bg-white/[0.05]'
                       }`}
                     >
-                      <strong className="block text-sm text-white">Nequi</strong>
-                      <span className="text-[11px] font-mono block mt-0.5 text-slate-300">312 888 8888</span>
+                      <strong className="block text-sm text-[#FF5A87]">Nequi</strong>
+                      <span className="text-[11px] font-mono block mt-0.5 text-white">312 888 8888</span>
                       <span className="text-[9px] text-slate-400 block mt-1">Kowy SaaS Colombia</span>
                     </button>
 
@@ -9323,12 +9335,12 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                       onClick={() => setPaymentMethod('bancolombia')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                         paymentMethod === 'bancolombia'
-                          ? 'border-white/40 bg-white/10 text-white'
+                          ? 'border-amber-400/80 bg-amber-400/10 text-white shadow-sm'
                           : 'border-white/10 bg-white/[0.02] text-slate-400 hover:text-white hover:bg-white/[0.05]'
                       }`}
                     >
-                      <strong className="block text-sm text-white">Bancolombia</strong>
-                      <span className="text-[11px] font-mono block mt-0.5 text-slate-300">031-888888-99</span>
+                      <strong className="block text-sm text-amber-300">Bancolombia</strong>
+                      <span className="text-[11px] font-mono block mt-0.5 text-white">031-888888-99</span>
                       <span className="text-[9px] text-slate-400 block mt-1">Ahorros • Kowy SaaS</span>
                     </button>
                   </div>
@@ -9344,7 +9356,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                     <button
                       type="button"
                       onClick={() => handleCopyAccount(paymentMethod, paymentMethod === 'nequi' ? '3128888888' : '03188888899')}
-                      className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-white/15"
+                      className="px-3.5 py-1.5 rounded-lg bg-[#FF5A36]/15 hover:bg-[#FF5A36]/25 border border-[#FF5A36]/30 text-[#FF5A36] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       {copiedAccountKey === paymentMethod ? (
                         <>
