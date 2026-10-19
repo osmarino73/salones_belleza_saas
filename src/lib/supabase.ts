@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier } from '../types';
+import { Client, Stylist, Service, ServiceCategory, Appointment, ColorFormula, TenantAISettings, Product, ProspectSite, Tenant, PlanTier, SubscriptionPaymentMeta } from '../types';
 import { KAPA_SPA_SITE_DATA } from './kapaSpaSiteData';
 import { MILENA_GOMEZ_SITE_DATA } from './milenaGomezSiteData';
 import { LUXUS_BEAUTY_SITE_DATA } from './luxusBeautySiteData';
@@ -2799,7 +2799,14 @@ export const api = {
           .from('tenants')
           .select('*')
           .order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) return data as Tenant[];
+        if (!error && data && data.length > 0) {
+          return data.map(d => ({
+            ...d,
+            subscription_meta: (typeof d.business_hours === 'object' && d.business_hours !== null && d.business_hours.subscription_meta)
+              ? d.business_hours.subscription_meta
+              : undefined
+          })) as Tenant[];
+        }
       } catch (e) {}
     }
     // Fallback demo tenant
@@ -2828,12 +2835,13 @@ export const api = {
 
   async updateTenantPlan(tenantId: string, params: {
     plan_tier: PlanTier;
-    subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled';
+    subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled' | 'pending_verification';
     trial_days_to_add?: number;
+    days_to_add?: number;
   }): Promise<boolean> {
     const priceMap: Record<PlanTier, number> = {
       free: 0,
-      inicio: 50000,
+      inicio: 29000,
       crecimiento: 120000,
       pro_ia: 240000,
       escala: 720000,
@@ -2842,7 +2850,7 @@ export const api = {
 
     const maxStylistsMap: Record<PlanTier, number> = {
       free: 0,
-      inicio: 4,
+      inicio: 3,
       crecimiento: 999,
       pro_ia: 999,
       escala: 999,
@@ -2851,8 +2859,8 @@ export const api = {
 
     const updatePayload: any = {
       plan_tier: params.plan_tier,
-      subscription_price_cop: priceMap[params.plan_tier],
-      max_stylists: maxStylistsMap[params.plan_tier],
+      subscription_price_cop: priceMap[params.plan_tier] ?? 29000,
+      max_stylists: maxStylistsMap[params.plan_tier] ?? 3,
       has_pos_access: params.plan_tier !== 'free' && params.plan_tier !== 'inicio',
       has_ai_whatsapp: ['pro_ia', 'escala', 'agencia'].includes(params.plan_tier),
       has_omnichannel: ['pro_ia', 'escala', 'agencia'].includes(params.plan_tier),
@@ -2863,9 +2871,28 @@ export const api = {
       updatePayload.subscription_status = params.subscription_status;
     }
 
-    if (params.trial_days_to_add) {
-      const newTrial = new Date();
-      newTrial.setDate(newTrial.getDate() + params.trial_days_to_add);
+    const daysToAdd = params.days_to_add ?? params.trial_days_to_add;
+    if (daysToAdd && daysToAdd > 0) {
+      // Regla de Negocio Acumulativa: si aún tiene días vigentes, sumamos 30 días sobre la fecha actual de fin
+      let baseDate = new Date();
+      if (supabase && isSupabaseConfigured) {
+        try {
+          const { data: currentT } = await supabase
+            .from('tenants')
+            .select('trial_ends_at')
+            .eq('id', tenantId)
+            .maybeSingle();
+
+          if (currentT?.trial_ends_at) {
+            const parsedEnd = new Date(currentT.trial_ends_at);
+            if (!isNaN(parsedEnd.getTime()) && parsedEnd.getTime() > baseDate.getTime()) {
+              baseDate = parsedEnd;
+            }
+          }
+        } catch (_) {}
+      }
+
+      const newTrial = new Date(baseDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
       updatePayload.trial_ends_at = newTrial.toISOString();
     }
 
@@ -2893,6 +2920,200 @@ export const api = {
     }
 
     return true;
+  },
+
+  /**
+   * Envía un comprobante de pago de suscripción (Nequi / Bancolombia) para revisión del superadmin
+   */
+  async submitSubscriptionReceipt(tenantId: string, receiptData: {
+    receipt_url: string;
+    payment_method: 'nequi' | 'bancolombia' | 'daviplata' | 'transferencia';
+    amount_cop: number;
+    reference_number?: string;
+    notes?: string;
+    plan_tier_requested?: PlanTier;
+  }): Promise<{ success: boolean; error?: string }> {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Supabase no está configurado.' };
+    }
+
+    try {
+      const { data: currentTenant, error: fetchErr } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      if (fetchErr || !currentTenant) {
+        return { success: false, error: fetchErr?.message || 'Salón no encontrado' };
+      }
+
+      const existingBH = (typeof currentTenant.business_hours === 'object' && currentTenant.business_hours !== null)
+        ? currentTenant.business_hours
+        : { summary: 'Lun a Sab 08:00 AM - 08:00 PM' };
+
+      const subscription_meta: SubscriptionPaymentMeta = {
+        receipt_url: receiptData.receipt_url,
+        payment_method: receiptData.payment_method,
+        amount_cop: receiptData.amount_cop,
+        reference_number: receiptData.reference_number || '',
+        notes: receiptData.notes || '',
+        submitted_at: new Date().toISOString(),
+        status: 'pending',
+        plan_tier_requested: receiptData.plan_tier_requested || currentTenant.plan_tier || 'inicio'
+      };
+
+      const updatedBH = {
+        ...existingBH,
+        subscription_meta
+      };
+
+      const { error: updateErr } = await supabase
+        .from('tenants')
+        .update({
+          business_hours: updatedBH,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tenantId);
+
+      if (updateErr) {
+        return { success: false, error: updateErr.message };
+      }
+
+      // Actualizar localStorage
+      const activeRaw = localStorage.getItem('bf_tenant_active');
+      if (activeRaw) {
+        try {
+          const parsed = JSON.parse(activeRaw);
+          if (parsed.id === tenantId) {
+            localStorage.setItem('bf_tenant_active', JSON.stringify({
+              ...parsed,
+              business_hours: updatedBH,
+              subscription_meta
+            }));
+          }
+        } catch (_) {}
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Error de red' };
+    }
+  },
+
+  /**
+   * Superadmin aprueba el comprobante de pago: suma 30 días acumulativos y activa el plan
+   */
+  async approveSubscriptionReceipt(tenantId: string): Promise<{ success: boolean; newEndsAt?: string; error?: string }> {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Supabase no está configurado.' };
+    }
+
+    try {
+      const { data: currentTenant, error: fetchErr } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      if (fetchErr || !currentTenant) {
+        return { success: false, error: fetchErr?.message || 'Salón no encontrado' };
+      }
+
+      const existingBH = (typeof currentTenant.business_hours === 'object' && currentTenant.business_hours !== null)
+        ? currentTenant.business_hours
+        : {};
+
+      const currentMeta = existingBH.subscription_meta || {};
+      const targetPlan = currentMeta.plan_tier_requested || currentTenant.plan_tier || 'inicio';
+
+      // Cálculo Acumulativo: si trial_ends_at es futuro, sumamos 30 días a esa fecha; si no, desde hoy
+      let baseDate = new Date();
+      if (currentTenant.trial_ends_at) {
+        const currentEnd = new Date(currentTenant.trial_ends_at);
+        if (!isNaN(currentEnd.getTime()) && currentEnd.getTime() > baseDate.getTime()) {
+          baseDate = currentEnd;
+        }
+      }
+
+      const newEndsAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+      const updatedMeta: SubscriptionPaymentMeta = {
+        ...currentMeta,
+        status: 'approved',
+        reviewed_at: new Date().toISOString()
+      };
+
+      const updatedBH = {
+        ...existingBH,
+        subscription_meta: updatedMeta
+      };
+
+      const { error: updateErr } = await supabase
+        .from('tenants')
+        .update({
+          plan_tier: targetPlan,
+          subscription_status: 'active',
+          trial_ends_at: newEndsAt,
+          business_hours: updatedBH,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tenantId);
+
+      if (updateErr) return { success: false, error: updateErr.message };
+
+      return { success: true, newEndsAt };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Error de red' };
+    }
+  },
+
+  /**
+   * Superadmin rechaza el comprobante de pago con motivo
+   */
+  async rejectSubscriptionReceipt(tenantId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    if (!supabase || !isSupabaseConfigured) {
+      return { success: false, error: 'Supabase no está configurado.' };
+    }
+
+    try {
+      const { data: currentTenant, error: fetchErr } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', tenantId)
+        .maybeSingle();
+
+      if (fetchErr || !currentTenant) return { success: false, error: 'Salón no encontrado' };
+
+      const existingBH = (typeof currentTenant.business_hours === 'object' && currentTenant.business_hours !== null)
+        ? currentTenant.business_hours
+        : {};
+
+      const currentMeta = existingBH.subscription_meta || {};
+      const updatedMeta: SubscriptionPaymentMeta = {
+        ...currentMeta,
+        status: 'rejected',
+        reviewed_at: new Date().toISOString(),
+        rejection_reason: reason
+      };
+
+      const updatedBH = {
+        ...existingBH,
+        subscription_meta: updatedMeta
+      };
+
+      await supabase
+        .from('tenants')
+        .update({
+          business_hours: updatedBH,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tenantId);
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Error de red' };
+    }
   },
 
   async updateTenantSettings(tenantId: string, updates: Partial<Tenant>): Promise<Tenant | null> {

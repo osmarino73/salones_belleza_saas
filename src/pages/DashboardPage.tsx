@@ -74,10 +74,11 @@ import {
   QrCode,
   Download,
   Share2,
-  Printer
+  Printer,
+  Copy
 } from 'lucide-react';
 import { api, initialStylists, initialServices, initialProducts, getActiveTenantId } from '../lib/supabase';
-import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant } from '../types';
+import { Appointment, Client, Stylist, Service, ServiceCategory, ColorFormula, TenantAISettings, Product, BlockedSlot, Tenant, SubscriptionPaymentMeta, PlanTier } from '../types';
 import { ZernioOnboardingModal } from '../components/ZernioOnboardingModal';
 import { WelcomeModal } from '../components/WelcomeModal';
 import { WhatsAppTemplatesCard } from '../components/WhatsAppTemplatesCard';
@@ -88,7 +89,8 @@ import { LoyaltyReactivationPage } from '../components/LoyaltyReactivationPage';
 import { TimePickerSelect } from '../components/TimePickerSelect';
 import { ImageUploadField } from '../components/ImageUploadField';
 import { ServiceImagePicker } from '../components/ServiceImagePicker';
-import { getSuggestedImageForService } from '../lib/beautyImageLibrary';
+import { getSuggestedImageForService, uploadStockImageBlob } from '../lib/beautyImageLibrary';
+import { compressImage } from '../utils/imageCompressor';
 import { PlanUpgradeModal } from '../components/PlanUpgradeModal';
 import { getPlanConfig, canAddMoreStylists, checkMonthlyBookingLimit, SubscriptionPlan } from '../lib/planPermissions';
 import { WebsiteEditorTab } from '../components/dashboard/WebsiteEditorTab';
@@ -444,6 +446,101 @@ export const DashboardPage: React.FC = () => {
   const [isBusinessSettingsModalOpen, setIsBusinessSettingsModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  
+  // Flujo de Pago y Subida de Comprobante Nequi / Bancolombia
+  const [isPaymentReceiptModalOpen, setIsPaymentReceiptModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'nequi' | 'bancolombia' | 'daviplata'>('nequi');
+  const [paymentReceiptUrl, setPaymentReceiptUrl] = useState('');
+  const [paymentReferenceNumber, setPaymentReferenceNumber] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
+  const [isCompressingReceipt, setIsCompressingReceipt] = useState(false);
+  const [copiedAccountKey, setCopiedAccountKey] = useState<string | null>(null);
+
+  const handleCopyAccount = (key: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedAccountKey(key);
+    setTimeout(() => setCopiedAccountKey(null), 2500);
+  };
+
+  const handleReceiptFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsCompressingReceipt(true);
+    try {
+      const res = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.85 });
+      const fetchRes = await fetch(res.dataUrl);
+      const blob = await fetchRes.blob();
+      const uploadRes = await uploadStockImageBlob(blob, `comprobante_${activeTenantObj?.slug || 'salon'}_${Date.now()}`);
+      if (uploadRes.url) {
+        setPaymentReceiptUrl(uploadRes.url);
+      } else {
+        setPaymentReceiptUrl(res.dataUrl);
+      }
+    } catch (err) {
+      console.error('Error procesando comprobante:', err);
+      alert('Error al procesar la imagen del comprobante.');
+    } finally {
+      setIsCompressingReceipt(false);
+    }
+  };
+
+  const handleSubmitReceipt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentReceiptUrl) {
+      alert('Por favor adjunta la fotografía o captura del comprobante.');
+      return;
+    }
+    const tid = activeTenantObj?.id || getActiveTenantId();
+    setIsSubmittingReceipt(true);
+    try {
+      const currentPlan = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
+      const amount = currentPlan === 'inicio' ? 29000 : (activeTenantObj?.subscription_price_cop || 120000);
+      const res = await api.submitSubscriptionReceipt(tid, {
+        receipt_url: paymentReceiptUrl,
+        payment_method: paymentMethod,
+        amount_cop: amount,
+        reference_number: paymentReferenceNumber,
+        notes: paymentNotes,
+        plan_tier_requested: currentPlan
+      });
+
+      if (res.success) {
+        alert('🎉 ¡Comprobante enviado exitosamente! Tu cuenta quedó en estado "En Verificación". Tu salón y agendador siguen 100% activos mientras validamos.');
+        setIsPaymentReceiptModalOpen(false);
+        if (activeTenantObj) {
+          const updatedMeta: SubscriptionPaymentMeta = {
+            receipt_url: paymentReceiptUrl,
+            payment_method: paymentMethod,
+            amount_cop: amount,
+            reference_number: paymentReferenceNumber,
+            notes: paymentNotes,
+            submitted_at: new Date().toISOString(),
+            status: 'pending',
+            plan_tier_requested: currentPlan
+          };
+          const updatedTenant = {
+            ...activeTenantObj,
+            subscription_status: 'pending_verification' as any,
+            subscription_meta: updatedMeta,
+            business_hours: {
+              ...(typeof activeTenantObj.business_hours === 'object' ? activeTenantObj.business_hours : {}),
+              subscription_meta: updatedMeta
+            }
+          };
+          setActiveTenantObj(updatedTenant);
+          localStorage.setItem('bf_tenant_active', JSON.stringify(updatedTenant));
+        }
+      } else {
+        alert(`Error al enviar comprobante: ${res.error || 'Error desconocido'}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setIsSubmittingReceipt(false);
+    }
+  };
+
   const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
   const [salonName, setSalonName] = useState('Mi Salón');
@@ -7994,161 +8091,515 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS (DARK MODE NATIVO Y NÍTIDO) */}
-      {isPlanModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6">
-          <div className="border border-white/15 bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] text-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto custom-scrollbar p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] space-y-6 animate-fade-in relative">
-            
-            {/* Header del Modal */}
-            <div className="flex justify-between items-center border-b pb-4 border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#FF5A36] text-white flex items-center justify-center shadow-lg shadow-[#FF5A36]/30 shrink-0">
-                  <Crown className="w-6 h-6 animate-pulse" />
+      {/* MODAL MI PLAN & SUSCRIPCIÓN SAAS (100% DINÁMICO & FLUJO NEQUI/BANCOLOMBIA) */}
+      {isPlanModalOpen && (() => {
+        const currentTier = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
+        const planPrice = activeTenantObj?.subscription_price_cop || (currentTier === 'inicio' ? 29000 : 120000);
+        const trialEndsAt = activeTenantObj?.trial_ends_at ? new Date(activeTenantObj.trial_ends_at) : null;
+        const now = new Date();
+        const daysRemaining = trialEndsAt ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+        const subMeta: SubscriptionPaymentMeta | undefined = (activeTenantObj as any)?.subscription_meta || (typeof activeTenantObj?.business_hours === 'object' ? (activeTenantObj?.business_hours as any)?.subscription_meta : undefined);
+        const isPendingReview = subMeta?.status === 'pending' || activeTenantObj?.subscription_status === 'pending_verification';
+        const isTrial = activeTenantObj?.subscription_status === 'trial' || (!activeTenantObj?.subscription_status && daysRemaining > 0);
+        const isActive = activeTenantObj?.subscription_status === 'active';
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+            <div className="border border-white/15 bg-gradient-to-b from-[#161B2B] via-[#0F131F] to-[#0A0D14] text-white rounded-3xl max-w-5xl w-full max-h-[92vh] overflow-y-auto custom-scrollbar p-5 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] space-y-6 relative">
+              
+              {/* Header del Modal */}
+              <div className="flex justify-between items-center border-b pb-4 border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#FF5A36] text-white flex items-center justify-center shadow-lg shadow-[#FF5A36]/30 shrink-0">
+                    <Crown className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-black text-white tracking-tight">Mi Plan SaaS & Suscripción</h3>
+                      <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
+                        Plan Actual: {currentTier.toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-400">Gestiona los módulos activos, facturación y días restantes de tu salón</span>
+                  </div>
                 </div>
+                <button 
+                  type="button" 
+                  onClick={() => setIsPlanModalOpen(false)} 
+                  className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all border border-white/10 shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Tarjeta Dinámica de Estado Actual de la Suscripción */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-pink-500/10 border border-amber-500/30 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-0.5">
+                  <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Plan Activo</span>
+                  <strong className="text-base text-amber-300 font-extrabold flex items-center gap-1.5 capitalize">
+                    {currentTier === 'inicio' ? '🚀 Plan Inicio' : currentTier === 'crecimiento' ? '📈 Plan Crecimiento ⭐' : currentTier === 'pro_ia' ? '🤖 Pro Flow IA' : currentTier === 'escala' ? '🎯 Plan Escala' : currentTier === 'agencia' ? '👑 Agencia VIP' : '🌐 Plan Gratuito'}
+                  </strong>
+                  <span className="text-xs text-slate-300 block font-semibold">{formatCurrency(planPrice, salonCurrency)} / mes</span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Estado de tu Cuenta</span>
+                  {isPendingReview ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 bg-amber-500/20 border border-amber-500/40 px-3 py-1 rounded-full shadow-sm">
+                      ⏳ Comprobante en Verificación
+                    </span>
+                  ) : isActive ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-sm">
+                      ● Suscripción Mensual Activa
+                    </span>
+                  ) : isTrial ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-cyan-400 bg-cyan-500/20 border border-cyan-500/40 px-3 py-1 rounded-full shadow-sm">
+                      ● Prueba Gratuita (8 Días) Activa
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-rose-400 bg-rose-500/20 border border-rose-500/40 px-3 py-1 rounded-full shadow-sm">
+                      ● Período Vencido
+                    </span>
+                  )}
+                  <span className="text-[10px] text-slate-400 block">
+                    {isPendingReview ? 'Verificando transferencia por equipo Kowy' : isTrial ? 'Prueba gratuita sin costo para probar la plataforma' : 'Sin cobros automáticos ni sorpresas'}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Vigencia Restante</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-black text-white">{daysRemaining}</span>
+                    <span className="text-xs font-bold text-amber-400">Días disponibles</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 block">
+                    {trialEndsAt ? `Vence el ${trialEndsAt.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Vigencia activa'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Banner de Comprobante Pendiente si aplica */}
+              {isPendingReview && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                      <Clock className="w-5 h-5 animate-spin" />
+                    </div>
+                    <div>
+                      <strong className="text-amber-300 font-bold block text-sm">Comprobante de Pago en Revisión</strong>
+                      <span className="text-slate-300 text-xs">Tu comprobante fue recibido correctamente. Tu agendador web y tus citas siguen 100% activos mientras el equipo aprueba el pago.</span>
+                    </div>
+                  </div>
+                  {subMeta?.receipt_url && (
+                    <a
+                      href={subMeta.receipt_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center gap-1.5 shrink-0"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Ver Comprobante
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Botón Destacado: Pagar / Renovar por Nequi o Bancolombia */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[#FF5A36]/10 to-teal-500/10 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
                 <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-lg font-black text-white tracking-tight">Mi Plan SaaS & Suscripción</h3>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider">
-                      Plan Actual: {activeTenantObj?.plan_tier ? activeTenantObj.plan_tier.toUpperCase() : 'CRECIMIENTO'}
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-extrabold text-white">¿Deseas activar o sumar 30 días a tu Plan?</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md font-bold">
+                      +30 Días Acumulables
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400">Gestiona los módulos activos, facturación y días restantes de tu salón</span>
+                  <p className="text-xs text-slate-300 mt-1 leading-snug">
+                    Transfiere fácilmente desde <strong>Nequi</strong> o <strong>Bancolombia</strong> y sube tu comprobante. Los 30 días se sumarán a los días que tengas disponibles.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentReceiptModalOpen(true)}
+                  className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 shrink-0 cursor-pointer transition-all active:scale-[0.98]"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Pagar o Renovar ({formatCurrency(planPrice, salonCurrency)})</span>
+                </button>
+              </div>
+
+              {/* Escalera Oficial Completa de Planes SaaS (6 Planes con Destacado Dinámico) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                    <span>📊 Escalera Completa de Planes en Colombia ($ COP)</span>
+                  </h4>
+                  <span className="text-[10px] text-slate-400">Precios en Pesos Colombianos</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                  
+                  {/* 0. Plan Gratuito */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'free' 
+                      ? 'bg-amber-500/10 border-2 border-amber-500/60 shadow-lg shadow-amber-500/10' 
+                      : 'bg-[#0A0D14] border border-white/10 hover:border-white/20'
+                  }`}>
+                    {currentTier === 'free' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-500 to-[#FF5A36] text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-slate-200 font-bold">🌐 Plan Gratuito</strong>
+                      <span className="text-slate-400 font-black text-xs">$0 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-snug">Web vitrina de por vida con fotos, catálogo y botón directo a WhatsApp.</p>
+                    <span className="text-[10px] text-slate-500 block font-mono">Sin agendador online</span>
+                  </div>
+
+                  {/* 1. Plan Inicio */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'inicio' 
+                      ? 'bg-blue-500/10 border-2 border-blue-500/60 shadow-lg shadow-blue-500/15' 
+                      : 'bg-[#0A0D14] border border-blue-500/30 hover:border-blue-500/50'
+                  }`}>
+                    {currentTier === 'inicio' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-blue-300 font-bold">🚀 Plan Inicio</strong>
+                      <span className="text-blue-400 font-black text-xs">$29.000 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">Agendador online interactivo + hasta 3 colaboradores con agenda (+ $10k/mes por extra).</p>
+                    <span className="text-[10px] text-blue-400 block font-semibold">Ideal para salones independientes</span>
+                  </div>
+
+                  {/* 2. Plan Crecimiento */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'crecimiento' 
+                      ? 'bg-amber-500/10 border-2 border-amber-500/60 shadow-lg shadow-amber-500/10' 
+                      : 'bg-[#0A0D14] border border-amber-500/30 hover:border-amber-500/50'
+                  }`}>
+                    {currentTier === 'crecimiento' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-500 to-[#FF5A36] text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-amber-300 font-bold">📈 Plan Crecimiento</strong>
+                      <span className="text-amber-300 font-black text-xs">$120.000 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-snug">Colaboradoras ilimitadas + App móvil para estilistas + Caja POS y comisiones.</p>
+                    <span className="text-[10px] text-amber-400 block font-bold">Potencia y equipo completo</span>
+                  </div>
+
+                  {/* 3. Plan Pro Flow IA */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'pro_ia' 
+                      ? 'bg-purple-500/10 border-2 border-purple-500/60 shadow-lg shadow-purple-500/15' 
+                      : 'bg-[#0A0D14] border border-purple-500/30 hover:border-purple-500/50'
+                  }`}>
+                    {currentTier === 'pro_ia' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-purple-300 font-bold">🤖 Pro Flow IA</strong>
+                      <span className="text-purple-400 font-black text-xs">$240.000 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">Agente Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal + Recordatorios 2h antes.</p>
+                    <span className="text-[10px] text-purple-400 block font-semibold">Cero citas perdidas</span>
+                  </div>
+
+                  {/* 4. Plan Escala & Tráfico */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'escala' 
+                      ? 'bg-emerald-500/10 border-2 border-emerald-500/60 shadow-lg shadow-emerald-500/15' 
+                      : 'bg-[#0A0D14] border border-emerald-500/30 hover:border-emerald-500/50'
+                  }`}>
+                    {currentTier === 'escala' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-emerald-300 font-bold">🎯 Plan Escala</strong>
+                      <span className="text-emerald-400 font-black text-xs">$720.000 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">Embudos de ofertas flash + Pauta Meta Ads + Radar reactivación (+35 días).</p>
+                    <span className="text-[10px] text-emerald-400 block font-semibold">Atracción masiva de clientas</span>
+                  </div>
+
+                  {/* 5. Plan Agencia Partner VIP */}
+                  <div className={`p-4 rounded-2xl transition-all relative ${
+                    currentTier === 'agencia' 
+                      ? 'bg-pink-500/10 border-2 border-pink-500/60 shadow-lg shadow-pink-500/15' 
+                      : 'bg-[#0A0D14] border border-pink-500/30 hover:border-pink-500/50'
+                  }`}>
+                    {currentTier === 'agencia' && (
+                      <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-pink-500 to-rose-500 text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                        TU PLAN ACTUAL ⭐
+                      </span>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <strong className="text-pink-300 font-bold">👑 Agencia Partner VIP</strong>
+                      <span className="text-pink-400 font-black text-xs">$1.440.000 / mes</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug">Servicio Llave en Mano: equipo dedicado, dominio propio y consultoría semanal.</p>
+                    <span className="text-[10px] text-pink-400 block font-semibold">Acompañamiento total</span>
+                  </div>
+
                 </div>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setIsPlanModalOpen(false)} 
-                className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all border border-white/10 shrink-0"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              {/* Footer de Soporte Directo */}
+              <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div>
+                  <strong className="text-white block font-bold">¿Tienes dudas sobre tu plan o deseas asesoría personalizada?</strong>
+                  <span className="text-slate-400 text-[11px]">Estamos en WhatsApp para orientarte y resolver cualquier inquietud de facturación o módulos.</span>
+                </div>
+                <a
+                  href={`https://wa.me/573000000000?text=${encodeURIComponent(`Hola Kowy, soy de ${activeTenantObj?.name || 'mi salón'} y deseo consultar sobre mi suscripción (${currentTier})`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 shrink-0 cursor-pointer transition-all hover:scale-[1.02]"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Contactar Asesor por WhatsApp</span>
+                </a>
+              </div>
+
             </div>
-
-            {/* Tarjeta de Estado Actual de la Suscripción */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-pink-500/10 border border-amber-500/30 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-0.5">
-                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Plan Activo</span>
-                <strong className="text-base text-amber-300 font-extrabold flex items-center gap-1.5">
-                  📈 Plan Crecimiento ⭐
-                </strong>
-                <span className="text-xs text-slate-300 block font-semibold">$120.000 COP / mes</span>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Estado de tu Cuenta</span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-400 bg-emerald-500/20 border border-emerald-500/40 px-3 py-1 rounded-full shadow-sm">
-                  ● Mes 1 de Regalo Activo
-                </span>
-                <span className="text-[10px] text-slate-400 block">Cuota inicial de $50k cancelada</span>
-              </div>
-
-              <div className="space-y-0.5">
-                <span className="text-[11px] text-slate-400 block font-bold uppercase tracking-wider">Vigencia Restante</span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-white">30</span>
-                  <span className="text-xs font-bold text-amber-400">Días restantes</span>
-                </div>
-                <span className="text-[10px] text-slate-400 block">Sin cobros automáticos ni sorpresas</span>
-              </div>
-            </div>
-
-            {/* Escalera Oficial Completa de Planes SaaS (6 Planes) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <span>📊 Escalera Completa de Planes en Colombia ($ COP)</span>
-                </h4>
-                <span className="text-[10px] text-slate-400">Precios en Pesos Colombianos</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                
-                {/* 0. Plan Gratuito */}
-                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2 hover:border-white/20 transition-all">
-                  <div className="flex justify-between items-center">
-                    <strong className="text-slate-200 font-bold">🌐 Plan Gratuito</strong>
-                    <span className="text-slate-400 font-black text-xs">$0 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 leading-snug">Web vitrina de por vida con fotos, catálogo y botón directo a WhatsApp.</p>
-                  <span className="text-[10px] text-slate-500 block font-mono">Sin agendador online</span>
-                </div>
-
-                {/* 1. Plan Inicio */}
-                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-blue-500/30 space-y-2 hover:border-blue-500/50 transition-all">
-                  <div className="flex justify-between items-center">
-                    <strong className="text-blue-300 font-bold">🚀 Plan Inicio</strong>
-                    <span className="text-blue-400 font-black text-xs">$29.000 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-snug">Agendador online interactivo + hasta 3 colaboradores con agenda (+ $10k/mes por extra).</p>
-                  <span className="text-[10px] text-blue-400/80 block font-semibold">Ideal para salones independientes</span>
-                </div>
-
-                {/* 2. Plan Crecimiento (ACTUAL) */}
-                <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/60 space-y-2 relative shadow-lg shadow-amber-500/10">
-                  <span className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-500 to-[#FF5A36] text-slate-950 text-[9px] font-black px-2.5 py-0.5 rounded-full shadow-md">
-                    TU PLAN ACTUAL ⭐
-                  </span>
-                  <div className="flex justify-between items-center">
-                    <strong className="text-amber-300 font-bold">📈 Plan Crecimiento</strong>
-                    <span className="text-amber-300 font-black text-xs">$120.000 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-200 leading-snug">Colaboradoras ilimitadas + App móvil para estilistas + Caja POS y comisiones.</p>
-                  <span className="text-[10px] text-amber-400 block font-bold">✓ Incluido en tu primer mes</span>
-                </div>
-
-                {/* 3. Plan Pro Flow IA */}
-                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-purple-500/30 space-y-2 hover:border-purple-500/50 transition-all">
-                  <div className="flex justify-between items-center">
-                    <strong className="text-purple-300 font-bold">🤖 Pro Flow IA</strong>
-                    <span className="text-purple-400 font-black text-xs">$240.000 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-snug">Agente Flowy IA 24/7 en WhatsApp + Bandeja Omnicanal + Recordatorios 2h antes.</p>
-                  <span className="text-[10px] text-purple-400 block font-semibold">Cero citas perdidas</span>
-                </div>
-
-                {/* 4. Plan Escala & Tráfico */}
-                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-emerald-500/30 space-y-2 hover:border-emerald-500/50 transition-all">
-                  <div className="flex justify-between items-center">
-                    <strong className="text-emerald-300 font-bold">🎯 Plan Escala</strong>
-                    <span className="text-emerald-400 font-black text-xs">$720.000 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-snug">Embudos de ofertas flash + Pauta Meta Ads + Radar reactivación (+35 días).</p>
-                  <span className="text-[10px] text-emerald-400 block font-semibold">Atracción masiva de clientas</span>
-                </div>
-
-                {/* 5. Plan Agencia Partner VIP */}
-                <div className="p-4 rounded-2xl bg-[#0A0D14] border border-pink-500/30 space-y-2 hover:border-pink-500/50 transition-all">
-                  <div className="flex justify-between items-center">
-                    <strong className="text-pink-300 font-bold">👑 Agencia Partner VIP</strong>
-                    <span className="text-pink-400 font-black text-xs">$1.440.000 / mes</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-snug">Servicio Llave en Mano: equipo dedicado, dominio propio y consultoría semanal.</p>
-                  <span className="text-[10px] text-pink-400 block font-semibold">Acompañamiento total</span>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Footer de Renovación / Upgrade */}
-            <div className="p-4 rounded-2xl bg-[#0A0D14] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div>
-                <strong className="text-white block font-bold">¿Deseas renovar tu mes o subir a Flowy IA WhatsApp?</strong>
-                <span className="text-slate-400 text-[11px]">Escríbenos directamente por WhatsApp para activar tu asistente virtual o renovar tu suscripción.</span>
-              </div>
-              <a
-                href="https://wa.me/573000000000?text=Hola%20BeautyFlow,%20deseo%20consultar%20sobre%20mi%20plan%20o%20renovaci%C3%B3n"
-                target="_blank"
-                rel="noreferrer"
-                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 shrink-0 cursor-pointer transition-all hover:scale-[1.02]"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Contactar Asesor por WhatsApp</span>
-              </a>
-            </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      {/* MODAL / DRAWER MOBILE-FIRST: SUBIR COMPROBANTE NEQUI / BANCOLOMBIA */}
+      {isPaymentReceiptModalOpen && (() => {
+        const currentTier = (activeTenantObj?.plan_tier as PlanTier) || 'inicio';
+        const planPrice = activeTenantObj?.subscription_price_cop || (currentTier === 'inicio' ? 29000 : 120000);
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 animate-fade-in">
+            <div className="w-full sm:max-w-lg max-h-[94vh] sm:max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl border-t sm:border border-emerald-500/40 bg-[#141926] text-white shadow-2xl overflow-hidden transition-all">
+              
+              {/* Drag Handle táctil móvil */}
+              <div className="w-12 h-1.5 rounded-full bg-white/20 mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
+              {/* Header */}
+              <div className="px-5 py-3.5 border-b border-white/10 flex items-center justify-between bg-inherit sticky top-0 z-20 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                    <Upload className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-extrabold leading-none">
+                      Pagar Suscripción Kowy
+                    </h3>
+                    <span className="text-[11px] text-emerald-400 font-semibold mt-0.5 block">
+                      Transferencia Nequi o Bancolombia
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentReceiptModalOpen(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Cuerpo del Formulario con Scroll */}
+              <form onSubmit={handleSubmitReceipt} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 text-xs custom-scrollbar">
+                
+                {/* Paso 1: Cuentas para Transferir */}
+                <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <span className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>1. Datos de Transferencia</span>
+                    </span>
+                    <span className="text-sm font-black text-emerald-400">
+                      Valor: {formatCurrency(planPrice, salonCurrency)}
+                    </span>
+                  </div>
+
+                  {/* Selector Método */}
+                  <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('nequi')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        paymentMethod === 'nequi'
+                          ? 'border-[#DE005B] bg-[#DE005B]/15 text-white'
+                          : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <strong className="block text-sm text-[#FF5A87]">Nequi</strong>
+                      <span className="text-[11px] font-mono block mt-0.5">312 888 8888</span>
+                      <span className="text-[9px] text-slate-400 block mt-1">Kowy SaaS Colombia</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('bancolombia')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        paymentMethod === 'bancolombia'
+                          ? 'border-yellow-400 bg-yellow-400/15 text-white'
+                          : 'border-white/10 bg-white/5 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <strong className="block text-sm text-yellow-300">Bancolombia</strong>
+                      <span className="text-[11px] font-mono block mt-0.5">031-888888-99</span>
+                      <span className="text-[9px] text-slate-400 block mt-1">Ahorros • Kowy SaaS</span>
+                    </button>
+                  </div>
+
+                  {/* Botón de Copiar Rápido para Móvil */}
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Número a Transferir</span>
+                      <strong className="text-sm font-mono text-white block">
+                        {paymentMethod === 'nequi' ? '312 888 8888' : '031-888888-99'}
+                      </strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAccount(paymentMethod, paymentMethod === 'nequi' ? '3128888888' : '03188888899')}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      {copiedAccountKey === paymentMethod ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>¡Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Paso 2: Adjuntar Fotografía del Comprobante */}
+                <div className="space-y-2">
+                  <label className="block text-slate-200 font-bold text-xs">
+                    2. Adjuntar Comprobante de Transferencia *
+                  </label>
+
+                  {paymentReceiptUrl ? (
+                    <div className="p-3 rounded-2xl bg-black/40 border-2 border-emerald-500/40 flex items-center gap-3">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black">
+                        <img
+                          src={paymentReceiptUrl}
+                          alt="Comprobante"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Comprobante Listo
+                        </span>
+                        <span className="text-[11px] text-slate-400 block mt-0.5 truncate">
+                          Fotografía optimizada para revisión
+                        </span>
+                        <label className="text-xs font-bold text-[#FF5A36] hover:underline cursor-pointer block mt-1.5">
+                          Cambiar fotografía
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleReceiptFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="p-5 rounded-2xl border-2 border-dashed border-emerald-500/40 hover:border-emerald-500/70 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all text-center cursor-pointer block space-y-2 active:scale-[0.99]">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleReceiptFileChange}
+                        className="hidden"
+                      />
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+                        <Upload className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <strong className="text-sm font-bold text-white block">
+                          {isCompressingReceipt ? 'Optimizando imagen...' : 'Tomar Foto o Subir Captura de Pantalla'}
+                        </strong>
+                        <span className="text-[11px] text-slate-400 block mt-0.5">
+                          Formatos JPG, PNG o captura de Nequi / Bancolombia
+                        </span>
+                      </div>
+                    </label>
+                  )}
+                </div>
+
+                {/* Paso 3: Referencia / Número de Aprobación Opcional */}
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold text-xs">
+                    Número de Aprobación / Referencia (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={paymentReferenceNumber}
+                    onChange={(e) => setPaymentReferenceNumber(e.target.value)}
+                    placeholder="Ej. M123456 o 6 dígitos de Nequi"
+                    className="w-full bg-[#0E121B] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                {/* Regla Clara de Negocio para la Clienta */}
+                <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-slate-300 space-y-1">
+                  <div className="font-bold text-cyan-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Beneficio de Renovación Anticipada:</span>
+                  </div>
+                  <p className="text-slate-300 leading-snug">
+                    Los 30 días se sumarán automáticamente a los días que tengas disponibles. Tu agendador continuará funcionando sin interrupciones.
+                  </p>
+                </div>
+
+                {/* Botón de Envío Sticky */}
+                <div className="sticky bottom-0 z-20 pt-3 pb-1 bg-inherit border-t border-white/10 flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsPaymentReceiptModalOpen(false)}
+                    className="px-4 py-3 rounded-xl text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReceipt || isCompressingReceipt || !paymentReceiptUrl}
+                    className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                  >
+                    {isSubmittingReceipt ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Enviando Comprobante...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Confirmar y Enviar Comprobante</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* MODAL KIT IMPRIMIBLE DE CÓDIGO QR PARA RESERVAS */}
       {isQrModalOpen && (

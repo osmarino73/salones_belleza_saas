@@ -132,6 +132,10 @@ export const SuperadminDashboardPage: React.FC = () => {
     pendingSiteData: Partial<ProspectSite>;
   } | null>(null);
 
+  // Subscription Receipt Verification State
+  const [receiptActionLoading, setReceiptActionLoading] = useState<string | null>(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
+
   // Form State para el Generador de Sitios Gancho
   const [businessName, setBusinessName] = useState('');
   const [phoneWhatsapp, setPhoneWhatsapp] = useState('');
@@ -1110,6 +1114,36 @@ export const SuperadminDashboardPage: React.FC = () => {
     }
   };
 
+  const handleApproveReceipt = async (tenant: Tenant) => {
+    if (!window.confirm(`¿Confirmas la aprobación del pago para ${tenant.name}?\n\nSe sumarán 30 días adicionales acumulativos a su suscripción y su plan quedará activo.`)) {
+      return;
+    }
+    setReceiptActionLoading(tenant.id);
+    const res = await api.approveSubscriptionReceipt(tenant.id);
+    setReceiptActionLoading(null);
+    if (res.success) {
+      const formattedDate = res.newEndsAt ? new Date(res.newEndsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      alert(`✅ Pago aprobado con éxito para ${tenant.name}.\n📅 Nueva fecha de vigencia: ${formattedDate} (+30 días acumulados).`);
+      await loadData();
+    } else {
+      alert(`❌ Error al aprobar pago: ${res.error || 'Error desconocido'}`);
+    }
+  };
+
+  const handleRejectReceipt = async (tenant: Tenant) => {
+    const reason = window.prompt(`Ingresa el motivo del rechazo del comprobante para ${tenant.name}:`, 'Comprobante ilegible o monto incorrecto');
+    if (!reason) return;
+    setReceiptActionLoading(tenant.id);
+    const res = await api.rejectSubscriptionReceipt(tenant.id, reason);
+    setReceiptActionLoading(null);
+    if (res.success) {
+      alert(`Comprobante rechazado para ${tenant.name}.`);
+      await loadData();
+    } else {
+      alert(`❌ Error al rechazar comprobante: ${res.error || 'Error desconocido'}`);
+    }
+  };
+
   const handleUpdateStatus = async (id: string, newStatus: ProspectSite['status']) => {
     await api.updateProspectSite(id, { status: newStatus });
     setProspectSites(prospectSites.map(s => s.id === id ? { ...s, status: newStatus } : s));
@@ -1658,6 +1692,11 @@ export const SuperadminDashboardPage: React.FC = () => {
           >
             <Building2 className="w-4 h-4" />
             <span>🏢 Salones Activos SaaS ({tenants.length})</span>
+            {tenants.filter(t => t.subscription_meta?.status === 'pending').length > 0 && (
+              <span className="bg-amber-400 text-black px-1.5 py-0.5 rounded-full text-[10px] font-black animate-pulse flex items-center gap-1 shadow-md shadow-amber-400/30">
+                💸 {tenants.filter(t => t.subscription_meta?.status === 'pending').length}
+              </span>
+            )}
           </button>
 
           <Link
@@ -2767,8 +2806,149 @@ export const SuperadminDashboardPage: React.FC = () => {
         {/* ===================================================================
             TAB 3: GESTIÓN GLOBAL DE SALONES (MULTI-TENANT SAAS)
             =================================================================== */}
-        {activeTab === 'tenants' && (
+        {activeTab === 'tenants' && (() => {
+          const pendingReceipts = tenants.filter(t => t.subscription_meta?.status === 'pending');
+
+          return (
           <div className="space-y-6">
+
+            {/* Comprobantes de Pago Pendientes (Nequi / Bancolombia) */}
+            {pendingReceipts.length > 0 && (
+              <div className="bg-gradient-to-r from-amber-500/10 via-[#121624] to-emerald-500/10 border-2 border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between flex-wrap gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-500 flex items-center justify-center text-black font-black text-lg shadow-lg shadow-amber-500/20">
+                      💸
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-black text-white">Comprobantes de Pago Pendientes</h3>
+                        <span className="bg-amber-400 text-black px-2 py-0.5 rounded-full text-xs font-black animate-pulse">
+                          {pendingReceipts.length} por verificar
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">Verifica los comprobantes de Nequi / Bancolombia para renovar +30 días acumulativos automáticamente.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={loadData}
+                    className="px-3 py-1.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 text-slate-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Actualizar</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pendingReceipts.map((t) => {
+                    const meta = t.subscription_meta;
+                    const daysLeft = t.trial_ends_at 
+                      ? Math.max(0, Math.ceil((new Date(t.trial_ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                      : 0;
+
+                    return (
+                      <div key={t.id} className="bg-[#0A0D14] border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between gap-4 shadow-inner">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-white">{t.name}</span>
+                                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">
+                                  {meta?.payment_method?.toUpperCase() || 'TRANSFERENCIA'}
+                                </span>
+                              </div>
+                              <span className="text-xs text-slate-400 block mt-0.5">
+                                {t.phone} • {t.owner_email || 'Sin email'}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-base font-black text-emerald-400 block">
+                                ${(meta?.amount_cop || 29000).toLocaleString('es-CO')} COP
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                Plan: {meta?.plan_tier_requested?.toUpperCase() || 'INICIO'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Info adicional del comprobante */}
+                          <div className="bg-[#121624] rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
+                            <div className="flex items-center justify-between text-slate-400">
+                              <span>Referencia / Aprobación:</span>
+                              <strong className="text-white font-mono">{meta?.reference_number || 'No especificada'}</strong>
+                            </div>
+                            <div className="flex items-center justify-between text-slate-400">
+                              <span>Enviado:</span>
+                              <span className="text-slate-300">
+                                {meta?.submitted_at ? new Date(meta.submitted_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : 'Reciente'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-slate-400">
+                              <span>Días actuales vigentes:</span>
+                              <span className="text-amber-300 font-bold">
+                                {daysLeft} días (acumulará a {daysLeft + 30} días)
+                              </span>
+                            </div>
+                            {meta?.notes && (
+                              <div className="text-slate-400 pt-1 border-t border-white/5">
+                                <span className="text-[11px] italic">"{meta.notes}"</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Vista Previa del Comprobante */}
+                          {meta?.receipt_url && (
+                            <div className="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10">
+                              <img
+                                src={meta.receipt_url}
+                                alt="Comprobante de pago"
+                                className="w-16 h-16 object-cover rounded-lg border border-white/20 cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => setPreviewReceiptUrl(meta.receipt_url)}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <span className="text-xs font-bold text-white block">Imagen del Comprobante</span>
+                                <span className="text-[10px] text-slate-400 block truncate">Haz clic para agrandar</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setPreviewReceiptUrl(meta.receipt_url)}
+                                  className="mt-1 text-[11px] text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Ver imagen completa</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Botones de Acción */}
+                        <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                          <button
+                            type="button"
+                            disabled={receiptActionLoading === t.id}
+                            onClick={() => handleApproveReceipt(t)}
+                            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>{receiptActionLoading === t.id ? 'Aprobando...' : 'Aprobar (+30 Días)'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={receiptActionLoading === t.id}
+                            onClick={() => handleRejectReceipt(t)}
+                            className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Rechazar</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             
             {/* KPI Cards Globales */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -2842,7 +3022,7 @@ export const SuperadminDashboardPage: React.FC = () => {
                               'bg-slate-500/20 text-slate-300 border-slate-500/40'
                             }`}>
                               {currentPlan === 'free' ? '🌐 Gratis ($0)' :
-                               currentPlan === 'inicio' ? '🌱 Inicio ($50k)' :
+                               currentPlan === 'inicio' ? '🌱 Inicio ($29k)' :
                                currentPlan === 'crecimiento' ? '📈 Crecimiento ($120k)' :
                                currentPlan === 'pro_ia' ? '🤖 Pro Flow IA ($240k)' :
                                currentPlan === 'escala' ? '🎯 Escala ($720k)' : '👑 Agencia VIP ($1.44M)'}
@@ -2850,6 +3030,11 @@ export const SuperadminDashboardPage: React.FC = () => {
                             <span className="text-[10px] font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
                               ⏳ {daysLeft} días restantes
                             </span>
+                            {t.subscription_meta?.status === 'pending' && (
+                              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-400 text-black animate-pulse flex items-center gap-1 shadow-md shadow-amber-400/20">
+                                💸 Comprobante por verificar
+                              </span>
+                            )}
                           </div>
                           <span className="text-slate-400 text-[11px] block mt-0.5">
                             {t.phone} • {t.address || t.city || 'Medellín, Colombia'} • <span className="text-slate-300">{t.owner_email || 'dueña@salon.com'}</span>
@@ -2926,7 +3111,7 @@ export const SuperadminDashboardPage: React.FC = () => {
             </div>
 
           </div>
-        )}
+        ); })()}
 
       </main>
 
@@ -4921,6 +5106,62 @@ export const SuperadminDashboardPage: React.FC = () => {
           </div>
         );
       })()}
+
+      {/* =====================================================================
+          MODAL: VISTA PREVIA COMPROBANTE DE PAGO (NEQUI / BANCOLOMBIA)
+          ===================================================================== */}
+      {previewReceiptUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewReceiptUrl(null)}
+        >
+          <div
+            className="bg-[#121624] border border-white/20 rounded-3xl max-w-lg w-full p-5 space-y-4 max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🧾</span>
+                <h4 className="text-sm font-black text-white">Comprobante de Pago</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewReceiptUrl(null)}
+                className="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-auto flex-1 flex items-center justify-center p-2 bg-black/50 rounded-2xl border border-white/5">
+              <img
+                src={previewReceiptUrl}
+                alt="Comprobante completo"
+                className="max-h-[65vh] w-auto object-contain rounded-xl shadow-2xl"
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <a
+                href={previewReceiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-2 transition-all"
+              >
+                <ExternalLink className="w-4 h-4 text-[#FF5A36]" />
+                <span>Abrir en nueva pestaña</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => setPreviewReceiptUrl(null)}
+                className="px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

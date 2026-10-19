@@ -15,6 +15,19 @@ export interface PlanFeatureConfig {
   has_dedicated_support: boolean;
 }
 
+export interface SubscriptionPaymentMeta {
+  receipt_url: string;
+  payment_method: 'nequi' | 'bancolombia' | 'daviplata' | 'transferencia';
+  amount_cop: number;
+  reference_number?: string;
+  notes?: string;
+  submitted_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewed_at?: string;
+  rejection_reason?: string;
+  plan_tier_requested?: PlanTier;
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -26,8 +39,9 @@ export interface Tenant {
   is_active: boolean;
   plan: 'basic' | 'pro_ai' | 'vip_360';
   plan_tier?: PlanTier;
-  subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled';
+  subscription_status?: 'trial' | 'active' | 'past_due' | 'cancelled' | 'pending_verification';
   subscription_price_cop?: number;
+  subscription_meta?: SubscriptionPaymentMeta;
   trial_started_at?: string;
   trial_ends_at?: string;
   max_stylists?: number;
