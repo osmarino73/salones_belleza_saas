@@ -436,6 +436,8 @@ export const SuperadminDashboardPage: React.FC = () => {
   const [activationTempPass, setActivationTempPass] = useState('');
   const [activationCurrency, setActivationCurrency] = useState<'COP' | 'USD' | 'MXN' | 'EUR'>('COP');
   const [activationTrialDays, setActivationTrialDays] = useState(14);
+  const [activationPlanTier, setActivationPlanTier] = useState<PlanTier>('inicio');
+  const [activationMaxStylists, setActivationMaxStylists] = useState<number>(3);
   const [isActivatingTenant, setIsActivatingTenant] = useState(false);
   const [activationSuccessData, setActivationSuccessData] = useState<{
     tenant: Tenant;
@@ -1207,6 +1209,8 @@ export const SuperadminDashboardPage: React.FC = () => {
     setActivationTempPass(`${cleanName}2026*`);
     setActivationCurrency('COP');
     setActivationTrialDays(14);
+    setActivationPlanTier('inicio');
+    setActivationMaxStylists(3);
     setActivationSuccessData(null);
     setCopiedCredentials(false);
   };
@@ -1221,6 +1225,12 @@ export const SuperadminDashboardPage: React.FC = () => {
 
     setIsActivatingTenant(true);
     try {
+      const calculatedActivationPrice = activationPlanTier === 'crecimiento'
+        ? 120000
+        : activationPlanTier === 'inicio'
+        ? (29000 + Math.max(0, activationMaxStylists - 3) * 10000)
+        : 0;
+
       const res = await api.activateProspectAsTenant({
         prospectId: activatingProspect.id,
         ownerEmail: activationEmail,
@@ -1228,7 +1238,10 @@ export const SuperadminDashboardPage: React.FC = () => {
         businessName: activatingProspect.business_name,
         phoneWhatsapp: activatingProspect.phone_whatsapp,
         currency: activationCurrency,
-        trialDays: activationTrialDays
+        trialDays: activationTrialDays,
+        planTier: activationPlanTier,
+        maxStylists: activationPlanTier === 'crecimiento' ? 999 : activationMaxStylists,
+        subscriptionPriceCop: calculatedActivationPrice
       });
 
       if (res.success) {
@@ -3862,23 +3875,92 @@ export const SuperadminDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Resumen de Activación Limpia */}
+                {/* Selector de Plan SaaS & Cupo Inicial de Colaboradores */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1">
+                      <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Plan SaaS Inicial</span>
+                    </label>
+                    <select
+                      value={activationPlanTier}
+                      onChange={(e) => {
+                        const tier = e.target.value as PlanTier;
+                        setActivationPlanTier(tier);
+                        if (tier === 'crecimiento') {
+                          setActivationMaxStylists(999);
+                        } else if (activationMaxStylists > 10) {
+                          setActivationMaxStylists(3);
+                        }
+                      }}
+                      className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-amber-400 text-xs font-bold"
+                    >
+                      <option value="inicio">🌱 Plan Inicio ($29.000 COP/mes)</option>
+                      <option value="crecimiento">📈 Plan Crecimiento ($120.000 COP/mes)</option>
+                      <option value="free">🌐 Plan Gratuito ($0 / Solo Web)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Cupo de Colaboradores</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-400 font-extrabold font-mono">
+                        {activationPlanTier === 'crecimiento'
+                          ? 'Ilimitadas'
+                          : activationMaxStylists > 3
+                          ? `+$${((activationMaxStylists - 3) * 10000).toLocaleString('es-CO')} COP`
+                          : '3 Base incluidos'}
+                      </span>
+                    </label>
+                    {activationPlanTier === 'crecimiento' ? (
+                      <div className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-emerald-400 text-xs font-bold flex items-center justify-between">
+                        <span>Colaboradoras Ilimitadas</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Sin límite</span>
+                      </div>
+                    ) : (
+                      <select
+                        value={activationMaxStylists}
+                        onChange={(e) => setActivationMaxStylists(Number(e.target.value))}
+                        className="w-full bg-[#0A0D14] border border-white/15 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-400 text-xs font-bold"
+                      >
+                        <option value={3}>3 Colaboradores (Base Plan Inicio • $29k/mes)</option>
+                        <option value={4}>4 Colaboradores (+1 extra • $39k/mes)</option>
+                        <option value={5}>5 Colaboradores (+2 extras • $49k/mes)</option>
+                        <option value={6}>6 Colaboradores (+3 extras • $59k/mes)</option>
+                        <option value={7}>7 Colaboradores (+4 extras • $69k/mes)</option>
+                        <option value={8}>8 Colaboradores (+5 extras • $79k/mes)</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                {/* Resumen de Condiciones del Negocio */}
                 <div className="p-3.5 rounded-2xl bg-[#0A0D14] border border-white/10 space-y-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Estado de la nueva cuenta del negocio:
-                  </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Condiciones configuradas para el salón:
+                    </span>
+                    <span className="text-xs font-black text-emerald-400">
+                      Tarifa: {activationPlanTier === 'crecimiento' ? '$120.000 COP/mes' : `$${(29000 + Math.max(0, activationMaxStylists - 3) * 10000).toLocaleString('es-CO')} COP/mes`}
+                    </span>
+                  </div>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-emerald-400 font-bold block">
                         ✨ Cuenta Virgen
                       </span>
-                      <span className="text-[10px] text-slate-400">0 citas ni datos ficticios</span>
+                      <span className="text-[10px] text-slate-400">0 citas ficticias</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-blue-400 font-bold block">
-                        🚀 Plan Inicio (14 Días)
+                        🚀 {activationPlanTier === 'crecimiento' ? 'Crecimiento' : 'Plan Inicio'} ({activationTrialDays} Días)
                       </span>
-                      <span className="text-[10px] text-slate-400">Prueba gratis ($0 hosting)</span>
+                      <span className="text-[10px] text-slate-400">
+                        {activationPlanTier === 'crecimiento' ? 'Ilimitadas' : `${activationMaxStylists} cupos`}
+                      </span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
                       <span className="text-amber-400 font-bold block">
