@@ -6784,22 +6784,25 @@ export const DashboardPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Chips de selección rápida táctil para celular */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar">
+                {/* Chips de selección de categoría táctiles y visibles (flex-wrap para mostrar todas sin ocultarlas) */}
+                <div className="flex flex-wrap items-center gap-2 pb-1">
                   {categories.map((cat) => {
-                    const isSelected = serviceForm.category === (cat.slug || cat.id);
+                    const isSelected = serviceForm.category === cat.slug || 
+                                       serviceForm.category === cat.id || 
+                                       serviceForm.category?.toLowerCase() === cat.name?.toLowerCase() ||
+                                       (serviceForm.category?.toLowerCase().includes('nail') && (cat.slug === 'nails' || cat.name?.toLowerCase().includes('uña')));
                     return (
                       <button
                         key={cat.id}
                         type="button"
                         onClick={() => setServiceForm({ ...serviceForm, category: cat.slug || cat.id })}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs shrink-0 transition-all flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3 py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
                           isSelected
-                            ? 'bg-[#FF5A36] text-white shadow-md'
-                            : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                            ? 'bg-[#FF5A36] text-white shadow-lg shadow-[#FF5A36]/30 ring-2 ring-[#FF5A36]/50 scale-[1.02]'
+                            : 'bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 hover:border-white/20'
                         }`}
                       >
-                        <span>{cat.icon || '✨'}</span>
+                        <span className="text-sm">{cat.icon || '✨'}</span>
                         <span>{cat.name}</span>
                       </button>
                     );
