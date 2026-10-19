@@ -9445,8 +9445,8 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                   </div>
                 )}
 
-                {/* Botón de Envío Sticky */}
-                <div className="sticky bottom-0 z-20 pt-3 pb-1 bg-inherit border-t border-white/10 flex items-center gap-2.5">
+                {/* Botón de Envío Sticky con fondo opaco sólido */}
+                <div className="sticky bottom-0 z-20 pt-3 pb-2 px-1 bg-[#121622] border-t border-white/10 flex items-center gap-2.5">
                   <button
                     type="button"
                     onClick={() => setIsPaymentReceiptModalOpen(false)}
@@ -9457,7 +9457,7 @@ Ya tienes habilitado tu acceso a tu panel personal para consultar tu agenda de c
                   <button
                     type="submit"
                     disabled={isSubmittingReceipt || isCompressingReceipt || !paymentReceiptUrl}
-                    className="flex-1 h-12 bg-white hover:bg-slate-200 disabled:opacity-40 text-slate-950 font-bold text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
+                    className="flex-1 h-12 bg-[#FF5A36] hover:bg-[#E54E07] disabled:opacity-40 text-white font-bold text-sm rounded-xl shadow-lg shadow-[#FF5A36]/25 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.98]"
                   >
                     {isSubmittingReceipt ? (
                       <>
